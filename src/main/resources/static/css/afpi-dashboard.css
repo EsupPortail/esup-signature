@@ -1,0 +1,318 @@
+/* ============================================================
+   afpi-dashboard.css — Palette APEX (Pixinvent) pour AFPI-ACM
+   Primaire : #5A8DEE  Succès : #39DA8A  Danger : #FF5B5C
+   Warning  : #FDAC41  Info   : #00CFDD  Texte  : #475F7B
+   ============================================================ */
+
+/* ── Badges Application (palette APEX) ── */
+.afpi-badge-app {
+    display: inline-block;
+    padding: 3px 9px;
+    border-radius: 4px;
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    box-shadow: 0 2px 6px rgba(0,0,0,.14);
+}
+
+/* ── Badges Type ── */
+.afpi-badge-type {
+    display: inline-block;
+    padding: 3px 9px;
+    border-radius: 4px;
+    background: #00CFDD;
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 600;
+    white-space: nowrap;
+    box-shadow: 0 2px 6px rgba(0,207,221,.3);
+}
+
+/* ── Cellules de tags ── */
+.afpi-tag-cell {
+    vertical-align: middle;
+    padding: 6px 6px !important;
+}
+.afpi-meta {
+    font-size: 0.78rem;
+    color: #727E8C !important;
+}
+
+/* ── Barre de filtres (accueil) ── */
+.afpi-filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 20px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+}
+.afpi-filter-label-main {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #212529;
+    margin-right: 6px;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+.afpi-filter-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+/* Slim-select dans la barre de filtres accueil */
+.afpi-filter-bar .ss-main {
+    font-size: 0.78rem !important;
+    min-width: 130px !important;
+    border-radius: 6px !important;
+    border: 1px solid #ced4da !important;
+    padding: 4px 30px 4px 10px !important;
+    height: auto !important;
+    color: #495057 !important;
+    background-color: #fff !important;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out !important;
+}
+.afpi-filter-bar .ss-main:hover {
+    border-color: #adb5bd !important;
+}
+.afpi-filter-bar .ss-main:focus,
+.afpi-filter-bar .ss-main.ss-open {
+    border-color: #212529 !important;
+    box-shadow: 0 0 0 0.2rem rgba(33, 37, 41, 0.15) !important;
+}
+.afpi-filter-reset {
+    font-size: 0.78rem;
+    font-weight: 500;
+    padding: 5px 14px;
+    border: 1px solid #dc3545;
+    border-radius: 6px;
+    background: transparent;
+    color: #dc3545;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+.afpi-filter-reset:hover {
+    background: #dc3545;
+    color: #fff;
+    box-shadow: 0 2px 4px rgba(220, 53, 69, 0.2);
+}
+
+/* ── Thead des tables accueil ── */
+.afpi-thead-row {
+    background-color: #F3F4F7 !important;
+}
+.afpi-th {
+    background-color: #F3F4F7 !important;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #475F7B !important;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 10px 8px !important;
+    border-bottom: none !important;
+    white-space: nowrap;
+}
+
+/* ── Cards accueil ── */
+#to-sign-list .card,
+#pendingList .card {
+    box-shadow: 0 4px 20px 0 rgba(34,41,47,.08) !important;
+    border-radius: 8px !important;
+    border: none !important;
+    --bs-card-bg: #fff;
+}
+
+/* Forcer fond blanc (override text-bg-light Bootstrap) */
+#to-sign-list .card.text-bg-light,
+#pendingList .card.text-bg-light,
+#to-sign-list .card,
+#pendingList .card {
+    background-color: #fff !important;
+    color: inherit !important;
+}
+
+/* ── En-tête : Demandes à signer ── */
+#to-sign-list div.card-header,
+#to-sign-list .card > .card-header {
+    background: linear-gradient(118deg, #212529, #343a40) !important;
+    background-color: #212529 !important;
+    border-bottom: none !important;
+    border-radius: 8px 8px 0 0 !important;
+    padding: 14px 20px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+}
+#to-sign-list div.card-header h5,
+#to-sign-list .card > .card-header h5 {
+    color: #fff !important;
+    font-size: 0.95rem !important;
+    font-weight: 600 !important;
+    margin: 0 !important;
+    letter-spacing: 0.01em;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+}
+
+/* ── En-tête : Demandes en attente ── */
+#pendingList div.card-header,
+#pendingList .card > .card-header {
+    background: linear-gradient(118deg, #212529, #343a40) !important;
+    background-color: #212529 !important;
+    border-bottom: none !important;
+    border-radius: 8px 8px 0 0 !important;
+    padding: 14px 20px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+}
+#pendingList div.card-header h5,
+#pendingList .card > .card-header h5 {
+    color: #fff !important;
+    font-size: 0.95rem !important;
+    font-weight: 600 !important;
+    margin: 0 !important;
+    letter-spacing: 0.01em;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+}
+
+/* ── Badge de comptage dans l'en-tête ── */
+.afpi-card-count {
+    background: rgba(255,255,255,.22);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,.45);
+    border-radius: 20px;
+    padding: 2px 12px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+/* ── Fond blanc pour tables accueil ── */
+#to-sign-list .table-light,
+#pendingList .table-light {
+    --bs-table-bg: #fff;
+    --bs-table-striped-bg: #fff;
+    --bs-table-hover-bg: #F0F5FF;
+    background-color: #fff !important;
+}
+#to-sign-list table,
+#pendingList table,
+#to-sign-list table tbody tr,
+#pendingList table tbody tr {
+    background-color: #fff !important;
+}
+#to-sign-list .card-body,
+#pendingList .card-body {
+    padding: 0 !important;
+    background-color: #fff !important;
+}
+
+/* Barre de filtres accueil */
+#to-sign-list #filter-to-sign,
+#pendingList #filter-pending {
+    border-bottom: 1px solid #E3E6F0 !important;
+    background-color: #fff !important;
+}
+
+/* ── Hover lignes accueil ── */
+#to-sign-list table tbody tr:hover,
+#pendingList table tbody tr:hover {
+    background-color: #F0F5FF !important;
+    transition: background-color .1s ease;
+}
+
+/* ── Fond blanc tableau de bord ── */
+#listSignRequestTable .table-light {
+    --bs-table-bg: #fff;
+    --bs-table-striped-bg: #fff;
+    --bs-table-hover-bg: #F0F5FF;
+}
+#listSignRequestTable .table-light tbody tr {
+    background-color: #fff !important;
+}
+#signRequestTable tbody tr:hover {
+    background-color: #F0F5FF !important;
+    transition: background-color .1s ease;
+}
+
+/* ── En-tête tableau de bord — gris APEX ── */
+#listSignRequestTable thead.table-secondary,
+#listSignRequestTable thead.table-secondary tr {
+    --bs-table-bg: #F3F4F7;
+    background-color: #F3F4F7 !important;
+}
+#listSignRequestTable thead.table-secondary th {
+    color: #475F7B !important;
+    border-color: #212529 !important;
+    border-bottom: none !important;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    background-color: #F3F4F7 !important;
+}
+#listSignRequestTable thead.table-secondary th a,
+#listSignRequestTable thead.table-secondary th a:hover {
+    color: #212529 !important;
+}
+
+/* ── Tableau de bord : conteneur ── */
+#listSignRequestTable {
+    border-radius: 8px !important;
+    box-shadow: 0 4px 20px 0 rgba(34,41,47,.08) !important;
+    border: 1px solid #E3E6F0 !important;
+}
+
+/* ── Badges de statut (couleurs APEX) ── */
+.badge-status {
+    font-size: 0.72rem !important;
+    padding: 4px 8px !important;
+    white-space: nowrap;
+    font-weight: 600 !important;
+}
+/* Surcharger Bootstrap text-bg-* avec palette APEX */
+.text-bg-warning.badge-status,
+span.badge.text-bg-warning {
+    background-color: #FDAC41 !important;
+    color: #fff !important;
+}
+.text-bg-info.badge-status,
+span.badge.text-bg-info {
+    background-color: #00CFDD !important;
+    color: #fff !important;
+}
+.text-bg-success.badge-status,
+span.badge.text-bg-success {
+    background-color: #39DA8A !important;
+    color: #fff !important;
+}
+.text-bg-danger.badge-status,
+span.badge.text-bg-danger {
+    background-color: #FF5B5C !important;
+    color: #fff !important;
+}
+.text-bg-secondary.badge-status,
+span.badge.text-bg-secondary {
+    background-color: #B9C3CD !important;
+    color: #fff !important;
+}
+
+/* ── Slim-select global ── */
+.ss-main {
+    font-size: 0.78rem !important;
+    border-radius: 4px !important;
+}

@@ -1,9 +1,12 @@
 package org.esupportail.esupsignature.service;
 
+import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.util.Date;
@@ -19,8 +22,17 @@ public class MobileSignTokenService {
     private static final long TOKEN_VALIDITY_MINUTES = 5;
     
     private final Map<String, MobileSignTokenData> tokenCache = new ConcurrentHashMap<>();
+    
+    private final UserService userService;
+    private final DocumentService documentService;
+    private final FileService fileService;
 
-    public MobileSignTokenService() {
+    public MobileSignTokenService(UserService userService,
+                                  DocumentService documentService,
+                                  FileService fileService) {
+        this.userService = userService;
+        this.documentService = documentService;
+        this.fileService = fileService;
     }
 
     public String createToken(String userEppn) {
@@ -92,35 +104,50 @@ public class MobileSignTokenService {
         return true;
     }
 
-    public synchronized boolean consumePendingSignaturePreview(String token, String userEppn, String signImageBase64) {
+    public void consumePendingSignaturePreview(String token, String userEppn, String signImageBase64) {
         MobileSignTokenData tokenData = tokenCache.get(token);
         if (tokenData == null || !tokenData.isValid()) {
-            return false;
+            return;
         }
         if (!StringUtils.hasText(userEppn) || !userEppn.equals(tokenData.getUserEppn())) {
-            return false;
+            return;
         }
         if (!StringUtils.hasText(signImageBase64) || !signImageBase64.equals(tokenData.getPendingSignaturePreview())) {
-            return false;
+            return;
         }
 
         tokenData.setUsed(true);
-        tokenData.setFinished(true);
-        return true;
     }
 
-    public boolean markFinished(String token) {
+    @Transactional
+    public boolean saveSignatureAndMarkTokenUsed(String token, String signImageBase64) {
         MobileSignTokenData tokenData = tokenCache.get(token);
-        if (tokenData == null || tokenData.isUsed() || tokenData.isExpired()) {
+        if (tokenData == null || !tokenData.isValid() || !StringUtils.hasText(signImageBase64)) {
             return false;
         }
-        tokenData.setFinished(true);
-        return true;
-    }
-
-    public boolean isTokenFinished(String token) {
-        MobileSignTokenData tokenData = tokenCache.get(token);
-        return tokenData != null && tokenData.isFinished();
+        try {
+            String userEppn = tokenData.getUserEppn();
+            User user = userService.getByEppn(userEppn);
+            if (user == null) {
+                return false;
+            }
+            user.getSignImages().add(documentService.createDocument(
+                    fileService.base64Transparence(signImageBase64),
+                    user,
+                    user.getEppn() + "_sign.png",
+                    "image/png"));
+            if (user.getSignImages().size() == 1) {
+                user.setDefaultSignImageNumber(999998);
+            }
+            tokenData.setPendingSignaturePreview(null);
+            tokenData.setPendingSignaturePreviewTimestamp(null);
+            tokenData.setUsed(true);
+            logger.info("Saved mobile signature for user: {}", userEppn);
+            return true;
+        } catch (Exception e) {
+            logger.error("Error saving mobile signature: ", e);
+        }
+        return false;
     }
 
     @Scheduled(fixedRate = 60000)
@@ -138,7 +165,6 @@ public class MobileSignTokenService {
         private final String userEppn;
         private final Date expirationDate;
         private boolean used = false;
-        private boolean finished = false;
         private String pendingSignaturePreview;
         private Long pendingSignaturePreviewTimestamp;
 
@@ -166,14 +192,6 @@ public class MobileSignTokenService {
 
         public void setUsed(boolean used) {
             this.used = used;
-        }
-
-        public boolean isFinished() {
-            return finished;
-        }
-
-        public void setFinished(boolean finished) {
-            this.finished = finished;
         }
 
         public String getPendingSignaturePreview() {

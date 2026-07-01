@@ -37,6 +37,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @RequestMapping({"/manager/workflows", "/admin/workflows"})
@@ -195,6 +196,7 @@ public class WorkflowAdminController {
 						 @RequestParam(value = "types", required = false) String[] types,
 						 @RequestParam(required = false) List<String> viewersEmails,
 						 @RequestParam(required = false) Set<String> managers,
+						 @RequestParam(required = false) Set<String> authorizedCanCreateEmails,
 						 @RequestParam(name = "missingRoles", required = false) Set<String> missingRoles,
 						 @RequestParam(name = "removeMissingRoles", defaultValue = "false") boolean removeMissingRoles,
 						 @RequestParam(name = "missingDashboardRoles", required = false) Set<String> missingDashboardRoles,
@@ -202,7 +204,7 @@ public class WorkflowAdminController {
 						 RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) {
 		User user = userService.getByEppn(authUserEppn);
 		if(preAuthorizeService.workflowManager(workflow.getId(), authUserEppn) || userService.getRoles(authUserEppn).contains("ROLE_ADMIN")) {
-			Workflow updateWorkflow = workflowService.update(workflow, user, types, managers, authUserEppn, missingRoles, removeMissingRoles, missingDashboardRoles, removeMissingDashboardRoles);
+			Workflow updateWorkflow = workflowService.update(workflow, user, types, managers, authorizedCanCreateEmails, authUserEppn, missingRoles, removeMissingRoles, missingDashboardRoles, removeMissingDashboardRoles);
 			workflowService.addViewers(updateWorkflow.getId(), viewersEmails);
 			if(httpServletRequest.getRequestURI().contains("/manager/") && preAuthorizeService.workflowManager(workflow.getId(), authUserEppn)) {
 				return "redirect:/manager/workflows/update/" + updateWorkflow.getId();
@@ -479,5 +481,14 @@ public class WorkflowAdminController {
 		targetService.toggleSendZip(targetId);
 		redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "Envoi par ZIP"));
 		return "redirect:/admin/workflows/targets/" + id + "#targets";
+	}
+
+	@PostMapping(value = "/save-sign-positions/{workflowStepId}")
+	@PreAuthorize("hasRole('ROLE_ADMIN')")
+	@ResponseBody
+	public ResponseEntity<String> saveSignPositions(@PathVariable("workflowStepId") Long workflowStepId,
+													@RequestBody List<Map<String, Integer>> positions) {
+		workflowStepService.saveSignPositions(workflowStepId, positions);
+		return ResponseEntity.ok("Positions sauvegardées (" + positions.size() + " zone(s))");
 	}
 }

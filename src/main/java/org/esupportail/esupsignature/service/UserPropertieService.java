@@ -61,7 +61,9 @@ public class UserPropertieService {
 
     @Transactional
     public Set<User> getFavoritesEmails(String userEppn) {
-        return getUserProperties(userEppn).stream()
+        Set<User> favoritesUsers = new LinkedHashSet<>();
+        favoritesUsers.add(userService.getCreatorUser());
+        getUserProperties(userEppn).stream()
                 .flatMap(up -> up.getFavorites().entrySet().stream())
                 .sorted(Map.Entry.<User, Date>comparingByValue().reversed())
                 .map(entry -> {
@@ -70,8 +72,9 @@ public class UserPropertieService {
                             ? user.getCurrentReplaceByUser()
                             : user;
                 })
-                .limit(5)
-                .collect(Collectors.toCollection(LinkedHashSet::new));
+                .limit(50)
+                .forEach(favoritesUsers::add);
+        return favoritesUsers;
     }
 
     @Transactional

@@ -465,6 +465,7 @@ public class DSSBeanConfig {
 	private <C extends CommonsDataLoader> C configureCommonsDataLoader(C dataLoader) {
 		dataLoader.setTimeoutConnection(5000);
 		dataLoader.setTimeoutConnectionRequest(5000);
+		dataLoader.setTimeoutSocket(5000);
 		dataLoader.setRedirectsEnabled(true);
 		dataLoader.setProxyConfig(proxyConfig);
 		return dataLoader;

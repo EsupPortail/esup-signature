@@ -10,7 +10,6 @@ public class UserSignatureStateDto {
     private List<Long> signImageIds;
     private List<String> signImages;
     private String defaultSignImage;
-    private Integer savedSignImageNumber;
 
     public UserSignatureStateDto() {
     }
@@ -71,13 +70,6 @@ public class UserSignatureStateDto {
     public void setDefaultSignImage(String defaultSignImage) {
         this.defaultSignImage = defaultSignImage;
     }
-
-    public Integer getSavedSignImageNumber() {
-        return savedSignImageNumber;
-    }
-
-    public void setSavedSignImageNumber(Integer savedSignImageNumber) {
-        this.savedSignImageNumber = savedSignImageNumber;
-    }
 }
+
 

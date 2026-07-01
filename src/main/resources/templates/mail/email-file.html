@@ -1,65 +1,110 @@
 <!DOCTYPE html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Demande signée</title>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 </head>
 <body>
-<table width="100%" border="0" style="width: 100%; border: 0;" bgcolor="#ffffff">
-    <tr>
-        <td width="100%" style="background-color:#212529; border-bottom:1px solid rgba(0, 0, 0, 0.125); margin-bottom:0; padding:10px; width: 100%;" bgcolor="#212529">
-            <img height="30" class="mx-auto float-start" src="cid:logo" style="height: 30px; border-style:none; vertical-align:middle; float:left; margin-right:auto; margin-left:auto" valign="middle" align="left">
-            <img height="30" class="mx-auto float-end" src="cid:logo-univ" style="height: 30px; border-style:none; vertical-align:middle; float:right; margin-right:auto; margin-left:auto" valign="middle" align="right">
-        </td>
-    </tr>
-    <tr>
-        <td style="width:100%; padding:10px;background-color:rgba(0,0,0,0.05);">
-            <p style="margin-bottom:1rem; margin-top:0;text-align: center;font-weight: bold">Bonjour, </p>
-            <p style="margin-bottom:1rem; margin-top:0;text-align: center;">Un document signé vous est destiné, il est attaché en piece jointe de ce mail : </p>
-            <table style="width: 66%; margin-left: 16.5%;">
-                <tr>
-                    <td style="border-radius:5px; border-color: #212529;vertical-align: middle; width: 100%; background-color:#212529; padding:10px;font-size:14px;" bgcolor="#212529">
-                        <p style="width: 96%; text-align: left;background-color: #6c757d;padding: 2%;border-radius: 5px;">
-                            <a th:href="${url}">
-                                <img height="25" class="mx-auto float-start" src="cid:logo-file" style="border-style:none; vertical-align:middle;margin-right: 5%;"  valign="middle"><span class="text-white text-center" style="line-height:25px;color:#fff; font-weight: 600;font-size: 16px;" align="center" th:text="${signBook.signRequests.get(0).originalDocuments.get(0).getFileName()}"></span>
-                            </a>
-                        </p>
-                        <p style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;color:#fff;" >
-                            Titre : <b style="box-sizing:border-box;font-weight:bolder;" ><span th:text="${signBook.subject}" style="box-sizing:border-box;" ></span></b>
-                            <br style="box-sizing:border-box;" >
-                            Circuit : <b style="box-sizing:border-box;font-weight:bolder;" ><span th:text="${signBook.workflowName}" style="box-sizing:border-box;" ></span></b>
-                            <br style="box-sizing:border-box;" >
-                            Crée par : <b style="box-sizing:border-box;font-weight:bolder;" ><span th:text="${signBook.createBy.firstname} + ' ' + ${signBook.createBy.name}" style="box-sizing:border-box;" ></span></b>
-                            <br style="box-sizing:border-box;" >
-                            Date de création : <b style="box-sizing:border-box;font-weight:bolder;" ><span th:text="${#dates.format(signBook.createDate, 'dd/MM/yyyy HH:mm')}" style="box-sizing:border-box;" ></span></b>
-                            <br style="box-sizing:border-box;" >
-                        </p>
-                        <p style="margin-bottom:1rem; margin-top:0" th:if="${organizationalUnitLdap != null}">
-                            <span th:text="'Composante : ' + ${organizationalUnitLdap.description}" style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;color:#fff;"></span>
-                        </p>
-                    </td>
-                </tr>
-            </table>
-            <br>
-            <p style="margin-bottom:1rem; margin-top:0;width: 100%;text-align: center;">
-                Si vous avez fait partie des signataires, vous pouvez accéder à la demande en cliquant sur le bouton ci-dessous
-                <br>
-                <a th:href="${url}" style="background-color:#0d6efd; color:#fff; text-decoration:none; -moz-user-select:none; -ms-user-select:none; -webkit-user-select:none; border-radius: 20px; display:inline-block; font-size:14px; font-weight:600; line-height:1.5; padding:15px; text-align:center; transition:color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out; user-select:none; vertical-align:middle; margin-right:auto; margin-left:auto" bgcolor="#0d6efd" align="center" valign="middle">Accéder au document</a>
-                <br>
-                Sinon, vous pouvez obtenir plus d’informations sur le document à cette adresse :
-                <a th:href="${urlControl}" style="box-sizing:border-box;text-decoration:none;display:inline-block;font-weight:400;text-align:center;vertical-align:middle;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;border-width:1px;border-style:solid;padding-top:.375rem;padding-bottom:.375rem;padding-right:.75rem;padding-left:.75rem;font-size:14px;line-height:1.5;border-radius:.25rem;transition:color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;color:#fff;background-color:#5e5e5e;border-color:#5e5e5e;" >Contrôler le document</a>
-            </p>
-            <p style="margin-bottom:1rem; margin-top:0;color:#565656;">
-                ⚠️ Veuillez vérifier que le lien ci-dessus correspond bien à l’adresse officielle avant de cliquer. En cas de doute, copiez-collez l’URL directement dans votre navigateur : <span th:text="${url}"></span>
-            </p>
-            <p style="margin-bottom:1rem; margin-top:0;color:#565656;">Pour en savoir plus sur l’outil esup-signature, <a href="https://code.gouv.fr/sill/detail?name=Esup-Signature" style="color:#0d6efd; text-decoration:underline;">cliquez ici</a></p>
-        </td>
-    </tr>
-    <tr>
-        <td style="width:100%; background-color:#6c757d;  padding:10px;  -ms-flex-pack:center; justify-content:center; text-align:center; font-size:14px;" bgcolor="#6c757d">
-            <span class="text-white text-center" style="text-align:center; color:#fff" align="center" th:text="#{application.footer}"></span>
-        </td>
-    </tr>
+<table width="100%" border="0" style="width: 100%; border: 0; font-family: Arial, Helvetica, sans-serif;" bgcolor="#eef2f7">
+	<tr>
+		<td width="100%" style="background: linear-gradient(135deg, #1f2937 0%, #374151 100%); border: 1px solid #1f2937; margin-bottom:0; padding:14px 18px; width: 100%;" bgcolor="#1f2937">
+			<table width="100%" style="border:0; width:100%;">
+				<tr>
+					<td style="vertical-align:middle; width:50%;">
+						<img height="30" src="cid:logo" style="height: 30px; border-style:none; vertical-align:middle;" valign="middle" align="left">
+					</td>
+					<td style="vertical-align:middle; width:50%; text-align:right;">
+						<img height="30" src="cid:logo-univ" style="height: 30px; border-style:none; vertical-align:middle;" valign="middle" align="right">
+					</td>
+				</tr>
+			</table>
+		</td>
+	</tr>
+	<tr>
+		<td style="width:100%; padding:28px 18px 34px; background-color:#eef2f7;">
+			<table style="width: 100%; max-width: 760px; margin: 0 auto; border:0;" cellspacing="0" cellpadding="0">
+				<tr>
+					<td>
+						<p style="margin:0 0 6px; text-align:center; color:#111827; font-size:18px; font-weight:700;">Un document signé vous est transmis</p>
+						<p style="margin:0 0 14px; text-align:center; color:#6b7280; font-size:13px;">Le document est joint en pièce jointe de ce mail.</p>
+					</td>
+				</tr>
+				<tr>
+					<td style="background:#ffffff; border:1px solid #dbe4f0; border-radius:18px; padding:24px; box-shadow:0 10px 28px rgba(15,23,42,.08);">
+						<table style="width:100%; border:0;" cellspacing="0" cellpadding="0">
+							<tr>
+								<td style="padding-bottom:16px; border-bottom:1px solid #e5e7eb;">
+									<a th:href="${url}" style="text-decoration:none; display:block;">
+										<table style="width:100%; border:0;" cellspacing="0" cellpadding="0">
+											<tr>
+												<td style="width:38px; vertical-align:top; padding-right:12px;">
+													<img height="24" src="cid:logo-file" style="display:block; border:0;">
+												</td>
+												<td style="vertical-align:top;">
+													<div style="font-size:15px; font-weight:700; color:#111827; line-height:1.35;" th:text="${signBook.subject}"></div>
+													<div style="font-size:12px; color:#6b7280; margin-top:4px;" th:text="${signBook.signRequests.get(0).originalDocuments.get(0).getFileName()}"></div>
+												</td>
+											</tr>
+										</table>
+									</a>
+								</td>
+							</tr>
+							<tr>
+								<td style="padding:18px 0 8px;">
+									<table style="width:100%; border:0;" cellspacing="0" cellpadding="0">
+										<tr>
+											<td style="padding:0 8px 12px 0; width:33.33%;">
+												<div style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:14px; padding:12px;">
+													<div style="font-size:11px; letter-spacing:.04em; text-transform:uppercase; color:#2563eb; font-weight:700;">Circuit</div>
+													<div style="font-size:14px; color:#0f172a; font-weight:700; margin-top:6px;" th:text="${signBook.workflowName}"></div>
+												</div>
+											</td>
+											<td style="padding:0 8px 12px 0; width:33.33%;">
+												<div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:14px; padding:12px;">
+													<div style="font-size:11px; letter-spacing:.04em; text-transform:uppercase; color:#15803d; font-weight:700;">Créé par</div>
+													<div style="font-size:14px; color:#0f172a; font-weight:700; margin-top:6px;" th:text="${signBook.createBy.firstname} + ' ' + ${signBook.createBy.name}"></div>
+												</div>
+											</td>
+											<td style="padding:0 0 12px 0; width:33.33%;">
+												<div style="background:#fff7ed; border:1px solid #fed7aa; border-radius:14px; padding:12px;">
+													<div style="font-size:11px; letter-spacing:.04em; text-transform:uppercase; color:#c2410c; font-weight:700;">Date</div>
+													<div style="font-size:14px; color:#0f172a; font-weight:700; margin-top:6px;" th:text="${#dates.format(signBook.createDate, 'dd/MM/yyyy HH:mm')}"></div>
+												</div>
+											</td>
+										</tr>
+									</table>
+								</td>
+							</tr>
+							<tr th:if="${organizationalUnitLdap != null}">
+								<td style="padding:0 0 14px; color:#6b7280; font-size:12px; border-top:1px solid #e5e7eb; padding-top:10px;">
+									Composante : <span th:text="${organizationalUnitLdap.description}"></span>
+								</td>
+							</tr>
+							<tr>
+								<td style="text-align:center; padding-top:4px;">
+									<p style="margin:0 0 10px; font-size:13px; color:#334155;">Si vous avez fait partie des signataires, vous pouvez accéder à la demande :</p>
+									<a th:href="${url}" style="background:#0f62fe; color:#fff; text-decoration:none; border-radius:999px; display:inline-block; font-size:14px; font-weight:700; line-height:1.5; padding:14px 22px; margin-right:8px;">Accéder au document</a>
+									<a th:href="${urlControl}" style="background:#475569; color:#fff; text-decoration:none; border-radius:999px; display:inline-block; font-size:14px; font-weight:700; line-height:1.5; padding:14px 22px;">Contrôler le document</a>
+								</td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+			</table>
+			<table style="width:100%; max-width:760px; margin:12px auto 0; border:0;" cellspacing="0" cellpadding="0">
+				<tr>
+					<td style="text-align:center; color:#475569; font-size:12px; line-height:1.6;">
+						En cas de doute, copiez-collez l'URL directement dans votre navigateur : <span th:text="${url}"></span>
+					</td>
+				</tr>
+			</table>
+			<p style="margin:14px auto 0; max-width:760px; text-align:center; color:#64748b; font-size:12px;">Pour en savoir plus sur l'outil esup-signature, <a href="https://code.gouv.fr/sill/detail?name=Esup-Signature" style="color:#0f62fe; text-decoration:underline;">cliquez ici</a></p>
+		</td>
+	</tr>
+	<tr>
+		<td style="width:100%; background-color:#1f2937; border-top: 0; padding:12px; -ms-flex-pack:center; justify-content:center; text-align:center; font-size:14px;" bgcolor="#1f2937">
+			<span style="text-align:center; color:#fff" align="center" th:text="#{application.footer}"></span>
+		</td>
+	</tr>
 </table>
 </body>
 </html>

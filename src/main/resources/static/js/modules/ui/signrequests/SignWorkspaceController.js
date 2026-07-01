@@ -493,10 +493,7 @@ export class SignWorkspaceController {
         // }
         this.pdfViewer.annotationLinkRemove();
         const {signNum, targetPageNumber} = this.resolveTargetSign(forceSignNumber);
-        const persistedSignImageNumber = await this.signPlacementController?.persistMobileSignaturePreviews?.();
-        const resolvedSignImageNumber = Number.isFinite(persistedSignImageNumber)
-            ? persistedSignImageNumber
-            : this.resolvePreferredSignImageNumber();
+        const resolvedSignImageNumber = this.resolvePreferredSignImageNumber();
         if (Number.isFinite(resolvedSignImageNumber)) {
             this.signImageNumber = resolvedSignImageNumber;
         }
@@ -947,5 +944,42 @@ export class SignWorkspaceController {
         }
     }
 
+    saveSignPositionsToWorkflow(workflowStepId) {
+        let srps = Array.from(this.signPlacementController.signRequestParamses.values());
+        let positions;
+        if (srps.length > 0) {
+            positions = srps.map(s => ({
+                signPageNumber: s.signPageNumber,
+                xPos: Math.round(s.xPos),
+                yPos: Math.round(s.yPos),
+                signWidth: Math.round(s.signWidth),
+                signHeight: Math.round(s.signHeight)
+            }));
+        } else {
+            const signSpaceDivs = $(".sign-space[data-es-pos-x]").toArray();
+            if (signSpaceDivs.length === 0) {
+                alert("Aucune signature positionnée. Veuillez d'abord placer les zones de signature sur le document.");
+                return;
+            }
+            positions = signSpaceDivs.map(div => ({
+                signPageNumber: parseInt($(div).attr("data-es-pos-page"), 10) || 1,
+                xPos: parseInt($(div).attr("data-es-pos-x"), 10) || 0,
+                yPos: parseInt($(div).attr("data-es-pos-y"), 10) || 0,
+                signWidth: parseInt($(div).attr("data-es-sign-width"), 10) || 200,
+                signHeight: parseInt($(div).attr("data-es-sign-height"), 10) || 100
+            }));
+        }
+        fetch('/admin/workflows/save-sign-positions/' + workflowStepId, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json', [this.csrf.headerName]: this.csrf.token},
+            body: JSON.stringify(positions)
+        }).then(r => r.text()).then(msg => {
+            alert("✓ " + msg + "\nCes positions seront utilisées pour les prochains documents de ce workflow.");
+        }).catch(() => {
+            alert("Erreur lors de la sauvegarde des positions.");
+        });
+    }
+
 }
+
 

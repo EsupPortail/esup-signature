@@ -1,7 +1,7 @@
 package org.esupportail.esupsignature.service.security.oauth;
 
 import jakarta.servlet.http.HttpServletRequest;
-import org.esupportail.esupsignature.service.security.OidcSecurityService;
+import org.esupportail.esupsignature.service.security.OidcOtpSecurityService;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizationRequestResolver;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestResolver;
@@ -19,9 +19,9 @@ public class CustomAuthorizationRequestResolver implements OAuth2AuthorizationRe
 
     private final OAuth2AuthorizationRequestResolver defaultAuthorizationRequestResolver;
 
-    private final List<OidcSecurityService> securityServices;
+    private final List<OidcOtpSecurityService> securityServices;
 
-    public CustomAuthorizationRequestResolver(ClientRegistrationRepository clientRegistrationRepository, List<OidcSecurityService> securityServices) {
+    public CustomAuthorizationRequestResolver(ClientRegistrationRepository clientRegistrationRepository, List<OidcOtpSecurityService> securityServices) {
         this.defaultAuthorizationRequestResolver = new DefaultOAuth2AuthorizationRequestResolver(clientRegistrationRepository, "/oauth2/authorization");
         this.securityServices = securityServices;
     }
@@ -49,7 +49,7 @@ public class CustomAuthorizationRequestResolver implements OAuth2AuthorizationRe
         Map<String, Object> attributes = new LinkedHashMap<>(authorizationRequest.getAttributes());
 
         String registrationId = authorizationRequest.getAttributes().get("registration_id").toString();
-        OidcSecurityService currentSecurityService = securityServices.stream()
+        OidcOtpSecurityService currentSecurityService = securityServices.stream()
                 .filter(s -> s.getCode().equals(registrationId))
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException("No security service configured for registration id " + registrationId));

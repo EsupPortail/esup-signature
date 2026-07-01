@@ -15,12 +15,10 @@ import org.esupportail.esupsignature.config.sms.SmsProperties;
 import org.esupportail.esupsignature.entity.enums.ExternalAuth;
 import org.esupportail.esupsignature.service.security.IndexEntryPoint;
 import org.esupportail.esupsignature.service.security.LogoutHandlerImpl;
-import org.esupportail.esupsignature.service.security.OidcSecurityService;
 import org.esupportail.esupsignature.service.security.OidcOtpSecurityService;
 import org.esupportail.esupsignature.service.security.SecurityService;
 import org.esupportail.esupsignature.service.security.cas.CasSecurityServiceImpl;
 import org.esupportail.esupsignature.service.security.oauth.CustomAuthorizationRequestResolver;
-import org.esupportail.esupsignature.service.security.oauth.OidcUserSecurityServiceResolver;
 import org.esupportail.esupsignature.service.security.oauth.OAuth2FailureHandler;
 import org.esupportail.esupsignature.service.security.oauth.OAuthAuthenticationSuccessHandler;
 import org.esupportail.esupsignature.service.security.oauth.ValidatingOAuth2UserService;
@@ -87,10 +85,12 @@ public class WebSecurityConfig {
 	private final SessionRegistryImpl sessionRegistry;
 	private final LogoutHandlerImpl logoutHandler;
 	private final CasJwtDecoder casJwtDecoder;
-	private final OidcUserSecurityServiceResolver oidcUserSecurityServiceResolver;
 	private DevShibRequestFilter devShibRequestFilter;
 
-	public WebSecurityConfig(GlobalProperties globalProperties, OAuthAuthenticationSuccessHandler oAuthAuthenticationSuccessHandler, WebSecurityProperties webSecurityProperties, @Autowired(required = false) ClientRegistrationRepository clientRegistrationRepository, List<SecurityService> securityServices, RegisterSessionAuthenticationStrategy sessionAuthenticationStrategy, SessionRegistryImpl sessionRegistry, LogoutHandlerImpl logoutHandler, @Autowired(required = false) CasJwtDecoder casJwtDecoder, OidcUserSecurityServiceResolver oidcUserSecurityServiceResolver) {
+	@Value("${spring.security.oauth2.client.registration.azuread.client-id:}")
+	private String azureClientId;
+
+	public WebSecurityConfig(GlobalProperties globalProperties, OAuthAuthenticationSuccessHandler oAuthAuthenticationSuccessHandler, WebSecurityProperties webSecurityProperties, @Autowired(required = false) ClientRegistrationRepository clientRegistrationRepository, List<SecurityService> securityServices, RegisterSessionAuthenticationStrategy sessionAuthenticationStrategy, SessionRegistryImpl sessionRegistry, LogoutHandlerImpl logoutHandler, @Autowired(required = false) CasJwtDecoder casJwtDecoder) {
         this.globalProperties = globalProperties;
         this.oAuthAuthenticationSuccessHandler = oAuthAuthenticationSuccessHandler;
         this.webSecurityProperties = webSecurityProperties;
@@ -100,7 +100,6 @@ public class WebSecurityConfig {
         this.sessionRegistry = sessionRegistry;
         this.logoutHandler = logoutHandler;
         this.casJwtDecoder = casJwtDecoder;
-        this.oidcUserSecurityServiceResolver = oidcUserSecurityServiceResolver;
     }
 
 	@Bean
@@ -164,7 +163,7 @@ public class WebSecurityConfig {
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 		List<SecurityService> activeSecurityServices = getActiveSecurityServices();
-		List<OidcSecurityService> activeOidcSecurityServices = getActiveOidcSecurityServices();
+		List<OidcOtpSecurityService> activeOidcSecurityServices = getActiveOidcSecurityServices();
 		http.sessionManagement(sessionManagement -> sessionManagement.sessionAuthenticationStrategy(sessionAuthenticationStrategy).maximumSessions(5).sessionRegistry(sessionRegistry));
 		if(devShibRequestFilter != null) {
 			http.addFilterBefore(devShibRequestFilter, OAuth2AuthorizationRequestRedirectFilter.class);
@@ -228,26 +227,22 @@ public class WebSecurityConfig {
 	}
 
 	private List<SecurityService> getActiveSecurityServices() {
-		List<SecurityService> activeSecurityServices = new ArrayList<>(securityServices.stream().filter(this::isActiveSecurityService).toList());
-		activeSecurityServices.addAll(oidcUserSecurityServiceResolver.getConfiguredServices());
-		return activeSecurityServices;
+		return securityServices.stream().filter(this::isActiveSecurityService).toList();
 	}
 
-	private List<OidcSecurityService> getActiveOidcSecurityServices() {
-		List<OidcSecurityService> oidcSecurityServices = new ArrayList<>(securityServices.stream()
-				.filter(OidcSecurityService.class::isInstance)
-				.map(OidcSecurityService.class::cast)
+	private List<OidcOtpSecurityService> getActiveOidcSecurityServices() {
+		return securityServices.stream()
+				.filter(OidcOtpSecurityService.class::isInstance)
+				.map(OidcOtpSecurityService.class::cast)
 				.filter(this::hasClientRegistration)
-				.toList());
-		oidcSecurityServices.addAll(oidcUserSecurityServiceResolver.getConfiguredServices());
-		return oidcSecurityServices;
+				.toList();
 	}
 
 	private boolean isActiveSecurityService(SecurityService securityService) {
-		return !(securityService instanceof OidcSecurityService) || hasClientRegistration((OidcSecurityService) securityService);
+		return !(securityService instanceof OidcOtpSecurityService) || hasClientRegistration((OidcOtpSecurityService) securityService);
 	}
 
-	private boolean hasClientRegistration(OidcSecurityService securityService) {
+	private boolean hasClientRegistration(OidcOtpSecurityService securityService) {
 		return clientRegistrationRepository != null && clientRegistrationRepository.findByRegistrationId(securityService.getCode()) != null;
 	}
 
@@ -326,6 +321,7 @@ public class WebSecurityConfig {
 		if(globalProperties.getSmsRequired()) externalAuths.remove(ExternalAuth.open);
 		if(activeOidcSecurityServices.stream().noneMatch(s -> s instanceof ProConnectSecurityServiceImpl)) externalAuths.remove(ExternalAuth.proconnect);
 		if(activeOidcSecurityServices.stream().noneMatch(s -> s instanceof FranceConnectSecurityServiceImpl)) externalAuths.remove(ExternalAuth.franceconnect);
+		if(!org.springframework.util.StringUtils.hasText(azureClientId)) externalAuths.remove(ExternalAuth.azuread);
 		if(BooleanUtils.isFalse(smsProperties.getEnableSms())) externalAuths.remove(ExternalAuth.sms);
 		return externalAuths;
 	}

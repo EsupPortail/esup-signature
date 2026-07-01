@@ -113,6 +113,9 @@
                                         <option value="all">Tout</option>
                                     </select>
                                 </th>
+                                <th th:each="groupName : ${tagGroups}" class="d-none d-xl-table-cell text-center" style="min-width: 90px;"
+                                    th:style="'min-width: 90px; border-bottom: 3px solid ' + ${tagGroupColors != null && tagGroupColors.containsKey(groupName) ? tagGroupColors.get(groupName) : '#6c757d'} + ';'"
+                                    th:text="${groupName}"></th>
                                 <th class="d-none d-xxl-table-cell text-center">
                                     <select id="workflowFilter" class="slim-select-filter sign-request-filter" data-es-check-cert="false" data-placeholder="Circuit" data-allow-deselect="true" multiple>
                                         <option data-placeholder="true"></option>

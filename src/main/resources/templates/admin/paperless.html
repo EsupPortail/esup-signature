@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head}"></head>
+<body>
+<header th:replace="~{fragments/nav :: nav}"></header>
+<main role="main">
+    <div class="es-wrapper">
+        <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full text-uppercase">
+            <ol id="breadcrumb-ol" class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/admin" class="d-flex align-items-center"><i class="fi fi-rr-chess-queen"></i> Administration</a></li>
+                <li class="breadcrumb-item active">Configuration Paperless-ngx</li>
+            </ol>
+        </nav>
+        <div id="content" class="es-content-full">
+            <div class="es-main-content d-flex">
+                <div class="es-sidebar d-flex">
+                    <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
+                </div>
+                <div class="flex-grow-1 h-100 overflow-auto" style="min-height: 0;">
+                    <div class="p-0 m-2">
+
+            <!-- Connexion Paperless -->
+            <div class="card col-lg-10 mx-auto mb-4">
+                <div class="card-header d-flex align-items-center justify-content-between">
+                    <div>
+                        <i class="fa-solid fa-cloud me-2 text-primary"></i>
+                        <strong>Configuration Paperless-ngx</strong>
+                    </div>
+                    <span th:if="${isConfigured}" class="badge bg-success"><i class="fa-solid fa-circle-check me-1"></i>Liaison active</span>
+                    <span th:unless="${isConfigured}" class="badge bg-secondary"><i class="fa-solid fa-circle-xmark me-1"></i>Non configuré</span>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-4">
+                        Configurez et testez la liaison avec le système d'archivage documentaire intelligent Paperless-ngx.
+                        Une fois configurée, les documents signés peuvent être archivés dans Paperless et les fichiers locaux supprimés.
+                    </p>
+
+                    <form action="/admin/paperless/save" method="post">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                        <div class="mb-3">
+                            <label for="paperlessUrl" class="form-label fw-bold">URL de l'instance <span class="text-danger">*</span></label>
+                            <input type="url" class="form-control" id="paperlessUrl" name="paperlessUrl"
+                                   th:value="${paperlessUrl}"
+                                   placeholder="https://paperless.votre-serveur.fr"
+                                   autocomplete="off">
+                            <div class="form-text">URL de base de votre instance Paperless-ngx, sans slash à la fin.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="paperlessToken" class="form-label fw-bold">Jeton d'API (Token) <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <input type="password" class="form-control" id="paperlessToken" name="paperlessToken"
+                                       th:value="${paperlessToken}"
+                                       placeholder="Token d'authentification Paperless"
+                                       autocomplete="new-password">
+                                <button class="btn btn-outline-secondary" type="button" id="toggleToken" title="Afficher/masquer le token">
+                                    <i class="fa-solid fa-eye" id="toggleTokenIcon"></i>
+                                </button>
+                            </div>
+                            <div class="form-text">
+                                Générez un token dans Paperless : <em>Profil &rarr; Jeton d'API</em>.
+                            </div>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fa-solid fa-save me-1"></i>Enregistrer la configuration
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary" id="testConnectionBtn" th:disabled="${!isConfigured}">
+                                <i class="fa-solid fa-plug me-1"></i>Tester la connexion
+                            </button>
+                        </div>
+                    </form>
+
+                    <div id="testResult" class="mt-3" style="display: none;">
+                        <div id="testResultAlert" class="alert"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Champs personnalisés de traçabilité -->
+            <div class="card col-lg-10 mx-auto mb-4">
+                <div class="card-header">
+                    <i class="fa-solid fa-tags me-2 text-warning"></i>
+                    <strong>Champs personnalisés Paperless (traçabilité)</strong>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-4">
+                        Créez ces champs dans Paperless (<em>Administration &rarr; Champs personnalisés</em>) puis renseignez ici leurs identifiants numériques.
+                        Laissez vide les champs non utilisés : ils seront simplement ignorés lors de l'archivage.
+                    </p>
+                    <form action="/admin/paperless/save-fields" method="post">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="paperlessSourceFieldId" class="form-label fw-bold">ID — Document source</label>
+                                <input type="number" class="form-control" id="paperlessSourceFieldId" name="paperlessSourceFieldId"
+                                       th:value="${paperlessSourceFieldId}" placeholder="ex: 1">
+                                <div class="form-text">Champ <code>integer</code> — ID Paperless du document original (avant signature). Positionné sur le document signé.</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="paperlessSignedFieldId" class="form-label fw-bold">ID — Document signé</label>
+                                <input type="number" class="form-control" id="paperlessSignedFieldId" name="paperlessSignedFieldId"
+                                       th:value="${paperlessSignedFieldId}" placeholder="ex: 2">
+                                <div class="form-text">Champ <code>integer</code> — ID Paperless du document signé. Positionné en retour sur le document source.</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="paperlessEsignRequestFieldId" class="form-label fw-bold">ID — Demande eSign</label>
+                                <input type="number" class="form-control" id="paperlessEsignRequestFieldId" name="paperlessEsignRequestFieldId"
+                                       th:value="${paperlessEsignRequestFieldId}" placeholder="ex: 3">
+                                <div class="form-text">Champ <code>integer</code> — ID de la demande de signature dans eSign.</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="paperlessSignatureDateFieldId" class="form-label fw-bold">ID — Date de signature</label>
+                                <input type="number" class="form-control" id="paperlessSignatureDateFieldId" name="paperlessSignatureDateFieldId"
+                                       th:value="${paperlessSignatureDateFieldId}" placeholder="ex: 4">
+                                <div class="form-text">Champ <code>date</code> — Date à laquelle le document a été signé.</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="paperlessSignataireFieldId" class="form-label fw-bold">ID — Signataire(s)</label>
+                                <input type="number" class="form-control" id="paperlessSignataireFieldId" name="paperlessSignataireFieldId"
+                                       th:value="${paperlessSignataireFieldId}" placeholder="ex: 5">
+                                <div class="form-text">Champ <code>string</code> — Email(s) des signataires, séparés par des virgules.</div>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fa-solid fa-save me-1"></i>Enregistrer les champs
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Documentation API -->
+            <div class="card col-lg-10 mx-auto mb-4">
+                <div class="card-header">
+                    <i class="fa-solid fa-circle-info me-2 text-info"></i>
+                    <strong>API d'archivage vers Paperless</strong>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">
+                        Une fois la demande de signature terminée, votre application métier appelle l'une des API suivantes :
+                    </p>
+                    <p class="fw-bold mt-3 mb-1">Archivage automatique (recommandé)</p>
+                    <div class="bg-light border rounded p-3 font-monospace small">
+                        <strong>POST</strong> /ws/signrequests/{id}/archive-to-paperless<br>
+                        <span class="text-muted">Header :</span> x-api-key: votre-token-api-esup
+                    </div>
+                    <p class="text-muted small mt-2">
+                        eSign récupère le PDF signé, le transfère dans Paperless avec les métadonnées du document source, puis supprime les fichiers locaux.
+                        Retourne <code>{ paperlessDocumentId, paperlessUrl, signRequestId }</code>.
+                    </p>
+                    <p class="fw-bold mt-3 mb-1">Liaison manuelle (si l'upload Paperless est géré côté métier)</p>
+                    <div class="bg-light border rounded p-3 font-monospace small">
+                        <strong>POST</strong> /ws/signrequests/{id}/clean-and-link?externalUrl={url-paperless}<br>
+                        <span class="text-muted">Header :</span> x-api-key: votre-token-api-esup
+                    </div>
+                    <ul class="mt-3 text-muted small">
+                        <li><strong>{id}</strong> : identifiant de la demande de signature (disponible dans le callback REST)</li>
+                        <li><strong>{url-paperless}</strong> : URL de téléchargement dans Paperless (ex: <code>https://paperless.exemple.fr/api/documents/42/download/</code>)</li>
+                        <li>Le token x-api-key est géré dans <a href="/admin/ws-access-token">Tokens API</a></li>
+                    </ul>
+                </div>
+            </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+<script th:inline="javascript">
+    document.getElementById('toggleToken').addEventListener('click', function() {
+        const input = document.getElementById('paperlessToken');
+        const icon = document.getElementById('toggleTokenIcon');
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.replace('fa-eye', 'fa-eye-slash');
+        } else {
+            input.type = 'password';
+            icon.classList.replace('fa-eye-slash', 'fa-eye');
+        }
+    });
+
+    document.getElementById('testConnectionBtn').addEventListener('click', function() {
+        const btn = this;
+        const resultDiv = document.getElementById('testResult');
+        const resultAlert = document.getElementById('testResultAlert');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Test en cours...';
+        resultDiv.style.display = 'none';
+
+        fetch('/admin/paperless/test', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': /*[[${_csrf.token}]]*/ ''
+            }
+        })
+        .then(r => r.json())
+        .then(data => {
+            resultDiv.style.display = 'block';
+            if (data.success) {
+                resultAlert.className = 'alert alert-success';
+                resultAlert.innerHTML = '<i class="fa-solid fa-circle-check me-2"></i>' + data.message;
+            } else {
+                resultAlert.className = 'alert alert-danger';
+                resultAlert.innerHTML = '<i class="fa-solid fa-circle-xmark me-2"></i>' + data.message;
+            }
+        })
+        .catch(e => {
+            resultDiv.style.display = 'block';
+            resultAlert.className = 'alert alert-danger';
+            resultAlert.innerHTML = '<i class="fa-solid fa-circle-xmark me-2"></i>Erreur réseau : ' + e.message;
+        })
+        .finally(() => {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-plug me-1"></i>Tester la connexion';
+        });
+    });
+</script>
+</body>
+</html>

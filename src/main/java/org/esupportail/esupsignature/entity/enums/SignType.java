@@ -30,9 +30,6 @@ public enum SignType {
      */
     @JsonCreator
     public static SignType fromString(String key) {
-        if ("hidden".equalsIgnoreCase(key) || "hiddenVisa".equalsIgnoreCase(key)) {
-            return hiddenVisa;
-        }
         if ("pdfImageStamp".equalsIgnoreCase(key) || "certSign".equalsIgnoreCase(key) || "nexuSign".equalsIgnoreCase(key)) {
             return signature;
         }

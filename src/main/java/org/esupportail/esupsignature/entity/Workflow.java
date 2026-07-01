@@ -72,6 +72,9 @@ public class Workflow {
     @ElementCollection(targetClass = String.class, fetch = FetchType.EAGER)
     private Set<String> managers = new HashSet<>();
 
+    @ElementCollection(targetClass = String.class, fetch = FetchType.EAGER)
+    private Set<String> authorizedCanCreateEmails = new HashSet<>();
+
     @ManyToMany(mappedBy = "workflows")
     private Set<WsAccessToken> wsAccessTokens = new HashSet<>();
 
@@ -100,8 +103,6 @@ public class Workflow {
 
     private Boolean disableUpdateByCreator = false;
 
-    private Boolean authorizeReplayByCreator = false;
-
     private Boolean sealAtEnd = false;
 
     private String signRequestParamsDetectionPattern;
@@ -127,6 +128,7 @@ public class Workflow {
     private String archiveTarget;
 
     @ManyToMany
+    @org.hibernate.annotations.BatchSize(size = 100)
     private List<Tag> tags = new ArrayList<>();
 
     private Boolean isFeatured = false;
@@ -293,6 +295,14 @@ public class Workflow {
         this.managers = managers;
     }
 
+    public Set<String> getAuthorizedCanCreateEmails() {
+        return authorizedCanCreateEmails;
+    }
+
+    public void setAuthorizedCanCreateEmails(Set<String> authorizedCanCreateEmails) {
+        this.authorizedCanCreateEmails = authorizedCanCreateEmails;
+    }
+
     public List<WorkflowStep> getWorkflowSteps() {
         return workflowSteps;
     }
@@ -399,14 +409,6 @@ public class Workflow {
 
     public void setDisableUpdateByCreator(Boolean disableUpdateByCreator) {
         this.disableUpdateByCreator = disableUpdateByCreator;
-    }
-
-    public Boolean getAuthorizeReplayByCreator() {
-        return Objects.requireNonNullElse(authorizeReplayByCreator, false);
-    }
-
-    public void setAuthorizeReplayByCreator(Boolean authorizeReplayByCreator) {
-        this.authorizeReplayByCreator = authorizeReplayByCreator;
     }
 
     public List<User> getViewers() {

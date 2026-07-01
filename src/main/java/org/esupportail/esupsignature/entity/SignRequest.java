@@ -15,6 +15,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Entity
+@org.hibernate.annotations.BatchSize(size = 100)
 @JsonIgnoreProperties(value = {"hibernateLazyInitializer", "handler"}, ignoreUnknown = true)
 @Table(indexes =  {
         @Index(name = "sign_request_create_by_create_date", columnList = "create_by_id, createDate"),
@@ -78,6 +79,10 @@ public class SignRequest {
 
     @ManyToOne(fetch = FetchType.LAZY)
     private SignRequest clonedFrom;
+
+    private Long paperlessSourceDocumentId;
+
+    private Long paperlessSignedDocumentId;
 
     @OneToMany(cascade = CascadeType.REMOVE)
     @OrderColumn
@@ -254,6 +259,22 @@ public class SignRequest {
 
     public void setClonedFrom(SignRequest clonedFrom) {
         this.clonedFrom = clonedFrom;
+    }
+
+    public Long getPaperlessSourceDocumentId() {
+        return paperlessSourceDocumentId;
+    }
+
+    public void setPaperlessSourceDocumentId(Long paperlessSourceDocumentId) {
+        this.paperlessSourceDocumentId = paperlessSourceDocumentId;
+    }
+
+    public Long getPaperlessSignedDocumentId() {
+        return paperlessSignedDocumentId;
+    }
+
+    public void setPaperlessSignedDocumentId(Long paperlessSignedDocumentId) {
+        this.paperlessSignedDocumentId = paperlessSignedDocumentId;
     }
 
     public List<Comment> getComments() {

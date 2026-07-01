@@ -1,14 +1,10 @@
-let userSignaturePadInstanceCounter = 0;
-
 export class UserSignaturePad {
 
     constructor(name, minWidth, maxWidth) {
         console.info("Starting user signature pad tool");
-        this.eventNamespace = ".userSignaturePad-" + (++userSignaturePadInstanceCounter);
         this.canvas = $('#' + name);
         this.signImageBase64 = $("#signImageBase64");
         this.signImageBase64Val = null;
-        this.resizeHandler = () => this.resizeCanvas();
         this.signaturePad = new SignaturePad(this.canvas[0], {
             minWidth: minWidth,
             maxWidth: maxWidth
@@ -16,7 +12,6 @@ export class UserSignaturePad {
         this.firstClear = true;
         this.cachedData = [];
         this.pendingDirtyState = false;
-        this.drawingLocked = false;
         this.initListeners();
         this.cachedWidth = null;
         this.cachedHeight = null;
@@ -24,47 +19,22 @@ export class UserSignaturePad {
     }
 
     initListeners() {
-        this.canvas.on('pointerdown' + this.eventNamespace, () => this.startSignatureInteraction());
-        this.canvas.on('pointerup' + this.eventNamespace, () => this.endSignatureInteraction());
-        this.canvas.on('pointerleave' + this.eventNamespace, () => this.cancelSignatureInteraction());
-        this.canvas.on('pointercancel' + this.eventNamespace, () => this.cancelSignatureInteraction());
-        $('#erase').on('click' + this.eventNamespace, () => this.clear());
+        this.canvas.on('pointerdown', () => this.startSignatureInteraction());
+        this.canvas.on('pointerup', () => this.endSignatureInteraction());
+        this.canvas.on('pointerleave', () => this.cancelSignatureInteraction());
+        this.canvas.on('pointercancel', () => this.cancelSignatureInteraction());
+        $('#erase').click(() => this.clear());
         // $('#validate').click(e => this.saveSignaturePad());
         // $('#reset').click(e => this.resetSignaturePad());
-        $(window).on("resize" + this.eventNamespace, this.resizeHandler);
+        window.addEventListener("resize", () => this.resizeCanvas());
         $(document).ready(() => this.resizeCanvas());
         // window.addEventListener("resize", e => this.resizeCanvas());
 
     }
 
     destroy() {
-        this.canvas.off(this.eventNamespace);
-        $('#erase').off(this.eventNamespace);
-        $(window).off(this.eventNamespace);
         this.signaturePad.off();
         this.signaturePad.clear();
-    }
-
-    setDrawingLocked(locked) {
-        if (this.drawingLocked === locked) {
-            return;
-        }
-
-        this.drawingLocked = locked;
-        if (locked) {
-            this.signaturePad.off();
-            this.canvas.css({
-                cursor: "move",
-                pointerEvents: "none"
-            });
-            return;
-        }
-
-        this.signaturePad.on();
-        this.canvas.css({
-            cursor: "crosshair",
-            pointerEvents: ""
-        });
     }
 
     resizeCanvas() {
@@ -99,17 +69,11 @@ export class UserSignaturePad {
     }
 
     startSignatureInteraction() {
-        if (this.drawingLocked) {
-            return;
-        }
         this.firstClearSignaturePad();
         this.markPendingDirtyState();
     }
 
     endSignatureInteraction() {
-        if (this.drawingLocked) {
-            return;
-        }
         this.checkSignatureUpdate();
     }
 
@@ -134,7 +98,6 @@ export class UserSignaturePad {
 
     clear() {
         console.info("clear sign pad");
-        this.setDrawingLocked(false);
         this.pendingDirtyState = false;
         this.signaturePad.clear();
         this.cachedData = [];
@@ -164,9 +127,6 @@ export class UserSignaturePad {
     }
 
     dispatchDirtyRefresh() {
-        if (this.signImageBase64 == null || typeof this.signImageBase64.get !== 'function') {
-            return;
-        }
         const signImageBase64Element = this.signImageBase64.get(0);
         if (signImageBase64Element) {
             signImageBase64Element.dispatchEvent(new Event('input', {bubbles: true}));
@@ -175,11 +135,8 @@ export class UserSignaturePad {
     }
 
     updateSignImage(value) {
-        this.signImageBase64Val = value || null;
-        if (this.signImageBase64 == null || typeof this.signImageBase64.val !== 'function') {
-            return;
-        }
         this.signImageBase64.val(value);
+        this.signImageBase64Val = value || null;
         this.dispatchDirtyRefresh();
     }
 
@@ -217,7 +174,6 @@ export class UserSignaturePad {
         this.setCanvasBackground(imageBase64);
         this.updateSignImage(imageBase64);
         this.hidePlaceholder();
-        this.setDrawingLocked(true);
     }
 
     getPlaceholderElements() {

@@ -18,6 +18,7 @@ import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
+import org.esupportail.esupsignature.service.TagService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -71,8 +72,9 @@ public class SignBookController {
     private final SignRequestService signRequestService;
     private final FormService formService;
     private final TemplateEngine templateEngine;
+    private final TagService tagService;
 
-    public SignBookController(RecipientService recipientService, SignWithService signWithService, LiveWorkflowStepService liveWorkflowStepService, PreAuthorizeService preAuthorizeService, WorkflowService workflowService, SignBookService signBookService, SignRequestService signRequestService, FormService formService, TemplateEngine templateEngine, CertificatService certificatService, GlobalProperties globalProperties) {
+    public SignBookController(RecipientService recipientService, SignWithService signWithService, LiveWorkflowStepService liveWorkflowStepService, PreAuthorizeService preAuthorizeService, WorkflowService workflowService, SignBookService signBookService, SignRequestService signRequestService, FormService formService, TemplateEngine templateEngine, CertificatService certificatService, GlobalProperties globalProperties, TagService tagService) {
         this.recipientService = recipientService;
         this.signWithService = signWithService;
         this.liveWorkflowStepService = liveWorkflowStepService;
@@ -84,6 +86,7 @@ public class SignBookController {
         this.templateEngine = templateEngine;
         this.certificatService = certificatService;
         this.globalProperties = globalProperties;
+        this.tagService = tagService;
     }
 
     @GetMapping
@@ -147,6 +150,8 @@ public class SignBookController {
         model.addAttribute("workflowNames", workflowNames);
         model.addAttribute("nbFollowByMe", signRequestService.nbFollowedByMe(userEppn));
         model.addAttribute("nbDraft", signRequestService.getNbDraftSignRequests(userEppn));
+        model.addAttribute("tagGroups", tagService.getAllGroupNames());
+        model.addAttribute("tagGroupColors", tagService.getAllGroupColors());
         return "user/signbooks/list";
     }
 
@@ -192,6 +197,8 @@ public class SignBookController {
         ctx.setVariables(model.asMap());
         CsrfToken token = (CsrfToken) httpServletRequest.getAttribute(CsrfToken.class.getName());
         ctx.setVariable("_csrf", token);
+        ctx.setVariable("tagGroups", tagService.getAllGroupNames());
+        ctx.setVariable("tagGroupColors", tagService.getAllGroupColors());
         return templateEngine.process("user/signbooks/includes/list-elem.html", ctx);
     }
 

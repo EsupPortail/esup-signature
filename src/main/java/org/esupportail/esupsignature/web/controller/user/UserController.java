@@ -27,7 +27,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.io.IOException;
 import java.time.DayOfWeek;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -68,15 +67,17 @@ public class UserController {
     }
 
     @GetMapping
-	public String updateForm(@ModelAttribute("authUserEppn") String authUserEppn, Model model, @RequestParam(value = "referer", required=false) String referer, HttpServletRequest request) throws IOException {
+	public String updateForm(@ModelAttribute("authUserEppn") String authUserEppn, Model model, @RequestParam(value = "referer", required=false) String referer, HttpServletRequest request) {
+		try {
+			org.springframework.security.core.Authentication auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+			userService.syncOidcAttributes(authUserEppn, auth);
+		} catch (Exception e) {}
 		model.addAttribute("emailAlertFrequencies", Arrays.asList(EmailAlertFrequency.values()));
 		model.addAttribute("daysOfWeek", Arrays.asList(DayOfWeek.values()));
 		if(referer != null && !"".equals(referer) && !"null".equals(referer)) {
 			model.addAttribute("referer", request.getHeader(HttpHeaders.REFERER));
 		}
-        model.addAttribute("activeMenu", "user");
-		model.addAttribute("paramMenu", "settings");
-		model.addAttribute("signImages", Collections.singletonList(userService.getFavoriteImage64(authUserEppn)));
+		model.addAttribute("activeMenu", "settings");
 		model.addAttribute("signatureUiConfig", SignatureUiConfigDto.fromGlobalProperties(globalProperties));
 		return "user/users/update";
     }
@@ -177,8 +178,7 @@ public class UserController {
 		List<FieldPropertie> fieldProperties = fieldPropertieService.getFieldProperties(authUserEppn);
 		model.addAttribute("fieldProperties", fieldProperties);
 		model.addAttribute("forms", formService.getFormsByUser(authUserEppn, authUserEppn));
-		model.addAttribute("paramMenu", "properties");
-        model.addAttribute("activeMenu", "user");
+		model.addAttribute("activeMenu", "properties");
 		return "user/users/properties";
 	}
 
@@ -240,8 +240,7 @@ public class UserController {
 	public String showReplace(@ModelAttribute("authUserEppn") String authUserEppn, Model model) {
 		List<SignRequest> signRequests = signBookService.getSignRequestsToReplace(authUserEppn);
 		model.addAttribute("signRequests", signRequests);
-		model.addAttribute("activeMenu", "shares");
-        model.addAttribute("paramMenu", "replace");
+		model.addAttribute("activeMenu", "replace");
 		return "user/users/replace";
 	}
 

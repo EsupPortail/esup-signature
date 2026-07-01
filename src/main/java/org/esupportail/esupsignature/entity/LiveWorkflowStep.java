@@ -14,6 +14,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Entity
+@org.hibernate.annotations.BatchSize(size = 100)
 @JsonIgnoreProperties(value = {"hibernateLazyInitializer", "handler"}, ignoreUnknown = true)
 public class LiveWorkflowStep {
 
@@ -26,6 +27,7 @@ public class LiveWorkflowStep {
     @JoinTable(
             indexes = @Index(name = "idx_recipients_live_workflow_step_id", columnList = "live_workflow_step_id")
     )
+    @org.hibernate.annotations.BatchSize(size = 100)
     private List<Recipient> recipients = new ArrayList<>();
 
     private String description;
@@ -62,6 +64,7 @@ public class LiveWorkflowStep {
     private Boolean convertToPDFA = true;
 
     @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.DETACH)
+    @org.hibernate.annotations.BatchSize(size = 100)
     private List<SignRequestParams> signRequestParams = new ArrayList<>();
 
     @ManyToOne

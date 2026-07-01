@@ -42,7 +42,7 @@
         <div class="alert p-3 m-0 bg-success-subtle d-lg-flex d-none align-items-center h-100" style="pointer-events: none;" th:if="${isCompletedRequest}">
             <i class="fi fi-rr-flag"></i> Vous avez signé ce document
         </div>
-        <a class="ms-1 d-flex justify-content-center btn btn-success p-3 d-flex h-100" th:if="${isCompletedRequest}" tabindex="1" th:href="'/ws-secure/global/get-last-file/' + ${signRequestLight.id}" target="_blank">
+        <a class="ms-1 d-flex justify-content-center btn btn-success p-3 d-flex h-100" th:if="${isCompletedRequest}" tabindex="1" th:href="'/ws-secure/global/get-last-file/' + ${signRequestLight.id}" target="_blank" title="Télécharger le document signé">
             <i class="fi fi-rr-download " style="margin-top: 0"></i> Télécharger le document signé
         </a>
         <a class="ms-1 d-flex justify-content-center btn btn-outline-success p-3 h-100"
@@ -63,13 +63,8 @@
                     <div class="step-horizontal-v2-content">
                         <div class="text-xs font-bold d-flex align-items-center gap-1">
                             <div class="d-flex flex-nowrap" style="flex: 1 1 0;">
-                                <button tabindex="3" id="addSignButton2" role="button" class="btn p-3 btn-success pulse-success" aria-label="Insérer une signature">
-                                    <i class="fi fi-rr-file-signature"></i>
-                                    <span class="es-add-sign-button-label">Insérer une signature</span>
-                                    <span id="addSignButton2Count" class="es-add-sign-button-count badge rounded-pill text-bg-light border border-success-subtle d-none" aria-live="polite" aria-atomic="true">
-                                        <span class="es-add-sign-count">0</span>
-                                        <span class="visually-hidden">signature en place</span>
-                                    </span>
+                                <button tabindex="3" id="addSignButton2" role="button" class="btn p-3 btn-success pulse-success">
+                                    <i class="fi fi-rr-file-signature"></i> Insérer une signature
                                 </button>
                             </div>
                         </div>

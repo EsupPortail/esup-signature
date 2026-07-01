@@ -25,7 +25,6 @@ global:
     disable-cert-storage: false
     bouncycastel-max-mr-tests: 0
     enable-help: false
-    auto-upgrade: false
 
     #tomcat:
     #    ajp:

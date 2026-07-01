@@ -3,6 +3,7 @@ package org.esupportail.esupsignature.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
+import org.esupportail.esupsignature.entity.Tag;
 import org.esupportail.esupsignature.entity.enums.ArchiveStatus;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -11,6 +12,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Entity
+@org.hibernate.annotations.BatchSize(size = 100)
 @JsonIgnoreProperties(value = {"hibernateLazyInitializer", "handler"}, ignoreUnknown = true)
 @Table(indexes =  {
         @Index(name = "sign_book_create_by", columnList = "create_by_id"),
@@ -71,6 +73,7 @@ public class SignBook {
     @JsonIgnore
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     @OrderColumn
+    @org.hibernate.annotations.BatchSize(size = 100)
     private List<SignRequest> signRequests = new ArrayList<>();
 
     @JsonIgnore
@@ -86,19 +89,30 @@ public class SignBook {
     transient Boolean displayNotif;
 
     @ManyToMany
+    @org.hibernate.annotations.BatchSize(size = 100)
     private Set<User> viewers = new HashSet<>();
 
     @ManyToMany
     @JoinTable(
             indexes = @Index(name = "idx_team_sign_book_id", columnList = "sign_book_id")
     )
+    @org.hibernate.annotations.BatchSize(size = 100)
     private Set<User> team = new HashSet<>();
 
     @ManyToMany
     @JoinTable(
             indexes = @Index(name = "idx_hided_by_sign_book_id", columnList = "sign_book_id")
     )
+    @org.hibernate.annotations.BatchSize(size = 100)
     private Set<User> hidedBy = new HashSet<>();
+
+    @ManyToMany
+    @JoinTable(
+            name = "sign_book_tags",
+            indexes = @Index(name = "idx_sign_book_tags_sb_id", columnList = "sign_book_id")
+    )
+    @org.hibernate.annotations.BatchSize(size = 100)
+    private List<Tag> tags = new ArrayList<>();
 
     private Boolean forceAllDocsSign = false;
 
@@ -309,6 +323,14 @@ public class SignBook {
 
     public void setLastOtp(String lastOtp) {
         this.lastOtp = lastOtp;
+    }
+
+    public List<Tag> getTags() {
+        return tags;
+    }
+
+    public void setTags(List<Tag> tags) {
+        this.tags = tags;
     }
 
     public List<Comment> getPostits() {

@@ -7,14 +7,17 @@ import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignLevel;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
+import org.esupportail.esupsignature.repository.SignRequestParamsRepository;
 import org.esupportail.esupsignature.repository.WorkflowRepository;
 import org.esupportail.esupsignature.repository.WorkflowStepRepository;
 import org.esupportail.esupsignature.service.interfaces.listsearch.UserListService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 @Service
@@ -28,6 +31,9 @@ public class WorkflowStepService {
     private final CertificatService certificatService;
     private final WorkflowRepository workflowRepository;
     private final UserListService userListService;
+
+    @Resource
+    private SignRequestParamsRepository signRequestParamsRepository;
 
     public WorkflowStepService(WorkflowStepRepository workflowStepRepository, UserService userService, UserPropertieService userPropertieService, FieldService fieldService, LiveWorkflowStepService liveWorkflowStepService, CertificatService certificatService, WorkflowRepository workflowRepository, UserListService userListService) {
         this.workflowStepRepository = workflowStepRepository;
@@ -247,6 +253,24 @@ public class WorkflowStepService {
         for(WorkflowStep workflowStep : workflowStepRepository.findAll()) {
             workflowStep.getUsers().removeIf(user1 -> user1.equals(user));
         }
+    }
+
+    @Transactional
+    public void saveSignPositions(Long workflowStepId, List<Map<String, Integer>> positions) {
+        WorkflowStep workflowStep = getById(workflowStepId);
+        List<SignRequestParams> oldParams = new ArrayList<>(workflowStep.getSignRequestParams());
+        workflowStep.getSignRequestParams().clear();
+        for (Map<String, Integer> pos : positions) {
+            SignRequestParams params = new SignRequestParams();
+            params.setSignPageNumber(pos.getOrDefault("signPageNumber", 1));
+            params.setxPos(pos.getOrDefault("xPos", 0));
+            params.setyPos(pos.getOrDefault("yPos", 0));
+            params.setSignWidth(pos.getOrDefault("signWidth", 200));
+            params.setSignHeight(pos.getOrDefault("signHeight", 100));
+            signRequestParamsRepository.save(params);
+            workflowStep.getSignRequestParams().add(params);
+        }
+        signRequestParamsRepository.deleteAll(oldParams);
     }
 
 }

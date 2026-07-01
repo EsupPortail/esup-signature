@@ -36,6 +36,7 @@ public class DefaultPreFill implements PreFill {
 		types.put("default", Arrays.asList("system"));
 		types.put("ldap", Arrays.asList("person", "organizationalUnit"));
 		types.put("rest", Arrays.asList("data"));
+		types.put("azuread", Arrays.asList("claims"));
 		return types;
 	}
 
@@ -64,6 +65,11 @@ public class DefaultPreFill implements PreFill {
 		Map<String, Object> ldapValues = new HashMap<>();
 		if(extLdapValue != null) {
 			 ldapValues = extLdapValue.initValues(user, signRequest);
+		}
+		ExtValue extAzureAdValue = extValueService.getExtValueServiceByName("azuread");
+		Map<String, Object> azureAdValues = new HashMap<>();
+		if(extAzureAdValue != null) {
+			azureAdValues = extAzureAdValue.initValues(user, signRequest);
 		}
 		for(Field field : fields) {
 			if(field.getExtValueServiceName() != null && !field.getExtValueServiceName().isEmpty()) {
@@ -103,6 +109,10 @@ public class DefaultPreFill implements PreFill {
 				} else if(field.getExtValueServiceName().equals("rest")) {
 					if(restValues.containsKey(field.getExtValueReturn())) {
 						field.setDefaultValue(restValues.get(field.getExtValueReturn()).toString());
+					}
+				} else if(field.getExtValueServiceName().equals("azuread")) {
+					if(azureAdValues.containsKey(field.getExtValueReturn())) {
+						field.setDefaultValue(azureAdValues.get(field.getExtValueReturn()).toString());
 					}
 				}
 			}

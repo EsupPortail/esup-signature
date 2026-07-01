@@ -402,9 +402,6 @@ public class GlobalProperties {
      */
     private Boolean enableHelp = true;
 
-    /**
-     * Activation du transfert de signature
-     */
     private Boolean enableTransfertForUsers = true;
 
     /*
@@ -428,7 +425,7 @@ public class GlobalProperties {
     private Boolean disablePdfFontAlert = false;
 
     /** Taille de police par défaut pour le texte des signatures */
-    private Integer defaultFontSize = 14;
+    private Integer defaultFontSize = 12;
 
 
     public String newVersion;

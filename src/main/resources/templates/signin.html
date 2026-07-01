@@ -19,6 +19,38 @@
                                 max-width: 500px;
                                 height: auto;
                             }
+                            .provider-btn {
+                                border-radius: 12px;
+                                border: 0;
+                                background: linear-gradient(90deg, #2563eb, #4f46e5);
+                                color: #fff;
+                                font-weight: 600;
+                                width: 100%;
+                                padding: 0.72rem 0.9rem;
+                                margin-bottom: 10px;
+                                transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+                            }
+                            .provider-btn:hover {
+                                transform: translateY(-1px);
+                                box-shadow: 0 10px 18px rgba(37, 99, 235, 0.25);
+                                background: linear-gradient(90deg, #1d4ed8, #4338ca);
+                                color: #fff;
+                            }
+                            .local-accordion .accordion-item {
+                                border: 1px solid #e5e7eb;
+                                border-radius: 12px;
+                                overflow: hidden;
+                                background: #fff;
+                            }
+                            .local-accordion .accordion-button {
+                                background: #f8fafc;
+                                font-weight: 600;
+                            }
+                            .local-accordion .accordion-button:not(.collapsed) {
+                                color: #0f172a;
+                                background: #eef2ff;
+                                box-shadow: none;
+                            }
                         </style>
                         <div class="w-100 p-2">
                             <svg id="logo2" viewBox="0 0 994.5744 246.00069"
@@ -309,21 +341,41 @@
                         </form>
 
                         <div th:class="${globalProperties.enableCaptcha} ? 'd-none' : ''" id="loginBlock">
-                            <div class="signin-login-list">
-                                <th:block th:each="securityConfig : ${securityServices}">
-                                    <button th:if="${securityConfig.title != 'FranceConnect'}"
-                                            type="button"
-                                            th:data-url="${securityConfig.loginUrl} + '?redirect=' + ${redirect}"
-                                            onclick="location.href=this.getAttribute('data-url')"
-                                            class="es-auth-button"
-                                            th:text="${securityConfig.title}">
-                                    </button>
-                                </th:block>
+                            <th:block th:each="securityConfig : ${securityServices}">
+                                <button th:if="${securityConfig.title != 'FranceConnect'}"
+                                        type="button"
+                                        th:data-url="${securityConfig.loginUrl} + '?redirect=' + ${redirect}"
+                                        onclick="location.href=this.getAttribute('data-url')"
+                                        class="provider-btn"
+                                        th:text="'Se connecter avec ' + ${securityConfig.title}"></button>
+                            </th:block>
+
+                            <div class="accordion local-accordion mt-2" id="localAuthAccordion">
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="localAuthHeading">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#localAuthPanel" aria-expanded="false" aria-controls="localAuthPanel">
+                                            Connexion avec un compte local
+                                        </button>
+                                    </h2>
+                                    <div id="localAuthPanel" class="accordion-collapse collapse" aria-labelledby="localAuthHeading" data-bs-parent="#localAuthAccordion">
+                                        <div class="accordion-body">
+                                            <form method="post" th:action="@{/login}">
+                                                <div class="mb-2">
+                                                    <label class="form-label" for="username">Identifiant</label>
+                                                    <input class="form-control" id="username" type="text" name="username" autocomplete="username" placeholder="Votre identifiant">
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label" for="password">Mot de passe</label>
+                                                    <input class="form-control" id="password" type="password" name="password" autocomplete="current-password" placeholder="Votre mot de passe">
+                                                </div>
+                                                <button type="submit" class="provider-btn mb-0">Se connecter</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
-                            <div class="es-auth-panel es-auth-panel--primary" th:if="${!securityServices.isEmpty() && securityServices.size() > 1}">
-                                <p>Sélectionnez la méthode adaptée à votre profil pour poursuivre la connexion.</p>
-                            </div>
+                            <p class="text-muted text-center mt-3" style="font-size: 0.85rem;">© <span th:text="${#dates.year(#dates.createNow())}"></span> Esup-Signature</p>
                         </div>
                     </div>
                 </div>

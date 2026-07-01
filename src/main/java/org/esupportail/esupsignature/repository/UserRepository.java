@@ -48,4 +48,6 @@ public interface UserRepository extends CrudRepository<User, Long>  {
     User findByPhone(String phone);
 
     List<User> findAllByUserType(UserType userType);
+    @Query("select u from User u where upper(u.firstname) like :firstname escape '\\'")
+    List<User> findByFirstnameStartingWithIgnoreCase(String firstname);
 }

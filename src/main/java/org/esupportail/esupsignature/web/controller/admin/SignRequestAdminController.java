@@ -13,6 +13,10 @@ import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.repository.DocumentRepository;
 import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.service.SignBookService;
+import org.esupportail.esupsignature.service.SignRequestService;
+import org.esupportail.esupsignature.service.utils.sign.SignService;
+import org.esupportail.esupsignature.service.utils.WebUtilsService;
+import org.esupportail.esupsignature.entity.SignRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -32,6 +36,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 @RequestMapping("/admin/signrequests")
 @Controller
@@ -55,13 +60,17 @@ public class SignRequestAdminController {
 	private final DocumentRepository documentRepository;
 	private final SignBookService signBookService;
 	private final UiFetchService uiFetchService;
+	private final SignRequestService signRequestService;
+	private final WebUtilsService webUtilsService;
 
-	public SignRequestAdminController(SignBookRepository signBookRepository, DocumentRepository documentRepository, SignBookService signBookService, UiFetchService uiFetchService, UiFetchSignRequestService uiFetchSignRequestService) {
+	public SignRequestAdminController(SignBookRepository signBookRepository, DocumentRepository documentRepository, SignBookService signBookService, UiFetchService uiFetchService, UiFetchSignRequestService uiFetchSignRequestService, SignRequestService signRequestService, WebUtilsService webUtilsService) {
 		this.signBookRepository = signBookRepository;
 		this.documentRepository = documentRepository;
 		this.signBookService = signBookService;
 		this.uiFetchService = uiFetchService;
 		this.uiFetchSignRequestService = uiFetchSignRequestService;
+		this.signRequestService = signRequestService;
+		this.webUtilsService = webUtilsService;
 	}
 
 	@GetMapping
@@ -79,7 +88,7 @@ public class SignRequestAdminController {
 		model.addAttribute("signBookId", signBookId);
 		model.addAttribute("signBooks", signBooks);
 		model.addAttribute("statusFilter", statusFilter);
-		model.addAttribute("statuses", SignRequestStatus.activeValues());
+		model.addAttribute("statuses", SignRequestStatus.values());
 		return "admin/signbooks/list";
 	}
 
@@ -124,6 +133,30 @@ public class SignRequestAdminController {
 			redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "Le document ne peut pas être supprimé définitivement"));
 		}
 		return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
+	}
+
+	@GetMapping(value = "/get-last-file/{id}")
+	@org.springframework.transaction.annotation.Transactional
+	public void getLastFile(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletResponse httpServletResponse) {
+		List<Document> documents = signRequestService.getToSignDocuments(id);
+		try {
+			if(documents.size() > 1) {
+				httpServletResponse.sendRedirect("/user/signrequests/" + id);
+			} else if (documents.size() == 1) {
+				Document document = documents.get(0);
+				webUtilsService.copyFileStreamToHttpResponse(document.getFileName(), document.getContentType(), "attachment", document.getInputStream(), httpServletResponse);
+			} else {
+				SignRequest signRequest = signRequestService.getById(id);
+				if (signRequest != null && signRequest.getStatus().equals(SignRequestStatus.exported)) {
+					org.esupportail.esupsignature.service.interfaces.fs.FsFile fsFile = signRequestService.getLastSignedFsFile(signRequest);
+					webUtilsService.copyFileStreamToHttpResponse(fsFile.getName(), fsFile.getContentType(), "attachment", fsFile.getInputStream(), httpServletResponse);
+				} else {
+					httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "Aucun fichier disponible.");
+				}
+			}
+		} catch (Exception e) {
+			logger.error("get file error", e);
+		}
 	}
 
 }

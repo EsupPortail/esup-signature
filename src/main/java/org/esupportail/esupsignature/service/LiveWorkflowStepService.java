@@ -75,10 +75,10 @@ public class LiveWorkflowStepService {
         liveWorkflowStep.setMaxSignLevel(step.getMaxSignLevel());
         liveWorkflowStep.setSealVisa(step.getSealVisa());
         liveWorkflowStep.setConvertToPDFA(step.getConvertToPDFA());
-//        if(!step.getSignRequestParams().isEmpty()) {
-//            liveWorkflowStep.getSignRequestParams().clear();
-//            liveWorkflowStep.getSignRequestParams().addAll()
-//        }
+        if (workflowStep != null && !workflowStep.getSignRequestParams().isEmpty()) {
+            liveWorkflowStep.getSignRequestParams().clear();
+            liveWorkflowStep.getSignRequestParams().addAll(workflowStep.getSignRequestParams());
+        }
         if(step.getSignType() == null) {
             SignLevel minLevel = SignLevel.simple;
             if(signRequestService.isSigned(signBook, null)) {

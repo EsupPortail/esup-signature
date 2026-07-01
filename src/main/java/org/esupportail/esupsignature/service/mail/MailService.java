@@ -5,6 +5,7 @@ import jakarta.mail.Message;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.util.ByteArrayDataSource;
+import jakarta.transaction.Transactional;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
@@ -16,6 +17,7 @@ import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.exception.EsupSignatureMailException;
+import org.esupportail.esupsignature.repository.WorkflowRepository;
 import org.esupportail.esupsignature.service.ReportService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.UserShareService;
@@ -24,6 +26,7 @@ import org.esupportail.esupsignature.service.ldap.entry.PersonLdap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.MessageSource;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.ClassPathResource;
@@ -46,9 +49,70 @@ import java.util.concurrent.TimeUnit;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 @Service
+@EnableConfigurationProperties(GlobalProperties.class)
 public class MailService {
 
     private static final Logger logger = LoggerFactory.getLogger(MailService.class);
+
+    public static class NotificationItem {
+        private final Long signRequestId;
+        private final String title;
+        private final String application;
+        private final String type;
+        private final String location;
+        private final String createdBy;
+        private final String createdAt;
+        private final String url;
+        private final List<Tag> tags;
+
+        public NotificationItem(Long signRequestId, String title, String application, String type, String location, String createdBy, String createdAt, String url, List<Tag> tags) {
+            this.signRequestId = signRequestId;
+            this.title = title;
+            this.application = application;
+            this.type = type;
+            this.location = location;
+            this.createdBy = createdBy;
+            this.createdAt = createdAt;
+            this.url = url;
+            this.tags = tags;
+        }
+
+        public Long getSignRequestId() {
+            return signRequestId;
+        }
+
+        public String getTitle() {
+            return title;
+        }
+
+        public String getApplication() {
+            return application;
+        }
+
+        public String getType() {
+            return type;
+        }
+
+        public String getLocation() {
+            return location;
+        }
+
+        public String getCreatedBy() {
+            return createdBy;
+        }
+
+        public String getCreatedAt() {
+            return createdAt;
+        }
+
+        public String getUrl() {
+            return url;
+        }
+
+        public List<Tag> getTags() {
+            return tags;
+        }
+    }
 
     private final GlobalProperties globalProperties;
     private final MailConfig mailConfig;
@@ -58,6 +122,7 @@ public class MailService {
     private final MessageSource messageSource;
     private final UserShareService userShareService;
     private final ReportService reportService;
+    private final WorkflowRepository workflowRepository;
 
     //    @Autowired(required = false)
 //    public void setMailSender(JavaMailSenderImpl mailSender) {
@@ -67,7 +132,7 @@ public class MailService {
 //    @Resource
 //    private CertificatService certificatService;
 
-    public MailService(GlobalProperties globalProperties, @Autowired(required = false) MailConfig mailConfig, @Autowired(required = false) JavaMailSenderImpl mailSender, TemplateEngine templateEngine, UserService userService, MessageSource messageSource, UserShareService userShareService, ReportService reportService) {
+    public MailService(GlobalProperties globalProperties, @Autowired(required = false) MailConfig mailConfig, @Autowired(required = false) JavaMailSenderImpl mailSender, TemplateEngine templateEngine, UserService userService, MessageSource messageSource, UserShareService userShareService, ReportService reportService, WorkflowRepository workflowRepository) {
         this.globalProperties = globalProperties;
         this.mailConfig = mailConfig;
         this.mailSender = mailSender;
@@ -76,8 +141,10 @@ public class MailService {
         this.messageSource = messageSource;
         this.userShareService = userShareService;
         this.reportService = reportService;
+        this.workflowRepository = workflowRepository;
     }
 
+    @Transactional
     public void sendEmailAlerts(SignBook signBook, String userEppn, Data data, boolean forceSend) throws EsupSignatureMailException {
         for (Recipient recipient : signBook.getLiveWorkflow().getCurrentStep().getRecipients()) {
             User recipientUser = recipient.getUser();
@@ -227,7 +294,7 @@ public class MailService {
             mimeMessage.setSubject("Une demande de signature que vous suivez est terminée");
             if (!signBook.getTeam().isEmpty()) {
                 mimeMessage.setTo(signBook.getTeam().stream().filter(userTo -> !userTo.getUserType().equals(UserType.external) && (toMails == null || !toMails.contains(userTo.getEmail())) && !userTo.getUserType().equals(UserType.system) && !userTo.getEppn().equals(userEppn)).map(User::getEmail).toArray(String[]::new));
-                logger.debug("send email completes cc for " + user.getEppn());
+                logger.info("send email completes cc for " + user.getEppn());
                 sendMail(mimeMessage, signBook.getLiveWorkflow().getWorkflow());
             } else {
                 logger.debug("no viewers to send mail");
@@ -350,7 +417,7 @@ public class MailService {
             String htmlContent = templateEngine.process("mail/email-cc.html", ctx);
             mimeMessage.setText(htmlContent, true);
             User creator = signBook.getCreateBy();
-            mimeMessage.setSubject("Vous êtes en copie d'une demande de signature créée par " + creator.getFirstname() + " " + creator.getName());
+            mimeMessage.setSubject("Vous êtes en copie d'une demande de signature crée par " + creator.getFirstname() + " " + creator.getName());
             mimeMessage.setTo(recipientsCCEmails.toArray(String[]::new));
             logger.info("send email cc for " + String.join(";", recipientsCCEmails));
             sendMail(mimeMessage, signBook.getLiveWorkflow().getWorkflow());
@@ -363,6 +430,7 @@ public class MailService {
 
     }
 
+    @Transactional
     public boolean sendSignRequestSummaryAlert(List<String> recipientsEmails, List<SignRequest> signRequests) throws EsupSignatureMailException {
         if (!checkMailSender()) {
             return false;
@@ -371,6 +439,7 @@ public class MailService {
         setTemplate(ctx, signRequests.get(0).getParentSignBook());
         ctx.setVariable("signRequests", signRequests);
         ctx.setVariable("rootUrl", globalProperties.getRootUrl());
+        ctx.setVariable("notificationItems", signRequests.stream().map(this::buildNotificationItem).toList());
         try {
             MimeMessageHelper mimeMessage = new MimeMessageHelper(getMailSender().createMimeMessage(), true, "UTF-8");
             String htmlContent = templateEngine.process("mail/email-alert-summary.html", ctx);
@@ -494,7 +563,8 @@ public class MailService {
 
     private void sendMail(MimeMessageHelper mimeMessageHelper, Workflow workflow, boolean addFileLogo) throws MessagingException, IOException {
         mimeMessageHelper.addInline("logo", resizeImage(new ClassPathResource("/static/images/logo.png", MailService.class).getInputStream(), 30));
-        mimeMessageHelper.addInline("logo-univ", resizeImage(new ClassPathResource("/static/images/logo-univ.png", MailService.class).getInputStream(), 30));
+        // Use the same institution logo for both placeholders to avoid legacy branding in emails.
+        mimeMessageHelper.addInline("logo-univ", resizeImage(new ClassPathResource("/static/images/logo.png", MailService.class).getInputStream(), 30));
         if (addFileLogo) {
             mimeMessageHelper.addInline("logo-file", new ClassPathResource("/static/images/fa-file.png", MailService.class));
         }
@@ -512,8 +582,8 @@ public class MailService {
                 if (workflow != null && org.springframework.util.StringUtils.hasText(workflow.getMailFrom())) {
                     replyToAddress = new InternetAddress(workflow.getMailFrom());
                 }
-                mimeMessageHelper.getMimeMessage().setFrom(replyToAddress);
                 mimeMessageHelper.getMimeMessage().setReplyTo(new Address[]{replyToAddress});
+                mimeMessageHelper.getMimeMessage().setFrom(mailConfig.getMailFrom());
                 if (org.springframework.util.StringUtils.hasText(globalProperties.getTestEmail())) {
                     tos = new ArrayList<>();
                     tos.add(new InternetAddress(globalProperties.getTestEmail()));
@@ -532,8 +602,14 @@ public class MailService {
 
     private void setTemplate(Context ctx, SignBook signBook) {
         ctx.setVariable("user", signBook.getCreateBy());
-        ctx.setVariable("url", globalProperties.getRootUrl() + "/user/signbooks/"+ signBook.getId());
-        ctx.setVariable("urlControl", globalProperties.getRootUrl() + "/public/control/" + signBook.getSignRequests().get(0).getToken());
+        if (!signBook.getSignRequests().isEmpty()) {
+            ctx.setVariable("url", globalProperties.getRootUrl() + "/user/signrequests/" + signBook.getSignRequests().get(0).getId());
+            ctx.setVariable("urlControl", globalProperties.getRootUrl() + "/public/control/" + signBook.getSignRequests().get(0).getToken());
+            ctx.setVariable("notificationItem", buildNotificationItem(signBook.getSignRequests().get(0)));
+        } else {
+            ctx.setVariable("url", globalProperties.getRootUrl() + "/user");
+            ctx.setVariable("urlControl", globalProperties.getRootUrl() + "/user");
+        }
         ctx.setVariable("signBook", signBook);
         ctx.setVariable("signRequests", signBook.getSignRequests());
         PersonLdap personLdap = userService.findPersonLdapByUser(signBook.getCreateBy());
@@ -645,5 +721,49 @@ public class MailService {
 //        }
 //        return message;
 //    }
+
+    private NotificationItem buildNotificationItem(SignRequest signRequest) {
+        SignBook signBook = signRequest.getParentSignBook();
+        String subject = signBook.getSubject();
+        String application = extractNotificationTag(subject, "APP");
+        String type = extractNotificationTag(subject, "TYPE");
+        String location = extractNotificationTag(subject, "CENTRE");
+        if ("-".equals(location)) {
+            location = extractNotificationTag(subject, "LIEU");
+        }
+        // Nettoyer le titre en retirant tous les tags [TAG:valeur] pour affichage propre
+        String cleanTitle = subject == null ? "" : subject.replaceAll("\\[[A-Z_]+:[^\\]]*\\]", "").trim();
+        String createdBy = signBook.getCreateBy().getFirstname() + " " + signBook.getCreateBy().getName();
+        String createdAt = new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format(signBook.getCreateDate());
+        String url = globalProperties.getRootUrl() + "/user/signrequests/" + signRequest.getId();
+
+        List<Tag> tags = new ArrayList<>(signBook.getTags());
+
+        // Fallback : si le SignBook n'a pas de tags (anciens enregistrements),
+        // on remonte les tags du Workflow associé via le LiveWorkflow.
+        // On re-fetche le Workflow avec ses tags pour éviter une LazyInitializationException
+        // si l'entité est détachée de la session Hibernate courante.
+        if (tags.isEmpty() && signBook.getLiveWorkflow() != null
+                && signBook.getLiveWorkflow().getWorkflow() != null) {
+            Long workflowId = signBook.getLiveWorkflow().getWorkflow().getId();
+            List<Workflow> workflowsWithTags = workflowRepository.findByIdInWithTags(Set.of(workflowId));
+            if (!workflowsWithTags.isEmpty()) {
+                tags.addAll(workflowsWithTags.get(0).getTags());
+            }
+        }
+
+        return new NotificationItem(signRequest.getId(), cleanTitle, application, type, location, createdBy, createdAt, url, tags);
+    }
+
+    private String extractNotificationTag(String subject, String tagName) {
+        if (!org.springframework.util.StringUtils.hasText(subject) || !org.springframework.util.StringUtils.hasText(tagName)) {
+            return "-";
+        }
+        java.util.regex.Matcher matcher = java.util.regex.Pattern.compile("\\[" + java.util.regex.Pattern.quote(tagName) + ":([^\\]]*)\\]").matcher(subject);
+        if (matcher.find() && org.springframework.util.StringUtils.hasText(matcher.group(1))) {
+            return matcher.group(1).trim();
+        }
+        return "-";
+    }
 
 }

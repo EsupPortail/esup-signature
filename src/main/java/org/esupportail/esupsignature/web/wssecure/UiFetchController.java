@@ -8,6 +8,7 @@ import org.esupportail.esupsignature.dto.ui.global.UiDataDto;
 import org.esupportail.esupsignature.dto.ui.global.UiHomeDto;
 import org.esupportail.esupsignature.dto.ui.global.UiUserLookupDto;
 import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
+import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.ui.UiFetchService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -37,9 +38,11 @@ import java.util.Map;
 public class UiFetchController {
 
     private final UiFetchService uiFetchService;
+    private final UserService userService;
 
-    public UiFetchController(UiFetchService uiFetchService) {
+    public UiFetchController(UiFetchService uiFetchService, UserService userService) {
         this.uiFetchService = uiFetchService;
+        this.userService = userService;
     }
 
     @GetMapping(value = "/ui-data", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -141,24 +144,20 @@ public class UiFetchController {
         return ResponseEntity.ok(uiFetchService.deleteSignature(userEppn, authUserEppn, id, signRequestId, httpSession));
     }
 
-    @PostMapping(value = "/profile/signatures/mobile", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<UserSignatureStateDto> saveMobileSignature(@ModelAttribute("userEppn") String userEppn,
-                                                                     @ModelAttribute("authUserEppn") String authUserEppn,
-                                                                     @RequestParam(value = "token") String token,
-                                                                     @RequestParam(value = "signImageBase64") String signImageBase64,
-                                                                     @RequestParam(value = "signRequestId", required = false) Long signRequestId,
-                                                                     HttpSession httpSession) throws IOException {
-        try {
-            return ResponseEntity.ok(uiFetchService.saveMobileSignature(userEppn, authUserEppn, token, signImageBase64, signRequestId, httpSession));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().build();
-        }
-    }
-
     @PostMapping(value = "/warnings/read")
     public ResponseEntity<Void> warningReaded(@ModelAttribute("authUserEppn") String authUserEppn) {
         uiFetchService.markWarningsRead(authUserEppn);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping(value = "/signatures/default-image-with-extra")
+    public ResponseEntity<Void> getDefaultImageWithExtra(@ModelAttribute("authUserEppn") String authUserEppn, HttpServletResponse response) throws IOException {
+        return getDocumentResponseEntity(response, userService.getDefaultImageWithExtra(authUserEppn).readAllBytes(), "default_with_extra.png", "image/png");
+    }
+
+    @GetMapping(value = "/signatures/default-image-with-extra-base64")
+    public String getDefaultImageWithExtraBase64(@ModelAttribute("authUserEppn") String authUserEppn) throws IOException {
+        return userService.getDefaultImageWithExtra64(authUserEppn);
     }
 
     private ResponseEntity<Void> getDocumentResponseEntity(HttpServletResponse response, byte[] bytes, String fileName, String contentType) throws IOException {
@@ -171,3 +170,4 @@ public class UiFetchController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 }
+

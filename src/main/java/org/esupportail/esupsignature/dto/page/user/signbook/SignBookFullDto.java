@@ -2,7 +2,10 @@ package org.esupportail.esupsignature.dto.page.user.signbook;
 
 import org.esupportail.esupsignature.dto.page.user.signrequest.ShowSignRequestDto;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.StringJoiner;
 
@@ -34,6 +37,7 @@ public class SignBookFullDto {
     private List<ShowSignRequestDto.SignBookViewerDto> viewers;
     private List<ShowSignRequestDto.StepDto> liveWorkflowSteps;
     private List<ShowSignRequestDto.TargetDto> liveWorkflowTargets;
+    private List<TagDto> tags;
 
     public SignBookFullDto() {
     }
@@ -49,7 +53,8 @@ public class SignBookFullDto {
                            boolean editable, Integer liveWorkflowCurrentStepNumber,
                            List<ShowSignRequestDto.SignBookViewerDto> viewers,
                            List<ShowSignRequestDto.StepDto> liveWorkflowSteps,
-                           List<ShowSignRequestDto.TargetDto> liveWorkflowTargets) {
+                           List<ShowSignRequestDto.TargetDto> liveWorkflowTargets,
+                           List<TagDto> tags) {
         this.id = id;
         this.subject = subject;
         this.description = description;
@@ -76,6 +81,7 @@ public class SignBookFullDto {
         this.viewers = viewers;
         this.liveWorkflowSteps = liveWorkflowSteps;
         this.liveWorkflowTargets = liveWorkflowTargets;
+        this.tags = tags;
     }
 
     public Long getId() { return id; }
@@ -130,6 +136,8 @@ public class SignBookFullDto {
     public void setLiveWorkflowSteps(List<ShowSignRequestDto.StepDto> liveWorkflowSteps) { this.liveWorkflowSteps = liveWorkflowSteps; }
     public List<ShowSignRequestDto.TargetDto> getLiveWorkflowTargets() { return liveWorkflowTargets; }
     public void setLiveWorkflowTargets(List<ShowSignRequestDto.TargetDto> liveWorkflowTargets) { this.liveWorkflowTargets = liveWorkflowTargets; }
+    public List<TagDto> getTags() { return tags; }
+    public void setTags(List<TagDto> tags) { this.tags = tags; }
 
     public Long id() { return id; }
     public String subject() { return subject; }
@@ -157,6 +165,7 @@ public class SignBookFullDto {
     public List<ShowSignRequestDto.SignBookViewerDto> viewers() { return viewers; }
     public List<ShowSignRequestDto.StepDto> liveWorkflowSteps() { return liveWorkflowSteps; }
     public List<ShowSignRequestDto.TargetDto> liveWorkflowTargets() { return liveWorkflowTargets; }
+    public List<TagDto> tags() { return tags; }
 
     public boolean isEmpty() {
         return primarySignRequest == null;
@@ -172,6 +181,65 @@ public class SignBookFullDto {
 
     public boolean hasParticipants() {
         return participantSteps != null && !participantSteps.isEmpty();
+    }
+
+    public List<TagDto> getApplicationTags() {
+        if (tags == null) return List.of();
+        Map<String, TagDto> uniqueRoots = new LinkedHashMap<>();
+        for (TagDto t : tags) {
+            String root = t.getRootName();
+            if (root != null && !uniqueRoots.containsKey(root)) {
+                uniqueRoots.put(root, new TagDto(null, root, t.getColor(), null, null, root));
+            }
+        }
+        return new ArrayList<>(uniqueRoots.values());
+    }
+
+    public List<TagDto> getTagsForGroup(String groupName) {
+        if (tags == null || groupName == null) return List.of();
+        List<TagDto> groupTags = new ArrayList<>();
+        for (TagDto t : tags) {
+            if (groupName.equalsIgnoreCase(t.getParentName())) {
+                groupTags.add(t);
+            }
+        }
+        return groupTags;
+    }
+
+    // -------------------------------------------------------------------
+    // Inner DTO : Tag
+    // -------------------------------------------------------------------
+    public static class TagDto {
+        private Long id;
+        private String name;
+        private String color;
+        private String groupColor;   // couleur du groupe parent (pour l'affichage en badge)
+        private String parentName;   // nom du parent direct (= groupe)
+        private String rootName;     // nom du tag racine (= thème/application)
+
+        public TagDto() {}
+
+        public TagDto(Long id, String name, String color, String groupColor, String parentName, String rootName) {
+            this.id = id;
+            this.name = name;
+            this.color = color;
+            this.groupColor = groupColor;
+            this.parentName = parentName;
+            this.rootName = rootName;
+        }
+
+        public Long getId() { return id; }
+        public void setId(Long id) { this.id = id; }
+        public String getName() { return name; }
+        public void setName(String name) { this.name = name; }
+        public String getColor() { return color; }
+        public void setColor(String color) { this.color = color; }
+        public String getGroupColor() { return groupColor; }
+        public void setGroupColor(String groupColor) { this.groupColor = groupColor; }
+        public String getParentName() { return parentName; }
+        public void setParentName(String parentName) { this.parentName = parentName; }
+        public String getRootName() { return rootName; }
+        public void setRootName(String rootName) { this.rootName = rootName; }
     }
 
     public ParticipantStepDto getCurrentParticipantStep() {
@@ -199,13 +267,15 @@ public class SignBookFullDto {
         private String rowTitle;
         private boolean canDownload;
         private boolean canDownloadAll;
+        private Long paperlessSignedDocumentId;
 
         public PrimarySignRequestDto() {
         }
 
         public PrimarySignRequestDto(Long id, String title, String status, String createDateLabel,
                                      boolean viewedByCurrentUser, boolean hasAttachments, boolean deleted,
-                                     String rowTitle, boolean canDownload, boolean canDownloadAll) {
+                                     String rowTitle, boolean canDownload, boolean canDownloadAll,
+                                     Long paperlessSignedDocumentId) {
             this.id = id;
             this.title = title;
             this.status = status;
@@ -216,6 +286,7 @@ public class SignBookFullDto {
             this.rowTitle = rowTitle;
             this.canDownload = canDownload;
             this.canDownloadAll = canDownloadAll;
+            this.paperlessSignedDocumentId = paperlessSignedDocumentId;
         }
 
         public Long getId() { return id; }
@@ -238,6 +309,8 @@ public class SignBookFullDto {
         public void setCanDownload(boolean canDownload) { this.canDownload = canDownload; }
         public boolean isCanDownloadAll() { return canDownloadAll; }
         public void setCanDownloadAll(boolean canDownloadAll) { this.canDownloadAll = canDownloadAll; }
+        public Long getPaperlessSignedDocumentId() { return paperlessSignedDocumentId; }
+        public void setPaperlessSignedDocumentId(Long paperlessSignedDocumentId) { this.paperlessSignedDocumentId = paperlessSignedDocumentId; }
 
         public Long id() { return id; }
         public String title() { return title; }

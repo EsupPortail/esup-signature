@@ -5,5 +5,6 @@ public enum UserType {
     shib,
     external,
     system,
-    group
+    group,
+    azuread
 }

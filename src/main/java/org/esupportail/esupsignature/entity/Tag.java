@@ -14,6 +14,8 @@ public class Tag {
 
     private String color;
 
+    private Integer displayOrder = 0;
+
     @ManyToOne
     private Tag parentTag;
 
@@ -48,6 +50,14 @@ public class Tag {
 
     public void setColor(String color) {
         this.color = color;
+    }
+
+    public Integer getDisplayOrder() {
+        return displayOrder != null ? displayOrder : 0;
+    }
+
+    public void setDisplayOrder(Integer displayOrder) {
+        this.displayOrder = displayOrder;
     }
 
     public Tag getParentTag() {

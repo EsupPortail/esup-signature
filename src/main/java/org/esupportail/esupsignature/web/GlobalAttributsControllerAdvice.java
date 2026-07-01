@@ -11,7 +11,6 @@ import org.esupportail.esupsignature.dto.ui.global.UiDataDto;
 import org.esupportail.esupsignature.dto.ui.global.UiGlobalPropertiesDto;
 import org.esupportail.esupsignature.dto.ui.global.UiCountersDto;
 import org.esupportail.esupsignature.entity.User;
-import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.entity.enums.SignLevel;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.entity.enums.UiParams;
@@ -71,6 +70,7 @@ public class GlobalAttributsControllerAdvice {
         model.addAttribute("currentUri", httpServletRequest.getRequestURI());
         model.addAttribute("favoriteWorkflowIds", authUserEppn != null ? userService.getFavoriteIds(authUserEppn, UiParams.favoriteWorkflows) : java.util.List.of());
         model.addAttribute("favoriteFormIds", authUserEppn != null ? userService.getFavoriteIds(authUserEppn, UiParams.favoriteForms) : java.util.List.of());
+        model.addAttribute("myUiParams", authUserEppn != null ? userService.getUiParams(authUserEppn) : java.util.Map.of());
         HttpSession httpSession = httpServletRequest.getSession();
         httpSession.setMaxInactiveInterval((int) sessionTimeout.toSeconds());
         if(userEppn != null) {
@@ -80,15 +80,16 @@ public class GlobalAttributsControllerAdvice {
                 return;
             }
             UiGlobalPropertiesDto myGlobalProperties = uiFetchService.buildUiGlobalProperties(userEppn);
-            UiCountersDto uiCounters = uiFetchService.buildUiCounters(userEppn, authUserEppn);
+            UiCountersDto uiCounters = getCachedUiCounters(httpSession, userEppn, authUserEppn);
             UiDataDto.UiConfigDto uiConfig = uiFetchService.buildUiConfig(userEppn, httpSession.getMaxInactiveInterval());
             model.addAttribute("user", user);
             model.addAttribute("authUser", userService.getByEppn(authUserEppn));
             model.addAttribute("keystoreFileName", user.getKeystoreFileName());
             model.addAttribute("userImagesIds", user.getSignImagesIds());
             model.addAttribute("suUsers", userShareService.getSuUsers(authUserEppn));
-            model.addAttribute("isOneSignShare", userShareService.isOneShareByType(userEppn, authUserEppn, ShareType.sign));
-            model.addAttribute("isOneReadShare", userShareService.isOneShareByType(userEppn, authUserEppn, ShareType.read));
+            // Réutilise les valeurs déjà calculées dans uiCounters au lieu de relancer 2 requêtes identiques.
+            model.addAttribute("isOneSignShare", uiCounters.isOneSignShare());
+            model.addAttribute("isOneReadShare", uiCounters.isOneReadShare());
             model.addAttribute("managedWorkflowsSize",  uiCounters.managedWorkflowsSize());
             model.addAttribute("isRoleManager", uiCounters.isRoleManager());
             model.addAttribute("infiniteScrolling", uiConfig.infiniteScrolling());
@@ -114,5 +115,25 @@ public class GlobalAttributsControllerAdvice {
         model.addAttribute("applicationEmail", globalProperties.getApplicationEmail());
     }
 
+    public static final String SESSION_KEY_COUNTERS = "uiCounters";
+    public static final String SESSION_KEY_COUNTERS_TS = "uiCountersTimestamp";
+    private static final long COUNTERS_TTL_MS = 30_000L;
+
+    /** À appeler depuis les controllers après toute action qui modifie les compteurs (signature, suppression, etc.). */
+    public static void invalidateCountersCache(HttpSession session) {
+        session.removeAttribute(SESSION_KEY_COUNTERS_TS);
+    }
+
+    private UiCountersDto getCachedUiCounters(HttpSession session, String userEppn, String authUserEppn) {
+        Long ts = (Long) session.getAttribute(SESSION_KEY_COUNTERS_TS);
+        if (ts != null && (System.currentTimeMillis() - ts) < COUNTERS_TTL_MS) {
+            UiCountersDto cached = (UiCountersDto) session.getAttribute(SESSION_KEY_COUNTERS);
+            if (cached != null) return cached;
+        }
+        UiCountersDto fresh = uiFetchService.buildUiCounters(userEppn, authUserEppn);
+        session.setAttribute(SESSION_KEY_COUNTERS, fresh);
+        session.setAttribute(SESSION_KEY_COUNTERS_TS, System.currentTimeMillis());
+        return fresh;
+    }
 
 }

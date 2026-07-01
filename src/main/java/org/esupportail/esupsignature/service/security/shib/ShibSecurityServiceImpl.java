@@ -67,7 +67,7 @@ public class ShibSecurityServiceImpl implements SecurityService {
 
 	@Override
 	public String getDescription() {
-		return "Pour accéder au service Université de Rouen Normandie - Système de Gestion de Cartes - Leocarte, sélectionnez ou cherchez l'établissement auquel vous appartenez.";
+		return "Pour accéder au service AFPI ACM FORMATION, sélectionnez ou cherchez l'établissement auquel vous appartenez.";
 	}
 
 	@Override
@@ -129,7 +129,6 @@ public class ShibSecurityServiceImpl implements SecurityService {
 		Group2UserRoleService group2UserRoleService = new Group2UserRoleService();
 		group2UserRoleService.setGroupPrefixRoleName(webSecurityProperties.getGroupToRoleFilterPattern());
 		group2UserRoleService.setMappingGroupesRoles(webSecurityProperties.getMappingGroupsRoles());
-        spelGroupService.initGroupMappingSpel();
 		group2UserRoleService.setGroupService(spelGroupService);
 		shibAuthenticatedUserDetailsService.setGroupPrefixRoleName(webSecurityProperties.getGroupToRoleFilterPattern());
 		shibAuthenticatedUserDetailsService.setGroup2UserRoleService(group2UserRoleService);

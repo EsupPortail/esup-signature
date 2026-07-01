@@ -222,4 +222,13 @@ public class RecipientService {
             workflowStepDto.getRecipients().add(recipientWsDto);
         }
     }
+
+    public List<WorkflowStepDto> convertRecipientJsonStringToWorkflowStepDtos(String recipientsJsonString) {
+        logger.debug("received json : " + recipientsJsonString);
+        try {
+            return Arrays.asList(objectMapper.readValue(recipientsJsonString, WorkflowStepDto[].class));
+        } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
+            throw new org.esupportail.esupsignature.exception.EsupSignatureRuntimeException("error parsing recipientsJsonString caused by " + e.getMessage() + " : " + recipientsJsonString);
+        }
+    }
 }

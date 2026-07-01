@@ -38,6 +38,7 @@ import org.hibernate.LazyInitializationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -48,6 +49,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.ParseException;
@@ -67,6 +69,7 @@ public class UserService {
     private static final String DATE_PATTERN = "yyyy-MM-dd'T'HH:mm";
     private static final int DEFAULT_PARAPHE_SIGN_IMAGE_NUMBER = 999997;
     private static final int DEFAULT_GENERATED_SIGN_IMAGE_NUMBER = 999998;
+    private static final int DEFAULT_EXTRA_SIGN_IMAGE_NUMBER = 999996;
 
     private final GlobalProperties globalProperties;
     private final WebSecurityProperties webSecurityProperties;
@@ -121,15 +124,15 @@ public class UserService {
 
     private int normalizeDefaultSignImageNumber(User user, Integer signImageNumber) {
         if (signImageNumber == null) {
-            return DEFAULT_GENERATED_SIGN_IMAGE_NUMBER;
+            return DEFAULT_EXTRA_SIGN_IMAGE_NUMBER;
         }
-        if (signImageNumber == DEFAULT_GENERATED_SIGN_IMAGE_NUMBER || signImageNumber == DEFAULT_PARAPHE_SIGN_IMAGE_NUMBER) {
+        if (signImageNumber == DEFAULT_GENERATED_SIGN_IMAGE_NUMBER || signImageNumber == DEFAULT_PARAPHE_SIGN_IMAGE_NUMBER || signImageNumber == DEFAULT_EXTRA_SIGN_IMAGE_NUMBER) {
             return signImageNumber;
         }
         if (signImageNumber >= 0 && signImageNumber < user.getSignImages().size()) {
             return signImageNumber;
         }
-        return DEFAULT_GENERATED_SIGN_IMAGE_NUMBER;
+        return DEFAULT_EXTRA_SIGN_IMAGE_NUMBER;
     }
 
     public User getByAccessToken(String accessToken) {
@@ -251,6 +254,10 @@ public class UserService {
             } else {
                 throw new EsupSignatureUserException("ldap user not found : " + eppn);
             }
+        }
+        if (eppn.contains("@")) {
+            logger.warn("user not found with eppn : " + eppn + ", creating provisional azuread user");
+            return createUser(eppn, "", "", eppn, UserType.azuread, false);
         }
         logger.error("user not found with eppn : " + eppn);
         return null;
@@ -396,7 +403,12 @@ public class UserService {
             user.getRoles().add("ROLE_OTP");
         }
         validateUserForPersistence(user, "createUser:" + userType.name());
-        userRepository.save(user);
+        // Pour un utilisateur déjà persisté, l'entité est managée dans la transaction :
+        // le dirty-checking Hibernate flushe automatiquement les éventuels changements au commit.
+        // On évite ainsi un merge/flush forcé à chaque appel (getSystemUser est invoqué très souvent).
+        if (user.getId() == null) {
+            userRepository.save(user);
+        }
         return user;
     }
 
@@ -465,7 +477,7 @@ public class UserService {
         if(signImageBase64 != null && !signImageBase64.isEmpty()) {
             authUser.getSignImages().add(documentService.createDocument(fileService.base64Transparence(signImageBase64), authUser, authUser.getEppn() + "_sign.png", "image/png"));
             if(authUser.getSignImages().size() == 1) {
-                authUser.setDefaultSignImageNumber(999998);
+                authUser.setDefaultSignImageNumber(DEFAULT_EXTRA_SIGN_IMAGE_NUMBER);
             }
         }
         authUser.setEmailAlertFrequency(emailAlertFrequency);
@@ -668,6 +680,35 @@ public class UserService {
         return null;
     }
 
+    public String getUserTitle(User user) {
+        if (ldapPersonService != null) {
+            try {
+                PersonLdap personLdap = findPersonLdapByUser(user);
+                if (personLdap != null && StringUtils.hasText(personLdap.getTitle())) {
+                    return personLdap.getTitle();
+                }
+            } catch (Exception e) {
+                // Ignore LDAP error
+            }
+        }
+        if (user.getOidcAttributes() != null) {
+            String title = user.getOidcAttributes().get("titre");
+            if (!StringUtils.hasText(title)) {
+                title = user.getOidcAttributes().get("jobTitle");
+            }
+            if (!StringUtils.hasText(title)) {
+                title = user.getOidcAttributes().get("title");
+            }
+            if (!StringUtils.hasText(title)) {
+                title = user.getOidcAttributes().get("jobtitle");
+            }
+            if (StringUtils.hasText(title)) {
+                return title;
+            }
+        }
+        return null;
+    }
+
     @Transactional
     public void disableIntro(String authUserEppn, String name) {
         setUiParams(authUserEppn, UiParams.valueOf(name), "true");
@@ -855,7 +896,7 @@ public class UserService {
         int test = authUser.getSignImages().indexOf(signDocument);
         int defaultSignImageNumber = normalizeDefaultSignImageNumber(authUser, authUser.getDefaultSignImageNumber());
         if (defaultSignImageNumber == test) {
-            authUser.setDefaultSignImageNumber(DEFAULT_GENERATED_SIGN_IMAGE_NUMBER);
+            authUser.setDefaultSignImageNumber(DEFAULT_EXTRA_SIGN_IMAGE_NUMBER);
         } else if (defaultSignImageNumber >= 0 && defaultSignImageNumber < authUser.getSignImages().size() && test < defaultSignImageNumber) {
             authUser.setDefaultSignImageNumber(defaultSignImageNumber - 1);
         } else if (!Objects.equals(authUser.getDefaultSignImageNumber(), defaultSignImageNumber)) {
@@ -987,16 +1028,20 @@ public class UserService {
             }
         }
         if(ldapGroupService != null && StringUtils.hasText(webSecurityProperties.getGroupToRoleFilterPattern())) {
-            List<String> groupsNames = ldapGroupService.getAllPrefixGroups(webSecurityProperties.getGroupToRoleFilterPattern());
-            for (String groupName : groupsNames) {
-                Pattern pattern = Pattern.compile(webSecurityProperties.getGroupToRoleFilterPattern());
-                Matcher matcher = pattern.matcher(groupName);
-                if(matcher.find()) {
-                    String roleName = "ROLE_" + matcher.group(1).toUpperCase();
-                    if (!roles.contains(roleName)) {
-                        roles.add(roleName);
+            try {
+                List<String> groupsNames = ldapGroupService.getAllPrefixGroups(webSecurityProperties.getGroupToRoleFilterPattern());
+                for (String groupName : groupsNames) {
+                    Pattern pattern = Pattern.compile(webSecurityProperties.getGroupToRoleFilterPattern());
+                    Matcher matcher = pattern.matcher(groupName);
+                    if(matcher.find()) {
+                        String roleName = "ROLE_" + matcher.group(1).toUpperCase();
+                        if (!roles.contains(roleName)) {
+                            roles.add(roleName);
+                        }
                     }
                 }
+            } catch (Exception e) {
+                logger.warn("LDAP group lookup failed, skipping LDAP roles: {}", e.getMessage());
             }
         }
         return roles.stream().sorted(Comparator.naturalOrder()).collect(Collectors.toList());
@@ -1064,7 +1109,7 @@ public class UserService {
     @Transactional
     public String tryGetEppnFromLdap(Authentication auth) {
         String eppn = null;
-        if(ldapPersonLightService != null) {
+        if(ldapPersonLightService != null && !(auth instanceof org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken)) {
             List<PersonLightLdap> personLdaps = ldapPersonLightService.getPersonLdapLight(auth.getName());
             if(personLdaps.size() == 1) {
                 eppn = personLdaps.get(0).getEduPersonPrincipalName();
@@ -1098,7 +1143,44 @@ public class UserService {
     @Transactional
     public InputStream getDefaultImage(String eppn) throws IOException {
         User user = getByEppn(eppn);
-        return fileService.getDefaultImage(user.getName(), user.getFirstname(), user.getEmail(), false);
+        return getDefaultImage(user, false);
+    }
+
+    @Transactional
+    public InputStream getDefaultImage(User user, boolean print) throws IOException {
+        Document configuredDefaultImage = getSystemUiDocument(UiParams.defaultSignatureImageDocumentId);
+        if (configuredDefaultImage != null) {
+            return configuredDefaultImage.getInputStream();
+        }
+        return fileService.getDefaultImage(user.getName(), user.getFirstname(), user.getEmail(), print);
+    }
+
+    @Transactional
+    public InputStream getDefaultImageWithExtra(String eppn) throws IOException {
+        User user = getByEppn(eppn);
+        return getDefaultImageWithExtra(user, false);
+    }
+
+    @Transactional
+    public InputStream getDefaultImageWithExtra(User user, boolean print) throws IOException {
+        InputStream defaultImg = getDefaultImage(user, print);
+        SignRequestParams srp = new SignRequestParams();
+        srp.setAddExtra(true);
+        srp.setExtraName(true);
+        srp.setExtraDate(true);
+        srp.setExtraType(false);
+        srp.setSignScale(1f);
+        srp.setExtraOnTop(true);
+        String userTitle = getUserTitle(user);
+        if (StringUtils.hasText(userTitle)) {
+            srp.setExtraText(userTitle);
+        }
+        return fileService.addTextToImage(defaultImg, srp, org.esupportail.esupsignature.entity.enums.SignType.signature, user, new Date(), false);
+    }
+
+    @Transactional
+    public String getDefaultImageWithExtra64(String eppn) throws IOException {
+        return fileService.getBase64Image(getDefaultImageWithExtra(eppn), "default");
     }
 
     @Transactional
@@ -1107,6 +1189,8 @@ public class UserService {
         int defaultSignImageNumber = normalizeDefaultSignImageNumber(user, user.getDefaultSignImageNumber());
         if(defaultSignImageNumber == DEFAULT_GENERATED_SIGN_IMAGE_NUMBER) {
             return getDefaultImage(eppn);
+        } else if (defaultSignImageNumber == DEFAULT_EXTRA_SIGN_IMAGE_NUMBER) {
+            return getDefaultImageWithExtra(eppn);
         } else if (defaultSignImageNumber == DEFAULT_PARAPHE_SIGN_IMAGE_NUMBER) {
             return getDefaultParaphe(eppn);
         }
@@ -1126,7 +1210,12 @@ public class UserService {
     @Transactional
     public InputStream getDefaultParaphe(String eppn) throws IOException {
         User user = getByEppn(eppn);
-        return fileService.getDefaultParaphe(user.getName(), user.getFirstname(), user.getEmail(), false);
+        return getDefaultParaphe(user, false);
+    }
+
+    @Transactional
+    public InputStream getDefaultParaphe(User user, boolean print) throws IOException {
+        return fileService.getDefaultParaphe(user.getName(), user.getFirstname(), user.getEmail(), print);
     }
 
     @Transactional
@@ -1304,6 +1393,148 @@ public class UserService {
             logger.warn("no signRequestParams returned", e);
         }
         return signRequestParamseWsDtos;
+    }
+
+    @Cacheable(value = "systemUiParams", key = "#key", unless = "#result == null")
+    @Transactional
+    public String getSystemUiParam(UiParams key) {
+        User systemUser = getSystemUser();
+        return systemUser.getUiParams().get(key);
+    }
+
+    @CacheEvict(value = "systemUiParams", allEntries = true)
+    @Transactional
+    public void setSystemUiParam(UiParams key, String value) {
+        User systemUser = getSystemUser();
+        if (org.springframework.util.StringUtils.hasText(value)) {
+            systemUser.getUiParams().put(key, value);
+        } else {
+            systemUser.getUiParams().remove(key);
+        }
+    }
+
+    @Transactional
+    public Document getSystemUiDocument(UiParams key) {
+        String value = getSystemUiParam(key);
+        if (!org.springframework.util.StringUtils.hasText(value)) {
+            return null;
+        }
+        try {
+            return documentService.getById(Long.parseLong(value));
+        } catch (Exception e) {
+            logger.warn("Unable to load system UI document for {}", key);
+            return null;
+        }
+    }
+
+    @Transactional
+    public void updateOidcAttributes(String eppn, java.util.Map<String, String> attributes) {
+        User user = getByEppn(eppn);
+        if (user != null) {
+            user.getOidcAttributes().clear();
+            user.getOidcAttributes().putAll(attributes);
+            userRepository.save(user);
+        }
+    }
+
+    @Transactional
+    public byte[] getSystemUiImageBytes(UiParams key) throws IOException {
+        Document doc = getSystemUiDocument(key);
+        if (doc == null) return null;
+        InputStream is = doc.getInputStream();
+        if (is == null) return null;
+        return is.readAllBytes();
+    }
+
+    @Transactional
+    public Long setSystemUiImage(UiParams key, MultipartFile multipartFile, String fileNamePrefix) throws IOException {
+        if (multipartFile == null || multipartFile.isEmpty()) {
+            return null;
+        }
+        User systemUser = getSystemUser();
+        Document oldDocument = getSystemUiDocument(key);
+        String originalFileName = multipartFile.getOriginalFilename();
+        String fileName = StringUtils.hasText(originalFileName) ? originalFileName : fileNamePrefix + ".png";
+        Document document = documentService.createDocument(
+                new ByteArrayInputStream(multipartFile.getBytes()),
+                systemUser, fileName, multipartFile.getContentType());
+        setSystemUiParam(key, document.getId().toString());
+        if (oldDocument != null) {
+            documentService.delete(oldDocument);
+        }
+        return document.getId();
+    }
+
+    @Transactional
+    public void clearSystemUiImage(UiParams key) {
+        Document oldDocument = getSystemUiDocument(key);
+        setSystemUiParam(key, null);
+        if (oldDocument != null) {
+            documentService.delete(oldDocument);
+        }
+    }
+
+    @Transactional
+    public void syncOidcAttributes(String authUserEppn, Authentication authentication) {
+        User user = getByEppn(authUserEppn);
+        if (user != null && authentication instanceof org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken oauthToken) {
+            String registrationId = oauthToken.getAuthorizedClientRegistrationId();
+            if ("azuread".equals(registrationId)) {
+                org.springframework.security.oauth2.core.user.OAuth2User oauthUser = oauthToken.getPrincipal();
+                if (oauthUser != null) {
+                    oauthUser.getAttributes().forEach((k, v) -> {
+                        if (v != null) {
+                            if (v instanceof String || v instanceof Number || v instanceof Boolean) {
+                                user.getOidcAttributes().put(k, v.toString());
+                            }
+                        }
+                    });
+                    userRepository.save(user);
+                }
+            }
+        }
+    }
+
+    public java.util.Map<String, String> fetchMicrosoftGraphProfile(String accessToken) {
+        java.util.Map<String, String> graphAttrs = new java.util.HashMap<>();
+        try {
+            java.net.URL url = new java.net.URL("https://graph.microsoft.com/v1.0/me");
+            java.net.HttpURLConnection conn = (java.net.HttpURLConnection) url.openConnection();
+            conn.setConnectTimeout(2000);
+            conn.setReadTimeout(3000);
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("Authorization", "Bearer " + accessToken);
+            conn.setRequestProperty("Accept", "application/json");
+            int responseCode = conn.getResponseCode();
+            if (responseCode == 200) {
+                try (java.io.BufferedReader in = new java.io.BufferedReader(new java.io.InputStreamReader(conn.getInputStream(), java.nio.charset.StandardCharsets.UTF_8))) {
+                    StringBuilder response = new StringBuilder();
+                    String inputLine;
+                    while ((inputLine = in.readLine()) != null) {
+                        response.append(inputLine);
+                    }
+                    java.util.Map<?, ?> map = objectMapper.readValue(response.toString(), java.util.Map.class);
+                    map.forEach((k, v) -> {
+                        if (v != null && k instanceof String keyStr) {
+                            if (v instanceof String || v instanceof Number || v instanceof Boolean) {
+                                graphAttrs.put(keyStr, v.toString());
+                                if ("jobTitle".equalsIgnoreCase(keyStr)) graphAttrs.put("titre", v.toString());
+                                else if ("mobilePhone".equalsIgnoreCase(keyStr)) graphAttrs.put("telephone", v.toString());
+                                else if ("officeLocation".equalsIgnoreCase(keyStr)) graphAttrs.put("bureau", v.toString());
+                                else if ("department".equalsIgnoreCase(keyStr)) graphAttrs.put("departement", v.toString());
+                                else if ("surname".equalsIgnoreCase(keyStr)) graphAttrs.put("nom", v.toString());
+                                else if ("givenName".equalsIgnoreCase(keyStr)) graphAttrs.put("prenom", v.toString());
+                            }
+                        }
+                    });
+                }
+            } else {
+                logger.error("Microsoft Graph API returned response code: {}", responseCode);
+            }
+        } catch (Exception e) {
+            logger.error("Failed to fetch Microsoft Graph profile", e);
+        }
+        return graphAttrs;
     }
 
 }

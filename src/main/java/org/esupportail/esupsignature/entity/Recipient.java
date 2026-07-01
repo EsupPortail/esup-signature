@@ -9,6 +9,7 @@ import org.hibernate.Hibernate;
 import java.util.Objects;
 
 @Entity
+@org.hibernate.annotations.BatchSize(size = 100)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Table(indexes =  {
         @Index(name = "recipient_user_id", columnList = "user_id")

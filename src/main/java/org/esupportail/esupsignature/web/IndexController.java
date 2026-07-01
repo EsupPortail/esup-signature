@@ -26,6 +26,7 @@ import org.esupportail.esupsignature.dto.ui.global.UiGlobalPropertiesDto;
 import org.esupportail.esupsignature.dto.ui.global.UiMessageDto;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.entity.enums.UiParams;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.ldap.LdapPersonLightService;
@@ -34,26 +35,30 @@ import org.esupportail.esupsignature.service.security.OidcOtpSecurityService;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
 import org.esupportail.esupsignature.service.security.SecurityService;
 import org.esupportail.esupsignature.service.security.cas.CasSecurityServiceImpl;
-import org.esupportail.esupsignature.service.security.oauth.OidcUserSecurityServiceResolver;
+import org.esupportail.esupsignature.service.security.oauth.azuread.AzureAdSecurityServiceImpl;
+import org.esupportail.esupsignature.service.security.oauth.franceconnect.FranceConnectSecurityServiceImpl;
+import org.esupportail.esupsignature.service.security.oauth.proconnect.ProConnectSecurityServiceImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
-import org.springframework.security.web.savedrequest.SavedRequest;
+import org.springframework.security.web.savedrequest.DefaultSavedRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.net.URI;
 import java.util.List;
 import java.util.Objects;
 
 @RequestMapping("/")
 @Controller
+@EnableConfigurationProperties(GlobalProperties.class)
 public class IndexController {
 
 	private static final Logger logger = LoggerFactory.getLogger(IndexController.class);
@@ -66,19 +71,55 @@ public class IndexController {
 	private final GlobalProperties globalProperties;
 	private final PreAuthorizeService preAuthorizeService;
 	private final List<SecurityService> securityServices;
-	private final OidcUserSecurityServiceResolver oidcUserSecurityServiceResolver;
 	private final UserService userService;
 	private final SignRequestService signRequestService;
 	private final LdapPersonLightService ldapPersonLightService;
 
-	public IndexController(GlobalProperties globalProperties, PreAuthorizeService preAuthorizeService, List<SecurityService> securityServices, UserService userService, SignRequestService signRequestService, @Autowired(required = false) LdapPersonLightService ldapPersonLightService, OidcUserSecurityServiceResolver oidcUserSecurityServiceResolver) {
+	public IndexController(GlobalProperties globalProperties, PreAuthorizeService preAuthorizeService, List<SecurityService> securityServices, UserService userService, SignRequestService signRequestService, @Autowired(required = false) LdapPersonLightService ldapPersonLightService) {
 		this.globalProperties = globalProperties;
         this.preAuthorizeService = preAuthorizeService;
         this.securityServices = securityServices;
-        this.oidcUserSecurityServiceResolver = oidcUserSecurityServiceResolver;
         this.userService = userService;
         this.signRequestService = signRequestService;
         this.ldapPersonLightService = ldapPersonLightService;
+	}
+
+	/**
+	 * Filtre les services de sécurité pour déterminer lesquels doivent être affichés sur la page de connexion.
+	 *
+	 * Logique de filtrage :
+	 * - Exclut les services OidcOtpSecurityService (comme FranceConnect, ProConnect) qui nécessitent une gestion OTP spéciale
+	 * - INCLUT Azure AD même s'il implémente OidcOtpSecurityService car il peut être utilisé comme authentification standard
+	 * - Inclut tous les autres services de sécurité (CAS, Shibboleth, etc.)
+	 *
+	 * @param securityServices Liste complète des services de sécurité disponibles
+	 * @return Liste filtrée des services à afficher sur la page de connexion
+	 */
+	private List<SecurityService> getDisplayableSecurityServices(List<SecurityService> securityServices) {
+		return securityServices.stream()
+			.filter(service -> {
+				// Si ce n'est pas un service OIDC/OTP, on l'inclut
+				if (!(service instanceof OidcOtpSecurityService)) {
+					return true;
+				}
+
+				// Si c'est Azure AD, on l'inclut même s'il implémente OidcOtpSecurityService
+				if (service instanceof AzureAdSecurityServiceImpl) {
+					return true;
+				}
+
+				// Pour les autres services OIDC/OTP (FranceConnect, ProConnect), on les exclut
+				// car ils nécessitent une gestion spéciale avec OTP
+				if (service instanceof FranceConnectSecurityServiceImpl ||
+					service instanceof ProConnectSecurityServiceImpl) {
+					return false;
+				}
+
+				// Par défaut, pour tout autre service OIDC/OTP non spécifiquement géré,
+				// on l'exclut pour éviter les problèmes
+				return false;
+			})
+			.toList();
 	}
 
 	@GetMapping
@@ -86,11 +127,18 @@ public class IndexController {
 		String savedQueryString = null;
 		HttpSession httpSession = httpServletRequest.getSession(false);
 		if(httpSession != null) {
-			Object savedRequest = httpSession.getAttribute("SPRING_SECURITY_SAVED_REQUEST");
-			if (savedRequest instanceof SavedRequest) {
-				savedQueryString = ((SavedRequest) savedRequest).getRedirectUrl();
-			} else if(savedRequest != null) {
-				logger.warn("invalide saved url type : {}", savedRequest.getClass().getName());
+			DefaultSavedRequest defaultSavedRequest = null;
+			try {
+				defaultSavedRequest = (DefaultSavedRequest) httpSession.getAttribute("SPRING_SECURITY_SAVED_REQUEST");
+			} catch (Exception e) {
+				logger.warn(e.getMessage());
+			}
+			if (defaultSavedRequest != null) {
+				if (StringUtils.hasText(defaultSavedRequest.getQueryString())) {
+					savedQueryString = defaultSavedRequest.getRequestURL() + "?" + defaultSavedRequest.getQueryString();
+				} else {
+					savedQueryString = defaultSavedRequest.getRequestURL();
+				}
 			}
 		}
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -100,12 +148,14 @@ public class IndexController {
 		} else {
 			if("anonymousUser".equals(auth.getName())) {
 				logger.trace("auth user : " + auth.getName());
-				List<SecurityService> loginSecurityServices = getLoginSecurityServices();
-				model.addAttribute("securityServices", loginSecurityServices);
+				// Utilisation de la nouvelle méthode de filtrage pour les services de sécurité
+				model.addAttribute("securityServices", getDisplayableSecurityServices(securityServices));
 				model.addAttribute("globalProperties", UiGlobalPropertiesDto.fromGlobalProperties(globalProperties));
+				model.addAttribute("loginTitle", userService.getSystemUiParam(UiParams.loginTitle));
+				model.addAttribute("loginSubtitle", userService.getSystemUiParam(UiParams.loginSubtitle));
 				if(StringUtils.hasText(savedQueryString)) {
 					model.addAttribute("redirect", savedQueryString);
-					if(!savedQueryString.contains("/casentry") && loginSecurityServices.size() == 1 && loginSecurityServices.get(0) instanceof CasSecurityServiceImpl) {
+					if(!savedQueryString.contains("/casentry") && securityServices.size() == 1 && securityServices.get(0) instanceof CasSecurityServiceImpl) {
 						return "redirect:/login/casentry?redirect=" + savedQueryString;
 					}
 				}
@@ -115,37 +165,13 @@ public class IndexController {
 				return "signin";
 			} else {
 				logger.info("auth user : " + auth.getName());
-				if(isUsableSavedRedirect(savedQueryString)) {
+				if(StringUtils.hasText(savedQueryString) && !savedQueryString.equals("/login/casentry")) {
 					return "redirect:" + savedQueryString;
 				} else {
 					return "redirect:/user";
 				}
 			}
 		}
-	}
-
-	private boolean isUsableSavedRedirect(String savedQueryString) {
-		if(!StringUtils.hasText(savedQueryString)) {
-			return false;
-		}
-		try {
-			String path = URI.create(savedQueryString).getPath();
-			if(!StringUtils.hasText(path)) {
-				path = "/";
-			}
-			return !path.equals("/") && !path.equals("/login/casentry");
-		} catch (IllegalArgumentException e) {
-			logger.warn("invalide saved url: {}", savedQueryString);
-			return false;
-		}
-	}
-
-	private List<SecurityService> getLoginSecurityServices() {
-		List<SecurityService> loginSecurityServices = new java.util.ArrayList<>(securityServices.stream()
-				.filter(s -> !(s instanceof OidcOtpSecurityService))
-				.toList());
-		loginSecurityServices.addAll(oidcUserSecurityServiceResolver.getConfiguredServices());
-		return loginSecurityServices;
 	}
 
 	@RequestMapping(value = "/denied/**", method = {RequestMethod.GET, RequestMethod.POST})
@@ -184,35 +210,38 @@ public class IndexController {
 		return "redirect:/user";
 	}
 
-	@GetMapping("/login/{registrationId}-entry")
-	public String loginOidcUserRedirection(@PathVariable String registrationId) {
-		if(oidcUserSecurityServiceResolver.isConfigured(registrationId)) {
+	@RequestMapping(
+			value = {"/login/proconnectentry", "/login/franceconnectentry", "/login/azureadentry"},
+			method = {RequestMethod.GET, RequestMethod.POST}
+	)
+	public String loginOAuthRedirectionPost(
+			@RequestParam(value = "redirect", required = false) String redirectUrl,
+			HttpServletRequest request,
+			Authentication authentication, Model model) {
+		String path = request.getServletPath();
+		// Azure AD : redirection vers l'URL demandée ou le tableau de bord
+		if (path.contains("azureadentry")) {
+			if (StringUtils.hasText(redirectUrl) && !"null".equals(redirectUrl)) {
+				return "redirect:" + redirectUrl;
+			}
 			return "redirect:/user";
 		}
-		return "redirect:/";
-	}
-
-	@RequestMapping(
-			value = {"/login/proconnectentry", "/login/franceconnectentry"},
-			method = {RequestMethod.GET, RequestMethod.POST}
-	)	public String loginFranceConnectRedirectionPost(Authentication authentication, Model model) {
-        String name = authentication.getName();
-        if(authentication.getPrincipal() instanceof DefaultOidcUser defaultOidcUser) {
-            name = defaultOidcUser.getAttributes().get("given_name").toString() + " ";
-            name += defaultOidcUser.getAttributes().containsKey("family_name")
-                    ? defaultOidcUser.getAttributes().get("family_name").toString()
-                    : defaultOidcUser.getAttributes().get("usual_name").toString();
-        }
-        model.addAttribute("errorMsg", "Bonjour " + name + ",<br>" +
-                "Merci de vous déconnecter et d'utiliser de nouveau le lien d'accès présent dans le mail que vous avez reçu pour signer votre document." +
-                "Une nouvelle connexion est necessaire pour chaque nouvelle demande à signer");
-        return "otp/error";
+		// FranceConnect et ProConnect : message d'erreur OTP
+		DefaultOidcUser defaultOidcUser = (DefaultOidcUser) authentication.getPrincipal();
+		String name = defaultOidcUser.getAttributes().get("given_name").toString() + " ";
+		name += defaultOidcUser.getAttributes().containsKey("family_name")
+			? defaultOidcUser.getAttributes().get("family_name").toString()
+			: defaultOidcUser.getAttributes().get("usual_name").toString();
+		model.addAttribute("errorMsg", "Bonjour " + name + ",<br>" +
+				"Merci de vous déconnecter et d'utiliser de nouveau le lien d'accès présent dans le mail que vous avez reçu pour signer votre document." +
+				"Une nouvelle connexion est nécessaire pour chaque nouvelle demande à signer.");
+		return "otp/error";
 	}
 
 	public User getAuthUser(Authentication auth) {
 		User user = null;
 		if (auth != null && !auth.getName().equals("anonymousUser")) {
-			if(ldapPersonLightService != null) {
+			if(ldapPersonLightService != null && !(auth instanceof OAuth2AuthenticationToken)) {
 				List<PersonLightLdap> personLdaps =  ldapPersonLightService.getPersonLdapLight(auth.getName());
 				if(personLdaps.size() == 1) {
 					String eppn = personLdaps.get(0).getEduPersonPrincipalName();
@@ -250,7 +279,7 @@ public class IndexController {
 				}
 			}
 		}
-		if (returnedState != null && !Objects.equals(returnedState, expectedState)) {
+		if (!Objects.equals(returnedState, expectedState)) {
 			throw new IllegalStateException("Échec vérification du state !");
 		}
 
@@ -276,16 +305,6 @@ public class IndexController {
         cookie.setPath("/");
         cookie.setMaxAge(0);
         httpServletResponse.addCookie(cookie);
-    }
-
-    @GetMapping("/rgpd")
-    public String rgpd() {
-        return "rgpd";
-    }
-
-    @GetMapping("/rgaa")
-    public String rgaa() {
-        return "rgaa";
     }
 
 	@RequestMapping(value={"/robots.txt", "/robot.txt"}, produces = "text/plain")

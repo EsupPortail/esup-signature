@@ -129,6 +129,11 @@ public class ShowSignRequestDto {
     public void setViewRight(Boolean viewRight) { this.viewRight = viewRight; }
     public List<Log> getLogs() { return logs; }
     public void setLogs(List<Log> logs) { this.logs = logs; }
+    private Long currentStepId;
+
+    public Long getCurrentStepId() { return currentStepId; }
+    public void setCurrentStepId(Long currentStepId) { this.currentStepId = currentStepId; }
+    public Long currentStepId() { return currentStepId; }
     public String getPdfaCheck() { return pdfaCheck; }
     public void setPdfaCheck(String pdfaCheck) { this.pdfaCheck = pdfaCheck; }
     public Boolean getAuditTrailChecked() { return auditTrailChecked; }

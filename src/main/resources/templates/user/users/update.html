@@ -426,6 +426,23 @@ $(document).ready(function() {
                         </div>
                     </div>
                 </div>
+                <div class="alert rounded-3 border-secondary-subtle mb-1 col-lg-12" th:if="${user.oidcAttributes != null && !user.oidcAttributes.isEmpty()}">
+                    <h5>Informations de connexion (Azure AD)</h5>
+                    <table class="table table-sm table-striped">
+                        <thead class="table-secondary">
+                            <tr>
+                                <th>Attribut</th>
+                                <th>Valeur</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="attr : ${user.oidcAttributes}">
+                                <td th:text="${attr.key}"></td>
+                                <td th:text="${attr.value}"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
                 <div class="alert rounded-3 border-secondary-subtle mb-1 col-lg-12">
                     <h5>Images de ma signature</h5>
                     <div id="signImageForm">
@@ -458,6 +475,18 @@ $(document).ready(function() {
                                         </td>
                                         <td>
                                             <a th:href="'/'+${user.userType.name() == 'external' ? 'otp' : 'user'}+'/users/set-default-sign-image/999998'" role="button" class="btn btn-sm btn-transparent" th:classappend="${user.defaultSignImageNumber == 999998} ? 'text-warning' : 'text-secondary'">
+                                                <i class="fi fi-rr-star"></i>
+                                            </a>
+                                        </td>
+                                        <td>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-left w-100" style="position: relative;height: 74px;" >
+                                            <img class="thumbnail" th:src="'/ws-secure/ui/signatures/default-image-with-extra'"  alt="Image avec nom prénom, date et type"/>
+                                        </td>
+                                        <td>
+                                            <a th:href="'/'+${user.userType.name() == 'external' ? 'otp' : 'user'}+'/users/set-default-sign-image/999996'" role="button" class="btn btn-sm btn-transparent" th:classappend="${user.defaultSignImageNumber == 999996} ? 'text-warning' : 'text-secondary'">
                                                 <i class="fi fi-rr-star"></i>
                                             </a>
                                         </td>
@@ -550,33 +579,16 @@ $(document).ready(function() {
                     <input type="hidden" id="mobileSignToken" name="mobileSignToken"/>
                 </div>
                 <div class="alert rounded-3 border-secondary-subtle mb-1 col-lg-12">
-                    <h5>Mes paramètres de signature</h5>
+                    <h5>Configuration de la signature par défaut</h5>
                     <div class="form-check form-switch form-switch-md mx-auto">
-                        <div class="form-check">
-                            <input id="saveSignRequestParamsYes" class="form-check-input" type="radio" name="saveSignRequestParams" value="true" th:checked="${user.favoriteSignRequestParams == null}">
-                            <label class="form-check-label" for="saveSignRequestParamsYes">Enregistrer automatiquement mes paramètres</label>
-                        </div>
-                        <div class="form-check">
-                            <input id="saveSignRequestParamsNo" class="form-check-input" type="radio" name="saveSignRequestParams" value="false" th:checked="${user.favoriteSignRequestParams != null}">
-                            <label class="form-check-label" for="saveSignRequestParamsNo">Configurer mes paramètres de signature préférés</label>
-                        </div>
+                        <input id="saveSignRequestParams" class="form-check-input" type="checkbox" name="saveSignRequestParams" value="true" th:checked="${user.favoriteSignRequestParams == null}">
+                        <label class="form-check-label" for="saveSignRequestParams">Enregistrer automatiquement mes paramètres après chaque signature</label>
                     </div>
-                    <div id="signRequestParamsCleanDiv" class="d-flex flex-column align-items-center justify-content-center">
-                        <p class="w-100 alert alert-info m-2">Vos paramètres seront enregistrés après chaque signature.<br>Pour revenir à la configuration d’origne ou en cas de problème d’affichage de votre signature cliquez ici :</p>
-                        <button type="button" id="signRequestParamsClean" class="btn btn-secondary w-50"><i class="fi fi-rr-sparkles"></i> Nettoyer mes paramètres enregistrés</button>
+                    <div id="signRequestParamsCleanDiv" class="mx-auto">
+                        <button type="button" id="signRequestParamsClean" class="btn btn-warning">Nettoyer mes paramètres enregistrés</button>
                     </div>
-                    <div id="signRequestParamsFormDiv" class="card-body center" style="width:100%; min-height: 400px;">
-                        <p class="alert alert-info m-2">Configurer vos paramètres de signature. Ils seront rechargé à chaque nouvelle signature. L’image par défaut se configure ci-dessus à l’aide de l’étoile <i class="fi fi-rr-star text-warning"></i>
-                            <br>
-                            Ne pas oublier d’enregistrer vos paramètres en bas à droite !
-                        </p>
-                        <div id="workspace" tabindex="0" class="alert rounded-bottom-0 light border-0 justify-content-center es-workspace-pdf workspace-margin-top " style="overflow-x: auto; min-height: 500px;">
-                            <form id="signForm" action="">
-                                <div tabindex="0" id="pdf" style="opacity: 1; cursor: default; display: flex; flex-direction: column; align-items: center; position: relative; width: 800px; height: 600px; background-color: white; border: 1px solid #ccc;">
-                                    <div id="page_1" page-num="1" class="drop-shadows pdf-page ui-droppable" style="width: 100%; height: 100%; position: relative;"></div>
-                                </div>
-                            </form>
-                        </div>
+                    <div id="signRequestParamsFormDiv" class="card-body mx-auto" style="width:400px; min-height: 400px;">
+                        <div th:replace="~{fragments/signrequestparams :: signrequestparam}"></div>
                     </div>
                 </div>
 

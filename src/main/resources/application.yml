@@ -57,7 +57,6 @@ global:
     seal-authorized-for-signed-files: false
     hide-hidden-visa: false
     default-font-size: 14
-    enable-transfert-for-users: true
 #    test-email: toto@univ-ville.fr
 
 #tomcat:
@@ -89,7 +88,7 @@ management:
 spring:
     cache:
         type: caffeine
-        cache-names: ldapLightCache
+        cache-names: ldapLightCache,systemUiParams
         caffeine:
             spec: maximumSize=1000,expireAfterWrite=24h
     session:
@@ -104,8 +103,8 @@ spring:
         username: esupsignature
         hikari:
             auto-commit: false
-            maximum-pool-size: 15
-            minimum-idle: 3
+            maximum-pool-size: 25
+            minimum-idle: 5
             idle-timeout: 300000
             connection-timeout: 30000
             leak-detection-threshold: 15000
@@ -129,6 +128,14 @@ spring:
         username: cn=consult,dc=univ-ville,dc=fr
     mail:
         host: smtp.univ-ville.fr
+#        host: smtp.office365.com
+#        port: 587
+#        username: noreply@noreply.com
+#        password: ${MAIL_PASSWORD}
+#        protocol: smtp
+#        properties:
+#            mail.smtp.auth: true
+#            mail.smtp.starttls.enable: true
     messages:
         basename: i18n/messages
         encoding: UTF-8
@@ -139,10 +146,27 @@ spring:
                 enabled: false
 #    security:
 #        oauth2:
-#          client:
-#              provider:
-#                cas:
-#                    issuer-uri: https://cas.univ-ville.fr/oidc
+#            client:
+#                registration:
+#                    azuread:
+#                        client-id: ${AZURE_CLIENT_ID}
+#                        client-secret: ${AZURE_CLIENT_SECRET}
+#                        scope:
+#                            - openid
+#                            - profile
+#                            - email
+#                            - https://graph.microsoft.com/GroupMember.Read.All
+#                        authorization-grant-type: authorization_code
+#                        client-authentication-method: client_secret_post
+#                        redirect-uri: "https://esup.noreply.com/login/oauth2/code/azuread"
+#                        client-name: Azure Active Directory
+#                provider:
+#                    azuread:
+#                        issuer-uri: https://login.microsoftonline.com/${AZURE_TENANT_ID}/v2.0
+#                        authorization-uri: https://login.microsoftonline.com/${AZURE_TENANT_ID}/oauth2/v2.0/authorize
+#                        token-uri: https://login.microsoftonline.com/${AZURE_TENANT_ID}/oauth2/v2.0/token
+#                        jwk-set-uri: https://login.microsoftonline.com/${AZURE_TENANT_ID}/discovery/v2.0/keys
+#                        user-name-attribute: email
 
 ## Exemple france connect
 #        oauth2:
@@ -277,12 +301,20 @@ security:
 #        domains-white-list-url: https://eduspot.renater.fr/eduspot/whitelist-eduspot.txt
     web:
 #        group-to-role-filter-pattern: for.esup-signature.role.(\w*)
-        mapping-groups-roles:
-            for.esup-signature.admin: ROLE_ADMIN
-            for.esup-signature.user: ROLE_USER
+#        mapping-groups-roles:
+#            for.esup-signature.admin: ROLE_ADMIN
+#            for.esup-signature.user: ROLE_USER
+#        mapping-groups-roles:
+#            "${AZURE_GAdmin}": ROLE_ADMIN
+#            "${AZURE_GSign}": ROLE_SEAL
+#            utilisateurs-auto: ROLE_USER  # Donne ROLE_USER à tous
         ws-access-authorize-ips:
         actuators-access-authorize-ips:
         jwt-ws-authorized-audiences: esup-signature
+        # Configuration pour la création automatique d'utilisateurs OAuth2
+#        oauth2:
+#            auto-create-users: true
+#            default-role: ROLE_USER
 #        group-mapping-spel:
 #            for.esup-signature.user: "true"	
 
@@ -291,6 +323,12 @@ server:
         session:
             tracking-modes: COOKIE
     port: 8080
+#    ssl:
+#        enabled: true
+#        key-store: /app/keystore.p12
+#        key-store-password: ${SSL_KEYSTORE_PASSWORD}
+#        key-store-type: PKCS12
+#        key-alias: ${SSL_KEY_ALIAS}
     tomcat:
         mbeanregistry:
             enabled: true

@@ -8,7 +8,8 @@
            class="global-button btn btn-material border border-dark-subtle btn-light text-center overflow-hidden p-1 flex-fill"
            style="height: auto; margin: 0;"
            data-bs-toggle="modal"
-           data-bs-target="#wiz-self-sign-modal">
+           data-bs-target="#wiz-self-sign-modal"
+           title="Signer vos documents présents sur votre poste de travail">
             <div class="d-flex flex-column align-items-center justify-content-start h-100 w-100 gap-1 text-secondary-emphasis">
                 <div style="height: clamp(45px, 6vw, 70px);" class="d-flex align-items-center">
                     <i class="fi fi-tr-attribution-pencil" style="font-size: clamp(32px, 4vw, 50px);"></i>
@@ -21,7 +22,8 @@
            class="global-button btn btn-material border border-dark-subtle btn-light text-center overflow-hidden p-1 flex-fill"
            style="height: auto; margin: 0;"
            data-bs-toggle="modal"
-           data-bs-target="#wiz-fast-sign-modal">
+           data-bs-target="#wiz-fast-sign-modal"
+           title="Envoyer un/des documents à vos destinataires">
             <div class="d-flex flex-column align-items-center justify-content-start h-100 w-100 gap-1 text-secondary-emphasis">
                 <div style="height: clamp(45px, 6vw, 70px);" class="d-flex align-items-center">
                     <i class="fi fi-tr-paper-plane-launch" style="font-size: clamp(32px, 4vw, 50px);"></i>
@@ -34,7 +36,8 @@
            th:unless="${globalProperties.hideWizard}" role="button"
            class="global-button btn btn-material border border-dark-subtle btn-light text-center overflow-hidden p-1 flex-fill"
            style="height: auto; margin: 0;"
-           data-bs-toggle="modal" data-bs-target="#wiz-custom-sign-modal">
+           data-bs-toggle="modal" data-bs-target="#wiz-custom-sign-modal"
+           title="Envoyer des documents dans un circuit à plusieurs étapes">
             <div class="d-flex flex-column align-items-center justify-content-start h-100 w-100 gap-1 text-secondary-emphasis">
                 <div style="height: clamp(45px, 6vw, 70px);" class="d-flex align-items-center">
                     <i class="fi fi-tr-plan"  style="font-size: clamp(32px, 4vw, 50px);"></i>
@@ -46,7 +49,8 @@
         <a tabindex="4" id="all-modal-button" th:if="${!isUserOnSu && (workflows.size() > 0 || forms.size() > 0)}"
            class="global-button btn btn-material border border-dark-subtle btn-light text-center overflow-hidden p-1 flex-fill"
            style="height: auto; margin: 0;"
-           data-bs-toggle="modal" data-bs-target="#allModal">
+           data-bs-toggle="modal" data-bs-target="#allModal"
+           title="Afficher la liste complète des circuits et formulaires disponibles">
             <div class="d-flex flex-column align-items-center justify-content-start h-100 w-100 gap-1 text-secondary-emphasis">
                 <div style="height: clamp(45px, 6vw, 70px);" class="d-flex align-items-center">
                     <i class="fi fi-tr-category" style="font-size: clamp(32px, 4vw, 50px);"></i>

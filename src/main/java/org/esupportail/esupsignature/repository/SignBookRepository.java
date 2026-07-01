@@ -525,5 +525,63 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
             and (sb.deleted = true or sb.status = 'deleted')
             """)
     Long countByCreateByEppnAndDeleted(User user);
-}
 
+    @Query("""
+        select sb.id, sb.subject, sb.workflowName, sb.description, sb.createDate,
+               sr.id, sr.title, sr.status,
+               (select count(sr2) from SignRequest sr2 where sr2.parentSignBook = sb)
+        from SignBook sb
+        join sb.signRequests sr
+        where sb.status = 'pending'
+          and index(sr) = 0
+          and (sb.deleted is null or sb.deleted != true)
+          and :user not member of sb.hidedBy
+          and exists (
+              select 1 from SignRequest sr3
+              join sr3.recipientHasSigned rhs
+              where sr3.parentSignBook = sb
+                and key(rhs).user = :user
+                and rhs.actionType = 'none'
+          )
+          and exists (
+              select 1 from LiveWorkflowStep lws
+              join lws.recipients r
+              where lws = sb.liveWorkflow.currentStep
+                and r.user = :user
+          )
+        order by sb.createDate desc
+        """)
+    List<Object[]> findHomeToSignItems(@Param("user") User user);
+
+    @Query("""
+        select sb.id, sb.subject, sb.workflowName, sb.description, sb.createDate,
+               sr.id, sr.title, sr.status,
+               (select count(sr2) from SignRequest sr2 where sr2.parentSignBook = sb)
+        from SignBook sb
+        join sb.signRequests sr
+        where sb.status = 'pending'
+          and index(sr) = 0
+          and (sb.deleted is null or sb.deleted != true)
+          and :user not member of sb.hidedBy
+          and (
+              sb.createBy = :user
+              or exists (
+                  select 1 from SignRequest sr3
+                  join sr3.recipientHasSigned rhs
+                  where sr3.parentSignBook = sb
+                    and key(rhs).user = :user
+              )
+          )
+        order by sb.createDate desc
+        """)
+    List<Object[]> findHomePendingItems(@Param("user") User user);
+
+    @Query("""
+        select sr.id, sr.title, sr.status
+        from SignBook sb
+        join sb.signRequests sr
+        where sb.id = :signBookId
+        order by index(sr)
+        """)
+    List<Object[]> findLightSignRequestsBySignBookId(@Param("signBookId") Long signBookId);
+}

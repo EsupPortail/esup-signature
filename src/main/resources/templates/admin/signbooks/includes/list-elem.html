@@ -9,6 +9,19 @@
         </td>
         <td class="clickable-td text-break d-none d-xxl-table-cell overflow-hidden" th:data-href="'/admin/signrequests/' + ${signRequest.id}" th:text="${signBook.workflowName}"></td>
         <td class="clickable-td text-break overflow-hidden" style="white-space: pre-line" th:text="${signBook.subject}"></td>
+        <!-- Colonnes de tag hiérarchiques -->
+        <td class="clickable-td text-center">
+            <th:block th:each="appTag : ${signBook.getApplicationTags()}">
+                <span class="badge" th:style="'background-color: ' + ${appTag.color} + '; color: #fff; font-size: 0.85em; font-weight: bold; padding: 3px 6px; border-radius: 4px;'" th:text="${appTag.name}"></span>
+            </th:block>
+        </td>
+        <th:block th:each="tagGroup : ${tagGroups}">
+            <td class="clickable-td text-center">
+                <th:block th:each="gTag : ${signBook.getTagsForGroup(tagGroup)}">
+                    <span class="badge" th:style="'background-color: ' + ${gTag.color} + '; color: #fff; font-size: 0.85em; font-weight: bold; padding: 3px 6px; border-radius: 4px;'" th:text="${gTag.name}"></span>
+                </th:block>
+            </td>
+        </th:block>
         <td class="clickable-td d-none d-xxl-table-cell" th:text="${signBook.createByDisplayName}"></td>
         <td class="clickable-td d-none d-xl-table-cell"><span th:text="${signRequest.createDateLabel}"></span>
         </td>
@@ -101,6 +114,19 @@
         <td class="clickable-td text-break">
             Ne contient aucun document
         </td>
+        <!-- Colonnes de tag hiérarchiques (empty case) -->
+        <td class="clickable-td text-center">
+            <th:block th:each="appTag : ${signBook.getApplicationTags()}">
+                <span class="badge" th:style="'background-color: ' + ${appTag.color} + '; color: #fff; font-size: 0.85em; font-weight: bold; padding: 3px 6px; border-radius: 4px;'" th:text="${appTag.name}"></span>
+            </th:block>
+        </td>
+        <th:block th:each="tagGroup : ${tagGroups}">
+            <td class="clickable-td text-center">
+                <th:block th:each="gTag : ${signBook.getTagsForGroup(tagGroup)}">
+                    <span class="badge" th:style="'background-color: ' + ${gTag.color} + '; color: #fff; font-size: 0.85em; font-weight: bold; padding: 3px 6px; border-radius: 4px;'" th:text="${gTag.name}"></span>
+                </th:block>
+            </td>
+        </th:block>
         <td></td>
         <td></td>
         <td class="d-none d-xl-table-cell no-row-navigation">
@@ -134,7 +160,7 @@
         </td>
         <td>
             <div class="dropdown position-relative">
-                <button type="button" th:id="'menu-toggle_' + ${signBook.id}" class="btn text-dark" th:data-bs-target="'#menu-' + ${signBook.id}" th:aria-controls="'menu-' + ${signBook.id}" data-bs-toggle="dropdown">
+                <button type="button" th:id="'menu-toggle_' + ${signBook.id}" class="btn text-dark" th:title="'Actions ' + ${signBook.subject}" th:data-bs-target="'#menu-' + ${signBook.id}" th:aria-controls="'menu-' + ${signBook.id}" data-bs-toggle="dropdown">
                     <i class="fi fi-rr-menu-dots-vertical"></i>
                 </button>
                 <ul class="dropdown-menu position-absolute ps-2 pe-2" th:id="'menu-' + ${signBook.id}">

@@ -116,6 +116,29 @@ export class SignSpaceManager {
 				signSpaceDiv.css("width", renderedWidth + "px");
 				signSpaceDiv.css("height", renderedHeight + "px");
 				this.updateSignSpaceFontSize(signSpaceDiv, renderedHeight);
+
+				if (this.options.isManager()) {
+					signSpaceDiv.draggable({
+						containment: "#pdf",
+						stop: () => {
+							const pv = this.options.getPdfViewer();
+							if (!pv) return;
+							const pageNum = parseInt(signSpaceDiv.attr("data-es-pos-page"), 10) || 1;
+							const newX = Math.round((parseInt(signSpaceDiv.css("left"), 10) - pv.getPageLeftInPdf(pageNum)) / pv.scale);
+							const newY = Math.round((parseInt(signSpaceDiv.css("top"), 10) - pv.getPageTopInPdf(pageNum)) / pv.scale);
+							signSpaceDiv.attr("data-es-pos-x", newX);
+							signSpaceDiv.attr("data-es-pos-y", newY);
+						}
+					});
+					signSpaceDiv.resizable({
+						stop: () => {
+							const pv = this.options.getPdfViewer();
+							if (!pv) return;
+							signSpaceDiv.attr("data-es-sign-width", Math.round(signSpaceDiv.width() / pv.scale));
+							signSpaceDiv.attr("data-es-sign-height", Math.round(signSpaceDiv.height() / pv.scale));
+						}
+					});
+				}
 			}
 		}
 	}
@@ -196,10 +219,7 @@ export class SignSpaceManager {
 		const spots = Array.isArray(this.options.getSpots()) ? this.options.getSpots() : [];
 
 		if (this.options.isEditable() && this.canViewAllSpots()) {
-			const managerSpots = this.options.isCreator()
-				? spots
-				: this.options.filterSpotsNotCurrentStep(spots);
-			const merged = [...currentParams, ...managerSpots];
+			const merged = [...currentParams, ...spots];
 			const byKey = new Map();
 			for (let i = 0; i < merged.length; i++) {
 				const item = merged[i];
@@ -386,9 +406,7 @@ export class SignSpaceManager {
 					let signRequestParams = Array.from(signPlacementController.signRequestParamses.values())[i];
 					let cross = signRequestParams.cross;
 					if (cross.attr("id") === ui.draggable.attr("id")) {
-						if (cross.data("ui-resizable") || cross.data("resizable")) {
-							cross.resizable("enable");
-						}
+						cross.resizable("enable");
 						signRequestParams.signSpace = null;
 						signRequestParams.ready = false;
 						signRequestParams.dropped = false;

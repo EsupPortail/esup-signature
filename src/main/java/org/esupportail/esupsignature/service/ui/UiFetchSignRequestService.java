@@ -37,6 +37,8 @@ import org.esupportail.esupsignature.service.SignWithService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
 import org.esupportail.esupsignature.service.utils.sign.SignService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.io.IOException;
@@ -48,6 +50,7 @@ import java.util.Set;
 
 @Service
 public class UiFetchSignRequestService {
+    private static final Logger logger = LoggerFactory.getLogger(UiFetchSignRequestService.class);
     private final SignRequestService signRequestService;
     private final SignBookService signBookService;
     private final UserService userService;
@@ -115,7 +118,9 @@ public class UiFetchSignRequestService {
         if (toSignDocuments.stream().anyMatch(document -> !document.isPdf()) && currentStepMinSignLevel.getValue() < 3) {
             currentStepMinSignLevel = SignLevel.advanced;
         }
-        Reports reports = signService.validate(id);
+        long t0 = System.currentTimeMillis();
+        Reports reports = signService.validate(id, eu.europa.esig.dss.enumerations.ValidationLevel.BASIC_SIGNATURES);
+        logger.info("[signRequest={}] DSS validate: {}ms", id, System.currentTimeMillis() - t0);
         List<String> signatureIds = new ArrayList<>();
         boolean signatureIssue = false;
         if (reports != null) {
@@ -136,11 +141,15 @@ public class UiFetchSignRequestService {
         List<SignRequestParams> spots = signRequestService.getSpots(id);
         List<String> signImages = new ArrayList<>();
         String signImagesWarningMessage = null;
+        long t1 = System.currentTimeMillis();
         try {
             signImages = fetchSignImagesForRequest(id, userEppn, authUserEppn, httpSession);
         } catch (EsupSignatureUserException e) {
             signImagesWarningMessage = e.getMessage();
+        } catch (IOException e) {
+            logger.error("[signRequest={}] Erreur génération images de signature: {}", id, e.getMessage(), e);
         }
+        logger.info("[signRequest={}] fetchSignImages: {}ms", id, System.currentTimeMillis() - t1);
         String action = null;
         Set<String> supervisors = null;
         if (signRequest.getData() != null
@@ -388,6 +397,7 @@ public class UiFetchSignRequestService {
         dto.setPdfaCheck(context.getPdfaCheck());
         dto.setAuditTrailChecked(context.isAuditTrailChecked());
         dto.setExternalsRecipients(context.getExternalsRecipients());
+        dto.setCurrentStepId(context.getCurrentStepId());
         return dto;
     }
     private SignUiFrontDto buildSignUiFrontDtoInternal(ShowSignRequestContextDto context, SignRequestFullDto common) {
@@ -401,7 +411,7 @@ public class UiFetchSignRequestService {
         dto.setCurrentSignType(common.getCurrentSignType());
         dto.setSignable(common.getSignable());
         dto.setEditable(common.getEditable());
-        dto.setComments(mapper.toCommentFrontDtos(common.getComments(), context));
+        dto.setComments(mapper.toCommentFrontDtos(common.getComments()));
         dto.setSpots(mapper.toSignRequestParamsFrontDtos(common.getSpots()));
         dto.setPdf(common.getPdf());
         dto.setCurrentStepNumber(common.getCurrentStepNumber());

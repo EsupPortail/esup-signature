@@ -54,13 +54,17 @@ public class ValidationService {
      * @return Un objet Reports contenant les résultats de la validation, ou null si la validation échoue ou si les données fournies sont invalides.
      */
     public Reports validate(InputStream docInputStream, InputStream signInputStream) {
+        return validate(docInputStream, signInputStream, ValidationLevel.LONG_TERM_DATA);
+    }
+
+    public Reports validate(InputStream docInputStream, InputStream signInputStream, ValidationLevel validationLevel) {
         try {
             List<DSSDocument> detachedContents = new ArrayList<>();
             SignedDocumentValidator documentValidator;
             if(signInputStream != null && signInputStream.available() > 0) {
                 detachedContents.add(dssUtilsService.toDSSDocument(new DssMultipartFile("doc", "doc", null, docInputStream)));
                 documentValidator = SignedDocumentValidator.fromDocument(Objects.requireNonNull(dssUtilsService.toDSSDocument(new DssMultipartFile("sign", "sign", null, signInputStream))));
-                documentValidator.setValidationLevel(ValidationLevel.LONG_TERM_DATA);
+                documentValidator.setValidationLevel(validationLevel);
                 documentValidator.setDetachedContents(detachedContents);
             } else {
                 DSSDocument dssDocument = dssUtilsService.toDSSDocument(new DssMultipartFile("doc", "doc", null, docInputStream));
@@ -81,7 +85,7 @@ public class ValidationService {
             }
             documentValidator.setSignaturePolicyProvider(new SignaturePolicyProvider());
             documentValidator.setTokenExtractionStrategy(TokenExtractionStrategy.NONE);
-            documentValidator.setValidationLevel(ValidationLevel.LONG_TERM_DATA);
+            documentValidator.setValidationLevel(validationLevel);
             documentValidator.setSignaturePolicyProvider(signaturePolicyProvider);
             documentValidator.setIncludeSemantics(true);
             InputStream is = defaultPolicy.getInputStream();

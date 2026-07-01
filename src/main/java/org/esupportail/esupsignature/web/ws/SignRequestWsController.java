@@ -18,12 +18,17 @@ import org.esupportail.esupsignature.dto.ui.global.UiMessageDto;
 import org.esupportail.esupsignature.dto.ws.RecipientWsDto;
 import org.esupportail.esupsignature.dto.ws.SignRequestStepsWsDto;
 import org.esupportail.esupsignature.dto.ws.WorkflowStepDto;
+import org.esupportail.esupsignature.entity.Action;
 import org.esupportail.esupsignature.entity.AuditTrail;
+import org.esupportail.esupsignature.entity.Recipient;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.SignRequestParams;
+import org.esupportail.esupsignature.entity.enums.ActionType;
 import org.esupportail.esupsignature.entity.enums.SignType;
+import org.esupportail.esupsignature.service.interfaces.fs.FsFile;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignatureMailException;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.*;
@@ -42,6 +47,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/ws/signrequests")
@@ -57,13 +63,15 @@ public class SignRequestWsController {
 
     private final SignRequestParamsService signRequestParamsService;
     private final LiveWorkflowStepService liveWorkflowStepService;
+    private final PaperlessService paperlessService;
 
-    public SignRequestWsController(SignRequestService signRequestService, RecipientService recipientService, SignBookService signBookService, SignRequestParamsService signRequestParamsService, LiveWorkflowStepService liveWorkflowStepService) {
+    public SignRequestWsController(SignRequestService signRequestService, RecipientService recipientService, SignBookService signBookService, SignRequestParamsService signRequestParamsService, LiveWorkflowStepService liveWorkflowStepService, PaperlessService paperlessService) {
         this.signRequestService = signRequestService;
         this.recipientService = recipientService;
         this.signBookService = signBookService;
         this.signRequestParamsService = signRequestParamsService;
         this.liveWorkflowStepService = liveWorkflowStepService;
+        this.paperlessService = paperlessService;
     }
 
     @CrossOrigin
@@ -152,7 +160,8 @@ public class SignRequestWsController {
                                     @RequestParam(required = false) @Parameter(deprecated = true, description = "Le créateur doit-il signer en premier ?") Boolean userSignFirst,
                                     @RequestParam(required = false) @Parameter(deprecated = true, description = "Forcer la signature de tous les documents") Boolean forceAllSign,
                                     @RequestParam(required = false) @Parameter(deprecated = true, description = "Type de signature", schema = @Schema(allowableValues = {"visa", "hiddenVisa", "signature"}), examples = {@ExampleObject(value = "visa"), @ExampleObject(value = "signature")}) String signType,
-                                    @RequestParam(required = false) @Parameter(deprecated = true, description = "EPPN du créateur/propriétaire de la demande (ancien nom)") String eppn
+                                    @RequestParam(required = false) @Parameter(deprecated = true, description = "EPPN du créateur/propriétaire de la demande (ancien nom)") String eppn,
+                                    @RequestParam(required = false) @Parameter(description = "Tags à associer à la demande. Format : Groupe/Tag (ex: Type/Attestation). Le groupe et le tag sont créés automatiquement s'ils n'existent pas. Plusieurs valeurs possibles (un par paramètre tags).") List<String> tags
                        ) throws EsupSignatureException {
         if(json == null) {
             json = false;
@@ -187,6 +196,11 @@ public class SignRequestWsController {
             List<String> signRequestIds = signBookStringMap.keySet().stream().flatMap(sb -> sb.getSignRequests().stream().map(signRequest -> signRequest.getId().toString())).toList();
             if(signRequestIds.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("-1");
+            }
+            // Attacher les tags hiérarchiques si fournis
+            if (tags != null && !tags.isEmpty()) {
+                Long signBookId = signBookStringMap.keySet().iterator().next().getId();
+                signBookService.addTagsByPath(signBookId, tags);
             }
             signRequestService.addAttachement(attachementMultipartFiles, null, Long.valueOf(signRequestIds.get(0)), createByEppn);
             if(json) {
@@ -339,12 +353,130 @@ public class SignRequestWsController {
         return ResponseEntity.ok(signRequestService.getAllToJSon(xApiKey));
     }
 
+    @CrossOrigin
+    @PostMapping(value = "/{id}/attach-paperless")
+    @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Télécharge un document Paperless et le joint comme pièce jointe à une demande de signature")
+    @PreAuthorize("@wsAccessTokenService.updateWorkflowAccess(#id, #xApiKey)")
+    public ResponseEntity<?> attachPaperlessDocument(
+            @PathVariable("id") Long id,
+            @RequestParam("paperlessDocumentId") @Parameter(description = "ID du document Paperless à joindre", required = true) Long paperlessDocumentId,
+            @RequestParam("createByEppn") @Parameter(description = "EPPN du créateur de la demande (utilisé pour la vérification des droits d'édition)", required = true) String createByEppn,
+            @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey) {
+        if (!paperlessService.isConfigured()) {
+            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body("Paperless-ngx non configuré dans l'administration");
+        }
+        SignRequest signRequest = signRequestService.getById(id);
+        if (signRequest == null) {
+            return ResponseEntity.notFound().build();
+        }
+        MultipartFile paperlessFile;
+        try {
+            paperlessFile = paperlessService.fetchDocument(paperlessDocumentId);
+        } catch (Exception e) {
+            logger.error("Impossible de récupérer le document Paperless id={}", paperlessDocumentId, e);
+            return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body("Erreur Paperless : " + e.getMessage());
+        }
+        try {
+            boolean added = signRequestService.addAttachement(new MultipartFile[]{paperlessFile}, null, id, createByEppn);
+            if (!added) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Droits insuffisants pour ajouter une pièce jointe à cette demande (createByEppn incorrect ou demande non éditable)");
+            }
+        } catch (EsupSignatureIOException e) {
+            logger.error("Impossible de joindre le document Paperless id={} à la demande id={}", paperlessDocumentId, id, e);
+            return ResponseEntity.internalServerError().body("Erreur lors de l'ajout de la pièce jointe : " + e.getMessage());
+        }
+        logger.info("Document Paperless id={} joint à la demande id={}", paperlessDocumentId, id);
+        return ResponseEntity.ok(Map.of(
+                "signRequestId", id,
+                "paperlessDocumentId", paperlessDocumentId,
+                "filename", paperlessFile.getOriginalFilename()
+        ));
+    }
+
     @GetMapping(value = "/return-test")
     @PreAuthorize("@wsAccessTokenService.isAllAccess(#xApiKey)")
     public ResponseEntity<Void> returnTest(@RequestParam("signRequestId") String signRequestId, @RequestParam("status") String status, @RequestParam("step") String step,
                                            @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey) {
         logger.info(signRequestId + ", " + status + ", " + step);
         return ResponseEntity.ok().build();
+    }
+
+    @CrossOrigin
+    @PostMapping(value = "/{id}/clean-and-link")
+    @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Nettoyer les documents de la demande de signature et associer un lien externe (Paperless)")
+    @PreAuthorize("@wsAccessTokenService.updateWorkflowAccess(#id, #xApiKey)")
+    public ResponseEntity<Void> cleanAndLink(@PathVariable("id") Long id,
+                                             @RequestParam("externalUrl") String externalUrl,
+                                             @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey) {
+        signRequestService.cleanAndLink(id, externalUrl, "system");
+        return ResponseEntity.ok().build();
+    }
+
+    @CrossOrigin
+    @PostMapping(value = "/{id}/archive-to-paperless")
+    @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Uploade le document signé dans Paperless en reprenant les métadonnées du document source, puis nettoie les fichiers locaux. Retourne l'ID Paperless du document signé.")
+    @PreAuthorize("@wsAccessTokenService.updateWorkflowAccess(#id, #xApiKey)")
+    public ResponseEntity<?> archiveToPaperless(@PathVariable("id") Long id,
+                                                @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey) {
+        if (!paperlessService.isConfigured()) {
+            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body("Paperless-ngx non configuré dans l'administration");
+        }
+
+        SignRequest signRequest = signRequestService.getById(id);
+        if (signRequest == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Long sourceDocumentId = signRequest.getPaperlessSourceDocumentId();
+        if (sourceDocumentId == null) {
+            return ResponseEntity.badRequest().body("Cette demande n'est pas associée à un document Paperless source");
+        }
+
+        FsFile signedFsFile;
+        try {
+            signedFsFile = signRequestService.getLastSignedFsFile(signRequest);
+        } catch (Exception e) {
+            logger.error("Impossible de récupérer le document signé pour signRequest={}", id, e);
+            return ResponseEntity.internalServerError().body("Impossible de récupérer le document signé : " + e.getMessage());
+        }
+
+        if (signedFsFile == null) {
+            return ResponseEntity.badRequest().body("Aucun document signé disponible pour cette demande");
+        }
+
+        String signataires = signRequest.getRecipientHasSigned().entrySet().stream()
+                .filter(e -> e.getValue() != null && !ActionType.none.equals(e.getValue().getActionType()))
+                .map(e -> e.getKey().getUser().getEmail())
+                .collect(Collectors.joining(", "));
+
+        byte[] pdfBytes;
+        try {
+            pdfBytes = signedFsFile.getInputStream().readAllBytes();
+        } catch (Exception e) {
+            logger.error("Impossible de lire le PDF signé pour signRequest={}", id, e);
+            return ResponseEntity.internalServerError().body("Erreur lecture PDF signé : " + e.getMessage());
+        }
+
+        String filename = StringUtils.hasText(signedFsFile.getName()) ? signedFsFile.getName() : "document-signe.pdf";
+
+        Long newPaperlessId;
+        try {
+            newPaperlessId = paperlessService.uploadSignedDocument(sourceDocumentId, pdfBytes, filename, id, signataires);
+        } catch (Exception e) {
+            logger.error("Échec upload Paperless pour signRequest={}", id, e);
+            return ResponseEntity.internalServerError().body("Échec upload Paperless : " + e.getMessage());
+        }
+
+        String downloadUrl = paperlessService.getPaperlessUrl().replaceAll("/$", "")
+                + "/api/documents/" + newPaperlessId + "/download/";
+        signRequestService.cleanAndLinkWithPaperlessId(id, downloadUrl, newPaperlessId, "system");
+
+        logger.info("signRequest={} archivé dans Paperless id={}", id, newPaperlessId);
+        return ResponseEntity.ok(Map.of(
+                "paperlessDocumentId", newPaperlessId,
+                "paperlessUrl", downloadUrl,
+                "signRequestId", id
+        ));
     }
 
 }

@@ -5,8 +5,10 @@ import jakarta.servlet.http.HttpSession;
 import org.apache.commons.io.FileUtils;
 import org.esupportail.esupsignature.dss.service.XSLTService;
 import org.esupportail.esupsignature.entity.AuditTrail;
+import org.esupportail.esupsignature.entity.Document;
 import org.esupportail.esupsignature.entity.Log;
 import org.esupportail.esupsignature.entity.SignRequest;
+import org.esupportail.esupsignature.entity.enums.UiParams;
 import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.service.AuditTrailService;
 import org.esupportail.esupsignature.service.LogService;
@@ -15,10 +17,12 @@ import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
 import org.esupportail.esupsignature.service.utils.file.FileService;
-import org.esupportail.esupsignature.service.utils.sign.SignService;
 import org.esupportail.esupsignature.service.utils.sign.ValidationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.info.BuildProperties;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -28,6 +32,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -48,10 +53,9 @@ public class PublicController {
     private final XSLTService xsltService;
     private final PreAuthorizeService preAuthorizeService;
     private final ValidationService validationService;
-    private final SignService signService;
     private final MobileSignTokenService mobileSignTokenService;
 
-    public PublicController(@Autowired(required = false) BuildProperties buildProperties, LogService logService, SignRequestService signRequestService, AuditTrailService auditTrailService, FileService fileService, UserService userService, XSLTService xsltService, PreAuthorizeService preAuthorizeService, ValidationService validationService, SignService signService, MobileSignTokenService mobileSignTokenService) {
+    public PublicController(@Autowired(required = false) BuildProperties buildProperties, LogService logService, SignRequestService signRequestService, AuditTrailService auditTrailService, FileService fileService, UserService userService, XSLTService xsltService, PreAuthorizeService preAuthorizeService, ValidationService validationService, MobileSignTokenService mobileSignTokenService) {
         this.buildProperties = buildProperties;
         this.logService = logService;
         this.signRequestService = signRequestService;
@@ -61,8 +65,38 @@ public class PublicController {
         this.xsltService = xsltService;
         this.preAuthorizeService = preAuthorizeService;
         this.validationService = validationService;
-        this.signService = signService;
         this.mobileSignTokenService = mobileSignTokenService;
+    }
+
+    @GetMapping(value = "/branding/login-background")
+    @ResponseBody
+    public ResponseEntity<byte[]> getLoginBackgroundImage() throws IOException {
+        byte[] bytes = userService.getSystemUiImageBytes(UiParams.loginBackgroundDocumentId);
+        if (bytes != null) {
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CACHE_CONTROL, "no-cache")
+                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                    .body(bytes);
+        }
+        try (InputStream defaultImage = new ClassPathResource("/static/images/logo-univ-rouen-normandie-noir.png").getInputStream()) {
+            return ResponseEntity.ok().contentType(MediaType.IMAGE_PNG).body(defaultImage.readAllBytes());
+        }
+    }
+
+    @GetMapping(value = "/branding/default-signature-image")
+    @ResponseBody
+    public ResponseEntity<byte[]> getDefaultSignatureImage() throws IOException {
+        Document image = userService.getSystemUiDocument(UiParams.defaultSignatureImageDocumentId);
+        if (image != null) {
+            try (InputStream inputStream = image.getInputStream()) {
+                MediaType mediaType = MediaType.APPLICATION_OCTET_STREAM;
+                if (image.getContentType() != null) {
+                    mediaType = MediaType.parseMediaType(image.getContentType());
+                }
+                return ResponseEntity.ok().contentType(mediaType).body(inputStream.readAllBytes());
+            }
+        }
+        return ResponseEntity.notFound().header(HttpHeaders.CACHE_CONTROL, "no-store").build();
     }
 
     @GetMapping(value = "/control")
@@ -83,7 +117,7 @@ public class PublicController {
         Optional<SignRequest> signRequest = signRequestService.getSignRequestByToken(token);
         if(signRequest.isPresent()) {
             if (auditTrail.getAuditSteps().stream().anyMatch(as -> as.getSignCertificat() != null && !as.getSignCertificat().isEmpty())) {
-                Reports reports = signService.validate(signRequest.get().getId());
+                Reports reports = signRequestService.validate(signRequest.get().getId());
                 if (reports != null) {
                     model.addAttribute("simpleReport", xsltService.generateShortReport(reports.getXmlSimpleReport()));
                 }
@@ -159,7 +193,7 @@ public class PublicController {
                 model.addAttribute("viewAccess", preAuthorizeService.checkUserViewRights(signRequest.get().getId(), eppn, eppn));
             }
             if(auditTrail.getAuditSteps().stream().anyMatch(as -> as.getSignCertificat() != null && !as.getSignCertificat().isEmpty())) {
-                Reports reports = signService.validate(signRequest.get().getId());
+                Reports reports = signRequestService.validate(signRequest.get().getId());
                 model.addAttribute("simpleReport", xsltService.generateShortReport(reports.getXmlSimpleReport()));
             }
         }
@@ -179,6 +213,33 @@ public class PublicController {
         model.addAttribute("used", used);
         model.addAttribute("expiresAtEpochMillis", expirationDate != null ? expirationDate.getTime() : null);
         return "public/mobile-sign";
+    }
+
+    @PostMapping("/mobile-sign/{token}/save")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> saveSignature(
+            @PathVariable String token,
+            @RequestParam(value = "signImageBase64", required = false) String signImageBase64) {
+        
+        Map<String, Object> response = new HashMap<>();
+        
+        if (mobileSignTokenService.validateToken(token)) {
+            boolean success = mobileSignTokenService.saveSignatureAndMarkTokenUsed(token, signImageBase64);
+            if (success) {
+                response.put("success", true);
+                response.put("message", "Signature enregistrée avec succès. Vous pouvez fermer cette fenêtre et retourner à votre espace utilisateur.");
+                response.put("reloadParent", true);
+                return ResponseEntity.ok(response);
+            } else {
+                response.put("success", false);
+                response.put("message", "Erreur lors de l'enregistrement de la signature");
+                return ResponseEntity.badRequest().body(response);
+            }
+        } else {
+            response.put("success", false);
+            response.put("message", "Token invalide ou expiré. Veuillez générer un nouveau QR code.");
+            return ResponseEntity.badRequest().body(response);
+        }
     }
 
     @PostMapping("/mobile-sign/{token}/preview")
@@ -205,22 +266,6 @@ public class PublicController {
             response.put("message", "Token invalide ou expiré. Veuillez générer un nouveau QR code.");
             return ResponseEntity.badRequest().body(response);
         }
-    }
-
-    @PostMapping("/mobile-sign/{token}/finish")
-    @ResponseBody
-    public ResponseEntity<Map<String, Object>> finishSignaturePreview(@PathVariable String token) {
-        Map<String, Object> response = new HashMap<>();
-
-        if (mobileSignTokenService.markFinished(token)) {
-            response.put("success", true);
-            response.put("message", "Signature confirmée.");
-            return ResponseEntity.ok(response);
-        }
-
-        response.put("success", false);
-        response.put("message", "Token invalide ou expiré.");
-        return ResponseEntity.badRequest().body(response);
     }
 
     @GetMapping("/mobile-sign/{token}/preview")
@@ -255,7 +300,6 @@ public class PublicController {
         response.put("expired", expired);
         response.put("previewAvailable", mobileSignTokenService.hasPendingSignaturePreview(token));
         response.put("previewTimestamp", mobileSignTokenService.getPendingSignaturePreviewTimestamp(token));
-        response.put("finished", mobileSignTokenService.isTokenFinished(token));
         if (expirationDate != null) {
             response.put("expiresAtEpochMillis", expirationDate.getTime());
         }

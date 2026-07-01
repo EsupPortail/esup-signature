@@ -31,5 +31,17 @@ public enum UiParams {
     workflowVisaAlert,
     favoriteWorkflows,
     favoriteForms,
-    home2Help
+    loginBackgroundDocumentId,
+    defaultSignatureImageDocumentId,
+    localLoginCollapsed,
+    paperlessUrl,
+    paperlessToken,
+    home2Help,
+    paperlessSourceFieldId,
+    paperlessSignedFieldId,
+    paperlessEsignRequestFieldId,
+    paperlessSignatureDateFieldId,
+    paperlessSignataireFieldId,
+    loginTitle,
+    loginSubtitle
 }

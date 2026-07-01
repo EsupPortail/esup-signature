@@ -392,6 +392,7 @@ export class Nexu {
                     dataType: "json",
                     async: true,
                     cache: false,
+                    timeout: 1000,
                 }).done(function (data) {
                     i++;
                     console.info("Esup-DSS-Client detected on " + url);

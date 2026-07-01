@@ -51,6 +51,11 @@ public class TargetService {
         return target;
     }
 
+    @Transactional
+    public void markTargetOk(Long targetId) {
+        targetRepository.findById(targetId).ifPresent(t -> t.setTargetOk(true));
+    }
+
     public void sendRest(String target, String signRequestId, String status, String step, String userEppn, String comment) throws EsupSignatureFsException {
         ResponseEntity<String> response;
         RestTemplate restTemplate = new RestTemplate();

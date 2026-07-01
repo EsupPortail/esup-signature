@@ -1,7 +1,6 @@
 import {SignRequestParams} from "../../../prototypes/SignRequestParams.js?version=@version@";
 import {EventFactory} from "../../utils/EventFactory.js?version=@version@";
 import {UserUi} from '../users/UserUi.js?version=@version@';
-import {SignatureImageResolver, SPECIAL_SIGN_IMAGE_NUMBERS} from './SignatureImageResolver.js?version=@version@';
 
 export class SignPlacementController extends EventFactory {
 
@@ -46,10 +45,17 @@ export class SignPlacementController extends EventFactory {
         this.initializeSpecialSignImageNumbers();
         this.initListeners();
         this.refreshSteps();
-        this.syncAddSignButtonState();
     }
 
     initializeSpecialSignImageNumbers() {
+        const signImages = Array.isArray(this.signImages) ? this.signImages : [];
+        if (signImages.length === 0) {
+            this.generatedSignImageNumber = null;
+            this.extraSignImageNumber = null;
+            this.parapheSignImageNumber = null;
+            return;
+        }
+
         let uiMe = null;
         try {
             const rawUiMe = sessionStorage.getItem('uiMe');
@@ -57,9 +63,37 @@ export class SignPlacementController extends EventFactory {
         } catch (error) {
             console.debug('Unable to parse uiMe session payload', error);
         }
-        const specialIndexes = SignatureImageResolver.getSpecialIndexes(this.signImages, uiMe);
-        this.generatedSignImageNumber = specialIndexes.generatedSignImageNumber;
-        this.parapheSignImageNumber = specialIndexes.parapheSignImageNumber;
+        const userImageIds = uiMe != null && Array.isArray(uiMe.userImagesIds) ? uiMe.userImagesIds : null;
+        if (userImageIds != null) {
+            this.generatedSignImageNumber = signImages.length > userImageIds.length
+                ? userImageIds.length
+                : null;
+            this.extraSignImageNumber = this.generatedSignImageNumber != null && signImages.length > this.generatedSignImageNumber + 1
+                ? this.generatedSignImageNumber + 1
+                : null;
+            this.parapheSignImageNumber = this.extraSignImageNumber != null && signImages.length > this.extraSignImageNumber + 1
+                ? this.extraSignImageNumber + 1
+                : null;
+            return;
+        }
+
+        if (signImages.length === 1) {
+            this.generatedSignImageNumber = 0;
+            this.extraSignImageNumber = null;
+            this.parapheSignImageNumber = null;
+            return;
+        }
+
+        if (signImages.length === 2) {
+            this.generatedSignImageNumber = 0;
+            this.extraSignImageNumber = 1;
+            this.parapheSignImageNumber = null;
+            return;
+        }
+
+        this.generatedSignImageNumber = signImages.length - 3;
+        this.extraSignImageNumber = signImages.length - 2;
+        this.parapheSignImageNumber = signImages.length - 1;
     }
 
     getScrollContainer() {
@@ -120,7 +154,8 @@ export class SignPlacementController extends EventFactory {
     }
 
     normalizeSignImageNumber(signImageNumber) {
-        return SignatureImageResolver.normalizeSignImageNumber(signImageNumber);
+        const normalizedSignImageNumber = signImageNumber == null ? null : Number.parseInt(signImageNumber, 10);
+        return signImageNumber != null && Number.isFinite(normalizedSignImageNumber) ? normalizedSignImageNumber : signImageNumber;
     }
 
     async waitForOtpSelection() {
@@ -158,7 +193,7 @@ export class SignPlacementController extends EventFactory {
     }
 
     getPendingCurrentSignRequestParams(forceSignNumber, signImageNumber, isParaph) {
-        if (signImageNumber == null || signImageNumber < 0 || signImageNumber === SPECIAL_SIGN_IMAGE_NUMBERS.SPOT || isParaph) {
+        if (signImageNumber == null || signImageNumber < 0 || signImageNumber === 999999 || isParaph) {
             return null;
         }
         if (forceSignNumber != null) {
@@ -190,12 +225,8 @@ export class SignPlacementController extends EventFactory {
                 this.currentSignRequestParamses[slotIndex].ready = false;
             }
             this.refreshSteps?.();
-            this.syncAddSignButtonState();
         });
-        signRequestParams.addEventListener("placementStateChanged", () => {
-            this.refreshSteps?.();
-            this.syncAddSignButtonState();
-        });
+        signRequestParams.addEventListener("placementStateChanged", () => this.refreshSteps?.());
         signRequestParams.addEventListener("spotSaved", e => this.onSpotSaved(e));
         signRequestParams.addEventListener("spotDeleted", e => this.onSpotDeleted(e));
         if (signImageNumber != null && signImageNumber >= 0 && !isParaph) {
@@ -210,11 +241,25 @@ export class SignPlacementController extends EventFactory {
     }
 
     getGeneratedSignImageNumber(userState) {
-        return SignatureImageResolver.getSpecialIndexes(userState?.signImages, userState).generatedSignImageNumber;
+        const signImageIds = Array.isArray(userState?.signImageIds) ? userState.signImageIds : [];
+        const signImages = Array.isArray(userState?.signImages) ? userState.signImages : [];
+        return signImages.length > signImageIds.length ? signImageIds.length : null;
+    }
+
+    getExtraSignImageNumber(userState) {
+        const generatedSignImageNumber = this.getGeneratedSignImageNumber(userState);
+        const signImages = Array.isArray(userState?.signImages) ? userState.signImages : [];
+        return generatedSignImageNumber != null && signImages.length > generatedSignImageNumber + 1
+            ? generatedSignImageNumber + 1
+            : null;
     }
 
     getParapheSignImageNumber(userState) {
-        return SignatureImageResolver.getSpecialIndexes(userState?.signImages, userState).parapheSignImageNumber;
+        const extraSignImageNumber = this.getExtraSignImageNumber(userState);
+        const signImages = Array.isArray(userState?.signImages) ? userState.signImages : [];
+        return extraSignImageNumber != null && signImages.length > extraSignImageNumber + 1
+            ? extraSignImageNumber + 1
+            : null;
     }
 
     applySpecialSignImageNumbers(signRequestParams) {
@@ -222,6 +267,7 @@ export class SignPlacementController extends EventFactory {
             return;
         }
         signRequestParams.generatedSignImageNumber = this.generatedSignImageNumber;
+        signRequestParams.extraSignImageNumber = this.extraSignImageNumber;
         signRequestParams.parapheSignImageNumber = this.parapheSignImageNumber;
     }
 
@@ -229,14 +275,13 @@ export class SignPlacementController extends EventFactory {
         if (!userState) {
             return;
         }
-        const previousGeneratedSignImageNumber = this.generatedSignImageNumber;
-        const previousParapheSignImageNumber = this.parapheSignImageNumber;
         const displayName = [userState.firstname, userState.name].filter(Boolean).join(' ').trim();
         if (displayName) {
             this.userName = displayName;
             this.authUserName = displayName;
         }
         this.generatedSignImageNumber = this.getGeneratedSignImageNumber(userState);
+        this.extraSignImageNumber = this.getExtraSignImageNumber(userState);
         this.parapheSignImageNumber = this.getParapheSignImageNumber(userState);
         if (Array.isArray(userState.signImages)) {
             this.signImages = userState.signImages;
@@ -245,50 +290,13 @@ export class SignPlacementController extends EventFactory {
                 this.userUI.userName = displayName || this.userUI.userName;
             }
             this.signRequestParamses.forEach(signRequestParams => {
-                const currentSignImageNumber = Number.parseInt(signRequestParams.signImageNumber, 10);
-                const mobilePersistedSignImageNumber = Number.parseInt(signRequestParams.mobilePersistedSignImageNumber, 10);
-                const isPersistedMobileSignature = Number.isFinite(mobilePersistedSignImageNumber)
-                    && currentSignImageNumber === mobilePersistedSignImageNumber;
-                if (!isPersistedMobileSignature && Number.isFinite(currentSignImageNumber)) {
-                    if (previousGeneratedSignImageNumber != null
-                        && currentSignImageNumber === previousGeneratedSignImageNumber
-                        && this.generatedSignImageNumber != null) {
-                        signRequestParams.signImageNumber = this.generatedSignImageNumber;
-                    } else if (previousParapheSignImageNumber != null
-                        && currentSignImageNumber === previousParapheSignImageNumber
-                        && this.parapheSignImageNumber != null) {
-                        signRequestParams.signImageNumber = this.parapheSignImageNumber;
-                    }
-                }
                 signRequestParams.signImages = userState.signImages;
                 this.applySpecialSignImageNumbers(signRequestParams);
-                if (signRequestParams.signImageNumber != null && signRequestParams.signImageNumber >= 0 && signRequestParams.signImageNumber !== SPECIAL_SIGN_IMAGE_NUMBERS.SPOT) {
+                if (signRequestParams.signImageNumber != null && signRequestParams.signImageNumber >= 0 && signRequestParams.signImageNumber !== 999999) {
                     signRequestParams.changeSignImage(signRequestParams.signImageNumber);
                 }
             });
         }
-    }
-
-    async persistMobileSignaturePreviews() {
-        const persistPromises = [];
-        this.signRequestParamses.forEach(signRequestParams => {
-            if (typeof signRequestParams.persistMobileSignaturePreviewIfNeeded === "function") {
-                persistPromises.push(signRequestParams.persistMobileSignaturePreviewIfNeeded());
-            }
-        });
-        if (persistPromises.length === 0) {
-            return null;
-        }
-
-        const results = await Promise.all(persistPromises);
-        let lastSavedSignImageNumber = null;
-        results.forEach(userState => {
-            const savedSignImageNumber = Number.parseInt(userState?.savedSignImageNumber, 10);
-            if (Number.isFinite(savedSignImageNumber)) {
-                lastSavedSignImageNumber = savedSignImageNumber;
-            }
-        });
-        return lastSavedSignImageNumber;
     }
 
     buildInitialSignRequestParamsModel(currentSignRequestParams, signImageNumber, isParaph) {
@@ -320,7 +328,8 @@ export class SignPlacementController extends EventFactory {
     }
 
     removeSign(srpId, id) {
-        if(srpId != null) {
+        if(srpId != null && this.currentSignRequestParamses != null
+                && Number.isInteger(srpId) && this.currentSignRequestParamses[srpId] != null) {
             this.currentSignRequestParamses[srpId].ready = false;
         }
         this.signRequestParamses.delete(id);
@@ -330,8 +339,8 @@ export class SignPlacementController extends EventFactory {
         if(this.signsList.length === 0) {
             $('#addSignButton').removeAttr('disabled');
         }
-        // Ne pas modifier l'état des étapes si c'est un spot qui est supprimé.
-        if(id === SPECIAL_SIGN_IMAGE_NUMBERS.SPOT) {
+        // Ne pas modifier l'état des étapes si c'est un spot (999999) qui est supprimé.
+        if(id === 999999) {
             return;
         }
         if(this.signRequestParamses.size === 0) {
@@ -345,7 +354,6 @@ export class SignPlacementController extends EventFactory {
             this.enableForwardButton();
         }
         this.refreshSteps();
-        this.syncAddSignButtonState();
     }
 
     onSpotSaved(spotData) {
@@ -368,7 +376,6 @@ export class SignPlacementController extends EventFactory {
         this.signRequestParamses.forEach(function (signRequestParams){
             signRequestParams.lock();
         });
-        this.syncAddSignButtonState();
     }
 
     disableForwardButton() {
@@ -393,6 +400,15 @@ export class SignPlacementController extends EventFactory {
 
     async addSign(page, restore, signImageNumber, forceSignNumber) {
         signImageNumber = this.normalizeSignImageNumber(signImageNumber);
+        let realSignImagesCount = 0;
+        if (Array.isArray(this.signImages)) {
+            let totalImages = this.signImages.filter(i => i !== "" && i !== null).length;
+            let specialImagesCount = 0;
+            if (this.generatedSignImageNumber != null) specialImagesCount++;
+            if (this.extraSignImageNumber != null) specialImagesCount++;
+            if (this.parapheSignImageNumber != null) specialImagesCount++;
+            realSignImagesCount = Math.max(0, totalImages - specialImagesCount);
+        }
         if (this.isOtp || this.signatureStepRequested) {
             const selection = await this.waitForOtpSelection();
             if (this.signatureStepRequested) {
@@ -406,18 +422,18 @@ export class SignPlacementController extends EventFactory {
             this.applyUserSignatureState(selection);
             signImageNumber = selectedSignImageNumber;
         }
-        const isSpot = signImageNumber === SPECIAL_SIGN_IMAGE_NUMBERS.SPOT;
-        const isParaph = signImageNumber === SPECIAL_SIGN_IMAGE_NUMBERS.PARAPHE;
+        const isSpot = signImageNumber === 999999;
+        const isParaph = signImageNumber === 999997;
         const isVisaPlacement = this.signType === "visa" && !isParaph;
         if (!isSpot && !isParaph) {
             this.prepareVisualPlacement();
         }
-        const id = signImageNumber === SPECIAL_SIGN_IMAGE_NUMBERS.SPOT ? SPECIAL_SIGN_IMAGE_NUMBERS.SPOT : this.id;
+        const id = signImageNumber === 999999 ? 999999 : this.id;
         const currentSignRequestParams = this.getPendingCurrentSignRequestParams(forceSignNumber, signImageNumber, isParaph);
         const initialSignRequestParamsModel = signImageNumber == null ? null : this.buildInitialSignRequestParamsModel(currentSignRequestParams, signImageNumber, isParaph);
         let signRequestParams = null;
 
-        if (signImageNumber === SPECIAL_SIGN_IMAGE_NUMBERS.SPOT) {
+        if (signImageNumber === 999999) {
             signRequestParams = new SignRequestParams(this.isOtp, null, id, this.currentScale, page, this.userName, this.authUserName, false, false, false, false, null, false, signImageNumber, this.scrollTop, this.csrf, this.signType, this.signatureUiConfig, this.signRequestId);
             signRequestParams.changeSignSize({
                 w: signRequestParams.originalWidth,
@@ -443,9 +459,8 @@ export class SignPlacementController extends EventFactory {
         this.signRequestParamses.set(id, signRequestParams);
         this.applySpecialSignImageNumbers(signRequestParams);
         this.bindSignRequestParamsEvents(signRequestParams, id, signImageNumber, isParaph);
-        this.syncAddSignButtonState();
 
-        if (signImageNumber != null && signImageNumber !== SPECIAL_SIGN_IMAGE_NUMBERS.SPOT && (!isVisaPlacement || isParaph)) {
+        if (signImageNumber != null && signImageNumber !== 999999 && (!isVisaPlacement || isParaph)) {
             await signRequestParams.changeSignImage(signImageNumber);
             if (!restore && typeof signRequestParams.syncExtraLayoutFromState === "function") {
                 signRequestParams.syncExtraLayoutFromState();
@@ -458,7 +473,6 @@ export class SignPlacementController extends EventFactory {
         this.id++;
         if (!isSpot && !isParaph) {
             this.refreshSteps();
-            this.syncAddSignButtonState();
         }
         return signRequestParams;
     }
@@ -527,7 +541,7 @@ export class SignPlacementController extends EventFactory {
                 && signRequestParams.isSign
                 && signImageNumber != null
                 && signImageNumber >= 0
-                && signImageNumber !== SPECIAL_SIGN_IMAGE_NUMBERS.SPOT;
+                && signImageNumber !== 999999;
         });
     }
 
@@ -536,29 +550,6 @@ export class SignPlacementController extends EventFactory {
             return true;
         }
         return this.getActiveSigns().length > 0;
-    }
-
-    getPlacedSignatureCount() {
-        return this.getActiveSigns().length;
-    }
-
-    syncAddSignButtonState() {
-        const addSignButton2 = $("#addSignButton2");
-        if (!addSignButton2.length) {
-            return;
-        }
-        const count = this.getPlacedSignatureCount();
-        const hasSignature = count > 0;
-        const label = hasSignature ? "Ajouter une autre signature" : "Insérer une signature";
-        addSignButton2.find(".es-add-sign-button-label").text(label);
-        addSignButton2
-            .attr("aria-label", hasSignature
-                ? `${label}. ${count} signature${count > 1 ? "s" : ""} en place.`
-                : label);
-        const countBadge = addSignButton2.find("#addSignButton2Count");
-        countBadge.toggleClass("d-none", !hasSignature);
-        countBadge.find(".es-add-sign-count").text(count);
-        countBadge.find(".visually-hidden").text(` signature${count > 1 ? "s" : ""} en place`);
     }
 
     hasPendingSignaturePlacement() {
@@ -673,7 +664,6 @@ export class SignPlacementController extends EventFactory {
 
         this.setStepState(step1, true, false, false);
         this.setStepState(step2, false, false, true);
-        this.syncAddSignButtonState();
 
         step1.find(".step-horizontal-v2-icon").html("1");
         step2.find(".step-horizontal-v2-icon").html("2");
@@ -690,7 +680,7 @@ export class SignPlacementController extends EventFactory {
             refuseLaunchDivResponsive
         } = this.getStepUiElements();
 
-        addSignButton2.removeAttr("disabled");
+        addSignButton2.attr("disabled", "disabled");
         refuseLaunchButton.removeAttr("disabled");
         insertBtn.removeAttr("disabled");
         refuseLaunchDiv.removeClass("d-none");
@@ -699,7 +689,6 @@ export class SignPlacementController extends EventFactory {
 
         this.setButtonVariant(addSignButton2, "btn-success");
         addSignButton2.removeClass("pulse-success");
-        this.syncAddSignButtonState();
         this.setButtonVariant(insertBtn, "btn-success");
         this.setButtonVariant(refuseLaunchButton, "btn-secondary");
         this.syncSignatureActionButtons(null, singleVisibleStep);

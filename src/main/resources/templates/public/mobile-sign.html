@@ -35,7 +35,7 @@
             <div class="alert alert-light es-status-card es-status-card--primary mb-2" th:if="${!expired && !used}">
                 <div class="es-status-card__body">
                     <h5 class="es-status-card__title mb-1">Dessiner votre signature</h5>
-                    <p class="es-status-card__description mb-0">Utilisez votre doigt ou un stylet pour dessiner votre signature, puis envoyez-la à votre ordinateur pour vérification.</p>
+                    <p class="es-status-card__description mb-0">Utilisez votre doigt ou un stylet pour dessiner votre signature, puis envoyez-la à votre ordinateur pour vérification ou sauvegardez-la directement.</p>
                     <div id="statusContainer" class="alert alert-info text-center" role="status">
                         <i class="fi fi-rr-clock me-1"></i>
                         <span>Ce lien est valide pendant encore <strong id="countdown">05:00</strong>.</span>
@@ -53,6 +53,9 @@
                     <div class="d-flex flex-column flex-sm-row justify-content-center gap-2">
                         <button id="validate" type="button" class="btn btn-primary">
                             <i class="fi fi-rr-monitor me-1"></i>Envoyer vers mon ordinateur
+                        </button>
+                        <button id="saveSignature" type="button" class="btn btn-outline-primary">
+                            <i class="fi fi-rr-disk me-1"></i>Sauvegarder la signature
                         </button>
                         <div class="d-flex flex-column gap-2">
                             <button id="erase" type="button" class="btn btn-outline-secondary">
@@ -105,6 +108,7 @@
         var signPadTip = document.getElementById('signPadTip');
         var signPadContainer = document.getElementById('signPad');
         var validateButton = document.getElementById('validate');
+        var saveSignatureButton = document.getElementById('saveSignature');
         var eraseButton = document.getElementById('erase');
         var finishButton = document.getElementById('finish');
         var countdownElement = document.getElementById('countdown');
@@ -115,7 +119,7 @@
         });
         var cachedWidth = null;
         var cachedData = [];
-        var tokenConsumed = false;
+        var saveSucceeded = false;
 
         function showPlaceholder() {
             if (signaturePad.isEmpty()) {
@@ -136,19 +140,20 @@
 
         function setButtonsDisabled(disabled) {
             validateButton.disabled = disabled;
+            saveSignatureButton.disabled = disabled;
             eraseButton.disabled = disabled;
             finishButton.disabled = disabled;
         }
 
         function showFinishButton() {
+            saveSignatureButton.classList.add('d-none');
             finishButton.classList.remove('d-none');
         }
 
         function finishSignatureFlow() {
             signPadContainer.classList.add('d-none');
             validateButton.classList.add('d-none');
-            eraseButton.classList.add('d-none');
-            finishButton.classList.add('d-none');
+            saveSignatureButton.classList.add('d-none');
             eraseButton.disabled = true;
             finishButton.disabled = true;
             showMessage('Signature transmise. Vous pouvez fermer l’onglet.', 'success');
@@ -216,7 +221,7 @@
             var seconds = remainingSeconds % 60;
             countdownElement.textContent = String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0');
 
-            if (remainingMs === 0 && !tokenConsumed) {
+            if (remainingMs === 0 && !saveSucceeded) {
                 window.location.reload();
             }
         }
@@ -231,8 +236,9 @@
                         updateCountdownDisplay();
                     }
                     if (response.used) {
-                        tokenConsumed = true;
+                        saveSucceeded = true;
                         setButtonsDisabled(true);
+                        notifyParentContexts();
                         showMessage('Signature déjà enregistrée.', 'success');
                         tryCloseWindow();
                         return;
@@ -324,29 +330,23 @@
             );
         });
 
-        finishButton.addEventListener('click', function() {
-            setButtonsDisabled(true);
-            showMessage('Confirmation en cours...', 'info');
-            $.ajax({
-                url: '/public/mobile-sign/' + encodeURIComponent(token) + '/finish',
-                type: 'POST',
-                success: function(response) {
-                    if (response.success) {
-                        finishSignatureFlow();
-                        return;
-                    }
-                    setButtonsDisabled(false);
-                    showMessage(response.message || 'Erreur lors de la confirmation.', 'error');
-                },
-                error: function(xhr) {
-                    setButtonsDisabled(false);
-                    var errorMsg = 'Erreur lors de la confirmation.';
-                    if (xhr.responseJSON && xhr.responseJSON.message) {
-                        errorMsg = xhr.responseJSON.message;
-                    }
-                    showMessage(errorMsg, 'error');
+        saveSignatureButton.addEventListener('click', function() {
+            submitSignature(
+                '/public/mobile-sign/' + encodeURIComponent(token) + '/save',
+                'Enregistrement en cours...',
+                'success',
+                function() {
+                    saveSucceeded = true;
+                    notifyParentContexts();
+                    window.setTimeout(function() {
+                        tryCloseWindow();
+                    }, 800);
                 }
-            });
+            );
+        });
+
+        finishButton.addEventListener('click', function() {
+            finishSignatureFlow();
         });
 
         window.addEventListener('resize', resizeCanvas);

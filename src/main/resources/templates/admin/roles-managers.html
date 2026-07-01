@@ -32,7 +32,7 @@
                                     </tr>
                                     </thead>
                                     <tbody>
-                                    <th:block th:each="role, status :${roleManagers.keySet}">
+                                    <th:block th:each="role, status :${roleManagers.keySet()}">
                                         <tr>
                                             <form th:action="'/admin/roles-managers/edit-role'" method="post">
                                                 <td th:text="${role}"></td>

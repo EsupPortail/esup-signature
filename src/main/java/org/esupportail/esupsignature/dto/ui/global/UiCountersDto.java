@@ -1,6 +1,6 @@
 package org.esupportail.esupsignature.dto.ui.global;
 
-public class UiCountersDto {
+public class UiCountersDto implements java.io.Serializable {
 
     private Long nbSignRequests;
     private Long nbToSign;

@@ -159,6 +159,20 @@
                                                         </div>
                                                     </div>
                                                 </div>
+                                                <div class="form-group mt-2">
+                                                    <label for="authorizedCanCreateEmails"
+                                                        class="form-check-label">Membres nominatifs
+                                                        (utilisateurs)</label>
+                                                    <select id="authorizedCanCreateEmails" class="auto-select-users"
+                                                        multiple="multiple" name="authorizedCanCreateEmails">
+                                                        <option data-placeholder="true"></option>
+                                                        <th:block
+                                                            th:each="email : ${workflow.authorizedCanCreateEmails}">
+                                                            <option selected="selected" th:value="${email}"
+                                                                th:text="${email}"></option>
+                                                        </th:block>
+                                                    </select>
+                                                </div>
                                                 <div class="form-group mb-3" id="managers">
                                                     <div class="d-flex align-items-start justify-content-between gap-2 mb-2">
                                                         <div class="fs-6 text-secondary text-uppercase border-bottom pb-2 mb-0 flex-grow-1">Superviseur(s) du circuit</div>
@@ -277,10 +291,6 @@
                                                     <div class="form-check mb-2">
                                                         <input id="disableUpdateByCreator" type="checkbox" class="form-check-input" th:field="*{disableUpdateByCreator}"/>
                                                         <label for="disableUpdateByCreator" class="form-check-label">Le propriétaire ne peut pas modifier la demande</label>
-                                                    </div>
-                                                    <div class="form-check mb-2">
-                                                        <input id="authorizeReplayByCreator" type="checkbox" class="form-check-input" th:field="*{authorizeReplayByCreator}"/>
-                                                        <label for="authorizeReplayByCreator" class="form-check-label">Autoriser le créateur d’une demande à relancer les notifications</label>
                                                     </div>
                                                     <div class="form-check mb-2">
                                                         <input id="disableEmailAlerts" type="checkbox" class="form-check-input" th:field="*{disableEmailAlerts}"/>
@@ -426,8 +436,8 @@
                                                 <div class="form-group mb-3">
                                                     <div class="fs-6 text-secondary text-uppercase border-bottom pb-2 mb-3 ">Paramètre d'archivage (indépendant de l'export)</div>
                                                     <label for="startArchiveDate" class="form-label fw-semibold">Date à partir de laquelle on archive les demandes de ce circuit</label>
-                                                    <input id="startArchiveDate" class="form-control mb-3" type="datetime-local" th:value="${#dates.format(workflow.startArchiveDate, 'yyyy-MM-dd''T''HH:mm')}" name="startArchiveDate" autocomplete="off">
-                                                    <label for="archiveTarget" class="form-label fw-semibold">Emplacement d’archivage (nécessaire pour activer l’archivage de ce circuit)</label>
+                                                    <input id="startArchiveDate" class="form-control" type="datetime-local" th:value="${#dates.format(workflow.startArchiveDate, 'yyyy-MM-dd''T''HH:mm')}" name="startArchiveDate" autocomplete="off">
+                                                    <label for="archiveTarget" class="form-label fw-semibold">Emplacement d’archivage (si vide l’emplacement configuré dans application.yml est utilisé)</label>
                                                     <input id="archiveTarget" class="form-control" type="text" th:field="*{archiveTarget}" value="" autocomplete="off">
                                                 </div>
                                             </div>

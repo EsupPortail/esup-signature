@@ -80,6 +80,14 @@
                                     <input type="checkbox" class="form-check-input" th:checked="${step.allSignToComplete}" name="allSignToCompletes" th:value="${iterator.index + 1}" th:id="'all-sign-to-complete-' + ${iterator.index + 1}"/>
                                 </div>
                             </div>
+                            <div class="form-group mb-3">
+                                <div class="form-check form-switch form-switch-md">
+                                    <label class="form-check-label" th:for="'multiSign-' + ${iterator.index + 1}">
+                                        Autoriser plusieurs signatures par participant
+                                    </label>
+                                    <input type="checkbox" class="form-check-input" th:checked="${step.multiSign != false}" th:id="'multiSign-' + ${iterator.index + 1}"/>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </li>

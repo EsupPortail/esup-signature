@@ -9,8 +9,8 @@
     <div class="es-wrapper">
         <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full text-uppercase">
             <ol id="breadcrumb-ol" class="breadcrumb">
-                <li class="breadcrumb-item"><a href="/admin" class="d-flex align-items-center"><i class="fi fi-rr-chess-queen"></i> Administration</a></li>
-                <li class="breadcrumb-item active">Tags</li>
+                <li class="breadcrumb-item"><a href="/admin" class="d-flex align-items-center"><i class="fi fi-rr-chess-queen"></i> Administration</a></li>
+                <li class="breadcrumb-item active">Groupes de tags</li>
             </ol>
         </nav>
         <div id="content" class="es-content-full">
@@ -18,156 +18,277 @@
                 <div class="es-sidebar d-flex">
                     <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
                 </div>
-                <div class="flex-grow-1">
-                    <div class="p-0 m-2">
-                        <div class="alert alert-light">
-                            <div class="alert alert-secondary mb-2">
-                                Ici, vous pouvez créer des tags (mot + couleur) afin de catégoriser vos circuits et vos formulaires.
+                <div class="flex-grow-1 p-3">
+
+                    <div class="alert alert-secondary mb-3">
+                        Les <strong>groupes de tags</strong> définissent les colonnes affichées dans la liste des demandes de signature.
+                        Chaque groupe possède une couleur. Les tags d'un groupe sont affichés comme badges colorés dans la colonne correspondante.<br>
+                        <small class="text-muted">Via l'API : paramètre <code>tags=NomDuGroupe/NomDuTag</code> — les tags inexistants sont créés automatiquement.</small>
+                    </div>
+
+                    <!-- Groupe cards -->
+                    <div th:each="entry : ${groupsWithTags.entrySet()}" class="card mb-4 shadow-sm">
+                        <div class="card-header d-flex align-items-center justify-content-between py-2"
+                             th:style="'border-left: 5px solid ' + ${entry.key.color != null ? entry.key.color : '#6c757d'} + '; background: linear-gradient(90deg,' + ${entry.key.color != null ? entry.key.color : '#6c757d'} + '18 0%,transparent 60%);'">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="rounded-circle d-inline-block border border-white shadow-sm"
+                                      th:style="'width:22px;height:22px;background-color:' + ${entry.key.color != null ? entry.key.color : '#6c757d'}"></span>
+                                <strong class="fs-6" th:text="${entry.key.name}"></strong>
+                                <span class="badge bg-secondary rounded-pill" th:text="${#lists.size(entry.value)} + ' tag(s)'"></span>
                             </div>
-                            <table class="table table-sm table-hover">
-                                <thead class="table-secondary">
-                                <tr>
-                                    <th>Nom</th>
-                                    <th>Couleur</th>
-                                    <th></th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                <th:block th:each="tag : ${tags}">
-                                    <tr>
-                                        <td th:text="${tag.name}"></td>
-                                        <td>
-                                            <h4><span class="badge" th:style="'background-color:' + ${tag.color}">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></h4>
-                                        </td>
-                                        <td>
-                                            <div class="dropdown position-relative" th:if="${tag.id != null}">
-                                                <button type="button" th:id="'menu-toggle_' + ${tag.id}" class="btn text-dark" th:title="'Actions ' + ${tag.id}"
-                                                        th:data-bs-target="'#menu-' + ${tag.id}" th:aria-controls="'menu-' + ${tag.id}" data-bs-toggle="dropdown">
-                                                    <i class="fi fi-rr-menu-dots-vertical"></i>
-                                                </button>
-                                                <ul class="dropdown-menu position-absolute ps-2 pe-2" th:id="'menu-' + ${tag.id}">
-                                                    <li>
-                                                        <a class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button"
-                                                           data-bs-toggle="modal" th:data-bs-target="'#modal-update-' + ${tag.id}">
-                                                            <i class="fi fi-rr-pencil"></i> Modifier
-                                                        </a>
-                                                    </li>
-                                                    <li>
-                                                        <a class="btn btn-transparent text-dark text-left col-12" role="button" title="Supprimer"
-                                                           data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${tag.id}">
-                                                            <i class="fi fi-rr-trash pr-2"></i> Supprimer
-                                                        </a>
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                            <div data-bs-focus="false" class="modal modal-warning fade in" th:id="'modal-warning-' + ${tag.id}">
-                                                <div class="modal-dialog">
-                                                    <div class="modal-content">
-                                                        <form id="command" th:action="'/admin/tags/' + ${tag.id}" th:method="'delete'">
-                                                            <div class="modal-header">
-                                                                <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                            </div>
-                                                            <div class="modal-body">
-                                                                <div class="alert alert-danger text-center">
-                                                                    Le tag sera enlevé des tous les éléments auxquels il est associé.
-                                                                    Confirmez-vous la suppression du tag ?
-                                                                </div>
-                                                            </div>
-                                                            <div class="modal-footer">
-                                                                <button type="button" class="btn btn-outline pull-left" data-bs-dismiss="modal">Non</button>
-                                                                <button type="submit" class="btn btn-outline pull-left btn-danger">Oui</button>
-                                                            </div>
-                                                        </form>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                </th:block>
-                                </tbody>
-                                <tfoot>
-                                <tr>
-                                    <td colspan="100%" th:replace="~{fragments/pagination :: pagination}">
-                                    </td>
-                                </tr>
-                                </tfoot>
-                            </table>
+                            <div class="d-flex gap-2">
+                                <button type="button" class="btn btn-sm btn-outline-primary"
+                                        data-bs-toggle="modal" th:data-bs-target="'#modal-add-tag-' + ${entry.key.id}">
+                                    <i class="fi fi-rr-plus"></i> Ajouter un tag
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary"
+                                        data-bs-toggle="modal" th:data-bs-target="'#modal-edit-group-' + ${entry.key.id}">
+                                    <i class="fi fi-rr-pencil"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-danger"
+                                        data-bs-toggle="modal" th:data-bs-target="'#modal-del-group-' + ${entry.key.id}">
+                                    <i class="fi fi-rr-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body py-3">
+                            <div class="d-flex flex-wrap gap-2">
+                                <span th:each="tag : ${entry.value}"
+                                      class="badge rounded-pill d-inline-flex align-items-center gap-1 fs-6 px-3 py-2"
+                                      th:style="'background-color:' + ${tag.color != null ? tag.color : (entry.key.color != null ? entry.key.color : '#6c757d')} + ';color:#fff'">
+                                    <span th:text="${tag.name}"></span>
+                                    <button type="button" class="btn btn-link p-0 text-white border-0 lh-1"
+                                            style="font-size:0.75em;opacity:0.85"
+                                            data-bs-toggle="modal" th:data-bs-target="'#modal-edit-tag-' + ${tag.id}"
+                                            title="Modifier">
+                                        <i class="fi fi-rr-pencil"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-link p-0 text-white border-0 lh-1"
+                                            style="font-size:0.75em;opacity:0.85"
+                                            data-bs-toggle="modal" th:data-bs-target="'#modal-del-tag-' + ${tag.id}"
+                                            title="Supprimer">
+                                        <i class="fi fi-rr-trash"></i>
+                                    </button>
+                                </span>
+                                <span th:if="${#lists.isEmpty(entry.value)}" class="text-muted fst-italic small">
+                                    Aucun tag — utilisez « Ajouter un tag » pour en créer.
+                                </span>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="es-sign-buttons es-fixed-action-btns active">
-                    <ul class="list-unstyled">
-                        <li id="addButton" onmouseover="$('#addButton').toggleClass('active');" onmouseout="$('#addButton').toggleClass('active');">
-                            <a title="Ajouter un tag" data-bs-toggle="modal" data-bs-target="#newTag" class="btn btn-transparent text-dark">
-                                <i class="fi fi-rr-plus"></i>
-                            </a>
-                        </li>
-                    </ul>
+
+                    <div th:if="${groupsWithTags.isEmpty()}" class="alert alert-info text-center py-4">
+                        <i class="fi fi-rr-tags d-block mb-2" style="font-size:2rem"></i>
+                        Aucun groupe de tags. Cliquez sur <strong>+ Nouveau groupe</strong> pour commencer.
+                    </div>
+
+                    <!-- Bouton inline en bas de la zone de contenu -->
+                    <div class="mt-3 d-flex justify-content-start">
+                        <button type="button" class="btn btn-success"
+                                data-bs-toggle="modal" data-bs-target="#modal-new-group">
+                            <i class="fi fi-rr-plus me-1"></i> Nouveau groupe de tags
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <th:block th:each="tag : ${tags}">
-        <div data-bs-focus="false" class="modal fade position-absolute" th:id="'modal-update-' + ${tag.id}" role="dialog" aria-hidden="true">
-            <div class="modal-dialog" role="document">
+    <!-- ==================== MODALS PAR GROUPE ==================== -->
+    <th:block th:each="entry : ${groupsWithTags.entrySet()}">
+
+        <!-- Ajouter un tag dans ce groupe -->
+        <div class="modal fade" th:id="'modal-add-tag-' + ${entry.key.id}" role="dialog" aria-hidden="true">
+            <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title">Modifier le tag <span th:text="${tag.name}"></span></h5>
-                        <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close">
-                        </button>
+                        <h5 class="modal-title">
+                            Ajouter un tag dans
+                            <span class="badge rounded-pill ms-1"
+                                  th:style="'background-color:' + ${entry.key.color != null ? entry.key.color : '#6c757d'}"
+                                  th:text="${entry.key.name}"></span>
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
                     </div>
-                    <form th:action="'/admin/tags/' + ${tag.id} + '?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" th:method="'put'" enctype="multipart/form-data">
+                    <form th:action="'/admin/tags?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" method="post">
+                        <input type="hidden" name="parentTag.id" th:value="${entry.key.id}">
                         <div class="modal-body">
                             <div class="form-group mb-3">
-                                <label class="form-label">Nom du tag</label>
-                                <input class="form-control" type="text" name="name" th:value="${tag.name}">
+                                <label class="form-label">Nom du tag <span class="text-danger">*</span></label>
+                                <input class="form-control" type="text" name="name" required placeholder="ex: Attestation de formation">
                             </div>
                             <div class="form-group mb-3">
-                                <label for="tagColor" class="form-label">Couleur du tag</label>
+                                <label class="form-label">Couleur <small class="text-muted">(facultatif — dérivée automatiquement de la couleur du groupe)</small></label>
                                 <br>
-                                <input id="" class="form-control tag-color" type="text" name="color" th:value="${tag.color}">
+                                <input class="form-control tag-color" type="text" name="color" placeholder="Laisser vide pour couleur automatique">
                             </div>
                         </div>
                         <div class="modal-footer">
-                            <input type="submit" class="btn btn-success" value="Valider">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                            <button type="submit" class="btn btn-success">Créer le tag</button>
                         </div>
                     </form>
                 </div>
             </div>
         </div>
+
+        <!-- Modifier le groupe -->
+        <div class="modal fade" th:id="'modal-edit-group-' + ${entry.key.id}" role="dialog" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Modifier le groupe <em th:text="${entry.key.name}"></em></h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                    </div>
+                    <form th:action="'/admin/tags/' + ${entry.key.id} + '?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" th:method="'put'">
+                        <div class="modal-body">
+                            <div class="form-group mb-3">
+                                <label class="form-label">Nom du groupe <span class="text-danger">*</span></label>
+                                <input class="form-control" type="text" name="name" th:value="${entry.key.name}" required>
+                            </div>
+                            <div class="form-group mb-3">
+                                <label class="form-label">Couleur du groupe</label>
+                                <br>
+                                <input class="form-control tag-color" type="text" name="color" th:value="${entry.key.color}">
+                                <small class="text-muted">Cette couleur est utilisée pour la colonne et déclinée automatiquement sur les tags.</small>
+                            </div>
+                            <div class="form-group mb-3">
+                                <label class="form-label">Ordre d'affichage</label>
+                                <input class="form-control" type="number" name="displayOrder" th:value="${entry.key.displayOrder}" min="0" style="width:100px">
+                                <small class="text-muted">Les colonnes sont affichées du plus petit au plus grand. À égalité, ordre alphabétique.</small>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                            <button type="submit" class="btn btn-success">Enregistrer</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Supprimer le groupe -->
+        <div class="modal fade" th:id="'modal-del-group-' + ${entry.key.id}" role="dialog" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form th:action="'/admin/tags/' + ${entry.key.id} + '?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" th:method="'delete'">
+                        <div class="modal-header">
+                            <h5 class="modal-title text-danger"><i class="fi fi-rr-trash"></i> Supprimer le groupe</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="alert alert-danger">
+                                Supprimer le groupe <strong th:text="${entry.key.name}"></strong> et ses
+                                <strong th:text="${#lists.size(entry.value)}"></strong> tag(s) ?
+                                Cette action est irréversible et retirera les tags de tous les documents associés.
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+                            <button type="submit" class="btn btn-danger">Supprimer</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modals d'édition / suppression par tag -->
+        <th:block th:each="tag : ${entry.value}">
+
+            <div class="modal fade" th:id="'modal-edit-tag-' + ${tag.id}" role="dialog" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Modifier le tag <em th:text="${tag.name}"></em></h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                        </div>
+                        <form th:action="'/admin/tags/' + ${tag.id} + '?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" th:method="'put'">
+                            <input type="hidden" name="parentTag.id" th:value="${entry.key.id}">
+                            <div class="modal-body">
+                                <div class="form-group mb-3">
+                                    <label class="form-label">Nom du tag <span class="text-danger">*</span></label>
+                                    <input class="form-control" type="text" name="name" th:value="${tag.name}" required>
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label class="form-label">Couleur du tag</label>
+                                    <br>
+                                    <input class="form-control tag-color" type="text" name="color" th:value="${tag.color}">
+                                    <small class="text-muted">Laisser vide pour utiliser la couleur dérivée du groupe.</small>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                                <button type="submit" class="btn btn-success">Enregistrer</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal fade" th:id="'modal-del-tag-' + ${tag.id}" role="dialog" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <form th:action="'/admin/tags/' + ${tag.id} + '?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" th:method="'delete'">
+                            <div class="modal-header">
+                                <h5 class="modal-title text-danger"><i class="fi fi-rr-trash"></i> Supprimer le tag</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="alert alert-warning">
+                                    Supprimer le tag <strong th:text="${tag.name}"></strong>
+                                    (groupe : <span th:text="${entry.key.name}"></span>) ?
+                                    Il sera retiré de tous les documents auxquels il est associé.
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+                                <button type="submit" class="btn btn-danger">Supprimer</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+        </th:block>
     </th:block>
 
-
-    <div data-bs-focus="false" class="modal fade" id="newTag"  role="dialog" aria-hidden="true">
-        <div class="modal-dialog modal-xl" role="document">
+    <!-- ==================== MODAL NOUVEAU GROUPE ==================== -->
+    <div class="modal fade" id="modal-new-group" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Ajouter un tag</h5>
-                    <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close">
-
-                    </button>
+                    <h5 class="modal-title"><i class="fi fi-rr-plus"></i> Nouveau groupe de tags</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
                 </div>
-                <form id="addCertificat" th:action="'/admin/tags?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" method="post" enctype="multipart/form-data">
+                <form th:action="'/admin/tags?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" method="post">
                     <div class="modal-body">
                         <div class="form-group mb-3">
-                            <label for="tagName" class="form-label">Nom du tag</label>
-                            <input id="tagName" class="form-control" type="text" name="name">
+                            <label class="form-label">Nom du groupe <span class="text-danger">*</span></label>
+                            <input class="form-control" type="text" name="name" required placeholder="ex: Type de document">
+                            <small class="text-muted">Ce nom apparaîtra comme en-tête de colonne dans la liste des demandes.</small>
                         </div>
                         <div class="form-group mb-3">
-                            <label for="tagColor" class="form-label">Couleur du tag</label>
+                            <label class="form-label">Couleur du groupe</label>
                             <br>
-                            <input id="tagColor" class="form-control tag-color" type="text" name="color">
+                            <input class="form-control tag-color" type="text" name="color" placeholder="Laisser vide pour couleur automatique">
+                            <small class="text-muted">La couleur sera déclinée automatiquement sur les tags du groupe.</small>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label class="form-label">Ordre d'affichage</label>
+                            <input class="form-control" type="number" name="displayOrder" value="0" min="0" style="width:100px">
+                            <small class="text-muted">Les colonnes sont affichées du plus petit au plus grand. À égalité, ordre alphabétique.</small>
                         </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                        <input type="submit" class="btn btn-success" value="Valider">
+                        <button type="submit" class="btn btn-success">Créer le groupe</button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
+
+
 </main>
 <footer th:replace="~{fragments/footer :: footer}"></footer>
 </body>

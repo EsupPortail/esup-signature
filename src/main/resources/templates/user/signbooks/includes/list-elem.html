@@ -66,6 +66,14 @@
                 </ul>
             </div>
         </td>
+        <td th:each="groupName : ${tagGroups}" class="d-none d-xl-table-cell">
+            <div class="d-flex flex-wrap gap-1">
+                <span th:each="tag : ${signBook.getTagsForGroup(groupName)}"
+                      class="badge rounded-pill"
+                      th:style="'background-color: ' + (${tag.groupColor} != null ? ${tag.groupColor} : ${tag.color}) + '; color: white;'"
+                      th:text="${tag.name}"></span>
+            </div>
+        </td>
         <td th:classappend="${signRequest.viewedByCurrentUser} ? '' : 'fw-bold'" class="clickable-td text-break d-none d-xxl-table-cell overflow-hidden" th:data-href="'/user/signrequests/' + ${signRequest.id}">
             <span th:text="${signBook.workflowName}"></span>
         </td>
@@ -106,18 +114,18 @@
         </td>
         <td>
             <div class="dropdown position-relative">
-                <button type="button" th:id="'menu-toggle_' + ${signBook.id}" class="btn text-dark"
+                <button type="button" th:id="'menu-toggle_' + ${signBook.id}" class="btn text-dark" th:title="'Actions ' + ${signRequest.title}"
                         th:data-bs-target="'#menu-' + ${signBook.id}" th:aria-controls="'menu-' + ${signBook.id}" data-bs-toggle="dropdown">
                     <i class="fi fi-rr-menu-dots-vertical"></i>
                 </button>
                 <ul class="dropdown-menu position-absolute ps-2 pe-2" th:id="'menu-' + ${signBook.id}">
                     <li>
-                        <a th:if="${signRequest.status == 'pending' && statusFilter == 'toSign'}" class="btn btn-transparent text-dark text-left col-12" role="button" th:href="'/user/signrequests/' + ${signRequest.id}">
+                        <a th:if="${signRequest.status == 'pending' && statusFilter == 'toSign'}" class="btn btn-transparent text-dark text-left col-12" title="Signer" role="button" th:href="'/user/signrequests/' + ${signRequest.id}">
                             <i class="fi fi-rr-attribution-pencil pr-2 text-success"></i> Signer
                         </a>
                     </li>
                     <li>
-                        <a th:unless="${signRequest.status == 'pending' && statusFilter == 'toSign'}" class="btn btn-transparent text-dark text-left col-12" role="button" th:href="'/user/signbooks/' + ${signBook.id}">
+                        <a th:unless="${signRequest.status == 'pending' && statusFilter == 'toSign'}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signbooks/' + ${signBook.id}">
                             <i class="fi fi-rr-eye pr-2"></i> Consulter
                         </a>
                     </li>
@@ -129,34 +137,34 @@
                         </form>
                     </li>
                     <li>
-                        <a th:if="${!signBook.hiddenByCurrentUser}" class="btn btn-transparent text-dark text-left col-12" role="button" th:href="'/user/signbooks/toggle/' + ${signBook.id} + '?statusFilter=' + ${statusFilter}">
+                        <a th:if="${!signBook.hiddenByCurrentUser}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signbooks/toggle/' + ${signBook.id} + '?statusFilter=' + ${statusFilter}">
                             <i class="fi fi-rr-eye-crossed pr-2"></i> Masquer
                         </a>
                     </li>
                     <li>
-                        <a th:if="${signBook.hiddenByCurrentUser}" class="btn btn-transparent text-dark text-left col-12" role="button" th:href="'/user/signbooks/toggle/' + ${signBook.id} + '?statusFilter=' + ${statusFilter}">
+                        <a th:if="${signBook.hiddenByCurrentUser}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signbooks/toggle/' + ${signBook.id} + '?statusFilter=' + ${statusFilter}">
                             <i class="fi fi-rr-eye-crossed pr-2"></i> Afficher dans la liste
                         </a>
                     </li>
                     <li>
-                        <a target="_blank" th:if="${signRequest.canDownloadAll}" class="btn btn-transparent text-dark text-left col-12" role="button"
+                        <a target="_blank" th:if="${signRequest.canDownloadAll}" class="btn btn-transparent text-dark text-left col-12" title="Télécharger" role="button"
                             th:href="'/ws-secure/global/get-last-files/' + ${signBook.id}">
                             <i class="fi fi-rr-download pr-2"></i> Télécharger tout
                         </a>
                     </li>
                     <li>
-                        <a target="_blank" th:if="${signRequest.canDownload}" class="btn btn-transparent text-dark text-left col-12" role="button"
+                        <a target="_blank" th:if="${signRequest.canDownload}" class="btn btn-transparent text-dark text-left col-12" title="Télécharger" role="button"
                             th:href="'/ws-secure/global/get-last-file/' + ${signRequest.id}">
                             <i class="fi fi-rr-download pr-2"></i> Télécharger
                         </a>
                     </li>
                     <li>
-                        <a th:if="${signBook.createByEppn == userEppn && signBook.deleted}" class="btn btn-transparent text-primary text-left col-12" th:href="'/user/signbooks/restore/' + ${signBook.id}" role="button">
+                        <a th:if="${signBook.createByEppn == userEppn && signBook.deleted}" class="btn btn-transparent text-primary text-left col-12" th:href="'/user/signbooks/restore/' + ${signBook.id}" role="button" title="Restaurer">
                             <i class="fi fi-rr-trash-restore pr-2"></i> Restaurer
                         </a>
                     </li>
                     <li th:if="${signBook.deleteableByCurrentUser}">
-                        <a th:if="${signBook.createByEppn == userEppn}" class="btn btn-transparent text-danger text-left col-12" th:href="'#modal-warning-' + ${signBook.id}" role="button" data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${signBook.id}">
+                        <a th:if="${signBook.createByEppn == userEppn}" class="btn btn-transparent text-danger text-left col-12" th:href="'#modal-warning-' + ${signBook.id}" role="button" title="Supprimer" data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${signBook.id}">
                             <i class="fi fi-rr-trash pr-2"></i> <span th:text="${!signRequest.deleted ? 'Mettre à la corbeille' : 'Supprimer de la corbeille'}"></span>
                         </a>
                     </li>
@@ -198,6 +206,7 @@
         <td class="clickable-td text-break">
             Ne contient aucun document
         </td>
+        <td th:each="groupName : ${tagGroups}" class="d-none d-xl-table-cell"></td>
         <td></td>
         <td></td>
         <td class="d-none d-xl-table-cell no-row-navigation">
@@ -226,7 +235,7 @@
         </td>
         <td>
             <div class="dropdown position-relative">
-                <button type="button" th:id="'menu-toggle_' + ${signBook.id}" class="btn text-dark" th:data-bs-target="'#menu-' + ${signBook.id}" th:aria-controls="'menu-' + ${signBook.id}" data-bs-toggle="dropdown">
+                <button type="button" th:id="'menu-toggle_' + ${signBook.id}" class="btn text-dark" th:title="'Actions ' + ${signBook.subject}" th:data-bs-target="'#menu-' + ${signBook.id}" th:aria-controls="'menu-' + ${signBook.id}" data-bs-toggle="dropdown">
                     <i class="fi fi-rr-menu-dots-vertical"></i>
                 </button>
                 <ul class="dropdown-menu position-absolute ps-2 pe-2" th:id="'menu-' + ${signBook.id}">

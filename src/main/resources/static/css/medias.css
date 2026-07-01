@@ -116,9 +116,9 @@
     }
 
     body.es-signrequest-page #tools #step-1 #addSignButton2 {
-        width: min(100%, 18rem);
+        width: min(100%, 14rem);
         min-width: 11rem;
-        max-width: 18rem;
+        max-width: 14rem;
         flex: 0 1 auto;
         margin-inline: auto;
         display: inline-flex;

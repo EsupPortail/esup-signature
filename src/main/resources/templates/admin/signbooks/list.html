@@ -85,6 +85,11 @@
     <!--                                    </th:block>-->
     <!--                                </select>-->
                         </th>
+                        <!-- Colonnes de tag hiérarchiques -->
+                        <th class="text-center" style="width: 8%;">Application</th>
+                        <th:block th:each="tagGroup : ${tagGroups}">
+                            <th class="text-center" style="width: 8%;" th:text="${tagGroup}"></th>
+                        </th:block>
                         <th class="d-none d-xxl-table-cell">
                             <div class="d-flex text-center">
                                 <select id="creatorFilter" class="auto-select-users sign-request-filter" data-es-check-cert="false" data-placeholder="Créateur" data-allow-deselect="true">

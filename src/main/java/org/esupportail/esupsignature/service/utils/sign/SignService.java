@@ -362,16 +362,20 @@ public class SignService {
 		SignatureImageParameters imageParameters = new SignatureImageParameters();
 		InMemoryDocument fileDocumentImage;
     Integer signImageNumber = signRequestParams.getSignImageNumber();
-    if(signImageNumber != null && signImageNumber >= 0 && (signImageNumber == 999997 || signImageNumber == 999998 || signImageNumber == 999999 || user.getSignImages().size() > signImageNumber || user.getEppn().equals("system"))) {
+    if(signImageNumber != null && signImageNumber >= 0 && (signImageNumber == 999996 || signImageNumber == 999997 || signImageNumber == 999998 || signImageNumber == 999999 || user.getSignImages().size() > signImageNumber || user.getEppn().equals("system"))) {
 			InputStream inputStream;
       if(signImageNumber == 999997) {
         inputStream = fileService.getDefaultParaphe(user.getName(), user.getFirstname(), user.getEmail(), true);
+      } else if(signImageNumber == 999996) {
+        inputStream = userService.getDefaultImageWithExtra(user, true);
       } else if(user.getSignImages().size() > signImageNumber && signRequestParams.getAddImage()) {
         inputStream = user.getSignImages().get(signImageNumber).getInputStream();
 			} else {
 				inputStream = fileService.getDefaultImage(user.getName(), user.getFirstname(), user.getEmail(), true);
 			}
-			InputStream signImage = fileService.addTextToImage(inputStream, signRequestParams, SignType.signature, user, date, userService.getRoles(user.getEppn()).contains("ROLE_OTP"));
+			InputStream signImage = signImageNumber == 999996
+				? inputStream
+				: fileService.addTextToImage(inputStream, signRequestParams, SignType.signature, user, date, userService.getRoles(user.getEppn()).contains("ROLE_OTP"));
 			if(BooleanUtils.isTrue(signRequestParams.getAddWatermark())) {
 				ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 				fileService.addImageWatermark(new ClassPathResource("/static/images/watermark.png").getInputStream(), signImage, outputStream, signRequestParams.getExtraOnTop());
@@ -658,7 +662,7 @@ public class SignService {
     protected boolean isSigned(SignRequest signRequest, Reports reports) {
         try {
             if(reports == null) {
-                reports = validate(signRequest.getId());
+                reports = validate(signRequest.getId(), ValidationLevel.BASIC_SIGNATURES);
             }
             List<Document> documents = getToSignDocuments(signRequest);
             if (!documents.isEmpty() && (signRequest.getParentSignBook().getLiveWorkflow() != null && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() != null)) {
@@ -680,11 +684,16 @@ public class SignService {
      */
     @Transactional
     public Reports validate(Long signRequestId) throws IOException {
+        return validate(signRequestId, ValidationLevel.LONG_TERM_DATA);
+    }
+
+    @Transactional
+    public Reports validate(Long signRequestId, ValidationLevel validationLevel) throws IOException {
         SignRequest signRequest = signRequestRepository.findById(signRequestId).orElseThrow();
         List<Document> documents = getToSignDocuments(signRequest);
         if(!documents.isEmpty()) {
             byte[] bytes = documents.get(0).getInputStream().readAllBytes();
-            return validationService.validate(new ByteArrayInputStream(bytes), null);
+            return validationService.validate(new ByteArrayInputStream(bytes), null, validationLevel);
         } else {
             return null;
         }

@@ -34,21 +34,27 @@ public interface WorkflowRepository extends CrudRepository<Workflow, Long> {
                 select r from w.roles r
                 where r in :roles
            )
+           or :email member of w.authorizedCanCreateEmails
         order by w.id
     """)
-    List<Workflow> findAuthorizedFormsByRoles(Set<String> roles);
+    List<Workflow> findAuthorizedFormsByEmailAndRoles(String email, Set<String> roles);
     @Query("select distinct w from Workflow w where w.id not in (select distinct f.workflow.id from Form f where f.workflow is not null) and w.createBy.eppn = 'system'")
     List<Workflow> findNotInForm();
     @Query("select distinct w from Workflow w " +
             "where :email member of w.managers " +
             "or exists (select r from Workflow w2 join w2.dashboardRoles r where w = w2 and r in :roles)")
     List<Workflow> findWorkflowByManagersIn(String email, Set<String> roles);
+    @Query("select count(distinct w) from Workflow w " +
+            "where :email member of w.managers " +
+            "or exists (select r from Workflow w2 join w2.dashboardRoles r where w = w2 and r in :roles)")
+    long countWorkflowByManagersIn(String email, Set<String> roles);
     @Query("select w from Workflow w where w.id = :idLong or w.token = :idStr")
     WorkflowDto getByIdJson(Long idLong, String idStr);
     @Query("""
         select distinct w
         from Workflow w
         left join fetch w.tags
+        left join fetch w.managers
         where w.id in :ids
     """)
     List<Workflow> findByIdInWithTags(Set<Long> ids);

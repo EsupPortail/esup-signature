@@ -1,7 +1,6 @@
 package org.esupportail.esupsignature.service.security.oauth;
 
-import org.esupportail.esupsignature.service.security.OidcSecurityService;
-import org.esupportail.esupsignature.service.security.OidcUserSecurityService;
+import org.esupportail.esupsignature.service.security.OidcOtpSecurityService;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
@@ -15,7 +14,6 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequestEntityConverter;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
-import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
 import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.OAuth2AuthorizationException;
@@ -49,12 +47,11 @@ public class ValidatingOAuth2UserService implements OAuth2UserService<OidcUserRe
 
     private final Converter<OAuth2UserRequest, RequestEntity<?>> requestEntityConverter = new OAuth2UserRequestEntityConverter();
     private final RestOperations restOperations;
-    private final OidcUserService oidcUserService = new OidcUserService();
-    private final List<OidcSecurityService> securityServices;
+    private final List<OidcOtpSecurityService> securityServices;
     private final ClientRegistrationRepository clientRegistrationRepository;
 
 
-    public ValidatingOAuth2UserService(List<OidcSecurityService> securityServices, ClientRegistrationRepository clientRegistrationRepository) {
+    public ValidatingOAuth2UserService(List<OidcOtpSecurityService> securityServices, ClientRegistrationRepository clientRegistrationRepository) {
         this.securityServices = securityServices;
         this.clientRegistrationRepository = clientRegistrationRepository;
         JwtHttpMessageConverter jwtConverter = new JwtHttpMessageConverter();
@@ -77,11 +74,46 @@ public class ValidatingOAuth2UserService implements OAuth2UserService<OidcUserRe
     public OidcUser loadUser(OidcUserRequest userRequest) throws OAuth2AuthenticationException {
         Assert.notNull(userRequest, "userRequest cannot be null");
         String registrationId = userRequest.getClientRegistration().getRegistrationId();
-        OidcSecurityService currentSecurityService = securityServices.stream().filter(s -> s.getCode().equals(registrationId)).findFirst().get();
-        if (currentSecurityService instanceof OidcUserSecurityService oidcUserSecurityService) {
-            OidcUser oidcUser = oidcUserService.loadUser(userRequest);
-            return new DefaultOidcUser(oidcUser.getAuthorities(), oidcUser.getIdToken(), oidcUser.getUserInfo(), oidcUserSecurityService.getPrincipalClaim());
+
+        // Traitement spécial pour Azure AD - utiliser les claims de l'ID token au lieu d'appeler UserInfo
+        if ("azuread".equals(registrationId)) {
+            return loadAzureAdUser(userRequest);
         }
+
+        // Traitement normal pour les autres providers (FranceConnect, ProConnect, etc.)
+        return loadStandardUser(userRequest);
+    }
+
+    private OidcUser loadAzureAdUser(OidcUserRequest userRequest) throws OAuth2AuthenticationException {
+        String registrationId = userRequest.getClientRegistration().getRegistrationId();
+        OidcOtpSecurityService currentSecurityService = securityServices.stream()
+                .filter(s -> s.getCode().equals(registrationId))
+                .findFirst()
+                .orElseThrow(() -> new OAuth2AuthenticationException(
+                    new OAuth2Error("missing_security_service", "No security service found for " + registrationId, null)));
+
+        OidcIdToken idToken = userRequest.getIdToken();
+        Map<String, Object> userAttributes = idToken.getClaims();
+
+        Set<GrantedAuthority> authorities = new LinkedHashSet<>();
+        authorities.add(new OAuth2UserAuthority(userAttributes));
+        OAuth2AccessToken token = userRequest.getAccessToken();
+        for (String authority : token.getScopes()) {
+            authorities.add(new SimpleGrantedAuthority("SCOPE_" + authority));
+        }
+
+        String userNameAttributeName = userRequest.getClientRegistration().getProviderDetails()
+                .getUserInfoEndpoint().getUserNameAttributeName();
+        if (!StringUtils.hasText(userNameAttributeName)) {
+            userNameAttributeName = "email";
+        }
+
+        return new DefaultOidcUser(authorities, idToken, userNameAttributeName);
+    }
+
+    private OidcUser loadStandardUser(OidcUserRequest userRequest) throws OAuth2AuthenticationException {
+        String registrationId = userRequest.getClientRegistration().getRegistrationId();
+        OidcOtpSecurityService currentSecurityService = securityServices.stream().filter(s -> s.getCode().equals(registrationId)).findFirst().get();
         JwtDecoder jwtDecoder = getJwtDecoder(currentSecurityService.getCode(), currentSecurityService.getSignatureAlgorithm());
         if (!StringUtils.hasText(userRequest.getClientRegistration().getProviderDetails().getUserInfoEndpoint().getUri())) {
             OAuth2Error oauth2Error = new OAuth2Error(

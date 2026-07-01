@@ -52,6 +52,7 @@ public class UserAndOtpSignRequestController {
     private final GlobalProperties globalProperties;
     private final SignBookService signBookService;
     private final UiFetchService uiFetchService;
+    private final PaperlessService paperlessService;
 
     private final Map<String, Object> userLocks = new ConcurrentHashMap<>();
     private final UiFetchSignRequestService uiFetchSignRequestService;
@@ -62,7 +63,7 @@ public class UserAndOtpSignRequestController {
         return userLocks.computeIfAbsent(authUserEppn, k -> new Object());
     }
 
-    public UserAndOtpSignRequestController(SignRequestService signRequestService, CommentService commentService, UserService userService, GlobalProperties globalProperties, SignBookService signBookService, UiFetchService uiFetchService, UiFetchSignRequestService uiFetchSignRequestService, PreAuthorizeService preAuthorizeService, MobileSignTokenService mobileSignTokenService) {
+    public UserAndOtpSignRequestController(SignRequestService signRequestService, CommentService commentService, UserService userService, GlobalProperties globalProperties, SignBookService signBookService, UiFetchService uiFetchService, UiFetchSignRequestService uiFetchSignRequestService, PreAuthorizeService preAuthorizeService, MobileSignTokenService mobileSignTokenService, PaperlessService paperlessService) {
         this.signRequestService = signRequestService;
         this.commentService = commentService;
         this.userService = userService;
@@ -72,6 +73,7 @@ public class UserAndOtpSignRequestController {
         this.uiFetchSignRequestService = uiFetchSignRequestService;
         this.preAuthorizeService = preAuthorizeService;
         this.mobileSignTokenService = mobileSignTokenService;
+        this.paperlessService = paperlessService;
     }
 
     @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
@@ -97,10 +99,23 @@ public class UserAndOtpSignRequestController {
         }
         ShowSignRequestDto showSignRequest = context.getShowSignRequest();
         model.addAttribute("favoriteSignRequestParamsJson", favoriteSignRequestParamsJson);
-        model.addAttribute("signatureUiConfig", SignatureUiConfigDto.fromGlobalProperties(globalProperties));
+        SignatureUiConfigDto signatureUiConfig = SignatureUiConfigDto.fromGlobalProperties(globalProperties);
+        if (signatureUiConfig != null) {
+            signatureUiConfig.setUserTitle(userService.getUserTitle(userService.getByEppn(userEppn)));
+        }
+        model.addAttribute("signatureUiConfig", signatureUiConfig);
         model.addAttribute("showSignRequest", showSignRequest);
         model.addAttribute("signRequestFull", showSignRequest.signRequestFull());
         model.addAttribute("signRequestLight", showSignRequest.signRequestLight());
+        model.addAttribute("userTitle", userService.getUserTitle(userService.getByEppn(userEppn)));
+        if (paperlessService != null && paperlessService.isConfigured()) {
+            model.addAttribute("paperlessBaseUrl", paperlessService.getPaperlessUrl().replaceAll("/$", ""));
+            SignRequest signRequestForPaperless = signRequestService.getById(id);
+            if (signRequestForPaperless != null) {
+                model.addAttribute("paperlessSourceDocumentId", signRequestForPaperless.getPaperlessSourceDocumentId());
+                model.addAttribute("paperlessSignedDocumentId", signRequestForPaperless.getPaperlessSignedDocumentId());
+            }
+        }
         return "user/signrequests/show";
     }
 

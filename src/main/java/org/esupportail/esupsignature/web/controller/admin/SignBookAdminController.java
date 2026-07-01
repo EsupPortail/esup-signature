@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.dto.ui.global.UiMessageDto;
+import org.esupportail.esupsignature.service.TagService;
 import org.esupportail.esupsignature.dto.ui.global.UiSlimSelectDto;
 import org.esupportail.esupsignature.dto.projection.jpa.UserProjectionDto;
 import org.esupportail.esupsignature.dto.page.user.signbook.SignBookFullDto;
@@ -65,8 +66,9 @@ public class SignBookAdminController {
 	private final SignBookService signBookService;
 	private final SignBookRepository signBookRepository;
 	private final TemplateEngine templateEngine;
+	private final TagService tagService;
 
-    public SignBookAdminController(FormService formService, UserService userService, WorkflowService workflowService, SignBookService signBookService, SignBookRepository signBookRepository, TemplateEngine templateEngine, GlobalProperties globalProperties) {
+    public SignBookAdminController(FormService formService, UserService userService, WorkflowService workflowService, SignBookService signBookService, SignBookRepository signBookRepository, TemplateEngine templateEngine, GlobalProperties globalProperties, TagService tagService) {
         this.formService = formService;
         this.userService = userService;
         this.workflowService = workflowService;
@@ -74,6 +76,7 @@ public class SignBookAdminController {
         this.signBookRepository = signBookRepository;
         this.templateEngine = templateEngine;
 		this.globalProperties = globalProperties;
+		this.tagService = tagService;
 	}
 
 	@GetMapping
@@ -111,6 +114,7 @@ public class SignBookAdminController {
 		model.addAttribute("creatorFilter", creatorFilter);
 		if(!"%".equals(docTitleFilter)) model.addAttribute("docTitleFilter", docTitleFilter);
 		model.addAttribute("dateFilter", dateFilter);
+		model.addAttribute("tagGroups", tagService.getAllGroupNames());
 		return "admin/signbooks/list";
 	}
 
@@ -158,8 +162,9 @@ public class SignBookAdminController {
 		ctx.setVariables(model.asMap());
         ctx.setVariable("userEppn", userEppn);
         ctx.setVariable("statusFilter", statusFilter);
-        CsrfToken token = (CsrfToken) httpServletRequest.getAttribute(CsrfToken.class.getName());
-        ctx.setVariable("_csrf", token);
+		CsrfToken token = (CsrfToken) httpServletRequest.getAttribute(CsrfToken.class.getName());
+		ctx.setVariable("_csrf", token);
+		ctx.setVariable("tagGroups", tagService.getAllGroupNames());
 		return templateEngine.process("admin/signbooks/includes/list-elem.html", ctx);
 	}
 

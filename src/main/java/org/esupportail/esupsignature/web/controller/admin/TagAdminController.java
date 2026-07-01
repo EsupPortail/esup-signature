@@ -5,7 +5,6 @@ import org.esupportail.esupsignature.entity.Tag;
 import org.esupportail.esupsignature.service.TagService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -34,8 +33,8 @@ public class TagAdminController {
     }
 
     @GetMapping
-    public String list(Model model, Pageable pageable) {
-        model.addAttribute("tags", tagService.getAllTags(pageable));
+    public String list(Model model) {
+        model.addAttribute("groupsWithTags", tagService.getGroupsWithTags());
         return "admin/tags/list";
     }
 

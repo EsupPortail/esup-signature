@@ -119,8 +119,11 @@ public class SignBookService {
     private final SmsProperties smsProperties;
     private final SignService signService;
     private final UiSignBookMapper uiSignBookMapper;
+    private final PaperlessService paperlessService;
+    private final PaperlessAsyncService paperlessAsyncService;
+    private final TagService tagService;
 
-    public SignBookService(GlobalProperties globalProperties, MessageSource messageSource, AuditTrailService auditTrailService, SignBookRepository signBookRepository, SignRequestService signRequestService, UserService userService, FsAccessFactoryService fsAccessFactoryService, WebUtilsService webUtilsService, FileService fileService, PdfService pdfService, WorkflowService workflowService, MailService mailService, WorkflowStepService workflowStepService, LiveWorkflowService liveWorkflowService, LiveWorkflowStepService liveWorkflowStepService, DataService dataService, LogService logService, TargetService targetService, UserPropertieService userPropertieService, CommentService commentService, OtpService otpService, DataRepository dataRepository, WorkflowRepository workflowRepository, UserShareService userShareService, RecipientService recipientService, DocumentService documentService, SignRequestParamsService signRequestParamsService, PreFillService preFillService, ReportService reportService, ActionService actionService, SignRequestParamsRepository signRequestParamsRepository, ObjectMapper objectMapper, SignWithService signWithService, SmsProperties smsProperties, SignService signService, UiSignBookMapper uiSignBookMapper) {
+    public SignBookService(GlobalProperties globalProperties, MessageSource messageSource, AuditTrailService auditTrailService, SignBookRepository signBookRepository, SignRequestService signRequestService, UserService userService, FsAccessFactoryService fsAccessFactoryService, WebUtilsService webUtilsService, FileService fileService, PdfService pdfService, WorkflowService workflowService, MailService mailService, WorkflowStepService workflowStepService, LiveWorkflowService liveWorkflowService, LiveWorkflowStepService liveWorkflowStepService, DataService dataService, LogService logService, TargetService targetService, UserPropertieService userPropertieService, CommentService commentService, OtpService otpService, DataRepository dataRepository, WorkflowRepository workflowRepository, UserShareService userShareService, RecipientService recipientService, DocumentService documentService, SignRequestParamsService signRequestParamsService, PreFillService preFillService, ReportService reportService, ActionService actionService, SignRequestParamsRepository signRequestParamsRepository, ObjectMapper objectMapper, SignWithService signWithService, SmsProperties smsProperties, SignService signService, UiSignBookMapper uiSignBookMapper, PaperlessService paperlessService, PaperlessAsyncService paperlessAsyncService, TagService tagService) {
         this.globalProperties = globalProperties;
         this.messageSource = messageSource;
         this.auditTrailService = auditTrailService;
@@ -157,6 +160,9 @@ public class SignBookService {
         this.smsProperties = smsProperties;
         this.signService = signService;
         this.uiSignBookMapper = uiSignBookMapper;
+        this.paperlessService = paperlessService;
+        this.paperlessAsyncService = paperlessAsyncService;
+        this.tagService = tagService;
     }
 
     private String toContainsLikePattern(String value) {
@@ -164,6 +170,49 @@ public class SignBookService {
             return null;
         }
         return LikePatternUtils.containsPattern(value.toLowerCase(Locale.ROOT));
+    }
+
+    /**
+     * Attache des tags hiérarchiques à un SignBook à partir de chemins textuels.
+     * Chaque chemin est au format "Racine/Niveau2/.../Feuille".
+     * Si un tag n'existe pas, il est créé automatiquement avec une couleur dérivée du parent.
+     * Pour le premier niveau (racine), un seul tag est conservé (le dernier fourni remplace).
+     * Pour les niveaux suivants, plusieurs valeurs par groupe sont acceptées.
+     *
+     * @param signBookId identifiant du SignBook cible
+     * @param tagPaths   liste de chemins (ex: ["CRM/Type/Attestation", "CRM/Lieu/Paris"])
+     */
+    @Transactional
+    public void addTagsByPath(Long signBookId, List<String> tagPaths) {
+        if (tagPaths == null || tagPaths.isEmpty()) return;
+        SignBook signBook = getById(signBookId);
+        // On ne garde qu'un seul tag par racine (remplace si même racine)
+        Set<Long> rootsAlreadyAdded = new HashSet<>();
+        for (String path : tagPaths) {
+            if (path == null || path.isBlank()) continue;
+            List<String> parts = Arrays.stream(path.split("/"))
+                    .map(String::trim)
+                    .filter(s -> !s.isEmpty())
+                    .collect(Collectors.toList());
+            if (parts.isEmpty()) continue;
+            Tag leafTag = tagService.resolveOrCreate(parts);
+            // Identifier la racine du chemin
+            Tag root = tagService.getRootTag(leafTag);
+            if (parts.size() == 1) {
+                // Chemin = racine uniquement : remplacer tout tag de cette racine
+                if (rootsAlreadyAdded.contains(root.getId())) {
+                    signBook.getTags().removeIf(t -> tagService.getRootTag(t).equals(root));
+                }
+                signBook.getTags().add(leafTag);
+                rootsAlreadyAdded.add(root.getId());
+            } else {
+                // Chemin avec niveaux intermédiaires : autoriser plusieurs valeurs par groupe
+                // mais remplacer si même chemin exact (dédoublonnage)
+                if (!signBook.getTags().contains(leafTag)) {
+                    signBook.getTags().add(leafTag);
+                }
+            }
+        }
     }
 
     /**
@@ -306,6 +355,7 @@ public class SignBookService {
             }
         }
         Page<SignBook> signBooks;
+        long tq0 = System.currentTimeMillis();
         User creatorFilterUser = null;
         if(creatorFilter != null) {
             creatorFilterUser = userService.getByEppn(creatorFilter);
@@ -341,19 +391,42 @@ public class SignBookService {
         } else {
             signBooks = signBookRepository.findByCreateByIdAndStatusAndSignRequestsNotNull(user, SignRequestStatus.valueOf(statusFilter), pageable);
         }
+        logger.info("[list-ws] requête repository: {}ms", System.currentTimeMillis() - tq0);
         if(!userEppn.equals(authUserEppn)) {
             List<SignBook> sharedSignBooks = filterByUserShares(userEppn, authUserEppn, signBooks.getContent());
             signBooks = new PageImpl<>(sharedSignBooks, pageable, sharedSignBooks.size());
         }
+        long tp0 = System.currentTimeMillis();
         preloadWorkflowTags(signBooks.getContent());
+        logger.info("[list-ws] preloadWorkflowTags: {}ms", System.currentTimeMillis() - tp0);
+        long td0 = System.currentTimeMillis();
+        // Pré-charger le User une seule fois pour éviter N requêtes SQL en boucle (fix 504)
+        User currentUser = userService.getByEppn(userEppn);
+        boolean isAdmin = currentUser != null && currentUser.getRoles().contains("ROLE_ADMIN");
+        logger.info("[list-ws] isAdmin={}, currentUser loaded in {}ms", isAdmin, System.currentTimeMillis() - td0);
         for (SignBook signBook : signBooks.getContent()) {
-            if(!signBook.getSignRequests().isEmpty()) {
-                signBook.setDisplayNotif(signRequestService.isDisplayNotif(signBook.getSignRequests().get(0), userEppn));
-                signBook.setDeleteableByCurrentUser(signRequestService.isDeletetable(signBook.getSignRequests().get(0), userEppn) && (signBook.getCreateBy().getEppn().equals(userEppn)));
+            boolean isCreator = signBook.getCreateBy() != null && signBook.getCreateBy().getEppn().equals(userEppn);
+            if (!isCreator) {
+                signBook.setDeleteableByCurrentUser(false);
+            } else {
+                signBook.setDeleteableByCurrentUser(isDeletetableFast(signBook, currentUser, isAdmin));
             }
         }
+        logger.info("[list-ws] boucle isDeletetable: {}ms", System.currentTimeMillis() - td0);
         return signBooks;
     }
+
+    public boolean isDeletetableFast(SignBook signBook, User user, boolean isAdmin) {
+        if (isAdmin) return true;
+        if (signBook.getLiveWorkflow() == null || signBook.getLiveWorkflow().getWorkflow() == null) {
+            return true;
+        }
+        Workflow workflow = signBook.getLiveWorkflow().getWorkflow();
+        return workflow.getDisableDeleteByCreator() == null
+                || !workflow.getDisableDeleteByCreator()
+                || (user != null && workflow.getManagers().contains(user.getEmail()));
+    }
+
 
     private void preloadWorkflowTags(Collection<SignBook> signBooks) {
         Set<Long> workflowIds = signBooks.stream()
@@ -370,8 +443,13 @@ public class SignBookService {
 
     @Transactional(readOnly = true)
     public Page<SignBookFullDto> getSignBookListItems(String userEppn, String authUserEppn, String statusFilter, String recipientsFilter, String workflowFilter, String docTitleFilter, String creatorFilter, String dateFilter, Pageable pageable) {
+        long t0 = System.currentTimeMillis();
         Page<SignBook> signBooks = getSignBooks(userEppn, authUserEppn, statusFilter, recipientsFilter, workflowFilter, docTitleFilter, creatorFilter, dateFilter, pageable);
-        return signBooks.map(signBook -> uiSignBookMapper.toSignBookListItemDto(signBook, userEppn));
+        long t1 = System.currentTimeMillis();
+        logger.info("[list-ws] getSignBooks (statusFilter='{}'): {}ms, {} éléments", statusFilter, t1 - t0, signBooks.getNumberOfElements());
+        Page<SignBookFullDto> result = signBooks.map(signBook -> uiSignBookMapper.toSignBookListItemDto(signBook, userEppn));
+        logger.info("[list-ws] mapping DTO: {}ms", System.currentTimeMillis() - t1);
+        return result;
     }
 
     @Transactional(readOnly = true)
@@ -570,6 +648,11 @@ public class SignBookService {
         signBook.setLiveWorkflow(liveWorkflowService.create(workflowName, workflow));
         signBook.setDescription(comment);
         signBook.setSubject(subject);
+        // Copie des tags du Workflow vers le SignBook pour que les notifications
+        // puissent afficher les vignettes de tags dynamiques
+        if (workflow != null && workflow.getTags() != null && !workflow.getTags().isEmpty()) {
+            signBook.getTags().addAll(workflow.getTags());
+        }
         signBookRepository.save(signBook);
         if(geneateName) {
             subject = generateName(null, workflow, user, false, false, signBook.getId());
@@ -1547,6 +1630,12 @@ public class SignBookService {
                         signRequestParams.setAddExtra(authUser.getFavoriteSignRequestParams().getAddExtra());
                         signRequestParams.setIsExtraText(authUser.getFavoriteSignRequestParams().getIsExtraText());
                         signRequestParams.setExtraText(authUser.getFavoriteSignRequestParams().getExtraText());
+                        if (!org.springframework.util.StringUtils.hasText(signRequestParams.getExtraText())) {
+                            String userTitle = userService.getUserTitle(authUser);
+                            if (org.springframework.util.StringUtils.hasText(userTitle)) {
+                                signRequestParams.setExtraText(userTitle);
+                            }
+                        }
                         signRequestParams.setExtraDate(authUser.getFavoriteSignRequestParams().getExtraDate());
                         signRequestParams.setExtraType(authUser.getFavoriteSignRequestParams().getExtraType());
                         signRequestParams.setExtraDate(authUser.getFavoriteSignRequestParams().getExtraDate());
@@ -1891,6 +1980,12 @@ public class SignBookService {
                     signRequestParamse.setAddWatermark(user.getFavoriteSignRequestParams().getAddWatermark());
                     signRequestParamse.setAddExtra(user.getFavoriteSignRequestParams().getAddExtra());
                     signRequestParamse.setExtraText(user.getFavoriteSignRequestParams().getExtraText());
+                    if (!org.springframework.util.StringUtils.hasText(signRequestParamse.getExtraText())) {
+                        String userTitle = userService.getUserTitle(user);
+                        if (org.springframework.util.StringUtils.hasText(userTitle)) {
+                            signRequestParamse.setExtraText(userTitle);
+                        }
+                    }
                     signRequestParamse.setTextPart(user.getFavoriteSignRequestParams().getTextPart());
                     signRequestParamse.setExtraDate(user.getFavoriteSignRequestParams().getExtraDate());
                     signRequestParamse.setExtraType(user.getFavoriteSignRequestParams().getExtraType());
@@ -2571,6 +2666,7 @@ public class SignBookService {
             }
         }
         signImages.add(fileService.getBase64Image(userService.getDefaultImage(userEppn), "default-image.png"));
+        signImages.add(fileService.getBase64Image(userService.getDefaultImageWithExtra(userEppn), "default-image-with-extra.png"));
         if(StringUtils.hasText(user.getName()) && StringUtils.hasText(user.getFirstname())) {
             signImages.add(fileService.getBase64Image(userService.getDefaultParaphe(userEppn), "default-paraphe.png"));
         }
@@ -2646,9 +2742,31 @@ public class SignBookService {
                                         status = SignRequestStatus.refused;
                                     }
                                     try {
-                                        targetService.sendRest(target.getTargetUri(), signRequest.getId().toString(), status.name(), "end", authUserEppn, "");
-                                        target.setTargetOk(true);
-                                        signRequestService.updateStatus(signRequest.getId(), signRequest.getStatus(), "Exporté vers " + targetUrl, null, "SUCCESS", null, null, null, null, authUserEppn, authUserEppn);
+                                        boolean paperlessAsync = false;
+                                        if (status.equals(SignRequestStatus.completed) && signRequest.getPaperlessSourceDocumentId() != null && paperlessService.isConfigured()) {
+                                            try {
+                                                FsFile signedFsFile = signRequestService.getLastSignedFsFile(signRequest);
+                                                if (signedFsFile != null) {
+                                                    byte[] pdfBytes = signedFsFile.getInputStream().readAllBytes();
+                                                    String filename = StringUtils.hasText(signedFsFile.getName()) ? signedFsFile.getName() : "document-signe.pdf";
+                                                    String signataires = signRequest.getRecipientHasSigned().entrySet().stream()
+                                                        .filter(e -> e.getValue() != null && !ActionType.none.equals(e.getValue().getActionType()))
+                                                        .map(e -> e.getKey().getUser().getEmail())
+                                                        .collect(Collectors.joining(", "));
+                                                    paperlessAsyncService.uploadAndLinkAsync(signRequest.getPaperlessSourceDocumentId(), pdfBytes, filename, signRequest.getId(), signataires, authUserEppn,
+                                                            target.getId(), target.getTargetUri(), status.name());
+                                                    logger.info("auto-archive Paperless démarrée en arrière-plan pour signRequest={} — webhook REST target différé", signRequest.getId());
+                                                    paperlessAsync = true;
+                                                }
+                                            } catch (Exception pe) {
+                                                logger.error("Échec auto-archive Paperless pour signRequest={}", signRequest.getId(), pe);
+                                            }
+                                        }
+                                        if (!paperlessAsync) {
+                                            targetService.sendRest(target.getTargetUri(), signRequest.getId().toString(), status.name(), "end", authUserEppn, "");
+                                            target.setTargetOk(true);
+                                            signRequestService.updateStatus(signRequest.getId(), signRequest.getStatus(), "Exporté vers " + targetUrl, null, "SUCCESS", null, null, null, null, authUserEppn, authUserEppn);
+                                        }
                                     } catch (Exception e) {
                                         logger.error("rest export fail : " + target.getTargetUri(), e);
                                         allTargetsDone = false;
@@ -2787,9 +2905,6 @@ public class SignBookService {
             for(SignRequest signRequest : signBook.getSignRequests()) {
                 Document signedFile = signRequest.getLastSignedDocument();
                 if(signedFile != null) {
-                    // TODO: générer le sous-dossier d'archivage avec l'id + "_" + le titre du circuit
-                    // pour les workflows, et conserver un comportement hors circuit cohérent pour les demandes
-                    // sans workflow.
                     String subPath = "/" + signRequest.getParentSignBook().getWorkflowName().replaceAll("[^a-zA-Z0-9]", "_") + "/";
                     if(signBook.getStatus().equals(SignRequestStatus.refused)) {
                         subPath += "refused/";
@@ -2864,8 +2979,6 @@ public class SignBookService {
      */
     @Transactional
     public boolean needToBeArchived(SignBook signBook) {
-        // TODO: traiter les circuits personnels (workflow.createBy != system) comme les demandes hors circuit :
-        // ils n'ont pas d'archiveTarget saisissable et doivent utiliser global.archive-uri.
         return signBook.getLiveWorkflow() != null
                 && (signBook.getLiveWorkflow().getWorkflow() == null
                 || (signBook.getLiveWorkflow().getWorkflow().getStartArchiveDate() != null

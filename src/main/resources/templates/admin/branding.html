@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head}"></head>
+<body>
+<header th:replace="~{fragments/nav :: nav}"></header>
+<main role="main">
+    <div class="es-wrapper">
+        <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full text-uppercase">
+            <ol id="breadcrumb-ol" class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/admin" class="d-flex align-items-center"><i class="fi fi-rr-chess-queen"></i> Administration</a></li>
+                <li class="breadcrumb-item active">Personnalisation</li>
+            </ol>
+        </nav>
+        <div id="content" class="es-content-full">
+            <div class="es-main-content d-flex">
+                <div class="es-sidebar d-flex">
+                    <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
+                </div>
+                <div class="flex-grow-1 h-100 overflow-auto" style="min-height: 0;">
+                    <div class="p-0 m-2">
+                        <div th:if="${message}" class="alert alert-success alert-dismissible col-lg-10 mx-auto mb-3" role="alert">
+                <span th:text="${message}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+
+            <!-- Texte de la page de connexion -->
+            <div class="card col-lg-10 mx-auto mb-4">
+                <div class="card-header">
+                    <strong>Textes de la page de connexion</strong>
+                </div>
+                <div class="card-body">
+                    <form th:action="@{/admin/branding/save-text}" method="post">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                        <div class="mb-3">
+                            <label class="form-label">Titre principal</label>
+                            <input type="text" class="form-control" name="loginTitle"
+                                   th:value="${loginTitle != null ? loginTitle : 'Bienvenue'}"
+                                   placeholder="Bienvenue"/>
+                            <div class="form-text">Affiché en grand sur le côté gauche de la page de connexion.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Sous-titre</label>
+                            <input type="text" class="form-control" name="loginSubtitle"
+                                   th:value="${loginSubtitle != null ? loginSubtitle : 'Accédez à la plateforme de signature avec vos identifiants habituels.'}"
+                                   placeholder="Accédez à la plateforme de signature avec vos identifiants habituels."/>
+                            <div class="form-text">Affiché sous le titre principal.</div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Enregistrer les textes</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Image de fond -->
+            <div class="card col-lg-10 mx-auto mb-4">
+                <div class="card-header">
+                    <strong>Image de fond de la page de connexion</strong>
+                </div>
+                <div class="card-body">
+                    <div th:if="${hasBackground}" class="mb-3">
+                        <label class="form-label">Image actuelle</label><br>
+                        <img src="/public/branding/login-background" style="max-height:180px; border-radius:8px; border:1px solid #dee2e6;" alt="Fond actuel"/>
+                        <div class="mt-2">
+                            <form th:action="@{/admin/branding/clear-background}" method="post" class="d-inline">
+                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                <button type="submit" class="btn btn-sm btn-danger">Supprimer l'image</button>
+                            </form>
+                        </div>
+                    </div>
+                    <div th:unless="${hasBackground}" class="alert alert-secondary mb-3">
+                        Aucune image personnalisée — l'image par défaut est utilisée.
+                    </div>
+                    <form th:action="@{/admin/branding/upload-background}" method="post" enctype="multipart/form-data">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                        <div class="mb-3">
+                            <label class="form-label">Nouvelle image (JPG, PNG recommandé)</label>
+                            <input type="file" class="form-control" name="backgroundImage" accept="image/*" required/>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Téléverser l'image</button>
+                    </form>
+                </div>
+            </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+</html>

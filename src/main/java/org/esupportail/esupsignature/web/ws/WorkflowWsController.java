@@ -53,8 +53,9 @@ public class WorkflowWsController {
     private final UserService userService;
     private final SignRequestService signRequestService;
     private final SignRequestParamsService signRequestParamsService;
+    private final org.esupportail.esupsignature.service.PaperlessService paperlessService;
 
-    public WorkflowWsController(WorkflowService workflowService, WorkflowExportService workflowExportService, SignBookService signBookService, RecipientService recipientService, UserService userService, SignRequestService signRequestService, SignRequestParamsService signRequestParamsService) {
+    public WorkflowWsController(WorkflowService workflowService, WorkflowExportService workflowExportService, SignBookService signBookService, RecipientService recipientService, UserService userService, SignRequestService signRequestService, SignRequestParamsService signRequestParamsService, @org.springframework.beans.factory.annotation.Autowired(required = false) org.esupportail.esupsignature.service.PaperlessService paperlessService) {
         this.workflowService = workflowService;
         this.workflowExportService = workflowExportService;
         this.signBookService = signBookService;
@@ -62,6 +63,7 @@ public class WorkflowWsController {
         this.userService = userService;
         this.signRequestService = signRequestService;
         this.signRequestParamsService = signRequestParamsService;
+        this.paperlessService = paperlessService;
     }
 
     @CrossOrigin
@@ -256,6 +258,94 @@ public class WorkflowWsController {
             logger.error("get file error", e);
         }
         return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @CrossOrigin
+    @PostMapping(value = "/{id}/new-from-paperless")
+    @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Création d'une demande de signature à partir d'un document stocké dans Paperless-ngx")
+    @PreAuthorize("@wsAccessTokenService.createWorkflowAccess(#id, #xApiKey)")
+    public ResponseEntity<?> startFromPaperless(
+            @PathVariable String id,
+            @RequestParam @Parameter(description = "ID du document dans Paperless-ngx") Long paperlessDocumentId,
+            @RequestParam(required = false) @Parameter(description = "Paramètres des étapes (objet json)") String stepsJsonString,
+            @RequestParam(required = false) @Parameter(description = "EPPN du créateur/propriétaire de la demande") String createByEppn,
+            @RequestParam(required = false) @Parameter(description = "Titre (facultatif, sinon le nom du fichier Paperless est utilisé)") String title,
+            @RequestParam(required = false) @Parameter(description = "Scanner les champs signature (false par défaut)") Boolean scanSignatureFields,
+            @RequestParam(required = false, defaultValue = "false") @Parameter(description = "Trier les champs signature par leurs noms") Boolean orderSignsByName,
+            @RequestParam(required = false) @Parameter(description = "Liste des destinataires finaux", example = "[email]") List<String> targetEmails,
+            @RequestParam(required = false) @Parameter(description = "Emplacements finaux") List<String> targetUrls,
+            @RequestParam(required = false, defaultValue = "true") @Parameter(description = "Envoyer une alerte mail") Boolean sendEmailAlert,
+            @RequestParam(required = false) @Parameter(description = "Commentaire") String comment,
+            @RequestParam(required = false) @Parameter(description = "Retour au format json (false par défaut)") Boolean json,
+            @RequestParam(required = false) @Parameter(description = "Liste des participants (ancien format)") List<String> recipientEmails,
+            @RequestParam(required = false) @Parameter(description = "Tags à associer à la demande. Format : Groupe/Tag (ex: Type/Attestation). Créés automatiquement si inexistants. Plusieurs valeurs possibles.") List<String> tags,
+            @RequestParam(required = false) @Parameter(description = "IDs Paperless de documents à joindre en pièces jointes (plusieurs valeurs possibles).") List<Long> attachmentPaperlessIds,
+            @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey) {
+
+        if (paperlessService == null) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE).body("Paperless-ngx non disponible");
+        }
+        if (createByEppn == null) {
+            return ResponseEntity.badRequest().body("createByEppn is required");
+        }
+        if (!paperlessService.isConfigured()) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE).body("Paperless-ngx non configuré dans l'administration");
+        }
+        if (json == null) json = false;
+        if (scanSignatureFields == null) scanSignatureFields = false;
+        if (orderSignsByName == null) orderSignsByName = false;
+
+        org.springframework.web.multipart.MultipartFile paperlessFile;
+        try {
+            paperlessFile = paperlessService.fetchDocument(paperlessDocumentId);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (Exception e) {
+            logger.error("Error fetching document from Paperless id={}", paperlessDocumentId, e);
+            return ResponseEntity.internalServerError().body("Erreur lors du téléchargement depuis Paperless : " + e.getMessage());
+        }
+
+        if (title == null || title.isBlank()) {
+            title = paperlessFile.getOriginalFilename();
+        }
+
+        java.util.List<org.esupportail.esupsignature.dto.ws.WorkflowStepDto> steps = new java.util.ArrayList<>();
+        if (stepsJsonString == null && recipientEmails != null) {
+            steps = recipientService.convertRecipientEmailsToStep(recipientEmails);
+        } else if (stepsJsonString != null) {
+            steps = recipientService.convertRecipientJsonStringToWorkflowStepDtos(stepsJsonString);
+        }
+
+        try {
+            java.util.List<Long> signRequestIds = signBookService.startWorkflow(id, new org.springframework.web.multipart.MultipartFile[]{paperlessFile}, createByEppn, title, steps, targetEmails, targetUrls, scanSignatureFields, orderSignsByName, sendEmailAlert, comment);
+            if (signRequestIds.isEmpty()) {
+                return ResponseEntity.status(org.springframework.http.HttpStatus.BAD_REQUEST).body("-1");
+            }
+            signRequestService.setPaperlessSourceDocumentId(signRequestIds, paperlessDocumentId);
+            if (tags != null && !tags.isEmpty()) {
+                Long signBookId = signRequestService.getById(signRequestIds.get(0)).getParentSignBook().getId();
+                signBookService.addTagsByPath(signBookId, tags);
+            }
+            if (attachmentPaperlessIds != null && !attachmentPaperlessIds.isEmpty()) {
+                Long signRequestId = signRequestIds.get(0);
+                for (Long attachId : attachmentPaperlessIds) {
+                    try {
+                        org.springframework.web.multipart.MultipartFile attachFile = paperlessService.fetchDocument(attachId);
+                        signRequestService.addAttachement(new org.springframework.web.multipart.MultipartFile[]{attachFile}, null, signRequestId, createByEppn);
+                    } catch (Exception e) {
+                        logger.warn("Impossible de joindre le document Paperless id={} : {}", attachId, e.getMessage());
+                    }
+                }
+            }
+            if (json) {
+                return ResponseEntity.ok(signRequestIds);
+            } else {
+                return ResponseEntity.ok(org.apache.commons.lang.StringUtils.join(signRequestIds, ","));
+            }
+        } catch (Exception e) {
+            logger.warn("{} for workflow: {}", e.getMessage(), id);
+            return ResponseEntity.internalServerError().body(e.getMessage());
+        }
     }
 }
 

@@ -18,6 +18,7 @@ import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.entity.enums.UiParams;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
+import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.repository.custom.SessionRepositoryCustom;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.interfaces.prefill.PreFill;
@@ -52,6 +53,7 @@ public class UiFetchService {
 
     private final GlobalProperties globalProperties;
     private final SmsProperties smsProperties;
+    private final SignBookRepository signBookRepository;
     private final SignRequestService signRequestService;
     private final SignBookService signBookService;
     private final WorkflowService workflowService;
@@ -74,11 +76,11 @@ public class UiFetchService {
     private final UiFetchMapper uiFetchMapper;
     private final UiAdminFormMapper uiAdminFormMapper;
     private final MessageSource messageSource;
-    private final MobileSignTokenService mobileSignTokenService;
 
-    public UiFetchService(GlobalProperties globalProperties, SmsProperties smsProperties, SignRequestService signRequestService, SignBookService signBookService, WorkflowService workflowService, FormService formService, UserShareService userShareService, UserService userService, UserPropertieService userPropertieService, FieldPropertieService fieldPropertieService, RecipientService recipientService, TagService tagService, PreFillService preFillService, ReportService reportService, PreAuthorizeService preAuthorizeService, Environment environment, @Autowired(required = false) BuildProperties buildProperties, ValidationService validationService, CertificatService certificatService, @Autowired(required = false) DSSService dssService, SessionRepositoryCustom sessionRepositoryCustom, UiFetchMapper uiFetchMapper, UiAdminFormMapper uiAdminFormMapper, MessageSource messageSource, MobileSignTokenService mobileSignTokenService) {
+    public UiFetchService(GlobalProperties globalProperties, SmsProperties smsProperties, SignBookRepository signBookRepository, SignRequestService signRequestService, SignBookService signBookService, WorkflowService workflowService, FormService formService, UserShareService userShareService, UserService userService, UserPropertieService userPropertieService, FieldPropertieService fieldPropertieService, RecipientService recipientService, TagService tagService, PreFillService preFillService, ReportService reportService, PreAuthorizeService preAuthorizeService, Environment environment, @Autowired(required = false) BuildProperties buildProperties, ValidationService validationService, CertificatService certificatService, @Autowired(required = false) DSSService dssService, SessionRepositoryCustom sessionRepositoryCustom, UiFetchMapper uiFetchMapper, UiAdminFormMapper uiAdminFormMapper, MessageSource messageSource) {
         this.globalProperties = globalProperties;
         this.smsProperties = smsProperties;
+        this.signBookRepository = signBookRepository;
         this.signRequestService = signRequestService;
         this.signBookService = signBookService;
         this.workflowService = workflowService;
@@ -101,7 +103,6 @@ public class UiFetchService {
         this.uiFetchMapper = uiFetchMapper;
         this.uiAdminFormMapper = uiAdminFormMapper;
         this.messageSource = messageSource;
-        this.mobileSignTokenService = mobileSignTokenService;
     }
 
     public UiDataDto buildUiData(String userEppn, String authUserEppn, HttpSession httpSession) {
@@ -370,16 +371,76 @@ public class UiFetchService {
         if (userEppn == null || authUserEppn == null) {
             return List.of();
         }
-        Pageable pageable = PageRequest.of(0, 100, Sort.by(Sort.Direction.DESC, "createDate"));
-        return signBookService.getSignBooks(userEppn, authUserEppn, statusFilter, null, null, null, null, null, pageable)
-                .getContent()
-                .stream()
-                .map(signBook -> toHomeSignBookItem(signBook, userEppn))
-                .filter(Objects::nonNull)
+        long t0 = System.currentTimeMillis();
+        User user = userService.getByEppn(userEppn);
+        if (user == null) return List.of();
+
+        // Requête légère : retourne uniquement des scalaires, sans charger le graphe JPA de SignRequest
+        List<Object[]> rows = "toSign".equals(statusFilter)
+                ? signBookRepository.findHomeToSignItems(user)
+                : signBookRepository.findHomePendingItems(user);
+        logger.info("[home-ws] requête '{}' légère: {}ms ({} items)", statusFilter, System.currentTimeMillis() - t0, rows.size());
+
+        if (rows.isEmpty()) return List.of();
+
+        // Collecte les IDs du premier sign-request pour les requêtes batch
+        List<Long> primarySignRequestIds = rows.stream()
+                .map(r -> ((Number) r[5]).longValue())
                 .toList();
+        Set<Long> viewedIds = new HashSet<>(signRequestService.getViewedSignRequestIds(primarySignRequestIds, userEppn));
+        Set<Long> withAttachmentsIds = new HashSet<>(signRequestService.getSignRequestIdsWithAttachments(primarySignRequestIds));
+
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+        List<UiHomeDto.SignBookItem> items = new ArrayList<>();
+        for (Object[] row : rows) {
+            Long sbId             = ((Number) row[0]).longValue();
+            String subject        = (String) row[1];
+            String workflowName   = (String) row[2];
+            String description    = (String) row[3];
+            java.util.Date createDate = (java.util.Date) row[4];
+            Long primarySrId      = ((Number) row[5]).longValue();
+            String srTitle        = (String) row[6];
+            Object srStatusRaw    = row[7];
+            String srStatus       = srStatusRaw != null ? srStatusRaw.toString() : null;
+            long srCount          = ((Number) row[8]).longValue();
+
+            String listTitle = subject;
+            if (srCount > 1) {
+                listTitle = srTitle != null ? srTitle + ", ..." : subject;
+            }
+
+            // SignRequests légers : seulement pour les books multi-documents
+            List<UiHomeDto.SignRequestItem> srItems;
+            if (srCount <= 1) {
+                srItems = List.of(new UiHomeDto.SignRequestItem(primarySrId, srTitle, srStatus));
+            } else {
+                srItems = signBookRepository.findLightSignRequestsBySignBookId(sbId).stream()
+                        .map(sr -> new UiHomeDto.SignRequestItem(
+                                ((Number) sr[0]).longValue(),
+                                (String) sr[1],
+                                sr[2] != null ? sr[2].toString() : null))
+                        .toList();
+            }
+
+            UiHomeDto.SignBookItem dto = new UiHomeDto.SignBookItem();
+            dto.setId(sbId);
+            dto.setPrimarySignRequestId(primarySrId);
+            dto.setDescription(description);
+            dto.setSubject(subject);
+            dto.setWorkflowName(workflowName);
+            dto.setCreateDateLabel(createDate != null ? sdf.format(createDate) : null);
+            dto.setListTitle(listTitle);
+            dto.setViewedByCurrentUser(viewedIds.contains(primarySrId));
+            dto.setHasAttachments(withAttachmentsIds.contains(primarySrId));
+            dto.setPostits(List.of()); // postits non chargés dans la page home pour éviter N+1
+            dto.setSignRequests(srItems);
+            items.add(dto);
+        }
+        logger.info("[home-ws] buildHomeSignBookItems '{}' total: {}ms", statusFilter, System.currentTimeMillis() - t0);
+        return items;
     }
 
-    private UiHomeDto.SignBookItem toHomeSignBookItem(SignBook signBook, String userEppn) {
+    private UiHomeDto.SignBookItem toHomeSignBookItem(SignBook signBook, String userEppn, Set<Long> viewedIds, Set<Long> withAttachmentsIds) {
         if (signBook == null || signBook.getSignRequests() == null || signBook.getSignRequests().isEmpty()) {
             return null;
         }
@@ -400,8 +461,8 @@ public class UiFetchService {
         dto.setWorkflowName(signBook.getWorkflowName());
         dto.setCreateDateLabel(formatHomeDate(signBook.getCreateDate()));
         dto.setListTitle(listTitle);
-        dto.setViewedByCurrentUser(isViewedByUser(primarySignRequest, userEppn));
-        dto.setHasAttachments(primarySignRequest.getAttachments() != null && !primarySignRequest.getAttachments().isEmpty());
+        dto.setViewedByCurrentUser(viewedIds.contains(primarySignRequest.getId()));
+        dto.setHasAttachments(withAttachmentsIds.contains(primarySignRequest.getId()));
         dto.setPostits(toHomePostitItems(signBook.getPostits()));
         dto.setSignRequests(toHomeSignRequestItems(signBook.getSignRequests()));
         return dto;
@@ -495,7 +556,7 @@ public class UiFetchService {
             return uiFetchMapper.toUiCountersDto(0L, 0L, 0L, 0, 0, false, false, false, false);
         }
         Integer reportNumber = authUserEppn != null ? reportService.countByUser(authUserEppn) : 0;
-        Integer managedWorkflowsSize = authUserEppn != null ? workflowService.getWorkflowByManagersContains(authUserEppn).size() : 0;
+        Integer managedWorkflowsSize = authUserEppn != null ? workflowService.countWorkflowByManagersContains(authUserEppn) : 0;
         Boolean isRoleManager = authUserEppn != null && preAuthorizeService.isManager(authUserEppn);
         Boolean isOneSignShare = authUserEppn != null && userShareService.isOneShareByType(userEppn, authUserEppn, ShareType.sign);
         Boolean isOneReadShare = authUserEppn != null && userShareService.isOneShareByType(userEppn, authUserEppn, ShareType.read);
@@ -607,19 +668,6 @@ public class UiFetchService {
         return buildUserSignatureState(userEppn, authUserEppn, signRequestId, httpSession);
     }
 
-    @Transactional
-    public UserSignatureStateDto saveMobileSignature(String userEppn, String authUserEppn, String token, String signImageBase64, Long signRequestId, HttpSession httpSession) throws IOException {
-        if (!mobileSignTokenService.consumePendingSignaturePreview(token, authUserEppn, signImageBase64)) {
-            throw new IllegalArgumentException("Token mobile invalide ou signature non confirmée");
-        }
-
-        userService.updateUser(authUserEppn, null, null, signImageBase64, null, null, null, null, null, false);
-        UserSignatureStateDto dto = buildUserSignatureState(userEppn, authUserEppn, signRequestId, httpSession);
-        List<Long> signImageIds = dto.getSignImageIds();
-        dto.setSavedSignImageNumber(signImageIds == null || signImageIds.isEmpty() ? null : signImageIds.size() - 1);
-        return dto;
-    }
-
     public void markWarningsRead(String authUserEppn) {
         signRequestService.warningReaded(authUserEppn);
     }
@@ -633,7 +681,7 @@ public class UiFetchService {
         dto.setSignImageIds(user.getSignImagesIds());
         dto.setSignImages(getSignImages(signRequestId, userEppn, authUserEppn, httpSession));
         try {
-            dto.setDefaultSignImage(userService.getDefaultImage64(authUserEppn));
+            dto.setDefaultSignImage(userService.getFavoriteImage64(authUserEppn));
         } catch (IOException e) {
             logger.warn("unable to get default sign image", e);
         }
@@ -773,4 +821,5 @@ public class UiFetchService {
     }
 
 }
+
 

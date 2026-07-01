@@ -17,6 +17,7 @@
                 </div>
                 <a tabindex="10" role="button" class="form-btn form-favorite-trigger btn btn-material border border-secondary-subtle border-opacity-10 btn-light text-center me-2 mb-2 overflow-hidden p-0"
                     style="width: 120px; height: 170px;"
+                    th:title="'Ajouter le formulaire : ' + ${form.title}"
                     th:classappend="${form.hideButton} ? 'd-none' : ''"
                     th:data-es-form-id="${form.id}"
                 >

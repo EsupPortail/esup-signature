@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Set;
 
 @Entity
+@org.hibernate.annotations.BatchSize(size = 100)
 @JsonIgnoreProperties(value = {"hibernateLazyInitializer", "handler"}, ignoreUnknown = true)
 public class LiveWorkflow {
 
@@ -21,6 +22,7 @@ public class LiveWorkflow {
 
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     @OrderColumn
+    @org.hibernate.annotations.BatchSize(size = 100)
     private List<LiveWorkflowStep> liveWorkflowSteps = new ArrayList<>();
 
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
@@ -30,6 +32,7 @@ public class LiveWorkflow {
     @JoinTable(
             indexes = @Index(name = "idx_targets_live_workflow_id", columnList = "live_workflow_id")
     )
+    @org.hibernate.annotations.BatchSize(size = 100)
     private Set<Target> targets = new HashSet<>();
 
     @ManyToOne(fetch = FetchType.LAZY)

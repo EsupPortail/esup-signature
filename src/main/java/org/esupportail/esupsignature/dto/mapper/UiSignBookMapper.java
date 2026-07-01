@@ -12,8 +12,10 @@ import org.esupportail.esupsignature.entity.LiveWorkflowStep;
 import org.esupportail.esupsignature.entity.Recipient;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.SignRequest;
+import org.esupportail.esupsignature.entity.Tag;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
+import org.esupportail.esupsignature.service.TagService;
 import org.springframework.stereotype.Component;
 
 import java.text.SimpleDateFormat;
@@ -109,7 +111,8 @@ public class UiSignBookMapper {
                 liveWorkflowCurrentStepNumber,
                 viewers,
                 liveWorkflowSteps,
-                liveWorkflowTargets
+                liveWorkflowTargets,
+                toTagDtos(signBook)
         );
     }
 
@@ -127,7 +130,8 @@ public class UiSignBookMapper {
                 Boolean.TRUE.equals(signRequest.getDeleted()),
                 buildPrimaryRowTitle(signBook, signRequest),
                 canDownloadSingle(signBook, signRequest),
-                canDownloadAll(signBook, signRequest)
+                canDownloadAll(signBook, signRequest),
+                signRequest.getPaperlessSignedDocumentId()
         );
     }
 
@@ -283,6 +287,39 @@ public class UiSignBookMapper {
             return displayName;
         }
         return user != null ? user.getEmail() : null;
+    }
+
+    private List<SignBookFullDto.TagDto> toTagDtos(SignBook signBook) {
+        if (signBook.getTags() == null || signBook.getTags().isEmpty()) {
+            return List.of();
+        }
+        List<SignBookFullDto.TagDto> dtos = new ArrayList<>();
+        for (Tag tag : signBook.getTags()) {
+            String parentName = null;
+            String rootName = null;
+            String groupColor = null;
+            if (tag.getParentTag() != null) {
+                parentName = tag.getParentTag().getName();
+                String rawGroupColor = tag.getParentTag().getColor();
+                groupColor = rawGroupColor != null ? TagService.darkenOrLighten(rawGroupColor, 1) : null;
+                Tag root = tag;
+                while (root.getParentTag() != null) {
+                    root = root.getParentTag();
+                }
+                rootName = root.getName();
+            } else {
+                rootName = tag.getName();
+            }
+            dtos.add(new SignBookFullDto.TagDto(
+                tag.getId(),
+                tag.getName(),
+                tag.getColor(),
+                groupColor,
+                parentName,
+                rootName
+            ));
+        }
+        return dtos;
     }
 }
 

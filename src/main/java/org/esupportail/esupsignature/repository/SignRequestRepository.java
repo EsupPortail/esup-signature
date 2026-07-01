@@ -181,5 +181,11 @@ public interface SignRequestRepository extends CrudRepository<SignRequest, Long>
 
     @Query(value = "select s from SignRequest s join SignBook as sb on sb.id = s.parentSignBook.id where sb.endDate is null and s.cleanDocumentsHistoryDate is null and s.status != 'pending' and s.status != 'draft' and s.status != 'uploading' and s.status != 'refused'")
     List<SignRequest> findSignRequestsByCleanDocumentsHistoryDateIsNull();
+
+    @Query("select s.id from SignRequest s join s.viewedBy v where s.id in :ids and v.eppn = :eppn")
+    List<Long> findViewedSignRequestIds(@Param("ids") List<Long> ids, @Param("eppn") String eppn);
+
+    @Query("select distinct s.id from SignRequest s join s.attachments a where s.id in :ids")
+    List<Long> findSignRequestIdsWithAttachments(@Param("ids") List<Long> ids);
 }
 

@@ -248,7 +248,7 @@ public class WorkflowService {
     @Transactional
     public Set<Workflow> getWorkflowsByUser(String userEppn, String authUserEppn) {
         User authUser = userService.getByEppn(authUserEppn);
-        Set<Long> authorizedWorkflowIds = workflowRepository.findAuthorizedFormsByRoles(authUser.getRoles())
+        Set<Long> authorizedWorkflowIds = workflowRepository.findAuthorizedFormsByEmailAndRoles(authUser.getEmail(), authUser.getRoles())
                 .stream()
                 .map(Workflow::getId)
                 .collect(Collectors.toSet());
@@ -562,11 +562,16 @@ public class WorkflowService {
 
     @Transactional
     public Workflow update(Workflow workflow, User user, String[] types, Set<String> managers, String authUserEppn) {
-        return update(workflow, user, types, managers, authUserEppn, null, false, null, false);
+        return update(workflow, user, types, managers, null, authUserEppn, null, false, null, false);
     }
 
     @Transactional
-    public Workflow update(Workflow workflow, User user, String[] types, Set<String> managers, String authUserEppn, Set<String> missingRoles, boolean removeMissingRoles, Set<String> missingDashboardRoles, boolean removeMissingDashboardRoles) {
+    public Workflow update(Workflow workflow, User user, String[] types, Set<String> managers, Set<String> authorizedCanCreateEmails, String authUserEppn) {
+        return update(workflow, user, types, managers, authorizedCanCreateEmails, authUserEppn, null, false, null, false);
+    }
+
+    @Transactional
+    public Workflow update(Workflow workflow, User user, String[] types, Set<String> managers, Set<String> authorizedCanCreateEmails, String authUserEppn, Set<String> missingRoles, boolean removeMissingRoles, Set<String> missingDashboardRoles, boolean removeMissingDashboardRoles) {
         Workflow workflowToUpdate = getById(workflow.getId());
         if(managers != null && !managers.isEmpty()) {
             workflowToUpdate.getManagers().clear();
@@ -578,6 +583,15 @@ public class WorkflowService {
             }
         } else {
             workflowToUpdate.getManagers().clear();
+        }
+        workflowToUpdate.getAuthorizedCanCreateEmails().clear();
+        if(authorizedCanCreateEmails != null) {
+            for(String authorizedCanCreateEmail : authorizedCanCreateEmails) {
+                User authorizedCanCreateUser = userService.getUserByEmail(authorizedCanCreateEmail);
+                if(!workflowToUpdate.getAuthorizedCanCreateEmails().contains(authorizedCanCreateUser.getEmail())) {
+                    workflowToUpdate.getAuthorizedCanCreateEmails().add(authorizedCanCreateUser.getEmail());
+                }
+            }
         }
         workflowToUpdate.getAuthorizedShareTypes().clear();
         List<ShareType> shareTypes = new ArrayList<>();
@@ -605,7 +619,6 @@ public class WorkflowService {
         workflowToUpdate.setOwnerSystem(workflow.getOwnerSystem());
         workflowToUpdate.setDisableDeleteByCreator(workflow.getDisableDeleteByCreator());
         workflowToUpdate.setDisableUpdateByCreator(workflow.getDisableUpdateByCreator());
-        workflowToUpdate.setAuthorizeReplayByCreator(workflow.getAuthorizeReplayByCreator());
         workflowToUpdate.setForbidDownloadsBeforeEnd(workflow.getForbidDownloadsBeforeEnd());
         workflowToUpdate.setScanPdfMetadatas(workflow.getScanPdfMetadatas());
         workflowToUpdate.setSendAlertToAllRecipients(workflow.getSendAlertToAllRecipients());
@@ -760,6 +773,12 @@ public class WorkflowService {
         return workflowRepository.findWorkflowByManagersIn(user.getEmail(), user.getRoles());
     }
 
+    @Transactional(readOnly = true)
+    public int countWorkflowByManagersContains(String eppn) {
+        User user = userService.getByEppn(eppn);
+        return (int) workflowRepository.countWorkflowByManagersIn(user.getEmail(), user.getRoles());
+    }
+
     @Transactional
     public InputStream getJsonWorkflowSetup(Long id) throws IOException {
         Workflow workflow = getById(id);
@@ -803,7 +822,7 @@ public class WorkflowService {
         if (updateUser == null) {
           updateUser = userService.getSystemUser();
         }
-        update(workflowSetup, updateUser, null, workflowSetup.getManagers(), authUserEppn);
+        update(workflowSetup, updateUser, null, workflowSetup.getManagers(), workflowSetup.getAuthorizedCanCreateEmails(), authUserEppn);
         for(Target target : workflowSetup.getTargets()) {
             Target newTarget = targetService.createTarget(target.getTargetUri(), target.getSendDocument(), target.getSendReport(), target.getSendAttachment(), target.getSendZip());
             workflow.getTargets().add(newTarget);

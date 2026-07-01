@@ -67,6 +67,13 @@
         <button th:if="${signRequestFull.updateAllowed && (signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft)}" type="button" class="d-flex justify-content-center btn btn-transparent text-dark d-none d-md-flex" title="Paramètres généraux" data-bs-toggle="modal" data-bs-target="#updateSignbookModal">
             <i class="fi fi-rr-settings-sliders"></i>
         </button>
+        <button th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')') && signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && showSignRequest.currentStepId != null}"
+                type="button" class="d-flex justify-content-center btn btn-transparent text-primary d-none d-md-flex"
+                th:attr="data-workflow-step-id=${showSignRequest.currentStepId}"
+                title="[ADMIN] Enregistrer les positions de signature dans le workflow"
+                onclick="if(confirm('Enregistrer les positions de signature actuelles dans cette étape du workflow ? Elles seront appliquées aux prochains documents.')) { let stepId = this.getAttribute('data-workflow-step-id'); window.signUiInstance.workspace.saveSignPositionsToWorkflow(stepId); }">
+            <i class="fi fi-rr-marker"></i>
+        </button>
         <a target="_blank" th:if="${signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported}" class="d-flex justify-content-center btn btn-transparent text-dark" th:href="'/user/validation/document/' + ${signRequestLight.id}" title="Contrôler le document">
             <i class="fi fi-rr-audit"></i>
         </a>

@@ -7,6 +7,7 @@ import org.esupportail.esupsignature.entity.enums.SignType;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 public class AdminWorkflowUpdateViewDto {
 
@@ -75,6 +76,7 @@ public class AdminWorkflowUpdateViewDto {
         private Boolean publicUsage;
         private List<String> roles;
         private List<String> managers;
+        private Set<String> authorizedCanCreateEmails;
         private List<String> dashboardRoles;
         private List<ViewerDto> viewers;
         private List<ExternalAuth> externalAuths;
@@ -84,7 +86,6 @@ public class AdminWorkflowUpdateViewDto {
         private Boolean ownerSystem;
         private Boolean disableDeleteByCreator;
         private Boolean disableUpdateByCreator;
-        private Boolean authorizeReplayByCreator;
         private Boolean disableEmailAlerts;
         private Boolean forbidDownloadsBeforeEnd;
         private Boolean authorizeClone;
@@ -127,7 +128,6 @@ public class AdminWorkflowUpdateViewDto {
                            Boolean ownerSystem,
                            Boolean disableDeleteByCreator,
                            Boolean disableUpdateByCreator,
-                           Boolean authorizeReplayByCreator,
                            Boolean disableEmailAlerts,
                            Boolean forbidDownloadsBeforeEnd,
                            Boolean authorizeClone,
@@ -166,7 +166,6 @@ public class AdminWorkflowUpdateViewDto {
             this.ownerSystem = ownerSystem;
             this.disableDeleteByCreator = disableDeleteByCreator;
             this.disableUpdateByCreator = disableUpdateByCreator;
-            this.authorizeReplayByCreator = authorizeReplayByCreator;
             this.disableEmailAlerts = disableEmailAlerts;
             this.forbidDownloadsBeforeEnd = forbidDownloadsBeforeEnd;
             this.authorizeClone = authorizeClone;
@@ -225,8 +224,6 @@ public class AdminWorkflowUpdateViewDto {
         public void setDisableDeleteByCreator(Boolean disableDeleteByCreator) { this.disableDeleteByCreator = disableDeleteByCreator; }
         public Boolean getDisableUpdateByCreator() { return disableUpdateByCreator; }
         public void setDisableUpdateByCreator(Boolean disableUpdateByCreator) { this.disableUpdateByCreator = disableUpdateByCreator; }
-        public Boolean getAuthorizeReplayByCreator() { return authorizeReplayByCreator; }
-        public void setAuthorizeReplayByCreator(Boolean authorizeReplayByCreator) { this.authorizeReplayByCreator = authorizeReplayByCreator; }
         public Boolean getDisableEmailAlerts() { return disableEmailAlerts; }
         public void setDisableEmailAlerts(Boolean disableEmailAlerts) { this.disableEmailAlerts = disableEmailAlerts; }
         public Boolean getForbidDownloadsBeforeEnd() { return forbidDownloadsBeforeEnd; }
@@ -267,6 +264,8 @@ public class AdminWorkflowUpdateViewDto {
         public void setFromCode(Boolean fromCode) { this.fromCode = fromCode; }
         public String getMessage() { return message; }
         public void setMessage(String message) { this.message = message; }
+        public Set<String> getAuthorizedCanCreateEmails() { return authorizedCanCreateEmails; }
+        public void setAuthorizedCanCreateEmails(Set<String> authorizedCanCreateEmails) { this.authorizedCanCreateEmails = authorizedCanCreateEmails; }
     }
 
     public static class TargetDto {
@@ -327,6 +326,7 @@ public class AdminWorkflowUpdateViewDto {
         private Boolean attachmentRequire;
         private List<UserDto> users;
         private CertificatDto certificat;
+        private List<SignRequestParamsDto> signRequestParams;
 
         public WorkflowStepDto() {
         }
@@ -403,6 +403,33 @@ public class AdminWorkflowUpdateViewDto {
         public void setUsers(List<UserDto> users) { this.users = users; }
         public CertificatDto getCertificat() { return certificat; }
         public void setCertificat(CertificatDto certificat) { this.certificat = certificat; }
+        public List<SignRequestParamsDto> getSignRequestParams() { return signRequestParams; }
+        public void setSignRequestParams(List<SignRequestParamsDto> signRequestParams) { this.signRequestParams = signRequestParams; }
+    }
+
+    public static class SignRequestParamsDto {
+        private Integer signPageNumber;
+        private Integer xPos;
+        private Integer yPos;
+        private Integer signWidth;
+        private Integer signHeight;
+
+        public SignRequestParamsDto() {}
+
+        public Integer getSignPageNumber() { return signPageNumber; }
+        public void setSignPageNumber(Integer signPageNumber) { this.signPageNumber = signPageNumber; }
+        public Integer getXPos() { return xPos; }
+        public void setXPos(Integer xPos) { this.xPos = xPos; }
+        public Integer getxPos() { return xPos; }
+        public void setxPos(Integer xPos) { this.xPos = xPos; }
+        public Integer getYPos() { return yPos; }
+        public void setYPos(Integer yPos) { this.yPos = yPos; }
+        public Integer getyPos() { return yPos; }
+        public void setyPos(Integer yPos) { this.yPos = yPos; }
+        public Integer getSignWidth() { return signWidth; }
+        public void setSignWidth(Integer signWidth) { this.signWidth = signWidth; }
+        public Integer getSignHeight() { return signHeight; }
+        public void setSignHeight(Integer signHeight) { this.signHeight = signHeight; }
     }
 
     public static class CertificatDto {

@@ -93,14 +93,15 @@ public class GlobalWsSecureController {
             logger.warn(e.getMessage(), e);
             return ResponseEntity.internalServerError().body(e.getMessage());
         }
+        org.esupportail.esupsignature.web.GlobalAttributsControllerAdvice.invalidateCountersCache(httpSession);
         return ResponseEntity.ok().build();
     }
 
     @PreAuthorize("@preAuthorizeService.signRequestView(#signRequestId, #userEppn, #authUserEppn)")
-    @PostMapping(value = "/viewed/{signRequestId}")
-    public ResponseEntity<Void> viewedBy(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("signRequestId") Long signRequestId) {
+    @PostMapping(value = "/viewed/{signRequestId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> viewedBy(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("signRequestId") Long signRequestId) {
         signRequestService.viewedBy(signRequestId, userEppn);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok().body("{}");
     }
 
     @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
@@ -246,7 +247,7 @@ public class GlobalWsSecureController {
         redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "Champ signature supprimé"));
     }
 
-    @PreAuthorize("@preAuthorizeService.signRequestCommentDelete(#id, #commentId, #authUserEppn)")
+    @PreAuthorize("@preAuthorizeService.signRequestManager(#id, #authUserEppn)")
     @DeleteMapping(value = "/delete-comment/{id}/{commentId}")
     public ResponseEntity<Void> deleteComments(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @PathVariable("commentId") Long commentId,  RedirectAttributes redirectAttributes) {
         commentService.deleteComment(commentId, null);

@@ -353,14 +353,85 @@
                     <div th:replace="~{user/signrequests/includes/workspace :: workspace}"></div>
                     <th:block th:if="${showSignRequest.signBookLight.archiveStatus == T(org.esupportail.esupsignature.entity.enums.ArchiveStatus).cleaned}">
                         <div class="alert alert-success">
-                            <h5>Les documents contenus dans cette demande de signature ont été archivés. Vous avez la possibilité de les télécharger à l’aide du bouton en bas à droite.</h5>
+                            <h5>Les documents contenus dans cette demande de signature ont été archivés. Vous avez la possibilité de les télécharger à l'aide du bouton en bas à droite.</h5>
                             <label>Emplacement physique du document :</label>
                             <input type="text" class="form-control" th:value="${showSignRequest.exportedDocumentURI}" disabled />
                         </div>
                     </th:block>
+
+                    <!-- Bandeau "issu de Paperless" affiché pendant le processus de signature -->
+                    <th:block th:if="${paperlessSourceDocumentId != null && showSignRequest.toSignDocumentContentType != null && paperlessBaseUrl != null}">
+                        <div class="alert alert-light border d-flex align-items-center gap-2 mb-2" style="margin-top: 8px;">
+                            <i class="fa-solid fa-cloud text-primary"></i>
+                            <span>Document issu de Paperless&nbsp;·&nbsp;
+                                <a th:href="${paperlessBaseUrl + '/documents/' + paperlessSourceDocumentId + '/details/'}"
+                                   target="_blank" class="text-decoration-none">
+                                    <i class="fa-solid fa-file-alt me-1"></i>Voir le document original
+                                </a>
+                            </span>
+                        </div>
+                    </th:block>
+
+                    <!-- Bloc principal après archivage dans Paperless -->
+                    <th:block th:if="${showSignRequest.toSignDocumentContentType == null && showSignRequest.exportedDocumentURI != null && !signRequestLight.deleted && (showSignRequest.exportedDocumentURI.startsWith('http://') || showSignRequest.exportedDocumentURI.startsWith('https://'))}">
+                        <div class="workspace" style="margin-top: 128px;">
+                            <div class="alert alert-info d-flex align-items-center justify-content-between mb-2 flex-wrap gap-2">
+                                <div>
+                                    <i class="fa-solid fa-cloud me-2"></i>
+                                    <strong>Document archivé dans Paperless</strong>
+                                    <span class="ms-2">Les fichiers locaux ont été supprimés. Le document signé est disponible dans Paperless.</span>
+                                </div>
+                                <div class="d-flex gap-2 flex-wrap">
+                                    <th:block th:if="${paperlessSourceDocumentId != null && paperlessBaseUrl != null}">
+                                        <a th:href="${paperlessBaseUrl + '/documents/' + paperlessSourceDocumentId + '/details/'}"
+                                           target="_blank" class="btn btn-outline-secondary btn-sm text-nowrap">
+                                            <i class="fa-solid fa-file-alt me-1"></i>Document original
+                                        </a>
+                                    </th:block>
+                                    <a th:href="${showSignRequest.exportedDocumentURI}" target="_blank" class="btn btn-primary btn-sm text-nowrap">
+                                        <i class="fa-solid fa-file-signature me-1"></i>Document signé
+                                    </a>
+                                    <th:block th:if="${paperlessSignedDocumentId != null && paperlessBaseUrl != null}">
+                                        <a th:href="${paperlessBaseUrl + '/documents/' + paperlessSignedDocumentId + '/details/'}"
+                                           target="_blank" class="btn btn-outline-primary btn-sm text-nowrap">
+                                            <i class="fa-solid fa-external-link-alt me-1"></i>Ouvrir dans Paperless
+                                        </a>
+                                    </th:block>
+                                </div>
+                            </div>
+                            <div id="paperless-preview-container" style="width: 100%; height: 80vh; border: 1px solid #dee2e6; border-radius: 4px; overflow: hidden; position: relative;">
+                                <div id="paperless-preview-error" class="alert alert-warning m-3" style="display:none;">
+                                    <i class="fa-solid fa-triangle-exclamation me-2"></i>
+                                    L'aperçu du document n'a pas pu être chargé. Utilisez le bouton "Document signé" ou téléchargez le document.
+                                </div>
+                                <iframe id="paperless-iframe"
+                                        th:src="'/ws-secure/global/get-last-file-inline/' + ${signRequestLight.id}"
+                                        style="width: 100%; height: 100%; border: none;"
+                                        title="Aperçu du document Paperless">
+                                </iframe>
+                            </div>
+                            <script>
+                                (function() {
+                                    var iframe = document.getElementById('paperless-iframe');
+                                    if (iframe) {
+                                        iframe.addEventListener('load', function() {
+                                            try {
+                                                var doc = iframe.contentDocument || iframe.contentWindow.document;
+                                                if (doc && (doc.title.indexOf('erreur') !== -1 || doc.body.innerText.indexOf('Une erreur') !== -1)) {
+                                                    iframe.style.display = 'none';
+                                                    document.getElementById('paperless-preview-error').style.display = 'block';
+                                                }
+                                            } catch(e) { /* cross-origin, contenu OK */ }
+                                        });
+                                    }
+                                })();
+                            </script>
+                        </div>
+                    </th:block>
+
                     <div th:if="${(showSignRequest.toSignDocumentContentType == null || showSignRequest.toSignDocumentContentType != 'application/pdf') && showSignRequest.originalDocuments.size() > 0}" id="workspace" class="alert rounded-bottom-0 light pt-1 border-0 justify-content-center es-signrequest-workspace-list">
                         <div th:if="${signRequestFull.signable}" class="alert alert-secondary p-2">
-                            Le document à signer n’est pas un PDF, il doit donc être signé à l’aide d’un certificat électronique
+                            Le document à signer n'est pas un PDF, il doit donc être signé à l'aide d'un certificat électronique
                         </div>
                         <div class="card col-lg-12 mb-1">
                             <div class="card-body">
@@ -394,7 +465,7 @@
                         </script>
                     </div>
                     <div th:if="${!signRequestFull.signable && showSignRequest.toSignDocumentContentType == null && showSignRequest.originalDocuments.size() > 0}" class="es-workspace alert alert-danger">
-                        Un document de cette demande est corrompu. Merci de supprimer la demande et d’en émettre une nouvelle à l’aide d’un fichier valide.
+                        Un document de cette demande est corrompu. Merci de supprimer la demande et d'en émettre une nouvelle à l'aide d'un fichier valide.
                     </div>
                     <div th:if="${showSignRequest.toSignDocumentContentType == null && signRequestLight.deleted}" class="alert alert-danger">
                         <h4>La demande de signature a été supprimée</h4>
@@ -438,10 +509,10 @@
             }
             return response.json();
         })
-        .then(data => new SignUi(SignUiFrontDto.from(data), csrf, signatureUiConfig))
+        .then(data => { window.signUiInstance = new SignUi(SignUiFrontDto.from(data), csrf, signatureUiConfig); })
         .catch(error => {
             console.error('Impossible de charger le bootstrap front de signature', error);
-            bootbox.alert("Impossible de charger l’interface de signature.");
+            bootbox.alert("Impossible de charger l'interface de signature.");
         });
 
 </script>

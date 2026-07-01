@@ -7,7 +7,6 @@ export class UserUi {
 
     constructor(userName, signRequestParams, signImages, userType, defaultSignImageNumber, signatureUiConfig = null) {
         console.log('Starting user UI');
-        this.previewSignRequestParamsId = "user-preview";
         this.userName = userName;
         this.signImages = signImages;
         this.userType = userType;
@@ -202,6 +201,17 @@ export class UserUi {
                 </td>
                 <td></td>
             </tr>
+            <tr>
+                <td class="text-left w-100" style="position: relative;height: 74px;" >
+                    <img class="thumbnail" src="/ws-secure/ui/signatures/default-image-with-extra" alt="Image avec nom prénom, titre et date"/>
+                </td>
+                <td>
+                    <a href="/${resolvedUserType}/users/set-default-sign-image/999996" role="button" class="btn btn-sm btn-transparent ${renderStarClass(999996)}">
+                        <i class="fi fi-rr-star"></i>
+                    </a>
+                </td>
+                <td></td>
+            </tr>
             ${customRows}
         `;
     }
@@ -253,6 +263,7 @@ export class UserUi {
         if (signImages.length === 0) {
             return {
                 generatedSignImageNumber: null,
+                extraSignImageNumber: null,
                 parapheSignImageNumber: null
             };
         }
@@ -263,10 +274,14 @@ export class UserUi {
             const generatedSignImageNumber = signImages.length > userImageIds.length
                 ? userImageIds.length
                 : null;
+            const extraSignImageNumber = generatedSignImageNumber != null && signImages.length > generatedSignImageNumber + 1
+                ? generatedSignImageNumber + 1
+                : null;
             return {
                 generatedSignImageNumber,
-                parapheSignImageNumber: generatedSignImageNumber != null && signImages.length > generatedSignImageNumber + 1
-                    ? generatedSignImageNumber + 1
+                extraSignImageNumber,
+                parapheSignImageNumber: extraSignImageNumber != null && signImages.length > extraSignImageNumber + 1
+                    ? extraSignImageNumber + 1
                     : null
             };
         }
@@ -274,12 +289,22 @@ export class UserUi {
         if (signImages.length === 1) {
             return {
                 generatedSignImageNumber: 0,
+                extraSignImageNumber: null,
+                parapheSignImageNumber: null
+            };
+        }
+
+        if (signImages.length === 2) {
+            return {
+                generatedSignImageNumber: 0,
+                extraSignImageNumber: 1,
                 parapheSignImageNumber: null
             };
         }
 
         return {
-            generatedSignImageNumber: signImages.length - 2,
+            generatedSignImageNumber: signImages.length - 3,
+            extraSignImageNumber: signImages.length - 2,
             parapheSignImageNumber: signImages.length - 1
         };
     }
@@ -294,10 +319,8 @@ export class UserUi {
             this.signRequestParams.resetMobileSignatureFlow({clearToken: true, force: true});
         }
 
-        const previewId = this.signRequestParams?.id ?? this.previewSignRequestParamsId;
-        $(`#cross_${previewId}, #canvas_${previewId}, #border_${previewId}, #crossTools_${previewId}, #extraTools_${previewId}, #displayMoreTools_${previewId}`).remove();
-        $("#pdf .cross[data-user-signature-preview='true']").remove();
-        $("#pdf > input[data-user-signature-preview='true']").remove();
+        $("#pdf .cross").remove();
+        $("#pdf > input[id^='canvas_']").remove();
         this.signRequestParams = null;
     }
 
@@ -374,7 +397,7 @@ export class UserUi {
         }
 
         this.applySignRequestParamsPreviewChrome();
-        if (signRequestParams.cross?.data("ui-resizable") || signRequestParams.cross?.data("resizable")) {
+        if (signRequestParams.cross?.hasClass("ui-resizable")) {
             try {
                 signRequestParams.cross.resizable("enable");
             } catch (e) {
@@ -468,7 +491,7 @@ export class UserUi {
         this.signRequestParams = new SignRequestParams(
             this.userType === 'otp',
             null,
-            this.previewSignRequestParamsId,
+            0,
             2,
             1,
             this.userName,
@@ -485,11 +508,10 @@ export class UserUi {
             undefined,
             this.signatureUiConfig
         );
-        this.signRequestParams.cross?.attr("data-user-signature-preview", "true");
-        this.signRequestParams.canvas?.attr("data-user-signature-preview", "true");
 
-        const {generatedSignImageNumber, parapheSignImageNumber} = this.resolveSpecialSignImageNumbers();
+        const {generatedSignImageNumber, extraSignImageNumber, parapheSignImageNumber} = this.resolveSpecialSignImageNumbers();
         this.signRequestParams.generatedSignImageNumber = generatedSignImageNumber;
+        this.signRequestParams.extraSignImageNumber = extraSignImageNumber;
         this.signRequestParams.parapheSignImageNumber = parapheSignImageNumber;
         this.bindSignRequestParamsPreviewUi();
         this.applySignRequestParamsPreviewChrome();

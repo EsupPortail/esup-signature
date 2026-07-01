@@ -14,6 +14,7 @@ import java.time.DayOfWeek;
 import java.util.*;
 
 @Entity
+@org.hibernate.annotations.BatchSize(size = 100)
 @Table(name = "user_account", indexes = {
         @Index(name="user_eppn", columnList = "eppn", unique = true),
         @Index(name="user_email", columnList = "email", unique = true),
@@ -428,6 +429,20 @@ public class User {
 
     public void setAccessToken(String accessToken) {
         this.accessToken = accessToken;
+    }
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "user_oidc_attributes", joinColumns = @JoinColumn(name = "user_id"))
+    @MapKeyColumn(name = "attribute_key")
+    @Column(name = "attribute_value", length = 1000)
+    private Map<String, String> oidcAttributes = new HashMap<>();
+
+    public Map<String, String> getOidcAttributes() {
+        return oidcAttributes;
+    }
+
+    public void setOidcAttributes(Map<String, String> oidcAttributes) {
+        this.oidcAttributes = oidcAttributes;
     }
 
 }

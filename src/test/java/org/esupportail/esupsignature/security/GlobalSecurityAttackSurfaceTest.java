@@ -20,7 +20,6 @@ import org.esupportail.esupsignature.service.interfaces.sms.SmsService;
 import org.esupportail.esupsignature.service.security.LogoutHandlerImpl;
 import org.esupportail.esupsignature.service.security.OidcOtpSecurityService;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
-import org.esupportail.esupsignature.service.security.oauth.OidcUserSecurityServiceResolver;
 import org.esupportail.esupsignature.service.security.otp.OtpService;
 import org.esupportail.esupsignature.service.security.oauth.OAuthAuthenticationSuccessHandler;
 import org.esupportail.esupsignature.service.utils.file.FileService;
@@ -849,17 +848,6 @@ class GlobalSecurityAttackSurfaceTest {
         }
 
         @Test
-        void mobileSignPublicControllerShouldNotExposeDirectSaveEndpoint() {
-            boolean directSaveEndpointExists = java.util.Arrays.stream(PublicController.class.getDeclaredMethods())
-                    .map(method -> method.getAnnotation(org.springframework.web.bind.annotation.PostMapping.class))
-                    .filter(java.util.Objects::nonNull)
-                    .flatMap(mapping -> java.util.Arrays.stream(mapping.value()))
-                    .anyMatch("/mobile-sign/{token}/save"::equals);
-
-            assertFalse(directSaveEndpointExists);
-        }
-
-        @Test
         void mobileSignPageShouldExposeUsedStateWithoutFlaggingExpiration() {
             LogService logService = mock(LogService.class);
             SignRequestService signRequestService = mock(SignRequestService.class);
@@ -1126,7 +1114,6 @@ class GlobalSecurityAttackSurfaceTest {
                 xsltService,
                 preAuthorizeService,
                 validationService,
-                signService,
                 mobileSignTokenService
         );
     }
@@ -1171,8 +1158,8 @@ class GlobalSecurityAttackSurfaceTest {
                 mock(RegisterSessionAuthenticationStrategy.class),
                 mock(SessionRegistryImpl.class),
                 mock(LogoutHandlerImpl.class),
-                mock(CasJwtDecoder.class),
-                mock(OidcUserSecurityServiceResolver.class)
+                mock(CasJwtDecoder.class)
         );
     }
 }
+

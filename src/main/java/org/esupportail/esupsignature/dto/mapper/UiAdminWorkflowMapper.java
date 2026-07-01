@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 
 @Component
 public class UiAdminWorkflowMapper {
@@ -91,6 +92,7 @@ public class UiAdminWorkflowMapper {
         dto.setPublicUsage(workflow.getPublicUsage());
         dto.setRoles(workflow.getRoles() == null ? List.of() : workflow.getRoles().stream().sorted().toList());
         dto.setManagers(workflow.getManagers() == null ? List.of() : workflow.getManagers().stream().sorted().toList());
+        dto.setAuthorizedCanCreateEmails(workflow.getAuthorizedCanCreateEmails() == null ? Set.of() : workflow.getAuthorizedCanCreateEmails());
         dto.setDashboardRoles(workflow.getDashboardRoles() == null ? List.of() : workflow.getDashboardRoles().stream().sorted().toList());
         dto.setViewers(workflow.getViewers() == null ? List.of() : workflow.getViewers().stream().map(this::toAdminWorkflowViewerDto).toList());
         dto.setExternalAuths(workflow.getExternalAuths() == null ? List.of() : workflow.getExternalAuths().stream().sorted(Comparator.comparing(Enum::name)).toList());
@@ -100,7 +102,6 @@ public class UiAdminWorkflowMapper {
         dto.setOwnerSystem(workflow.getOwnerSystem());
         dto.setDisableDeleteByCreator(workflow.getDisableDeleteByCreator());
         dto.setDisableUpdateByCreator(workflow.getDisableUpdateByCreator());
-        dto.setAuthorizeReplayByCreator(workflow.getAuthorizeReplayByCreator());
         dto.setDisableEmailAlerts(workflow.getDisableEmailAlerts());
         dto.setForbidDownloadsBeforeEnd(workflow.getForbidDownloadsBeforeEnd());
         dto.setAuthorizeClone(workflow.getAuthorizeClone());
@@ -164,6 +165,7 @@ public class UiAdminWorkflowMapper {
         dto.setAttachmentRequire(workflowStep.getAttachmentRequire());
         dto.setUsers(workflowStep.getUsers() == null ? List.of() : workflowStep.getUsers().stream().map(this::toAdminWorkflowStepUserDto).toList());
         dto.setCertificat(toAdminWorkflowStepCertificatDto(workflowStep.getCertificat()));
+        dto.setSignRequestParams(workflowStep.getSignRequestParams() == null ? List.of() : workflowStep.getSignRequestParams().stream().map(this::toSignRequestParamsDto).toList());
         return dto;
     }
 
@@ -173,6 +175,17 @@ public class UiAdminWorkflowMapper {
         }
         AdminWorkflowUpdateViewDto.CertificatDto dto = new AdminWorkflowUpdateViewDto.CertificatDto();
         dto.setId(certificat.getId());
+        return dto;
+    }
+
+    public AdminWorkflowUpdateViewDto.SignRequestParamsDto toSignRequestParamsDto(org.esupportail.esupsignature.entity.SignRequestParams srp) {
+        if (srp == null) return null;
+        AdminWorkflowUpdateViewDto.SignRequestParamsDto dto = new AdminWorkflowUpdateViewDto.SignRequestParamsDto();
+        dto.setSignPageNumber(srp.getSignPageNumber());
+        dto.setXPos(srp.getxPos());
+        dto.setYPos(srp.getyPos());
+        dto.setSignWidth(srp.getSignWidth());
+        dto.setSignHeight(srp.getSignHeight());
         return dto;
     }
 
@@ -218,3 +231,4 @@ public class UiAdminWorkflowMapper {
         return steps;
     }
 }
+
