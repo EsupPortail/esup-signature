@@ -20,6 +20,9 @@
                 </div>
                 <div class="flex-grow-1">
                     <div class="p-0 m-2 d-flex flex-column gap-2">
+                        <div th:if="${openscVersion == null}" class="alert alert-danger">
+                            Attention : OpenSC n'est pas détecté. Les certificats de type OpenSC ne pourront pas être utilisés.
+                        </div>
                         <div class="alert alert-light" th:if="${sealCertificatPropertieses != null && !sealCertificatPropertieses.isEmpty()}">
                                 <h5 class="text-center"><b>Certificat cachet</b></h5>
                                 <table class="table table-sm table-hover">
@@ -41,13 +44,23 @@
                                             <td th:text="${sealCertificatProperties.sealCertificatName}"></td>
                                             <td th:text="${sealCertificatProperties.sealSpareOf}"></td>
                                             <td th:text="${sealCertificatProperties.sealCertificatTitle}"></td>
-                                            <td style="width: 600px; word-break: break-all" th:text="${sealCertificatProperties.dssPrivateKeyEntry.certificate.subject.principal}"></td>
-                                            <td th:text="${sealCertificatProperties.roles}"></td>
-                                            <td th:text="${#dates.format(sealCertificatProperties.dssPrivateKeyEntry.certificate.creationDate, 'dd/MM/yyyy HH:mm')}"></td>
                                             <td>
-                                                <i th:if="${sealCertificatProperties.dssPrivateKeyEntry.certificate.notAfter.after(#dates.createNow())}" class="fi fi-rr-check text-success fa-2x"></i>
-                                                <i th:unless="${sealCertificatProperties.dssPrivateKeyEntry.certificate.notAfter.after(#dates.createNow())}" class="fi fi-rr-cross text-danger fa-2x"></i>
-                                                <span th:text="${#dates.format(sealCertificatProperties.dssPrivateKeyEntry.certificate.notAfter, 'dd/MM/yyyy HH:mm')}"></span>
+                                                <span th:if="${sealCertificatProperties.dssPrivateKeyEntry != null}" style="width: 600px; word-break: break-all" th:text="${sealCertificatProperties.dssPrivateKeyEntry.certificate.subject.principal}"></span>
+                                                <span th:if="${sealCertificatProperties.dssPrivateKeyEntry == null}" class="text-danger">
+                                                    Erreur : Certificat non détecté
+                                                    <span th:if="${sealCertificatProperties.sealCertificatType.name() == 'OPENSC'}">(vérifiez la configuration OpenSC)</span>
+                                                </span>
+                                            </td>
+                                            <td th:text="${sealCertificatProperties.roles}"></td>
+                                            <td>
+                                                <span th:if="${sealCertificatProperties.dssPrivateKeyEntry != null}" th:text="${#dates.format(sealCertificatProperties.dssPrivateKeyEntry.certificate.creationDate, 'dd/MM/yyyy HH:mm')}"></span>
+                                            </td>
+                                            <td>
+                                                <th:block th:if="${sealCertificatProperties.dssPrivateKeyEntry != null}">
+                                                    <i th:if="${sealCertificatProperties.dssPrivateKeyEntry.certificate.notAfter.after(#dates.createNow())}" class="fi fi-rr-check text-success fa-2x"></i>
+                                                    <i th:unless="${sealCertificatProperties.dssPrivateKeyEntry.certificate.notAfter.after(#dates.createNow())}" class="fi fi-rr-cross text-danger fa-2x"></i>
+                                                    <span th:text="${#dates.format(sealCertificatProperties.dssPrivateKeyEntry.certificate.notAfter, 'dd/MM/yyyy HH:mm')}"></span>
+                                                </th:block>
                                             </td>
                                             <td class="text-center">
                                                 <i th:if="${sealCertificatProperties.eIDasValidity}" class="fi fi-rr-check text-success fa-2x"></i>
@@ -120,60 +133,55 @@
                                 <i class="fi fi-rr-plus"></i>
                             </a>
                         </li>
-                    </div>
-                </div>
-            </div>
                     </ul>
                 </div>
-        </div>
-    </div>
-</div>
-</div>
-
-    <div data-bs-focus="false" class="modal fade" id="newCertificat"  role="dialog" aria-hidden="true">
-        <div class="modal-dialog modal-xl" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Ajouter un certificat</h5>
-                    <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close">
-
-                    </button>
-                </div>
-                <form id="addCertificat" th:action="'/admin/certificats?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" method="post" enctype="multipart/form-data">
-                    <div class="modal-body">
-                        <div class="form-group mb-3">
-                            <label class="form-label">Keystore au format PKCS12</label>
-                            <div class="custom-file">
-                                <input aria-describedby="inputGroupFileAddon01" class="form-control"
-                                       data-buttonText="Choisir fichier" id="keystore" name="keystore"
-                                       type="file" required/>
-                                <label class="custom-file-label" for="keystore" id="inputGroupLabel01">
-                                    Choisir un fichier
-                                </label>
-                            </div>
-                        </div>
-                        <div class="form-group mb-3">
-                            <label for="roleNames" class="form-label">Nom du role autorisé utiliser ce certificat</label>
-                            <select id="roleNames" class="form-select" type="text" name="roleNames" multiple>
-                                <th:block th:each="newRole : ${roles}">
-                                    <option th:text="${newRole}" th:value="${newRole}"></option>
-                                </th:block>
-                            </select>
-                        </div>
-                        <div class="form-group mb-3">
-                            <label for="password" class="form-label">Mot de passe du keystore</label>
-                            <input id="password" class="form-control" type="password" name="password">
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                        <input type="submit" class="btn btn-success" value="Valider">
-                    </div>
-                </form>
             </div>
         </div>
     </div>
 </main>
+<div data-bs-focus="false" class="modal fade" id="newCertificat"  role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Ajouter un certificat</h5>
+                <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close">
+
+                </button>
+            </div>
+            <form id="addCertificat" th:action="'/admin/certificats?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" method="post" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <div class="form-group mb-3">
+                        <label class="form-label">Keystore au format PKCS12</label>
+                        <div class="custom-file">
+                            <input aria-describedby="inputGroupFileAddon01" class="form-control"
+                                   data-buttonText="Choisir fichier" id="keystore" name="keystore"
+                                   type="file" required/>
+                            <label class="custom-file-label" for="keystore" id="inputGroupLabel01">
+                                Choisir un fichier
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="roleNames" class="form-label">Nom du role autorisé utiliser ce certificat</label>
+                        <select id="roleNames" class="form-select" type="text" name="roleNames" multiple>
+                            <th:block th:each="newRole : ${roles}">
+                                <option th:text="${newRole}" th:value="${newRole}"></option>
+                            </th:block>
+                        </select>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="password" class="form-label">Mot de passe du keystore</label>
+                        <input id="password" class="form-control" type="password" name="password">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <input type="submit" class="btn btn-success" value="Valider">
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 <footer th:replace="~{fragments/footer :: footer}"></footer>
 </body>
 </html>

@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.config.security.cas;
 
 import org.esupportail.esupsignature.config.security.WebSecurityProperties;
+import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.service.UserService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -9,8 +10,10 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtDecoders;
 import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import java.util.Collections;
+import java.util.List;
 
 @Component
 @ConditionalOnProperty(name = "spring.security.oauth2.client.provider.cas.issuer-uri")
@@ -38,12 +41,29 @@ public class CasJwtDecoder implements JwtDecoder {
             if(Collections.disjoint(jwt.getAudience(), webSecurityProperties.getJwtWsAuthorizedAudiences())) {
                 throw new JwtException("Audience du JWT non autorisée");
             }
-            userService.createUserWithEppn(jwt.getClaimAsString("eduPersonPrincipalName"));
+            String eppn = resolveEppn(jwt);
+            if(!StringUtils.hasText(eppn)) {
+                throw new JwtException("Aucune claim utilisateur exploitable dans le JWT : eduPersonPrincipalName, uid ou sub");
+            }
+            User user = userService.createUserWithEppn(eppn);
+            if(user == null) {
+                throw new JwtException("Utilisateur introuvable pour l'eppn du JWT : " + eppn);
+            }
             return jwt;
 
         } catch (Exception e) {
             throw new JwtException("Impossible de décoder le JWT : " + e.getMessage());
         }
+    }
+
+    private String resolveEppn(Jwt jwt) {
+        for(String claimName : List.of("eduPersonPrincipalName", "uid", "sub")) {
+            String principal = jwt.getClaimAsString(claimName);
+            if(StringUtils.hasText(principal)) {
+                return userService.buildEppn(principal);
+            }
+        }
+        return null;
     }
 
 }

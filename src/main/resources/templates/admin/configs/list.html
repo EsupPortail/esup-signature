@@ -22,7 +22,14 @@
                     <div class="p-0 m-2">
             <div class="alert alert-light">
                 <div class="d-flex flex-column gap-2">
-                    <p><b>GhostScript version détectée : </b><span th:text="${gsVersion}"></span></p>
+                    <p><b>GhostScript version détectée : </b>
+                        <span th:if="${gsVersion != null}" th:text="${gsVersion}"></span>
+                        <span th:if="${gsVersion == null}" class="text-danger">GhostScript non détecté</span>
+                    </p>
+                    <p><b>OpenSC version détectée : </b>
+                        <span th:if="${openscVersion != null}" th:text="${openscVersion}"></span>
+                        <span th:if="${openscVersion == null}" class="text-danger">OpenSC non détecté</span>
+                    </p>
                     <p class="mb-2">Attention, la configuration en base surcharge le fichier application.yml</p>
                     <div class="alert alert-light">
                         <h5>MappingFiltersGroups</h5>
