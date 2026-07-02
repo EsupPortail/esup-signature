@@ -26,9 +26,9 @@ public class SignRequestParams {
 
     private Integer signDocumentNumber = 0;
 
-    private Integer signWidth = 200;
+    private Integer signWidth = 100;
 
-    private Integer signHeight = 100;
+    private Integer signHeight = 50;
 
 	private Integer xPos = 0;
 
