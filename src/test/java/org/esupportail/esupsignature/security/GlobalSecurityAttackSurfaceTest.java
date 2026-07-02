@@ -32,6 +32,7 @@ import org.esupportail.esupsignature.web.ws.WsControllerAdvice;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.springframework.core.env.Environment;
 import org.springframework.http.ResponseEntity;
 import org.springframework.beans.factory.config.YamlPropertiesFactoryBean;
 import org.springframework.core.io.ClassPathResource;
@@ -1172,7 +1173,8 @@ class GlobalSecurityAttackSurfaceTest {
                 mock(SessionRegistryImpl.class),
                 mock(LogoutHandlerImpl.class),
                 mock(CasJwtDecoder.class),
-                mock(OidcUserSecurityServiceResolver.class)
+                mock(OidcUserSecurityServiceResolver.class),
+                mock(Environment.class)
         );
     }
 }

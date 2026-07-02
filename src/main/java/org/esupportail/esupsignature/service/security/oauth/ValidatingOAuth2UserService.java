@@ -2,6 +2,8 @@ package org.esupportail.esupsignature.service.security.oauth;
 
 import org.esupportail.esupsignature.service.security.OidcSecurityService;
 import org.esupportail.esupsignature.service.security.OidcUserSecurityService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
@@ -41,6 +43,8 @@ import java.util.Set;
 
 public class ValidatingOAuth2UserService implements OAuth2UserService<OidcUserRequest, OidcUser> {
 
+    private static final Logger logger = LoggerFactory.getLogger(ValidatingOAuth2UserService.class);
+
     private static final String MISSING_USER_INFO_URI_ERROR_CODE = "missing_user_info_uri";
 
     private static final String MISSING_USER_NAME_ATTRIBUTE_ERROR_CODE = "missing_user_name_attribute";
@@ -52,11 +56,13 @@ public class ValidatingOAuth2UserService implements OAuth2UserService<OidcUserRe
     private final OidcUserService oidcUserService = new OidcUserService();
     private final List<OidcSecurityService> securityServices;
     private final ClientRegistrationRepository clientRegistrationRepository;
+    private final boolean devProfileActive;
 
 
-    public ValidatingOAuth2UserService(List<OidcSecurityService> securityServices, ClientRegistrationRepository clientRegistrationRepository) {
+    public ValidatingOAuth2UserService(List<OidcSecurityService> securityServices, ClientRegistrationRepository clientRegistrationRepository, boolean devProfileActive) {
         this.securityServices = securityServices;
         this.clientRegistrationRepository = clientRegistrationRepository;
+        this.devProfileActive = devProfileActive;
         JwtHttpMessageConverter jwtConverter = new JwtHttpMessageConverter();
         jwtConverter.setSupportedMediaTypes(List.of(MediaType.valueOf("application/jwt")));
         RestTemplate restTemplate = new RestTemplate(List.of(jwtConverter));
@@ -77,6 +83,7 @@ public class ValidatingOAuth2UserService implements OAuth2UserService<OidcUserRe
     public OidcUser loadUser(OidcUserRequest userRequest) throws OAuth2AuthenticationException {
         Assert.notNull(userRequest, "userRequest cannot be null");
         String registrationId = userRequest.getClientRegistration().getRegistrationId();
+        logOidcJwt(registrationId, "id_token", userRequest.getIdToken().getTokenValue());
         OidcSecurityService currentSecurityService = securityServices.stream().filter(s -> s.getCode().equals(registrationId)).findFirst().get();
         if (currentSecurityService instanceof OidcUserSecurityService oidcUserSecurityService) {
             OidcUser oidcUser = oidcUserService.loadUser(userRequest);
@@ -130,6 +137,7 @@ public class ValidatingOAuth2UserService implements OAuth2UserService<OidcUserRe
         }
 
         Jwt jwt = jwtDecoder.decode(response.getBody());
+        logOidcJwt(registrationId, "userinfo", response.getBody());
 
         Map<String, Object> userAttributes = jwt.getClaims();
         Set<GrantedAuthority> authorities = new LinkedHashSet<>();
@@ -139,6 +147,12 @@ public class ValidatingOAuth2UserService implements OAuth2UserService<OidcUserRe
             authorities.add(new SimpleGrantedAuthority("SCOPE_" + authority));
         }
         return new DefaultOidcUser(authorities, new OidcIdToken(userRequest.getIdToken().getTokenValue(), userRequest.getIdToken().getIssuedAt(), userRequest.getIdToken().getExpiresAt(), jwt.getClaims()), userNameAttributeName);
+    }
+
+    private void logOidcJwt(String registrationId, String tokenName, String jwt) {
+        if (devProfileActive && StringUtils.hasText(jwt)) {
+            logger.info("OIDC JWT en clair (dev uniquement) registrationId={} token={} jwt={}", registrationId, tokenName, jwt);
+        }
     }
 
 }

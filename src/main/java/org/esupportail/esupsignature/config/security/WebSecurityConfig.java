@@ -38,6 +38,7 @@ import org.springframework.boot.security.oauth2.client.autoconfigure.Conditional
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.core.env.Environment;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -88,9 +89,10 @@ public class WebSecurityConfig {
 	private final LogoutHandlerImpl logoutHandler;
 	private final CasJwtDecoder casJwtDecoder;
 	private final OidcUserSecurityServiceResolver oidcUserSecurityServiceResolver;
+	private final Environment environment;
 	private DevShibRequestFilter devShibRequestFilter;
 
-	public WebSecurityConfig(GlobalProperties globalProperties, OAuthAuthenticationSuccessHandler oAuthAuthenticationSuccessHandler, WebSecurityProperties webSecurityProperties, @Autowired(required = false) ClientRegistrationRepository clientRegistrationRepository, List<SecurityService> securityServices, RegisterSessionAuthenticationStrategy sessionAuthenticationStrategy, SessionRegistryImpl sessionRegistry, LogoutHandlerImpl logoutHandler, @Autowired(required = false) CasJwtDecoder casJwtDecoder, OidcUserSecurityServiceResolver oidcUserSecurityServiceResolver) {
+	public WebSecurityConfig(GlobalProperties globalProperties, OAuthAuthenticationSuccessHandler oAuthAuthenticationSuccessHandler, WebSecurityProperties webSecurityProperties, @Autowired(required = false) ClientRegistrationRepository clientRegistrationRepository, List<SecurityService> securityServices, RegisterSessionAuthenticationStrategy sessionAuthenticationStrategy, SessionRegistryImpl sessionRegistry, LogoutHandlerImpl logoutHandler, @Autowired(required = false) CasJwtDecoder casJwtDecoder, OidcUserSecurityServiceResolver oidcUserSecurityServiceResolver, Environment environment) {
         this.globalProperties = globalProperties;
         this.oAuthAuthenticationSuccessHandler = oAuthAuthenticationSuccessHandler;
         this.webSecurityProperties = webSecurityProperties;
@@ -101,6 +103,7 @@ public class WebSecurityConfig {
         this.logoutHandler = logoutHandler;
         this.casJwtDecoder = casJwtDecoder;
         this.oidcUserSecurityServiceResolver = oidcUserSecurityServiceResolver;
+        this.environment = environment;
     }
 
 	@Bean
@@ -109,7 +112,7 @@ public class WebSecurityConfig {
 		http.securityMatcher("/ws-jwt/**");
 		if (StringUtils.hasText(issuerUri)) {
 			http.oauth2ResourceServer(oauth2 -> oauth2.bearerTokenResolver(bearerTokenResolver()).jwt(jwt -> jwt.decoder(casJwtDecoder)
-					.jwtAuthenticationConverter(new CustomJwtAuthenticationConverter())));
+					.jwtAuthenticationConverter(new CustomJwtAuthenticationConverter(globalProperties.getDomain()))));
 			http.authorizeHttpRequests(auth -> auth.anyRequest().authenticated());
 		} else {
 			http.authorizeHttpRequests(auth -> auth.anyRequest().denyAll());
@@ -218,7 +221,7 @@ public class WebSecurityConfig {
 
 	@Bean
 	public ValidatingOAuth2UserService validatingOAuth2UserService() {
-		return new ValidatingOAuth2UserService(getActiveOidcSecurityServices(), clientRegistrationRepository);
+		return new ValidatingOAuth2UserService(getActiveOidcSecurityServices(), clientRegistrationRepository, List.of(environment.getActiveProfiles()).contains("dev"));
 	}
 
 	@Bean
