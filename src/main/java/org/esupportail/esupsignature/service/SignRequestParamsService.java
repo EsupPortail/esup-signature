@@ -617,6 +617,7 @@ public class SignRequestParamsService {
             signRequestParams.setSignScale(requestParams.getSignScale());
             signRequestParams.setSignWidth(requestParams.getSignWidth());
             signRequestParams.setSignHeight(requestParams.getSignHeight());
+            signRequestParams.setConstrainToSignatureField(requestParams.getConstrainToSignatureField());
             signRequestParams.setExtraType(requestParams.getExtraType());
             signRequestParams.setExtraName(requestParams.getExtraName());
             signRequestParams.setExtraDate(requestParams.getExtraDate());

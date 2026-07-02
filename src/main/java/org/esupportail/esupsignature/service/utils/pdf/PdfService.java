@@ -230,6 +230,22 @@ public class PdfService {
         PDRectangle pageBox = pdPage.getCropBox();
         float renderedSignWidth = signRequestParams.getSignWidth() * signRequestParams.getSignScale() * fixFactor;
         float renderedSignHeight = signRequestParams.getSignHeight() * signRequestParams.getSignScale() * fixFactor;
+        if(BooleanUtils.isTrue(signRequestParams.getConstrainToSignatureField()) && StringUtils.hasText(signRequestParams.getPdSignatureFieldName())) {
+            PDRectangle signatureFieldRectangle = getSignatureFieldRectangle(pdDocument, signRequestParams.getPdSignatureFieldName());
+            float maxRenderedSignWidth = signatureFieldRectangle != null ? signatureFieldRectangle.getWidth() : signRequestParams.getSignWidth() * fixFactor;
+            float maxRenderedSignHeight = signatureFieldRectangle != null ? signatureFieldRectangle.getHeight() : signRequestParams.getSignHeight() * fixFactor;
+            if(renderedSignWidth > 0 && renderedSignHeight > 0
+                    && maxRenderedSignWidth > 0 && maxRenderedSignHeight > 0
+                    && (renderedSignWidth > maxRenderedSignWidth || renderedSignHeight > maxRenderedSignHeight)) {
+                float ratio = renderedSignWidth / renderedSignHeight;
+                renderedSignWidth = maxRenderedSignWidth;
+                renderedSignHeight = renderedSignWidth / ratio;
+                if(renderedSignHeight > maxRenderedSignHeight) {
+                    renderedSignHeight = maxRenderedSignHeight;
+                    renderedSignWidth = renderedSignHeight * ratio;
+                }
+            }
+        }
         float xAdjusted = signRequestParams.getxPos() * fixFactor;
         float yAdjusted;
 
@@ -260,9 +276,9 @@ public class PdfService {
         contentStream.beginMarkedContent(COSName.OC, ocg);
 
         if (signImage != null) {
+            BufferedImage bufferedSignImage = ImageIO.read(signImage);
             validateSignatureBounds(pageBox, xAdjusted, yAdjusted, renderedSignWidth, renderedSignHeight, pageNumber);
             logger.info("stamp image to " + Math.round(xAdjusted) + ", " + Math.round(yAdjusted) + " on page : " + pageNumber);
-            BufferedImage bufferedSignImage = ImageIO.read(signImage);
             ByteArrayOutputStream signImageByteArrayOutputStream = new ByteArrayOutputStream();
             ImageIO.write(bufferedSignImage, "png", signImageByteArrayOutputStream);
             PDImageXObject pdImage = PDImageXObject.createFromByteArray(pdDocument, signImageByteArrayOutputStream.toByteArray(), "sign.png");
@@ -336,6 +352,22 @@ public class PdfService {
                     "La signature est hors page (page=%d, x=%.2f, y=%.2f, width=%.2f, height=%.2f, pageWidth=%.2f, pageHeight=%.2f)",
                     pageNumber, x, y, width, height, pageBox.getWidth(), pageBox.getHeight()));
         }
+    }
+
+    private PDRectangle getSignatureFieldRectangle(PDDocument pdDocument, String pdSignatureFieldName) {
+        PDAcroForm pdAcroForm = pdDocument.getDocumentCatalog().getAcroForm();
+        if(pdAcroForm == null) {
+            return null;
+        }
+        return pdAcroForm.getFields().stream()
+                .filter(PDSignatureField.class::isInstance)
+                .filter(pdField -> pdSignatureFieldName.equals(pdField.getPartialName()))
+                .map(pdField -> ((PDSignatureField) pdField).getWidgets())
+                .filter(widgets -> widgets != null && !widgets.isEmpty())
+                .map(widgets -> widgets.get(0).getRectangle())
+                .filter(Objects::nonNull)
+                .findFirst()
+                .orElse(null);
     }
 
     private void addLinkInLayer(SignRequest signRequest, float signWidth, float signHeight, User user, double fixFactor, PDDocument pdDocument, PDPage pdPage, Date newDate, DateFormat dateFormat, float xAdjusted, float yAdjusted, Matrix rotation, PdfParameters pdfParameters, PDOptionalContentGroup ocg) throws IOException {

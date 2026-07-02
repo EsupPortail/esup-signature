@@ -1886,6 +1886,7 @@ public class SignBookService {
                 signRequestParamse.setExtraDate(true);
                 signRequestParamse.setAddWatermark(true);
                 signRequestParamse.setSignImageNumber(user.getDefaultSignImageNumber());
+                signRequestParamse.setConstrainToSignatureField(StringUtils.hasText(signRequestParamse.getPdSignatureFieldName()));
                 if(user.getFavoriteSignRequestParams() != null) {
                     signRequestParamse.setAddImage(user.getFavoriteSignRequestParams().getAddImage());
                     signRequestParamse.setAddWatermark(user.getFavoriteSignRequestParams().getAddWatermark());
