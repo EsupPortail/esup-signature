@@ -40,8 +40,10 @@ import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import java.io.File;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
@@ -965,6 +967,33 @@ class GlobalSecurityAttackSurfaceTest {
             request.addHeader("Authorization", "Basic dXNlcjpwYXNz");
 
             assertNull(resolver.resolve(request));
+        }
+
+        @Test
+        void wsJwtAuthenticationFailureHandlerShouldReturnUnauthorizedWithoutRethrowingServiceException() {
+            MockHttpServletRequest request = new MockHttpServletRequest("GET", "/ws-jwt/test");
+            MockHttpServletResponse response = new MockHttpServletResponse();
+            AuthenticationServiceException exception = new AuthenticationServiceException(
+                    "Impossible de décoder le JWT : Jwt expired at 2026-07-02T16:05:12Z"
+            );
+
+            WebSecurityConfig config = new WebSecurityConfig(
+                    new GlobalProperties(),
+                    null,
+                    new WebSecurityProperties(),
+                    null,
+                    List.of(),
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+            );
+
+            assertDoesNotThrow(() -> config.wsJwtAuthenticationFailureHandler().onAuthenticationFailure(request, response, exception));
+            assertEquals(401, response.getStatus());
+            assertEquals("JWT invalide ou expire", response.getErrorMessage());
         }
     }
 
