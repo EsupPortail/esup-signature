@@ -1,7 +1,11 @@
 package org.esupportail.esupsignature.service.security.oauth;
 
 import org.esupportail.esupsignature.config.security.WebSecurityProperties;
+import org.esupportail.esupsignature.service.security.Group2UserRoleService;
 import org.esupportail.esupsignature.service.security.OidcUserSecurityService;
+import org.esupportail.esupsignature.service.security.SpelGroupService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
@@ -10,20 +14,26 @@ import org.springframework.util.StringUtils;
 import javax.naming.ldap.LdapName;
 import javax.naming.ldap.Rdn;
 import java.lang.reflect.Array;
-import java.util.Collection;
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Service
 public class OidcUserAuthoritiesService {
 
+    private static final Logger logger = LoggerFactory.getLogger(OidcUserAuthoritiesService.class);
+
+    private final Group2UserRoleService group2UserRoleService;
+
     private final WebSecurityProperties webSecurityProperties;
 
-    public OidcUserAuthoritiesService(WebSecurityProperties webSecurityProperties) {
+    public OidcUserAuthoritiesService(SpelGroupService spelGroupService, WebSecurityProperties webSecurityProperties) {
         this.webSecurityProperties = webSecurityProperties;
+        group2UserRoleService = new Group2UserRoleService();
+        group2UserRoleService.setGroupPrefixRoleName(webSecurityProperties.getGroupToRoleFilterPattern());
+        group2UserRoleService.setMappingGroupesRoles(webSecurityProperties.getMappingGroupsRoles());
+        spelGroupService.initGroupMappingSpel();
+        group2UserRoleService.setGroupService(spelGroupService);
     }
 
     public Set<GrantedAuthority> buildAuthorities(Map<String, Object> claims, OidcUserSecurityService oidcUserSecurityService) {
@@ -37,6 +47,17 @@ public class OidcUserAuthoritiesService {
                 addMappedAuthority(authorities, cn);
             }
         }
+        try {
+            String principalName = Optional.ofNullable(claims.get(oidcUserSecurityService.getPrincipalClaim())).map(Object::toString).orElse("");
+            for (String roleFromSpel : group2UserRoleService.getRoles(principalName)) {
+                SimpleGrantedAuthority simpleGrantedAuthority = new SimpleGrantedAuthority(roleFromSpel);
+                authorities.add(simpleGrantedAuthority);
+                logger.debug("loading authorities : " + simpleGrantedAuthority.getAuthority());
+            }
+        } catch (Exception e) {
+            logger.warn("unable to find authorities", e);
+        }
+
         return authorities;
     }
 
