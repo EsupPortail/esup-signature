@@ -357,15 +357,17 @@ public class SignRequestService {
 					}
 				}
 			}
-		}
-		byte[] bytes = toSignDocuments.get(0).getInputStream().readAllBytes();
-		Reports reports = validationService.validate(new ByteArrayInputStream(bytes), null);
-		if(formDataMap != null && !formDataMap.isEmpty() && toSignDocuments.get(0).isPdf()
-				&& (reports == null || reports.getSimpleReport().getSignatureIdList().isEmpty())) {
-			filledInputStream = pdfService.fill(toSignDocuments.get(0).getInputStream(), formDataMap, isStepAllSignDone(signRequest.getParentSignBook()), form);
-		} else {
-			filledInputStream = toSignDocuments.get(0).getInputStream().readAllBytes();
-		}
+			}
+			byte[] bytes = toSignDocuments.get(0).getInputStream().readAllBytes();
+			Reports reports = toSignDocuments.get(0).isPdf()
+					? validationService.validatePdf(new ByteArrayInputStream(bytes))
+					: validationService.validate(new ByteArrayInputStream(bytes), null);
+			if(formDataMap != null && !formDataMap.isEmpty() && toSignDocuments.get(0).isPdf()
+					&& reports != null && reports.getSimpleReport() != null && reports.getSimpleReport().getSignatureIdList().isEmpty()) {
+				filledInputStream = pdfService.fill(toSignDocuments.get(0).getInputStream(), formDataMap, isStepAllSignDone(signRequest.getParentSignBook()), form);
+			} else {
+				filledInputStream = toSignDocuments.get(0).getInputStream().readAllBytes();
+			}
 		if(toSignDocuments.get(0).isPdf() && !isMoreWorkflowStep(signRequest.getParentSignBook()) && !keepSignFields) {
 			filledInputStream = pdfService.normalizePDF(filledInputStream, signRequest.getSignRequestParams().stream().anyMatch(srp -> srp.getRotate().equals(0)), true);
 		}
@@ -612,16 +614,16 @@ public class SignRequestService {
 							ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 							toAddSignRequestParams = signRequestParamsService.scanSignatureFields(new ByteArrayInputStream(bytes), outputStream, docNumber, signRequestParamsDetectionPattern, true, orderSignsByName);
 							bytes = outputStream.toByteArray();
-						} else {
-							for (SignRequestParams signRequestParams : signRequestParamses) {
-								toAddSignRequestParams.add(signRequestParamsService.createSignRequestParams(signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos()));
+							} else {
+								for (SignRequestParams signRequestParams : signRequestParamses) {
+									toAddSignRequestParams.add(signRequestParamsService.createSignRequestParams(signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos()));
+								}
 							}
-						}
-						signRequest.getSignRequestParams().addAll(toAddSignRequestParams);
-						Reports reports = validationService.validate(new ByteArrayInputStream(bytes), null);
-						if(reports == null || reports.getSimpleReport().getSignatureIdList().isEmpty()) {
-							inputStream = pdfService.removeSignField(new ByteArrayInputStream(bytes), signRequest.getParentSignBook().getLiveWorkflow().getWorkflow(), keepSignFields);
-						}
+							signRequest.getSignRequestParams().addAll(toAddSignRequestParams);
+							Reports reports = validationService.validatePdf(new ByteArrayInputStream(bytes));
+							if(reports != null && reports.getSimpleReport() != null && reports.getSimpleReport().getSignatureIdList().isEmpty()) {
+								inputStream = pdfService.removeSignField(new ByteArrayInputStream(bytes), signRequest.getParentSignBook().getLiveWorkflow().getWorkflow(), keepSignFields);
+							}
 					} else if(contentType != null && contentType.contains("image")){
 						bytes = pdfService.jpegToPdf(multipartFile.getInputStream(), multipartFile.getName()).readAllBytes();
 						contentType = "application/pdf";
@@ -674,8 +676,8 @@ public class SignRequestService {
 						}
 					}
 					signRequest.getSignRequestParams().addAll(toAddSignRequestParams);
-					Reports reports = validationService.validate(new ByteArrayInputStream(bytes), null);
-					if(reports == null || reports.getSimpleReport().getSignatureIdList().isEmpty()) {
+					Reports reports = validationService.validatePdf(new ByteArrayInputStream(bytes));
+					if(reports != null && reports.getSimpleReport() != null && reports.getSimpleReport().getSignatureIdList().isEmpty()) {
 						inputStream = pdfService.removeSignField(new ByteArrayInputStream(bytes), signRequest.getParentSignBook().getLiveWorkflow().getWorkflow(), keepSignFields);
 					}
 				} else if(contentType != null && contentType.contains("image")) {
@@ -2152,7 +2154,7 @@ public class SignRequestService {
 		List<String> results = pdfService.checkPDFA(bytes, true);
 		StringBuilder pdfaCheck = new StringBuilder();
 		for(String result : results) {
-			if(result.startsWith("6") && !pdfaCheck.toString().contains(result.substring(0, 5))) {
+			if(result != null && result.length() >= 5 && result.startsWith("6") && !pdfaCheck.toString().contains(result.substring(0, 5))) {
 				pdfaCheck.append(result, 0, 5).append(",");
 			}
 		}

@@ -928,19 +928,20 @@ public class PdfService {
      * @throws EsupSignatureRuntimeException Si la normalisation échoue
      */
     public byte[] normalizePDF(byte[] originalBytes, boolean rotate, boolean force) throws IOException, EsupSignatureRuntimeException {
-        PDDocument pdDocument = Loader.loadPDF(originalBytes);
-        boolean hasWidgets = false;
-        for (PDPage page : pdDocument.getPages()) {
-            if (page.getAnnotations().stream().anyMatch(a -> a instanceof PDAnnotationWidget)) {
-                hasWidgets = true;
-                break;
+        try (PDDocument pdDocument = Loader.loadPDF(originalBytes)) {
+            boolean hasWidgets = false;
+            for (PDPage page : pdDocument.getPages()) {
+                if (page.getAnnotations().stream().anyMatch(a -> a instanceof PDAnnotationWidget)) {
+                    hasWidgets = true;
+                    break;
+                }
+            }
+            if(hasWidgets && !force) {
+                return originalBytes;
             }
         }
-        if(hasWidgets && !force) {
-            return originalBytes;
-        }
-        Reports reports = validationService.validate(new ByteArrayInputStream(originalBytes), null);
-        if (reports == null || reports.getSimpleReport() == null || reports.getSimpleReport().getSignatureIdList().isEmpty()) {
+        Reports reports = validationService.validatePdf(new ByteArrayInputStream(originalBytes));
+        if (reports != null && reports.getSimpleReport() != null && reports.getSimpleReport().getSignatureIdList().isEmpty()) {
             String params = "";
             if(!rotate) {
                 params += " -dAutoRotatePages=/None";
@@ -1517,13 +1518,22 @@ public class PdfService {
         if(!Objects.equals(multipartFile.getContentType(), "application/pdf")) {
             return;
         }
+        byte[] pdfBytes;
+        try {
+            pdfBytes = multipartFile.getBytes();
+        } catch (IOException e) {
+            logger.error("unable to read uploaded PDF file {}", multipartFile.getOriginalFilename(), e);
+            throw new EsupSignatureRuntimeException("Impossible de lire le fichier PDF téléversé", e);
+        }
         try {
             PdfPermissionsChecker pdfPermissionsChecker = new PdfPermissionsChecker();
-            pdfPermissionsChecker.checkSignatureRestrictionDictionaries(new PdfBoxDocumentReader(new InMemoryDocument(multipartFile.getBytes())), new SignatureFieldParameters());
-            pdfPermissionsChecker.checkDocumentPermissions(new PdfBoxDocumentReader(new InMemoryDocument(multipartFile.getBytes())), new SignatureFieldParameters());
+            PdfBoxDocumentReader pdfBoxDocumentReader = new PdfBoxDocumentReader(new InMemoryDocument(pdfBytes));
+            SignatureFieldParameters signatureFieldParameters = new SignatureFieldParameters();
+            pdfPermissionsChecker.checkSignatureRestrictionDictionaries(pdfBoxDocumentReader, signatureFieldParameters);
+            pdfPermissionsChecker.checkDocumentPermissions(pdfBoxDocumentReader, signatureFieldParameters);
         } catch (IOException e) {
-            logger.error("error on check pdf permitions", e);
-            throw new EsupSignatureRuntimeException("error on check pdf permitions", e);
+            logger.warn("invalid PDF file {}: {}", multipartFile.getOriginalFilename(), e.getMessage());
+            throw new EsupSignatureRuntimeException("Le fichier PDF est invalide, corrompu ou incomplet. Merci de vérifier le document puis de le téléverser à nouveau.", e);
         } catch (ProtectedDocumentException e) {
             logger.warn(multipartFile.getOriginalFilename() + " : " + e.getMessage());
             throw new EsupSignatureRuntimeException("La création de nouvelles signatures n'est pas autorisée dans le document actuel. Raison : Le dictionnaire des autorisations PDF n'autorise pas la modification ou la création de champs de formulaire interactifs, y compris les champs de signature, lorsque le document est ouvert avec un accès utilisateur.");
