@@ -928,19 +928,20 @@ public class PdfService {
      * @throws EsupSignatureRuntimeException Si la normalisation échoue
      */
     public byte[] normalizePDF(byte[] originalBytes, boolean rotate, boolean force) throws IOException, EsupSignatureRuntimeException {
-        PDDocument pdDocument = Loader.loadPDF(originalBytes);
-        boolean hasWidgets = false;
-        for (PDPage page : pdDocument.getPages()) {
-            if (page.getAnnotations().stream().anyMatch(a -> a instanceof PDAnnotationWidget)) {
-                hasWidgets = true;
-                break;
+        try (PDDocument pdDocument = Loader.loadPDF(originalBytes)) {
+            boolean hasWidgets = false;
+            for (PDPage page : pdDocument.getPages()) {
+                if (page.getAnnotations().stream().anyMatch(a -> a instanceof PDAnnotationWidget)) {
+                    hasWidgets = true;
+                    break;
+                }
+            }
+            if(hasWidgets && !force) {
+                return originalBytes;
             }
         }
-        if(hasWidgets && !force) {
-            return originalBytes;
-        }
-        Reports reports = validationService.validate(new ByteArrayInputStream(originalBytes), null);
-        if (reports == null || reports.getSimpleReport() == null || reports.getSimpleReport().getSignatureIdList().isEmpty()) {
+        Reports reports = validationService.validatePdf(new ByteArrayInputStream(originalBytes));
+        if (reports != null && reports.getSimpleReport() != null && reports.getSimpleReport().getSignatureIdList().isEmpty()) {
             String params = "";
             if(!rotate) {
                 params += " -dAutoRotatePages=/None";
