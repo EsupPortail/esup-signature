@@ -722,6 +722,11 @@ public class PdfService {
             if (info.getModificationDate() == null) {
                 info.setModificationDate(Calendar.getInstance());
             }
+            info.setTitle(sanitizeXmlText(info.getTitle()));
+            info.setSubject(sanitizeXmlText(info.getSubject()));
+            info.setCreator(sanitizeXmlText(info.getCreator()));
+            info.setProducer(sanitizeXmlText(info.getProducer()));
+            info.setKeywords(sanitizeXmlText(info.getKeywords()));
 
             PDDocumentCatalog cat = pdDocument.getDocumentCatalog();
 
@@ -766,6 +771,7 @@ public class PdfService {
                                 "Depuis : " + log.getIp() + pdfTextStripper.getLineSeparator() +
                                 "Liens de contrôle : " + pdfTextStripper.getLineSeparator() +
                                 globalProperties.getRootUrl() + "/public/control/" + signRequest.getToken();
+                signatureInfos = sanitizeXmlText(signatureInfos);
                 info.setKeywords(info.getKeywords() + ", " + signatureInfos);
                 info.setCustomMetadataValue("Signature_1" + i, signatureInfos);
                 pdfaIdentificationSchema.setTextPropertyValue("Signature_" + i, signatureInfos);
@@ -801,6 +807,36 @@ public class PdfService {
             logger.error("error on write metadatas", e);
         }
         return inputStream;
+    }
+
+    static String sanitizeXmlText(String value) {
+        if(value == null) {
+            return null;
+        }
+        StringBuilder sanitizedValue = null;
+        for(int i = 0; i < value.length();) {
+            int codePoint = value.codePointAt(i);
+            int charCount = Character.charCount(codePoint);
+            if(isValidXmlChar(codePoint)) {
+                if(sanitizedValue != null) {
+                    sanitizedValue.appendCodePoint(codePoint);
+                }
+            } else if(sanitizedValue == null) {
+                sanitizedValue = new StringBuilder(value.length());
+                sanitizedValue.append(value, 0, i);
+            }
+            i += charCount;
+        }
+        return sanitizedValue == null ? value : sanitizedValue.toString();
+    }
+
+    private static boolean isValidXmlChar(int codePoint) {
+        return codePoint == 0x9 ||
+                codePoint == 0xA ||
+                codePoint == 0xD ||
+                codePoint >= 0x20 && codePoint <= 0xD7FF ||
+                codePoint >= 0xE000 && codePoint <= 0xFFFD ||
+                codePoint >= 0x10000 && codePoint <= 0x10FFFF;
     }
 
     /**
