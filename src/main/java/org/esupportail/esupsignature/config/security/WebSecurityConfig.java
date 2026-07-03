@@ -39,6 +39,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.env.Environment;
+import org.springframework.security.config.ObjectPostProcessor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -51,12 +52,15 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter;
 import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;
 import org.springframework.security.oauth2.server.resource.web.DefaultBearerTokenResolver;
+import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandlerImpl;
 import org.springframework.security.web.access.expression.WebExpressionAuthorizationManager;
 import org.springframework.security.web.access.intercept.AuthorizationFilter;
 import org.springframework.security.web.authentication.ExceptionMappingAuthenticationFailureHandler;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.security.web.authentication.session.RegisterSessionAuthenticationStrategy;
 import org.springframework.security.web.authentication.switchuser.SwitchUserFilter;
@@ -111,7 +115,16 @@ public class WebSecurityConfig {
 	public SecurityFilterChain wsJwtSecurityFilter(HttpSecurity http) throws Exception {
 		http.securityMatcher("/ws-jwt/**");
 		if (StringUtils.hasText(issuerUri)) {
-			http.oauth2ResourceServer(oauth2 -> oauth2.bearerTokenResolver(bearerTokenResolver()).jwt(jwt -> jwt.decoder(casJwtDecoder)
+			http.oauth2ResourceServer(oauth2 -> oauth2.bearerTokenResolver(bearerTokenResolver())
+					.authenticationEntryPoint(wsJwtAuthenticationEntryPoint())
+					.withObjectPostProcessor(new ObjectPostProcessor<BearerTokenAuthenticationFilter>() {
+						@Override
+						public <O extends BearerTokenAuthenticationFilter> O postProcess(O filter) {
+							filter.setAuthenticationFailureHandler(wsJwtAuthenticationFailureHandler());
+							return filter;
+						}
+					})
+					.jwt(jwt -> jwt.decoder(casJwtDecoder)
 					.jwtAuthenticationConverter(new CustomJwtAuthenticationConverter(globalProperties.getDomain()))));
 			http.authorizeHttpRequests(auth -> auth.anyRequest().authenticated());
 		} else {
@@ -120,6 +133,17 @@ public class WebSecurityConfig {
 		http.cors(AbstractHttpConfigurer::disable);
 		http.addFilterAfter(new MdcUsernameFilter(), AuthorizationFilter.class);
 		return http.build();
+	}
+
+	public AuthenticationEntryPoint wsJwtAuthenticationEntryPoint() {
+		return (request, response, authException) -> {
+			logger.warn("Authentification JWT refusee pour {} {} : {}", request.getMethod(), request.getRequestURI(), authException.getMessage());
+			response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "JWT invalide ou expire");
+		};
+	}
+
+	public AuthenticationFailureHandler wsJwtAuthenticationFailureHandler() {
+		return (request, response, exception) -> wsJwtAuthenticationEntryPoint().commence(request, response, exception);
 	}
 
 	@Value("${spring.security.oauth2.client.provider.cas.issuer-uri:}")
