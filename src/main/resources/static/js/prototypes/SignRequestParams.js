@@ -673,7 +673,9 @@ export class SignRequestParams extends EventFactory {
             "<button id='submit-add-spot' type='button' class='btn btn-sm btn-transparent text-success' title='Enregistrer'><i class='fi fi-rr-floppy-disk-pen'></i></button>" +
             "</div>";
         this.cross.prepend(spotToolsHtml);
-        this.#refreshToolsPosition();
+        $("#spot-tools_" + this.id).on("mousedown click", function(e) {
+            e.stopPropagation();
+        });
         this.tools.remove();
         this.border.remove();
         this.cross.css("border", "1px solid var(--color-rgba-0-0-0-01)");
@@ -1264,13 +1266,13 @@ export class SignRequestParams extends EventFactory {
         const dragRect = this.cross[0].getBoundingClientRect();
         this.#refreshPageAttributeFromRect(dragRect);
         this.#updatePlacementState(dragRect);
-        this.#refreshToolsPosition();
         this.tools.removeClass("d-none");
         if($(event.originalEvent.target).attr("id") != null && $("#border_" + $(event.originalEvent.target).attr("id").split("_")[1]).hasClass("cross-warning") && this.firstCrossAlert) {
             this.firstCrossAlert = false;
             bootbox.alert("Attention votre signature superpose un autre élément du document cela pourrait nuire à sa lecture. Vous pourrez tout de même la valider même si elle est de couleur orange", null);
         }
         this.#afterDropRefresh(ui);
+        this.#refreshToolsPosition();
         this.#syncSpotSaveState();
         if(this.signImages !== SPECIAL_SIGN_IMAGE_NUMBERS.SPOT) {
             let signLaunchButton = $("#signLaunchButton");
@@ -1317,20 +1319,9 @@ export class SignRequestParams extends EventFactory {
         if (crossRect == null) {
             return;
         }
-        let pageTop = null;
-        $(".pdf-page").each((_, pageElement) => {
-            const pageRect = pageElement.getBoundingClientRect();
-            if (
-                crossRect.left >= pageRect.left - 1 &&
-                crossRect.left <= pageRect.right + 1 &&
-                crossRect.top >= pageRect.top - 1 &&
-                crossRect.top <= pageRect.bottom + 1
-            ) {
-                pageTop = pageRect.top;
-                return false;
-            }
-            return undefined;
-        });
+        this.#refreshPageAttributeFromRect(crossRect);
+        const pageRect = $("#page_" + this.signPageNumber).get(0)?.getBoundingClientRect?.();
+        const pageTop = pageRect?.top ?? null;
         const topOffset = -46;
         if (pageTop != null && crossRect.top + topOffset < pageTop) {
             tools.css({
