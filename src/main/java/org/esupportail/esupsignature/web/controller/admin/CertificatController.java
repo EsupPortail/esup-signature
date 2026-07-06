@@ -41,6 +41,7 @@ public class CertificatController {
         model.addAttribute("certificats", certificatService.getAllCertificats());
         model.addAttribute("roles", userService.getAllRoles());
         model.addAttribute("sealCertificatPropertieses", certificatService.getCheckedSealCertificates());
+        model.addAttribute("openscVersion", certificatService.getOpenSCVersion());
         return "admin/certificats/list";
     }
 

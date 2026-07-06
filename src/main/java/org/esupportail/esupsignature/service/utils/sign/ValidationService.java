@@ -8,6 +8,7 @@ import eu.europa.esig.dss.enumerations.ValidationLevel;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.x509.CertificateToken;
 import eu.europa.esig.dss.model.x509.revocation.ocsp.OCSP;
+import eu.europa.esig.dss.pades.validation.PDFDocumentValidator;
 import eu.europa.esig.dss.signature.AbstractSignatureParameters;
 import eu.europa.esig.dss.spi.policy.SignaturePolicyProvider;
 import eu.europa.esig.dss.spi.validation.CertificateVerifier;
@@ -76,20 +77,40 @@ public class ValidationService {
                 }
             }
             logger.debug("validate with : " + documentValidator.getClass());
-            if(certificateVerifier != null) {
-                documentValidator.setCertificateVerifier(certificateVerifier);
-            }
-            documentValidator.setSignaturePolicyProvider(new SignaturePolicyProvider());
-            documentValidator.setTokenExtractionStrategy(TokenExtractionStrategy.NONE);
-            documentValidator.setValidationLevel(ValidationLevel.LONG_TERM_DATA);
-            documentValidator.setSignaturePolicyProvider(signaturePolicyProvider);
-            documentValidator.setIncludeSemantics(true);
-            InputStream is = defaultPolicy.getInputStream();
-            return documentValidator.validateDocument(is);
+            return validate(documentValidator);
         } catch (Exception e) {
             logger.warn("Unable to validate document : " + e.getMessage(), e);
         }
         return null;
+    }
+
+    public Reports validatePdf(InputStream docInputStream) {
+        try {
+            DSSDocument dssDocument = dssUtilsService.toDSSDocument(new DssMultipartFile("doc", "doc", null, docInputStream));
+            if(dssDocument == null) {
+                return null;
+            }
+            PDFDocumentValidator documentValidator = new PDFDocumentValidator(dssDocument);
+            logger.debug("validate PDF with : " + documentValidator.getClass());
+            return validate(documentValidator);
+        } catch (Exception e) {
+            logger.warn("Unable to validate PDF document : " + e.getMessage(), e);
+        }
+        return null;
+    }
+
+    private Reports validate(SignedDocumentValidator documentValidator) throws Exception {
+        if(certificateVerifier != null) {
+            documentValidator.setCertificateVerifier(certificateVerifier);
+        }
+        documentValidator.setSignaturePolicyProvider(new SignaturePolicyProvider());
+        documentValidator.setTokenExtractionStrategy(TokenExtractionStrategy.NONE);
+        documentValidator.setValidationLevel(ValidationLevel.LONG_TERM_DATA);
+        documentValidator.setSignaturePolicyProvider(signaturePolicyProvider);
+        documentValidator.setIncludeSemantics(true);
+        try (InputStream is = defaultPolicy.getInputStream()) {
+            return documentValidator.validateDocument(is);
+        }
     }
 
     public void checkRevocation(AbstractSignatureForm signatureDocumentForm, CertificateToken certificateToken, AbstractSignatureParameters<?> parameters) {

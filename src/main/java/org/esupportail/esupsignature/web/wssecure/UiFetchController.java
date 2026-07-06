@@ -141,6 +141,20 @@ public class UiFetchController {
         return ResponseEntity.ok(uiFetchService.deleteSignature(userEppn, authUserEppn, id, signRequestId, httpSession));
     }
 
+    @PostMapping(value = "/profile/signatures/mobile", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<UserSignatureStateDto> saveMobileSignature(@ModelAttribute("userEppn") String userEppn,
+                                                                     @ModelAttribute("authUserEppn") String authUserEppn,
+                                                                     @RequestParam(value = "token") String token,
+                                                                     @RequestParam(value = "signImageBase64") String signImageBase64,
+                                                                     @RequestParam(value = "signRequestId", required = false) Long signRequestId,
+                                                                     HttpSession httpSession) throws IOException {
+        try {
+            return ResponseEntity.ok(uiFetchService.saveMobileSignature(userEppn, authUserEppn, token, signImageBase64, signRequestId, httpSession));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
     @PostMapping(value = "/warnings/read")
     public ResponseEntity<Void> warningReaded(@ModelAttribute("authUserEppn") String authUserEppn) {
         uiFetchService.markWarningsRead(authUserEppn);
@@ -157,4 +171,3 @@ public class UiFetchController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 }
-

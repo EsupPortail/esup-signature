@@ -140,11 +140,17 @@ body.es-signrequest-page #tools #signAdvancedLaunchButton {
 }
 
 body.es-signrequest-page #tools #step-1 #addSignButton2 {
+    align-items: center;
+    gap: .5rem;
     width: auto;
     min-width: fit-content;
     max-width: none;
     flex: 0 0 auto;
     white-space: nowrap;
+}
+
+body.es-signrequest-page #tools #step-1 #addSignButton2 .es-add-sign-button-count {
+    min-width: 1.75rem;
 }
 
 body.es-signrequest-page #tools #signActionButtons {
@@ -402,7 +408,7 @@ td {
 }
 
 .nav-tabs {
-    border-bottom : 1px solid var(--bs-secondary-bg-subtle);
+    border-bottom : 0px solid var(--bs-secondary-bg-subtle);
     /*background-color: white;*/
     /*margin-left: -5px;*/
 }
@@ -442,7 +448,7 @@ td {
 
 .nav-item.ws-tab.active a {
     opacity: 1;
-    border-bottom: 1px solid var(--bs-white);
+    border-bottom: 1px solid var(--bs-light);
 }
 
 .nav-item.ws-tab.active {
@@ -506,7 +512,7 @@ option[unavailable="unavailable"] {
 
 .breadcrumb-nav.breadcrumb-sign,
 .es-breadcrumb-nav.es-breadcrumb-sign {
-    border: 0 !important;
+    /*border: 0 !important;*/
 }
 
 .breadcrumb-nav i:before,
@@ -2258,9 +2264,9 @@ tr[aria-expanded="true"] .caret-toggle-expanded {
 }
 
 .step-horizontal-v2.active .step-horizontal-v2-icon {
-    background: var(--bs-success) !important;
+    background: var(--bs-white) !important;
     border-color: var(--bs-success) !important;
-    color: var(--bs-white);
+    color: var(--bs-success);
     box-shadow: 0 0 0 3px var(--color-rgba-255-255-255-08);
 }
 

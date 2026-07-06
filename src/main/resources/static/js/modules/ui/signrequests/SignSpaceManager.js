@@ -196,7 +196,10 @@ export class SignSpaceManager {
 		const spots = Array.isArray(this.options.getSpots()) ? this.options.getSpots() : [];
 
 		if (this.options.isEditable() && this.canViewAllSpots()) {
-			const merged = [...currentParams, ...spots];
+			const managerSpots = this.options.isCreator()
+				? spots
+				: this.options.filterSpotsNotCurrentStep(spots);
+			const merged = [...currentParams, ...managerSpots];
 			const byKey = new Map();
 			for (let i = 0; i < merged.length; i++) {
 				const item = merged[i];
@@ -383,7 +386,9 @@ export class SignSpaceManager {
 					let signRequestParams = Array.from(signPlacementController.signRequestParamses.values())[i];
 					let cross = signRequestParams.cross;
 					if (cross.attr("id") === ui.draggable.attr("id")) {
-						cross.resizable("enable");
+						if (cross.data("ui-resizable") || cross.data("resizable")) {
+							cross.resizable("enable");
+						}
 						signRequestParams.signSpace = null;
 						signRequestParams.ready = false;
 						signRequestParams.dropped = false;

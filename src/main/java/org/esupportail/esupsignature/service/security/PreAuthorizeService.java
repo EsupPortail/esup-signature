@@ -112,10 +112,35 @@ public class PreAuthorizeService {
         if(userEppn != null) {
             SignRequest signRequest = signRequestService.getById(id);
             if(signRequest != null) {
-            return signRequest.getCreateBy().getEppn().equals(userEppn) || isManager(userEppn, signRequest.getParentSignBook());
+                return signBookService.checkUserManageRights(signRequest.getParentSignBook().getId(), userEppn);
             }
         }
         return false;
+    }
+
+    public boolean signRequestCommentDelete(Long id, Long commentId, String userEppn) {
+        if (userEppn == null || id == null || commentId == null) {
+            return false;
+        }
+        SignRequest signRequest = signRequestService.getById(id);
+        if (signRequest == null
+                || (signRequest.getStatus() != SignRequestStatus.draft
+                    && signRequest.getStatus() != SignRequestStatus.pending)) {
+            return false;
+        }
+        Comment comment;
+        try {
+            comment = commentService.getById(commentId);
+        } catch (RuntimeException e) {
+            return false;
+        }
+        boolean commentBelongsToSignRequest = signRequest.getComments() != null
+                && signRequest.getComments().contains(comment);
+        boolean managerAllowed = signRequest.getCreateBy().getEppn().equals(userEppn)
+                || isManager(userEppn, signRequest.getParentSignBook());
+        boolean creatorAllowed = comment.getCreateBy() != null
+                && userEppn.equals(comment.getCreateBy().getEppn());
+        return commentBelongsToSignRequest && (managerAllowed || creatorAllowed);
     }
 
     public boolean signRequestDelete(Long id, String userEppn) {

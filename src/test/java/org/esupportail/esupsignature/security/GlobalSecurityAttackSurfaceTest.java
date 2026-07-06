@@ -20,6 +20,7 @@ import org.esupportail.esupsignature.service.interfaces.sms.SmsService;
 import org.esupportail.esupsignature.service.security.LogoutHandlerImpl;
 import org.esupportail.esupsignature.service.security.OidcOtpSecurityService;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
+import org.esupportail.esupsignature.service.security.oauth.OidcUserSecurityServiceResolver;
 import org.esupportail.esupsignature.service.security.otp.OtpService;
 import org.esupportail.esupsignature.service.security.oauth.OAuthAuthenticationSuccessHandler;
 import org.esupportail.esupsignature.service.utils.file.FileService;
@@ -31,6 +32,7 @@ import org.esupportail.esupsignature.web.ws.WsControllerAdvice;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.springframework.core.env.Environment;
 import org.springframework.http.ResponseEntity;
 import org.springframework.beans.factory.config.YamlPropertiesFactoryBean;
 import org.springframework.core.io.ClassPathResource;
@@ -38,8 +40,10 @@ import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import java.io.File;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
@@ -848,6 +852,17 @@ class GlobalSecurityAttackSurfaceTest {
         }
 
         @Test
+        void mobileSignPublicControllerShouldNotExposeDirectSaveEndpoint() {
+            boolean directSaveEndpointExists = java.util.Arrays.stream(PublicController.class.getDeclaredMethods())
+                    .map(method -> method.getAnnotation(org.springframework.web.bind.annotation.PostMapping.class))
+                    .filter(java.util.Objects::nonNull)
+                    .flatMap(mapping -> java.util.Arrays.stream(mapping.value()))
+                    .anyMatch("/mobile-sign/{token}/save"::equals);
+
+            assertFalse(directSaveEndpointExists);
+        }
+
+        @Test
         void mobileSignPageShouldExposeUsedStateWithoutFlaggingExpiration() {
             LogService logService = mock(LogService.class);
             SignRequestService signRequestService = mock(SignRequestService.class);
@@ -952,6 +967,33 @@ class GlobalSecurityAttackSurfaceTest {
             request.addHeader("Authorization", "Basic dXNlcjpwYXNz");
 
             assertNull(resolver.resolve(request));
+        }
+
+        @Test
+        void wsJwtAuthenticationFailureHandlerShouldReturnUnauthorizedWithoutRethrowingServiceException() {
+            MockHttpServletRequest request = new MockHttpServletRequest("GET", "/ws-jwt/test");
+            MockHttpServletResponse response = new MockHttpServletResponse();
+            AuthenticationServiceException exception = new AuthenticationServiceException(
+                    "Impossible de décoder le JWT : Jwt expired at 2026-07-02T16:05:12Z"
+            );
+
+            WebSecurityConfig config = new WebSecurityConfig(
+                    new GlobalProperties(),
+                    null,
+                    new WebSecurityProperties(),
+                    null,
+                    List.of(),
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+            );
+
+            assertDoesNotThrow(() -> config.wsJwtAuthenticationFailureHandler().onAuthenticationFailure(request, response, exception));
+            assertEquals(401, response.getStatus());
+            assertEquals("JWT invalide ou expire", response.getErrorMessage());
         }
     }
 
@@ -1159,8 +1201,9 @@ class GlobalSecurityAttackSurfaceTest {
                 mock(RegisterSessionAuthenticationStrategy.class),
                 mock(SessionRegistryImpl.class),
                 mock(LogoutHandlerImpl.class),
-                mock(CasJwtDecoder.class)
+                mock(CasJwtDecoder.class),
+                mock(OidcUserSecurityServiceResolver.class),
+                mock(Environment.class)
         );
     }
 }
-

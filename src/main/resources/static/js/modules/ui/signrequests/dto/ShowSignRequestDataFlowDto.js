@@ -32,6 +32,7 @@ export class CommentFrontDto {
         this.stepNumber = source.stepNumber ?? null;
         this.posX = source.posX ?? null;
         this.posY = source.posY ?? null;
+        this.deleteAllowed = source.deleteAllowed ?? false;
     }
 
     static from(raw) {
@@ -198,4 +199,3 @@ export class ShowSignRequestDataFlowDto {
         return raw instanceof ShowSignRequestDataFlowDto ? raw : new ShowSignRequestDataFlowDto(raw);
     }
 }
-

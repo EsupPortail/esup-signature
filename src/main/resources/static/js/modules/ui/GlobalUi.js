@@ -649,23 +649,20 @@ export class GlobalUi {
     }
 
     initTooltips() {
-        $(".rounded-circle").tooltip({
-            placement: 'left',
+        const tooltipItems = ".rounded-circle[title], .btn[title], #new-scroll[title], [data-ui-tooltip='true'][title]";
+        const tooltipOptions = {
+            items: tooltipItems,
             disabled: false,
             show: { effect: "fade", duration: 500 },
             hide: { effect: "fade", duration: 500 }
-        });
-        $("button").tooltip({
-            placement: 'left',
-            disabled: false,
-            show: { effect: "fade", duration: 500 },
-            hide: { effect: "fade", duration: 500 }
-        });
-        $("#new-scroll").tooltip({
-            disabled: false,
-            show: { effect: "fade", duration: 500 },
-            hide: { effect: "fade", duration: 500 }
-        });
+        };
+
+        const documentElement = $(document);
+        if (documentElement.data("ui-tooltip")) {
+            documentElement.tooltip("option", tooltipOptions);
+            return;
+        }
+        documentElement.tooltip(tooltipOptions);
     }
 
     initBootBox() {

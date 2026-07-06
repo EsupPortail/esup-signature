@@ -7,6 +7,7 @@ public class CommentFrontDto {
     private Integer stepNumber;
     private Integer posX;
     private Integer posY;
+    private Boolean deleteAllowed;
 
     public Long getId() {
         return id;
@@ -48,9 +49,18 @@ public class CommentFrontDto {
         this.posY = posY;
     }
 
+    public Boolean getDeleteAllowed() {
+        return deleteAllowed;
+    }
+
+    public void setDeleteAllowed(Boolean deleteAllowed) {
+        this.deleteAllowed = deleteAllowed;
+    }
+
     public Long id() { return id; }
     public Integer pageNumber() { return pageNumber; }
     public Integer stepNumber() { return stepNumber; }
     public Integer posX() { return posX; }
     public Integer posY() { return posY; }
+    public Boolean deleteAllowed() { return deleteAllowed; }
 }

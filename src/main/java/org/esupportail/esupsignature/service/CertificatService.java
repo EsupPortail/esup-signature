@@ -89,7 +89,11 @@ public class CertificatService implements HealthIndicator {
         this.workflowStepRepository = workflowStepRepository;
         this.appliVersionRepository = appliVersionRepository;
         if(!globalProperties.getSealCertificatProperties().isEmpty()) {
-            this.openSCSignatureToken = new OpenSCSignatureToken(new KeyStore.PasswordProtection(globalProperties.getSealCertificatProperties().get("default").getSealCertificatPin().toCharArray()), signProperties, globalProperties.getSealCertificatProperties().get("default").getSealCertificatDriver());
+            SealCertificatProperties defaultSeal = globalProperties.getSealCertificatProperties().get("default");
+            if(defaultSeal == null) {
+                defaultSeal = globalProperties.getSealCertificatProperties().values().iterator().next();
+            }
+            this.openSCSignatureToken = new OpenSCSignatureToken(new KeyStore.PasswordProtection(defaultSeal.getSealCertificatPin().toCharArray()), signProperties, defaultSeal.getSealCertificatDriver(), defaultSeal.getSealCertificatSlotId());
         } else {
             this.openSCSignatureToken = null;
         }
@@ -383,6 +387,13 @@ public class CertificatService implements HealthIndicator {
         return null;
     }
 
+    public String getOpenSCVersion() {
+        if(openSCSignatureToken != null) {
+            return openSCSignatureToken.getOpenSCVersion();
+        }
+        return null;
+    }
+
     @PostConstruct
     public List<DSSPrivateKeyEntry> getSealCertificats() {
         List<AppliVersion> appliVersions = new ArrayList<>();
@@ -493,9 +504,15 @@ public class CertificatService implements HealthIndicator {
                 ) {
                     dssPrivateKeyEntry = probePkcsPrivateKeyEntry(sealCertificatProperties.getValue());
                 } else if (sealCertificatProperties.getValue().getSealCertificatType() != null && sealCertificatProperties.getValue().getSealCertificatType().equals(SealCertificatProperties.TokenType.OPENSC)) {
-                    dssPrivateKeyEntry = openSCSignatureToken.getKeys().get(0);
+                    List<DSSPrivateKeyEntry> keys = openSCSignatureToken.getKeys();
+                    if(keys != null && !keys.isEmpty()) {
+                        dssPrivateKeyEntry = keys.get(0);
+                    }
                 }
-                if(dssPrivateKeyEntry == null) continue;
+                if(dssPrivateKeyEntry == null) {
+                    sealCertificatPropertieses.add(sealCertificatProperties.getValue());
+                    continue;
+                }
                 CertificateValidator validator = CertificateValidator.fromCertificate(dssPrivateKeyEntry.getCertificate());
                 validator.setCertificateVerifier(certificateVerifier);
                 CertificateReports reports = validator.validate();

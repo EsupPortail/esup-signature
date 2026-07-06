@@ -15,7 +15,6 @@
                    th:id="'workflow-button-' + ${workflow.id}"
                    th:href="'/user/start-workflow/' + ${workflow.id}"
                    style="width: 120px; height: 170px;"
-                   th:title="'Lancer le circuit : ' + ${workflow.description}"
                    th:data-es-workflow-id="${workflow.id}"
                    th:alt="'Circuit : ' + ${workflow.description}">
                     <div class="d-flex flex-column align-items-center justify-content-center h-100 w-100 gap-3">
@@ -49,7 +48,6 @@
                 <a tabindex="10" role="button" class="form-btn start-form-button btn btn-material border border-secondary-subtle border-opacity-10 btn-light text-center me-2 mb-2 overflow-hidden p-0"
                    style="width: 120px; height: 170px;"
                    th:classappend="${form.hideButton} ? 'd-none' : ''"
-                   th:title="'Lancer le formulaire : ' + ${form.title}"
                    th:id="'form-button-' + ${form.id}"
                    th:data-es-form-id="${form.id}"
                    th:href="'/user/start-form/' + ${form.id}"

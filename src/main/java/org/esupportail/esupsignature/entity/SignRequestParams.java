@@ -20,15 +20,18 @@ public class SignRequestParams {
     @Transient
     private Long recipientId;
 
+    @Transient
+    private Boolean constrainToSignatureField = false;
+
 	private Integer signImageNumber = 0;
 
 	private Integer signPageNumber = 1;
 
     private Integer signDocumentNumber = 0;
 
-    private Integer signWidth = 200;
+    private Integer signWidth = 100;
 
-    private Integer signHeight = 100;
+    private Integer signHeight = 50;
 
 	private Integer xPos = 0;
 
@@ -350,5 +353,13 @@ public class SignRequestParams {
 
     public void setRecipientId(Long recipientId) {
         this.recipientId = recipientId;
+    }
+
+    public Boolean getConstrainToSignatureField() {
+        return constrainToSignatureField;
+    }
+
+    public void setConstrainToSignatureField(Boolean constrainToSignatureField) {
+        this.constrainToSignatureField = constrainToSignatureField;
     }
 }

@@ -181,33 +181,6 @@ public class PublicController {
         return "public/mobile-sign";
     }
 
-    @PostMapping("/mobile-sign/{token}/save")
-    @ResponseBody
-    public ResponseEntity<Map<String, Object>> saveSignature(
-            @PathVariable String token,
-            @RequestParam(value = "signImageBase64", required = false) String signImageBase64) {
-        
-        Map<String, Object> response = new HashMap<>();
-        
-        if (mobileSignTokenService.validateToken(token)) {
-            boolean success = mobileSignTokenService.saveSignatureAndMarkTokenUsed(token, signImageBase64);
-            if (success) {
-                response.put("success", true);
-                response.put("message", "Signature enregistrée avec succès. Vous pouvez fermer cette fenêtre et retourner à votre espace utilisateur.");
-                response.put("reloadParent", true);
-                return ResponseEntity.ok(response);
-            } else {
-                response.put("success", false);
-                response.put("message", "Erreur lors de l'enregistrement de la signature");
-                return ResponseEntity.badRequest().body(response);
-            }
-        } else {
-            response.put("success", false);
-            response.put("message", "Token invalide ou expiré. Veuillez générer un nouveau QR code.");
-            return ResponseEntity.badRequest().body(response);
-        }
-    }
-
     @PostMapping("/mobile-sign/{token}/preview")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> saveSignaturePreview(
@@ -232,6 +205,22 @@ public class PublicController {
             response.put("message", "Token invalide ou expiré. Veuillez générer un nouveau QR code.");
             return ResponseEntity.badRequest().body(response);
         }
+    }
+
+    @PostMapping("/mobile-sign/{token}/finish")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> finishSignaturePreview(@PathVariable String token) {
+        Map<String, Object> response = new HashMap<>();
+
+        if (mobileSignTokenService.markFinished(token)) {
+            response.put("success", true);
+            response.put("message", "Signature confirmée.");
+            return ResponseEntity.ok(response);
+        }
+
+        response.put("success", false);
+        response.put("message", "Token invalide ou expiré.");
+        return ResponseEntity.badRequest().body(response);
     }
 
     @GetMapping("/mobile-sign/{token}/preview")
@@ -266,6 +255,7 @@ public class PublicController {
         response.put("expired", expired);
         response.put("previewAvailable", mobileSignTokenService.hasPendingSignaturePreview(token));
         response.put("previewTimestamp", mobileSignTokenService.getPendingSignaturePreviewTimestamp(token));
+        response.put("finished", mobileSignTokenService.isTokenFinished(token));
         if (expirationDate != null) {
             response.put("expiresAtEpochMillis", expirationDate.getTime());
         }

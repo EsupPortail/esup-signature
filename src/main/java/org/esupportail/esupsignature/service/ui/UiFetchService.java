@@ -74,8 +74,9 @@ public class UiFetchService {
     private final UiFetchMapper uiFetchMapper;
     private final UiAdminFormMapper uiAdminFormMapper;
     private final MessageSource messageSource;
+    private final MobileSignTokenService mobileSignTokenService;
 
-    public UiFetchService(GlobalProperties globalProperties, SmsProperties smsProperties, SignRequestService signRequestService, SignBookService signBookService, WorkflowService workflowService, FormService formService, UserShareService userShareService, UserService userService, UserPropertieService userPropertieService, FieldPropertieService fieldPropertieService, RecipientService recipientService, TagService tagService, PreFillService preFillService, ReportService reportService, PreAuthorizeService preAuthorizeService, Environment environment, @Autowired(required = false) BuildProperties buildProperties, ValidationService validationService, CertificatService certificatService, @Autowired(required = false) DSSService dssService, SessionRepositoryCustom sessionRepositoryCustom, UiFetchMapper uiFetchMapper, UiAdminFormMapper uiAdminFormMapper, MessageSource messageSource) {
+    public UiFetchService(GlobalProperties globalProperties, SmsProperties smsProperties, SignRequestService signRequestService, SignBookService signBookService, WorkflowService workflowService, FormService formService, UserShareService userShareService, UserService userService, UserPropertieService userPropertieService, FieldPropertieService fieldPropertieService, RecipientService recipientService, TagService tagService, PreFillService preFillService, ReportService reportService, PreAuthorizeService preAuthorizeService, Environment environment, @Autowired(required = false) BuildProperties buildProperties, ValidationService validationService, CertificatService certificatService, @Autowired(required = false) DSSService dssService, SessionRepositoryCustom sessionRepositoryCustom, UiFetchMapper uiFetchMapper, UiAdminFormMapper uiAdminFormMapper, MessageSource messageSource, MobileSignTokenService mobileSignTokenService) {
         this.globalProperties = globalProperties;
         this.smsProperties = smsProperties;
         this.signRequestService = signRequestService;
@@ -100,6 +101,7 @@ public class UiFetchService {
         this.uiFetchMapper = uiFetchMapper;
         this.uiAdminFormMapper = uiAdminFormMapper;
         this.messageSource = messageSource;
+        this.mobileSignTokenService = mobileSignTokenService;
     }
 
     public UiDataDto buildUiData(String userEppn, String authUserEppn, HttpSession httpSession) {
@@ -605,6 +607,19 @@ public class UiFetchService {
         return buildUserSignatureState(userEppn, authUserEppn, signRequestId, httpSession);
     }
 
+    @Transactional
+    public UserSignatureStateDto saveMobileSignature(String userEppn, String authUserEppn, String token, String signImageBase64, Long signRequestId, HttpSession httpSession) throws IOException {
+        if (!mobileSignTokenService.consumePendingSignaturePreview(token, authUserEppn, signImageBase64)) {
+            throw new IllegalArgumentException("Token mobile invalide ou signature non confirmée");
+        }
+
+        userService.updateUser(authUserEppn, null, null, signImageBase64, null, null, null, null, null, false);
+        UserSignatureStateDto dto = buildUserSignatureState(userEppn, authUserEppn, signRequestId, httpSession);
+        List<Long> signImageIds = dto.getSignImageIds();
+        dto.setSavedSignImageNumber(signImageIds == null || signImageIds.isEmpty() ? null : signImageIds.size() - 1);
+        return dto;
+    }
+
     public void markWarningsRead(String authUserEppn) {
         signRequestService.warningReaded(authUserEppn);
     }
@@ -758,5 +773,4 @@ public class UiFetchService {
     }
 
 }
-
 

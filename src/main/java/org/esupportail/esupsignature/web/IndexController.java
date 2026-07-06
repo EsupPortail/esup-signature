@@ -34,19 +34,21 @@ import org.esupportail.esupsignature.service.security.OidcOtpSecurityService;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
 import org.esupportail.esupsignature.service.security.SecurityService;
 import org.esupportail.esupsignature.service.security.cas.CasSecurityServiceImpl;
+import org.esupportail.esupsignature.service.security.oauth.OidcUserSecurityServiceResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
-import org.springframework.security.web.savedrequest.DefaultSavedRequest;
+import org.springframework.security.web.savedrequest.SavedRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.net.URI;
 import java.util.List;
 import java.util.Objects;
 
@@ -64,14 +66,16 @@ public class IndexController {
 	private final GlobalProperties globalProperties;
 	private final PreAuthorizeService preAuthorizeService;
 	private final List<SecurityService> securityServices;
+	private final OidcUserSecurityServiceResolver oidcUserSecurityServiceResolver;
 	private final UserService userService;
 	private final SignRequestService signRequestService;
 	private final LdapPersonLightService ldapPersonLightService;
 
-	public IndexController(GlobalProperties globalProperties, PreAuthorizeService preAuthorizeService, List<SecurityService> securityServices, UserService userService, SignRequestService signRequestService, @Autowired(required = false) LdapPersonLightService ldapPersonLightService) {
+	public IndexController(GlobalProperties globalProperties, PreAuthorizeService preAuthorizeService, List<SecurityService> securityServices, UserService userService, SignRequestService signRequestService, @Autowired(required = false) LdapPersonLightService ldapPersonLightService, OidcUserSecurityServiceResolver oidcUserSecurityServiceResolver) {
 		this.globalProperties = globalProperties;
         this.preAuthorizeService = preAuthorizeService;
         this.securityServices = securityServices;
+        this.oidcUserSecurityServiceResolver = oidcUserSecurityServiceResolver;
         this.userService = userService;
         this.signRequestService = signRequestService;
         this.ldapPersonLightService = ldapPersonLightService;
@@ -82,18 +86,11 @@ public class IndexController {
 		String savedQueryString = null;
 		HttpSession httpSession = httpServletRequest.getSession(false);
 		if(httpSession != null) {
-			DefaultSavedRequest defaultSavedRequest = null;
-			try {
-				defaultSavedRequest = (DefaultSavedRequest) httpSession.getAttribute("SPRING_SECURITY_SAVED_REQUEST");
-			} catch (Exception e) {
-				logger.warn(e.getMessage());
-			}
-			if (defaultSavedRequest != null) {
-				if (StringUtils.hasText(defaultSavedRequest.getQueryString())) {
-					savedQueryString = defaultSavedRequest.getRequestURL() + "?" + defaultSavedRequest.getQueryString();
-				} else {
-					savedQueryString = defaultSavedRequest.getRequestURL();
-				}
+			Object savedRequest = httpSession.getAttribute("SPRING_SECURITY_SAVED_REQUEST");
+			if (savedRequest instanceof SavedRequest) {
+				savedQueryString = ((SavedRequest) savedRequest).getRedirectUrl();
+			} else if(savedRequest != null) {
+				logger.warn("invalide saved url type : {}", savedRequest.getClass().getName());
 			}
 		}
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -103,11 +100,12 @@ public class IndexController {
 		} else {
 			if("anonymousUser".equals(auth.getName())) {
 				logger.trace("auth user : " + auth.getName());
-				model.addAttribute("securityServices", securityServices.stream().filter(s -> !(s instanceof OidcOtpSecurityService)).toList());
+				List<SecurityService> loginSecurityServices = getLoginSecurityServices();
+				model.addAttribute("securityServices", loginSecurityServices);
 				model.addAttribute("globalProperties", UiGlobalPropertiesDto.fromGlobalProperties(globalProperties));
 				if(StringUtils.hasText(savedQueryString)) {
 					model.addAttribute("redirect", savedQueryString);
-					if(!savedQueryString.contains("/casentry") && securityServices.size() == 1 && securityServices.get(0) instanceof CasSecurityServiceImpl) {
+					if(!savedQueryString.contains("/casentry") && loginSecurityServices.size() == 1 && loginSecurityServices.get(0) instanceof CasSecurityServiceImpl) {
 						return "redirect:/login/casentry?redirect=" + savedQueryString;
 					}
 				}
@@ -117,13 +115,37 @@ public class IndexController {
 				return "signin";
 			} else {
 				logger.info("auth user : " + auth.getName());
-				if(StringUtils.hasText(savedQueryString) && !savedQueryString.equals("/login/casentry")) {
+				if(isUsableSavedRedirect(savedQueryString)) {
 					return "redirect:" + savedQueryString;
 				} else {
 					return "redirect:/user";
 				}
 			}
 		}
+	}
+
+	private boolean isUsableSavedRedirect(String savedQueryString) {
+		if(!StringUtils.hasText(savedQueryString)) {
+			return false;
+		}
+		try {
+			String path = URI.create(savedQueryString).getPath();
+			if(!StringUtils.hasText(path)) {
+				path = "/";
+			}
+			return !path.equals("/") && !path.equals("/login/casentry");
+		} catch (IllegalArgumentException e) {
+			logger.warn("invalide saved url: {}", savedQueryString);
+			return false;
+		}
+	}
+
+	private List<SecurityService> getLoginSecurityServices() {
+		List<SecurityService> loginSecurityServices = new java.util.ArrayList<>(securityServices.stream()
+				.filter(s -> !(s instanceof OidcOtpSecurityService))
+				.toList());
+		loginSecurityServices.addAll(oidcUserSecurityServiceResolver.getConfiguredServices());
+		return loginSecurityServices;
 	}
 
 	@RequestMapping(value = "/denied/**", method = {RequestMethod.GET, RequestMethod.POST})
@@ -160,6 +182,14 @@ public class IndexController {
 	@GetMapping("/login/casentry")
 	public String loginRedirection() {
 		return "redirect:/user";
+	}
+
+	@GetMapping("/login/{registrationId}-entry")
+	public String loginOidcUserRedirection(@PathVariable String registrationId) {
+		if(oidcUserSecurityServiceResolver.isConfigured(registrationId)) {
+			return "redirect:/user";
+		}
+		return "redirect:/";
 	}
 
 	@RequestMapping(

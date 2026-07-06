@@ -246,7 +246,7 @@ public class GlobalWsSecureController {
         redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "Champ signature supprimé"));
     }
 
-    @PreAuthorize("@preAuthorizeService.signRequestManager(#id, #authUserEppn)")
+    @PreAuthorize("@preAuthorizeService.signRequestCommentDelete(#id, #commentId, #authUserEppn)")
     @DeleteMapping(value = "/delete-comment/{id}/{commentId}")
     public ResponseEntity<Void> deleteComments(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @PathVariable("commentId") Long commentId,  RedirectAttributes redirectAttributes) {
         commentService.deleteComment(commentId, null);

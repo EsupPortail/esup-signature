@@ -23,7 +23,7 @@
                      th:title="${comment.text}"
                      th:es-comment-text="${comment.text}"
                      th:es-comment-title="${comment.createBy.firstname + ' ' + comment.createBy.name + ' ' + #dates.format(comment.createDate, 'dd/MM/yyyy HH:mm')}"
-                     th:es-comment-delete="${signRequestFull.commentDeleteAllowed}">
+                     th:es-comment-delete="${signRequestFull.commentDeleteAllowed || (authUserEppn != null && comment.createBy != null && comment.createBy.eppn == authUserEppn && (#strings.equals(signRequestFull.status, 'draft') || #strings.equals(signRequestFull.status, 'pending')))}">
                     <i class="fi fi-sr-comment" style="font-size: 30px; color: var(--bs-warning)"></i>
                 </div>
             </th:block>
@@ -72,6 +72,9 @@
             </button>
             <button type="button" id="mobileCanvasBtn_x" class="btn btn-sm btn-light" title="Dessiner ma signature">
                 <i class="fi fi-rr-pen-swirl"></i>
+            </button>
+            <button type="button" id="eraseCanvasBtn_x" class="btn btn-sm btn-light d-none" title="Effacer la signature dessinée">
+                <i class="fi fi-rr-eraser"></i>
             </button>
             <button type="button" id="displayMoreTools_x"
                     title="Plus d'outils"

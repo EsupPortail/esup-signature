@@ -73,7 +73,11 @@ export class PdfViewer extends EventFactory {
                 if (globalThis.pdfjsLib.GlobalWorkerOptions) {
                     globalThis.pdfjsLib.GlobalWorkerOptions.workerSrc = '/webjars/pdfjs-dist/legacy/build/pdf.worker.min.mjs';
                 }
-                let loadingTask = globalThis.pdfjsLib.getDocument({ url: self.url });
+                let loadingTask = globalThis.pdfjsLib.getDocument({
+                    url: self.url,
+                    useWasm: true,
+                    wasmUrl: `/webjars/pdfjs-dist/wasm/`
+                });
                 loadingTask.promise.then(async function(pdf) {
                     await self.startRender(pdf)
                 });
@@ -552,6 +556,7 @@ export class PdfViewer extends EventFactory {
                     return;
                 }
                 self.renderedPages++;
+                self.updateRenderProgress();
 
                 if(self.renderQueue.length === 0 && self.activeRenders === 0) {
                     self.isRendering = false;
@@ -1945,25 +1950,30 @@ export class PdfViewer extends EventFactory {
     }
 
     startProgress() {
-        let self = this;
-        this.interval = setInterval(function() {
-            let progress = Math.round(self.renderedPages / self.numPages * 100)
-            $(".progress-bar")
-                .css("width", progress + "%")
-                .attr("aria-valuenow", progress)
-                .text("Chargement de la page " + self.renderedPages + "/" + self.numPages);
-
-        }, 100);
+        this.updateProgress(5, "Préparation du rendu…", true);
     }
 
     stopProgress(){
-        $(".progress-bar").css("width","100%").attr("aria-valuenow", 100).text("Chargement terminé");
+        this.updateProgress(100, "Chargement terminé", false);
         clearInterval(this.interval);
     }
 
     resetProgress() {
-        $(".progress-bar").css("width","0%").attr("aria-valuenow", 0);
+        this.updateProgress(0, "", false);
         clearInterval(this.interval);
+    }
+
+    updateRenderProgress() {
+        const progress = this.numPages > 0 ? Math.round(this.renderedPages / this.numPages * 100) : 0;
+        this.updateProgress(progress, "Chargement de la page " + this.renderedPages + "/" + this.numPages, this.renderedPages < this.numPages);
+    }
+
+    updateProgress(progress, text, animated) {
+        $("#pdf-progress-bar .progress-bar")
+            .toggleClass("progress-bar-striped progress-bar-animated", animated)
+            .css("width", progress + "%")
+            .attr("aria-valuenow", progress)
+            .text(text);
     }
 
     getBrowserZoom() {

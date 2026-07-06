@@ -329,7 +329,11 @@
                 }
                 if (!state.loadingPromise) {
                     const attachmentId = modalElement.dataset.attachmentId;
-                    state.loadingPromise = pdfjsLib.getDocument({ url: getAttachmentInlineUrl(attachmentId) }).promise
+                    state.loadingPromise = pdfjsLib.getDocument({
+                            url: getAttachmentInlineUrl(attachmentId),
+                            useWasm: true,
+                            wasmUrl: `/webjars/pdfjs-dist/wasm/`
+                        }).promise
                         .then((pdf) => {
                             state.pdf = pdf;
                             return pdf;
@@ -807,6 +811,4 @@
     </script>
 </div>
 </html>
-
-
 

@@ -57,6 +57,7 @@ global:
     seal-authorized-for-signed-files: false
     hide-hidden-visa: false
     default-font-size: 14
+    enable-transfert-for-users: true
 #    test-email: toto@univ-ville.fr
 
 #tomcat:

@@ -15,10 +15,12 @@ import org.esupportail.esupsignature.config.sms.SmsProperties;
 import org.esupportail.esupsignature.entity.enums.ExternalAuth;
 import org.esupportail.esupsignature.service.security.IndexEntryPoint;
 import org.esupportail.esupsignature.service.security.LogoutHandlerImpl;
+import org.esupportail.esupsignature.service.security.OidcSecurityService;
 import org.esupportail.esupsignature.service.security.OidcOtpSecurityService;
 import org.esupportail.esupsignature.service.security.SecurityService;
 import org.esupportail.esupsignature.service.security.cas.CasSecurityServiceImpl;
 import org.esupportail.esupsignature.service.security.oauth.CustomAuthorizationRequestResolver;
+import org.esupportail.esupsignature.service.security.oauth.OidcUserSecurityServiceResolver;
 import org.esupportail.esupsignature.service.security.oauth.OAuth2FailureHandler;
 import org.esupportail.esupsignature.service.security.oauth.OAuthAuthenticationSuccessHandler;
 import org.esupportail.esupsignature.service.security.oauth.ValidatingOAuth2UserService;
@@ -36,6 +38,8 @@ import org.springframework.boot.security.oauth2.client.autoconfigure.Conditional
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.core.env.Environment;
+import org.springframework.security.config.ObjectPostProcessor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -48,12 +52,15 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter;
 import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;
 import org.springframework.security.oauth2.server.resource.web.DefaultBearerTokenResolver;
+import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandlerImpl;
 import org.springframework.security.web.access.expression.WebExpressionAuthorizationManager;
 import org.springframework.security.web.access.intercept.AuthorizationFilter;
 import org.springframework.security.web.authentication.ExceptionMappingAuthenticationFailureHandler;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.security.web.authentication.session.RegisterSessionAuthenticationStrategy;
 import org.springframework.security.web.authentication.switchuser.SwitchUserFilter;
@@ -85,9 +92,11 @@ public class WebSecurityConfig {
 	private final SessionRegistryImpl sessionRegistry;
 	private final LogoutHandlerImpl logoutHandler;
 	private final CasJwtDecoder casJwtDecoder;
+	private final OidcUserSecurityServiceResolver oidcUserSecurityServiceResolver;
+	private final Environment environment;
 	private DevShibRequestFilter devShibRequestFilter;
 
-	public WebSecurityConfig(GlobalProperties globalProperties, OAuthAuthenticationSuccessHandler oAuthAuthenticationSuccessHandler, WebSecurityProperties webSecurityProperties, @Autowired(required = false) ClientRegistrationRepository clientRegistrationRepository, List<SecurityService> securityServices, RegisterSessionAuthenticationStrategy sessionAuthenticationStrategy, SessionRegistryImpl sessionRegistry, LogoutHandlerImpl logoutHandler, @Autowired(required = false) CasJwtDecoder casJwtDecoder) {
+	public WebSecurityConfig(GlobalProperties globalProperties, OAuthAuthenticationSuccessHandler oAuthAuthenticationSuccessHandler, WebSecurityProperties webSecurityProperties, @Autowired(required = false) ClientRegistrationRepository clientRegistrationRepository, List<SecurityService> securityServices, RegisterSessionAuthenticationStrategy sessionAuthenticationStrategy, SessionRegistryImpl sessionRegistry, LogoutHandlerImpl logoutHandler, @Autowired(required = false) CasJwtDecoder casJwtDecoder, OidcUserSecurityServiceResolver oidcUserSecurityServiceResolver, Environment environment) {
         this.globalProperties = globalProperties;
         this.oAuthAuthenticationSuccessHandler = oAuthAuthenticationSuccessHandler;
         this.webSecurityProperties = webSecurityProperties;
@@ -97,6 +106,8 @@ public class WebSecurityConfig {
         this.sessionRegistry = sessionRegistry;
         this.logoutHandler = logoutHandler;
         this.casJwtDecoder = casJwtDecoder;
+        this.oidcUserSecurityServiceResolver = oidcUserSecurityServiceResolver;
+        this.environment = environment;
     }
 
 	@Bean
@@ -104,8 +115,17 @@ public class WebSecurityConfig {
 	public SecurityFilterChain wsJwtSecurityFilter(HttpSecurity http) throws Exception {
 		http.securityMatcher("/ws-jwt/**");
 		if (StringUtils.hasText(issuerUri)) {
-			http.oauth2ResourceServer(oauth2 -> oauth2.bearerTokenResolver(bearerTokenResolver()).jwt(jwt -> jwt.decoder(casJwtDecoder)
-					.jwtAuthenticationConverter(new CustomJwtAuthenticationConverter())));
+			http.oauth2ResourceServer(oauth2 -> oauth2.bearerTokenResolver(bearerTokenResolver())
+					.authenticationEntryPoint(wsJwtAuthenticationEntryPoint())
+					.withObjectPostProcessor(new ObjectPostProcessor<BearerTokenAuthenticationFilter>() {
+						@Override
+						public <O extends BearerTokenAuthenticationFilter> O postProcess(O filter) {
+							filter.setAuthenticationFailureHandler(wsJwtAuthenticationFailureHandler());
+							return filter;
+						}
+					})
+					.jwt(jwt -> jwt.decoder(casJwtDecoder)
+					.jwtAuthenticationConverter(new CustomJwtAuthenticationConverter(globalProperties.getDomain()))));
 			http.authorizeHttpRequests(auth -> auth.anyRequest().authenticated());
 		} else {
 			http.authorizeHttpRequests(auth -> auth.anyRequest().denyAll());
@@ -113,6 +133,17 @@ public class WebSecurityConfig {
 		http.cors(AbstractHttpConfigurer::disable);
 		http.addFilterAfter(new MdcUsernameFilter(), AuthorizationFilter.class);
 		return http.build();
+	}
+
+	public AuthenticationEntryPoint wsJwtAuthenticationEntryPoint() {
+		return (request, response, authException) -> {
+			logger.warn("Authentification JWT refusee pour {} {} : {}", request.getMethod(), request.getRequestURI(), authException.getMessage());
+			response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "JWT invalide ou expire");
+		};
+	}
+
+	public AuthenticationFailureHandler wsJwtAuthenticationFailureHandler() {
+		return (request, response, exception) -> wsJwtAuthenticationEntryPoint().commence(request, response, exception);
 	}
 
 	@Value("${spring.security.oauth2.client.provider.cas.issuer-uri:}")
@@ -160,7 +191,7 @@ public class WebSecurityConfig {
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 		List<SecurityService> activeSecurityServices = getActiveSecurityServices();
-		List<OidcOtpSecurityService> activeOidcSecurityServices = getActiveOidcSecurityServices();
+		List<OidcSecurityService> activeOidcSecurityServices = getActiveOidcSecurityServices();
 		http.sessionManagement(sessionManagement -> sessionManagement.sessionAuthenticationStrategy(sessionAuthenticationStrategy).maximumSessions(5).sessionRegistry(sessionRegistry));
 		if(devShibRequestFilter != null) {
 			http.addFilterBefore(devShibRequestFilter, OAuth2AuthorizationRequestRedirectFilter.class);
@@ -214,7 +245,7 @@ public class WebSecurityConfig {
 
 	@Bean
 	public ValidatingOAuth2UserService validatingOAuth2UserService() {
-		return new ValidatingOAuth2UserService(getActiveOidcSecurityServices(), clientRegistrationRepository);
+		return new ValidatingOAuth2UserService(getActiveOidcSecurityServices(), clientRegistrationRepository, List.of(environment.getActiveProfiles()).contains("dev"));
 	}
 
 	@Bean
@@ -224,22 +255,26 @@ public class WebSecurityConfig {
 	}
 
 	private List<SecurityService> getActiveSecurityServices() {
-		return securityServices.stream().filter(this::isActiveSecurityService).toList();
+		List<SecurityService> activeSecurityServices = new ArrayList<>(securityServices.stream().filter(this::isActiveSecurityService).toList());
+		activeSecurityServices.addAll(oidcUserSecurityServiceResolver.getConfiguredServices());
+		return activeSecurityServices;
 	}
 
-	private List<OidcOtpSecurityService> getActiveOidcSecurityServices() {
-		return securityServices.stream()
-				.filter(OidcOtpSecurityService.class::isInstance)
-				.map(OidcOtpSecurityService.class::cast)
+	private List<OidcSecurityService> getActiveOidcSecurityServices() {
+		List<OidcSecurityService> oidcSecurityServices = new ArrayList<>(securityServices.stream()
+				.filter(OidcSecurityService.class::isInstance)
+				.map(OidcSecurityService.class::cast)
 				.filter(this::hasClientRegistration)
-				.toList();
+				.toList());
+		oidcSecurityServices.addAll(oidcUserSecurityServiceResolver.getConfiguredServices());
+		return oidcSecurityServices;
 	}
 
 	private boolean isActiveSecurityService(SecurityService securityService) {
-		return !(securityService instanceof OidcOtpSecurityService) || hasClientRegistration((OidcOtpSecurityService) securityService);
+		return !(securityService instanceof OidcSecurityService) || hasClientRegistration((OidcSecurityService) securityService);
 	}
 
-	private boolean hasClientRegistration(OidcOtpSecurityService securityService) {
+	private boolean hasClientRegistration(OidcSecurityService securityService) {
 		return clientRegistrationRepository != null && clientRegistrationRepository.findByRegistrationId(securityService.getCode()) != null;
 	}
 
