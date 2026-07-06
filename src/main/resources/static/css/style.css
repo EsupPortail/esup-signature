@@ -290,7 +290,6 @@ body.es-spot-add-mode .es-spot-add-admin-scope > .es-spot-workspace-row > .es-sp
 }
 
 body.es-spot-add-mode #workspace,
-body.es-spot-add-mode #workspace *,
 body.es-spot-add-mode #pdf,
 body.es-spot-add-mode #pdf *,
 body.es-spot-add-mode #cross_999999,
@@ -299,6 +298,10 @@ body.es-spot-add-mode #spot-modal,
 body.es-spot-add-mode #spot-modal * {
     opacity: 1 !important;
     filter: none !important;
+}
+
+body.es-spot-add-mode #pdf-progress-bar {
+    opacity: 0 !important;
 }
 
 .tools,

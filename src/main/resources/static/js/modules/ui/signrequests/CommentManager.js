@@ -290,8 +290,8 @@ export class CommentManager {
             0,
             pageHeight,
             targetHeight,
-            CommentManager.COMMENT_COORDINATE_MARGIN_Y * pdfViewer.scale,
-            CommentManager.COMMENT_COORDINATE_MARGIN_Y * pdfViewer.scale
+            CommentManager.COMMENT_COORDINATE_MARGIN_X * pdfViewer.scale,
+            CommentManager.COMMENT_COORDINATE_MARGIN_X * pdfViewer.scale
         );
         const clampedRenderedX = this.clampDialogCoordinate(renderedX || 0, xBounds);
         const clampedRenderedY = this.clampDialogCoordinate(renderedY || 0, yBounds);
@@ -624,4 +624,3 @@ export class CommentManager {
     }
 
 }
-

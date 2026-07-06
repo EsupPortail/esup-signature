@@ -1,5 +1,7 @@
 export class SignSpaceManager {
 
+	static SIGNATURE_PLACEMENT_MARGIN = 2;
+
 	constructor(state, options = {}) {
 		this.state = state;
 		this.options = {
@@ -308,17 +310,23 @@ export class SignSpaceManager {
 			resizedUi.size.height = maxHeight;
 			resizedUi.size.width  = resizedUi.size.height * ratio;
 		}
-		resizedUi.size.width = resizedUi.size.width - 2;
-		resizedUi.size.height = resizedUi.size.height - 2;
+		const placementMargin = SignSpaceManager.SIGNATURE_PLACEMENT_MARGIN;
+		const maxInnerWidth = maxWidth - placementMargin;
+		const maxInnerHeight = maxHeight - placementMargin;
+		if (maxInnerWidth <= 0 || maxInnerHeight <= 0) {
+			return false;
+		}
+		resizedUi.size.width = resizedUi.size.width - placementMargin;
+		resizedUi.size.height = resizedUi.size.height - placementMargin;
 		signRequestParams.resize(resizedUi);
 
 		for (let i = 0; i < 4; i++) {
 			const renderedWidth = signRequestParams.signWidth * pdfViewer.scale;
 			const renderedHeight = signRequestParams.signHeight * pdfViewer.scale;
-			if (renderedWidth <= maxWidth - 2 && renderedHeight <= maxHeight - 2) {
+			if (renderedWidth <= maxInnerWidth && renderedHeight <= maxInnerHeight) {
 				break;
 			}
-			const resizeRatio = Math.min((maxWidth - 2) / renderedWidth, (maxHeight - 2) / renderedHeight);
+			const resizeRatio = Math.min(maxInnerWidth / renderedWidth, maxInnerHeight / renderedHeight);
 			if (!Number.isFinite(resizeRatio) || resizeRatio <= 0) {
 				break;
 			}
@@ -332,7 +340,9 @@ export class SignSpaceManager {
 
 		const finalRenderedWidth = signRequestParams.signWidth * pdfViewer.scale;
 		const finalRenderedHeight = signRequestParams.signHeight * pdfViewer.scale;
-		const finalFits = finalRenderedWidth <= maxWidth - 2 && finalRenderedHeight <= maxHeight - 2;
+		const fitTolerance = 1;
+		const finalFits = finalRenderedWidth <= maxInnerWidth + fitTolerance
+			&& finalRenderedHeight <= maxInnerHeight + fitTolerance;
 		cross.css("width", finalRenderedWidth);
 		cross.css("background-size", finalRenderedWidth);
 		cross.css("height", finalRenderedHeight);

@@ -103,6 +103,7 @@ import java.util.regex.Pattern;
 public class PdfService {
 
     private static final Logger logger = LoggerFactory.getLogger(PdfService.class);
+    private static final float SIGNATURE_PAGE_MARGIN = 2f;
 
     private final PdfConfig pdfConfig;
     private final FileService fileService;
@@ -255,8 +256,10 @@ public class PdfService {
             float availableWidth = pageBox.getUpperRightX() - xAdjusted;
             float availableHeight = pageBox.getHeight() - signRequestParams.getyPos() * fixFactor;
             float ratio = Math.min(availableWidth / renderedSignWidth, availableHeight / renderedSignHeight);
-            renderedSignWidth = renderedSignWidth * ratio;
-            renderedSignHeight = renderedSignHeight * ratio;
+            if (Float.isFinite(ratio) && ratio > 0) {
+                renderedSignWidth = renderedSignWidth * ratio;
+                renderedSignHeight = renderedSignHeight * ratio;
+            }
         }
         float yAdjusted;
 
@@ -375,6 +378,10 @@ public class PdfService {
 
     private boolean fitsTopLeftBounds(PDRectangle pageBox, float x, float yFromTop, float width, float height) {
         float y = pageBox.getLowerLeftY() + pageBox.getHeight() - yFromTop - height;
+        return fitsBottomLeftBounds(pageBox, x, y, width, height);
+    }
+
+    private boolean fitsBottomLeftBounds(PDRectangle pageBox, float x, float y, float width, float height) {
         return width > 0
                 && height > 0
                 && x >= pageBox.getLowerLeftX()
@@ -383,12 +390,26 @@ public class PdfService {
                 && y + height <= pageBox.getUpperRightY();
     }
 
+    private float getApplicableSignaturePageMargin(PDRectangle pageBox, float width, float height) {
+        if (width <= 0 || height <= 0) {
+            return 0f;
+        }
+        return width + SIGNATURE_PAGE_MARGIN * 2 <= pageBox.getWidth()
+                && height + SIGNATURE_PAGE_MARGIN * 2 <= pageBox.getHeight()
+                ? SIGNATURE_PAGE_MARGIN
+                : 0f;
+    }
+
     private float[] clampSignaturePosition(PDRectangle pageBox, float x, float y, float width, float height) {
         if (width <= 0 || height <= 0 || width > pageBox.getWidth() || height > pageBox.getHeight()) {
             return new float[] {x, y};
         }
-        float clampedX = Math.max(pageBox.getLowerLeftX(), Math.min(x, pageBox.getUpperRightX() - width));
-        float clampedY = Math.max(pageBox.getLowerLeftY(), Math.min(y, pageBox.getUpperRightY() - height));
+        if (fitsBottomLeftBounds(pageBox, x, y, width, height)) {
+            return new float[] {x, y};
+        }
+        float margin = getApplicableSignaturePageMargin(pageBox, width, height);
+        float clampedX = Math.max(pageBox.getLowerLeftX() + margin, Math.min(x, pageBox.getUpperRightX() - width - margin));
+        float clampedY = Math.max(pageBox.getLowerLeftY() + margin, Math.min(y, pageBox.getUpperRightY() - height - margin));
         return new float[] {clampedX, clampedY};
     }
 

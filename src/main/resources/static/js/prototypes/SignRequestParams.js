@@ -261,6 +261,7 @@ export class SignRequestParams extends EventFactory {
             this.cross.on("mousedown click", function(e) {
                 e.stopPropagation();
                 self.#wantUnlock();
+                self.#refreshToolsPosition();
             });
             $("#crossTools_" + this.id).on("click", function(e) {
                 e.stopPropagation();
@@ -672,8 +673,9 @@ export class SignRequestParams extends EventFactory {
             "<button id='submit-add-spot' type='button' class='btn btn-sm btn-transparent text-success' title='Enregistrer'><i class='fi fi-rr-floppy-disk-pen'></i></button>" +
             "</div>";
         this.cross.prepend(spotToolsHtml);
-        this.border.remove();
         this.tools.remove();
+        this.border.remove();
+        this.cross.css("border", "1px solid var(--color-rgba-0-0-0-01)");
         this.submitAddSpotBtn = $("#submit-add-spot");
         this.submitAddSpotBtn.on("click", function () {
             $("#spot-modal").modal("show");
@@ -949,6 +951,12 @@ export class SignRequestParams extends EventFactory {
 
     refreshVisualState() {
         if (this.cross == null || !this.cross.length) {
+            return;
+        }
+        const dragRect = this.cross[0]?.getBoundingClientRect?.();
+        if (dragRect != null) {
+            this.#refreshPageAttributeFromRect(dragRect);
+            this.#updatePlacementState(dragRect);
             return;
         }
         this.#computeBgColor();
@@ -1255,6 +1263,7 @@ export class SignRequestParams extends EventFactory {
         const dragRect = this.cross[0].getBoundingClientRect();
         this.#refreshPageAttributeFromRect(dragRect);
         this.#updatePlacementState(dragRect);
+        this.#refreshToolsPosition();
         this.tools.removeClass("d-none");
         if($(event.originalEvent.target).attr("id") != null && $("#border_" + $(event.originalEvent.target).attr("id").split("_")[1]).hasClass("cross-warning") && this.firstCrossAlert) {
             this.firstCrossAlert = false;
@@ -1275,14 +1284,15 @@ export class SignRequestParams extends EventFactory {
 
     #updatePlacementState(dragRect) {
         this.inside = false;
-        const margin = this.signImages === SPECIAL_SIGN_IMAGE_NUMBERS.SPOT ? 0 : 10;
-        $(".pdf-page").each((_, pageElement) => {
+        const pages = $(".pdf-page");
+        const epsilon = 1;
+        pages.each((_, pageElement) => {
             const pageRect = pageElement.getBoundingClientRect();
             if (
-                dragRect.left + margin >= pageRect.left &&
-                dragRect.top + margin >= pageRect.top &&
-                dragRect.right - margin <= pageRect.right &&
-                dragRect.bottom - margin <= pageRect.bottom
+                dragRect.left >= pageRect.left - epsilon &&
+                dragRect.top >= pageRect.top - epsilon &&
+                dragRect.right <= pageRect.right + epsilon &&
+                dragRect.bottom <= pageRect.bottom + epsilon
             ) {
                 this.inside = true;
             }
@@ -1293,6 +1303,45 @@ export class SignRequestParams extends EventFactory {
         this.#computeBgColor();
         this.#syncSpotSaveState();
         this.fireEvent("placementStateChanged", [this]);
+    }
+
+    #refreshToolsPosition() {
+        if (this.tools == null || !this.tools.length || this.cross == null || !this.cross.length) {
+            return;
+        }
+        const crossRect = this.cross.get(0)?.getBoundingClientRect?.();
+        if (crossRect == null) {
+            return;
+        }
+        let pageTop = null;
+        $(".pdf-page").each((_, pageElement) => {
+            const pageRect = pageElement.getBoundingClientRect();
+            if (
+                crossRect.left >= pageRect.left - 1 &&
+                crossRect.left <= pageRect.right + 1 &&
+                crossRect.top >= pageRect.top - 1 &&
+                crossRect.top <= pageRect.bottom + 1
+            ) {
+                pageTop = pageRect.top;
+                return false;
+            }
+            return undefined;
+        });
+        const toolsHeight = this.tools.outerHeight() || 46;
+        const topOffset = -toolsHeight - 1;
+        if (pageTop != null && crossRect.top + topOffset < pageTop) {
+            this.tools.css({
+                top: Math.round(this.cross.outerHeight() + 1) + "px",
+                bottom: "auto",
+                "z-index": 1031
+            });
+            return;
+        }
+        this.tools.css({
+            top: topOffset + "px",
+            bottom: "auto",
+            "z-index": 1031
+        });
     }
 
     #computeBgColor() {
@@ -1403,11 +1452,10 @@ export class SignRequestParams extends EventFactory {
                 if(self.signImageNumber >= 0) {
                     localStorage.setItem("zoom", self.signScale);
                 }
-                if (ui.position.left !== self.initialPosition.left || ui.position.top !== self.initialPosition.top) {
-                    self.#afterDropRefresh(ui);
-                }
+                self.#afterDropRefresh(ui);
                 const dragRect = this.getBoundingClientRect();
                 self.#updatePlacementState(dragRect);
+                self.#refreshToolsPosition();
                 window.__isResizingCross = false;
                 self.#refreshAllPagesSigns();
             }
@@ -1422,10 +1470,17 @@ export class SignRequestParams extends EventFactory {
         const currentTop = parseInt(this.cross.css("top"), 10);
         const absoluteLeft = Number.isFinite(currentLeft) ? currentLeft : ui.position.left;
         const absoluteTop = Number.isFinite(currentTop) ? currentTop : ui.position.top;
-        const maxX = Math.round(pageLayout.width / scaleFactor);
-        const maxY = Math.round(pageLayout.height / scaleFactor);
-        this.xPos = Math.max(0, Math.min(Math.round((absoluteLeft - pageLayout.left) / scaleFactor), maxX));
-        this.yPos = Math.max(0, Math.min(Math.round((absoluteTop - pageLayout.top) / scaleFactor), maxY));
+        const renderedWidth = this.cross.outerWidth() || Math.round(this.signWidth * scaleFactor);
+        const renderedHeight = this.cross.outerHeight() || Math.round(this.signHeight * scaleFactor);
+        const snapMargin = Math.round(10 / this.getBrowserZoom());
+        const pageMaxX = Math.round((pageLayout.width - renderedWidth) / scaleFactor);
+        const pageMaxY = Math.round((pageLayout.height - renderedHeight) / scaleFactor);
+        const rawX = Math.round((absoluteLeft - pageLayout.left) / scaleFactor);
+        const rawY = Math.round((absoluteTop - pageLayout.top) / scaleFactor);
+        const snappedX = rawX <= snapMargin ? 0 : (pageMaxX - rawX <= snapMargin ? pageMaxX : rawX);
+        const snappedY = rawY <= snapMargin ? 0 : (pageMaxY - rawY <= snapMargin ? pageMaxY : rawY);
+        this.xPos = Math.max(0, Math.min(snappedX, pageMaxX));
+        this.yPos = Math.max(0, Math.min(snappedY, pageMaxY));
         console.log("x : " + this.xPos + ", y : " + this.yPos + ", page : " + this.signPageNumber);
         if(this.textareaPart != null) {
             this.#resizeText();
@@ -1517,7 +1572,6 @@ export class SignRequestParams extends EventFactory {
         this.cross.remove();
         const signSpaceId = this.signSpace?.attr("id")?.split("_")[1] ?? null;
         this.fireEvent("delete", [signSpaceId]);
-        $("#addSpotButton, #addCommentButton").attr("disabled", false);
         $('#insert-btn').removeAttr('disabled');
         if (this.signSpace != null) {
             this.ready = false;
@@ -1635,6 +1689,7 @@ export class SignRequestParams extends EventFactory {
 
     #unlock() {
         this.cross.removeClass("hide-handles");
+        this.#refreshToolsPosition();
         this.tools.removeClass("d-none");
         if(this.textareaExtra != null) {
             this.textareaExtra.removeClass("sign-textarea-lock");

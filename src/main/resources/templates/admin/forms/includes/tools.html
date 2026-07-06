@@ -31,7 +31,7 @@
 		</button>
 		<th:block th:if="${form.workflow != null}">
 			<div class="border border-secondary-subtle ms-2 me-2 d-none d-lg-block" style="height: 25px;"></div>
-			<button id="addSpotButton"
+			<button type="button" id="addSpotButton"
 					th:title="${form.workflow.workflowSteps.size() > srpMap.entrySet().size()} ? 'Ajouter un emplacement de signature' : 'Plus d`emplacement disponible'"
 					class="d-flex justify-content-center btn btn-warning text-dark"
 					style="max-height: 33px;"

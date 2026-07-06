@@ -54,6 +54,7 @@ export class PdfViewer extends EventFactory {
         this.isRendering = false;
         this.pendingRender = false;
         this.pendingRenderPdf = null;
+        this.renderComplete = false;
         this.renderedPagesMap = new Map();
         this.displayedPagesMap = new Map();
         this.lastWidth = window.innerWidth;
@@ -497,9 +498,11 @@ export class PdfViewer extends EventFactory {
         }
 
         this.isRendering = true;
+        this.renderComplete = false;
         this.pendingRender = false;
         this.pendingRenderPdf = null;
         const currentRenderCycleId = ++this.renderCycleId;
+        this.fireEvent("renderStarted", ['ok']);
         this.pdfDiv.css('opacity', 0);
         this.numPages = this.pdfDoc.numPages;
         document.getElementById('page_count').textContent = this.pdfDoc.numPages;
@@ -572,13 +575,15 @@ export class PdfViewer extends EventFactory {
                         self._isRefreshingOCG = false;
                         self.applyLinkAnnotationsVisibility().catch(err => console.error('Erreur masquage liens OCG:', err));
                     } else {
-                        self.fireEvent("renderFinished", ['ok']);
-                        $(document).trigger("renderFinished");
                         if(self.pages.length === self.numPages) {
                             self.stopProgress();
                             self.postRenderAll();
-                            $("#pdf-progress-bar").css("opacity", 0);
+                            const progressBar = $("#pdf-progress-bar");
+                            progressBar.css("opacity", 0);
                             self.enableScrollBtn();
+                            self.fireEvent("renderFinished", ['ok']);
+                            $(document).trigger("renderFinished");
+                            self.fireRenderCompleteAfterProgressHidden(progressBar);
                         }
                     }
                 } else {
@@ -611,6 +616,34 @@ export class PdfViewer extends EventFactory {
                     self.processRenderQueue(renderCycleId);
                 });
         }
+    }
+
+    fireRenderCompleteAfterProgressHidden(progressBar) {
+        const progressElement = progressBar?.get?.(0);
+        let completed = false;
+        const complete = () => {
+            if (completed) {
+                return;
+            }
+            completed = true;
+            this.renderComplete = true;
+            this.fireEvent("renderComplete", ['ok']);
+        };
+        if (progressElement == null) {
+            complete();
+            return;
+        }
+        const computedOpacity = Number.parseFloat(window.getComputedStyle(progressElement).opacity);
+        if (Number.isFinite(computedOpacity) && computedOpacity === 0) {
+            complete();
+            return;
+        }
+        progressElement.addEventListener("transitionend", event => {
+            if (event.target === progressElement && event.propertyName === "opacity") {
+                complete();
+            }
+        });
+        window.setTimeout(complete, 1200);
     }
 
     scrollToPage(num) {
