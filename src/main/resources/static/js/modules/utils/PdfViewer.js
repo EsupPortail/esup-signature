@@ -289,10 +289,14 @@ export class PdfViewer extends EventFactory {
         let signal = controller.signal;
         console.info("listen to search autocompletion");
         $(".search-completion").each(function () {
-            let serviceName = $(this).attr("search-completion-service-name");
-            let searchType = $(this).attr("search-completion-type");
-            let searchReturn = $(this).attr("search-completion-return");
-            $(this).autocomplete({
+            const $input = $(this);
+            if ($input.data("esAutocompleteBound") === true) {
+                return;
+            }
+            let serviceName = $input.attr("search-completion-service-name");
+            let searchType = $input.attr("search-completion-type");
+            let searchReturn = $input.attr("search-completion-return");
+            $input.autocomplete({
                 delay: 500,
                 source: function( request, response ) {
                     if(request.term.length > 2) {
@@ -319,13 +323,18 @@ export class PdfViewer extends EventFactory {
                     }
                 }
             });
+            $input.data("esAutocompleteBound", true);
         });
     }
 
     annotationLinkTargetBlank() {
         $('.linkAnnotation').each(function (){
-            $(this).children().attr('target', '_blank');
-            $(this).droppable({
+            const $linkAnnotation = $(this);
+            $linkAnnotation.children().attr('target', '_blank');
+            if ($linkAnnotation.data('esDroppableBound') === true) {
+                return;
+            }
+            $linkAnnotation.droppable({
                 tolerance: "touch",
                 drop: function( event, ui ) {
                     if($(ui.draggable).attr("id") != null && ($(ui.draggable).attr("id").includes("cross_") || $($(ui.draggable).attr("id").includes("border_")))) {
@@ -343,6 +352,7 @@ export class PdfViewer extends EventFactory {
                     }
                 }
             });
+            $linkAnnotation.data('esDroppableBound', true);
         });
     }
 
@@ -579,7 +589,7 @@ export class PdfViewer extends EventFactory {
                             self.stopProgress();
                             const progressBar = $("#pdf-progress-bar");
                             progressBar.removeClass("es-progress-visible");
-                            self.postRenderAll();
+                            await self.postRenderAll();
                             self.enableScrollBtn();
                             self.fireEvent("renderFinished", ['ok']);
                             $(document).trigger("renderFinished");
@@ -820,13 +830,19 @@ export class PdfViewer extends EventFactory {
         }
     }
 
-    postRenderAll() {
+    async postRenderAll() {
+        const renderTasks = [];
         for(let i = 0; i < this.numPages; i++) {
-            this.postRender(this.pages[i]);
+            if (this.pages[i] != null) {
+                renderTasks.push(this.postRender(this.pages[i]));
+            }
         }
+        await Promise.all(renderTasks);
+        this.annotationLinkTargetBlank();
+        await this.promiseRestoreValue();
         this.restoreScrolling();
         this.updateHorizontalOverflowState();
-        this.applyLinkAnnotationsVisibility().catch(err => console.error('Erreur postRenderAll liens OCG:', err));
+        await this.applyLinkAnnotationsVisibility().catch(err => console.error('Erreur postRenderAll liens OCG:', err));
     }
 
     updateHorizontalOverflowState() {
@@ -852,16 +868,15 @@ export class PdfViewer extends EventFactory {
         }
     }
 
-    postRender(page) {
-        this.promiseRenderForm(false, page).then(e => this.promiseRestoreValue());
+    async postRender(page) {
+        await this.promiseRenderForm(false, page);
         console.groupEnd();
-        this.annotationLinkTargetBlank();
     }
 
     promiseRenderForm(isField, page) {
-        return new Promise((resolve, reject) => {
-            page.getAnnotations().then(items => this.renderPdfFormWithFields(items));
-            resolve("Réussite");
+        return page.getAnnotations().then(items => {
+            this.renderPdfFormWithFields(items);
+            return "Réussite";
         });
     }
 
@@ -883,15 +898,14 @@ export class PdfViewer extends EventFactory {
         }
     }
 
-    promiseSaveValues() {
+    async promiseSaveValues() {
         console.log("save");
-        return new Promise((resolve, reject) => {
-            console.info("launch save values");
-            for (let i = 1; i < this.pdfDoc.numPages + 1; i++) {
-                this.pdfDoc.getPage(i).then(page => page.getAnnotations().then(items => this.saveValues(items)));
-            }
-            resolve();
-        });
+        console.info("launch save values");
+        const tasks = [];
+        for (let i = 1; i < this.pdfDoc.numPages + 1; i++) {
+            tasks.push(this.pdfDoc.getPage(i).then(page => page.getAnnotations().then(items => this.saveValues(items))));
+        }
+        await Promise.all(tasks);
     }
 
     saveValues(items) {
@@ -953,13 +967,15 @@ export class PdfViewer extends EventFactory {
         }
     }
 
-    promiseRestoreValue() {
+    async promiseRestoreValue() {
         if(this.savedFields.size === 0) {
-            this.promiseSaveValues();
+            await this.promiseSaveValues();
         }
+        const tasks = [];
         for(let i = 1; i < this.pdfDoc.numPages + 1; i++) {
-            this.pdfDoc.getPage(i).then(page => page.getAnnotations().then(items => this.restoreValues(items)));
+            tasks.push(this.pdfDoc.getPage(i).then(page => page.getAnnotations().then(items => this.restoreValues(items))));
         }
+        await Promise.all(tasks);
         this.fireEvent("render", ['end']);
     }
 
