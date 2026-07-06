@@ -512,7 +512,7 @@ export class PdfViewer extends EventFactory {
         this.activeRenders = 0;
         this.disableScrollBtn();
         this.resetProgress();
-        $("#pdf-progress-bar").css("opacity", 1);
+        $("#pdf-progress-bar").addClass("es-progress-visible");
         this.startProgress();
 
         try {
@@ -577,9 +577,9 @@ export class PdfViewer extends EventFactory {
                     } else {
                         if(self.pages.length === self.numPages) {
                             self.stopProgress();
-                            self.postRenderAll();
                             const progressBar = $("#pdf-progress-bar");
-                            progressBar.css("opacity", 0);
+                            progressBar.removeClass("es-progress-visible");
+                            self.postRenderAll();
                             self.enableScrollBtn();
                             self.fireEvent("renderFinished", ['ok']);
                             $(document).trigger("renderFinished");
@@ -643,7 +643,8 @@ export class PdfViewer extends EventFactory {
                 complete();
             }
         });
-        window.setTimeout(complete, 1200);
+        // Keep the visual fade-out in sync with the CSS opacity transition (1000ms)
+        window.setTimeout(complete, 1000);
     }
 
     scrollToPage(num) {
@@ -1992,6 +1993,7 @@ export class PdfViewer extends EventFactory {
     }
 
     resetProgress() {
+        $("#pdf-progress-bar").removeClass("es-progress-visible");
         this.updateProgress(0, "", false);
         clearInterval(this.interval);
     }

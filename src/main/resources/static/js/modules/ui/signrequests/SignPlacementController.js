@@ -612,6 +612,9 @@ export class SignPlacementController extends EventFactory {
 
         signLaunchButton.prop("disabled", disabled);
         signAdvancedLaunchButton.prop("disabled", disabled);
+        signLaunchButton.attr("aria-disabled", disabled ? "true" : "false");
+        signAdvancedLaunchButton.attr("aria-disabled", disabled ? "true" : "false");
+        $("#signActionButtons").attr("aria-busy", disabled ? "true" : "false");
         this.setButtonVariant(signLaunchButton, enabled ? "btn-success" : "btn-secondary");
         this.setButtonVariant(signAdvancedLaunchButton, enabled ? "btn-success" : "btn-secondary");
         if(enabled && !disabled && !skipFocus) {

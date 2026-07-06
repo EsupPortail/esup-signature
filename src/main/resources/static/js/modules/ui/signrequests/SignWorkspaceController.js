@@ -268,7 +268,12 @@ export class SignWorkspaceController {
             ].forEach(([selector, event, handler]) => $(selector).off(event + eventNamespace).on(event + eventNamespace, handler));
             [
                 ['renderStarted', () => this.beginPdfRender()],
-                ['renderFinished', () => this.initSignWorkspace()],
+                ['renderFinished', () => {
+                    this.initSignWorkspace();
+                    // Débloquer l'UI dès que le rendu métier est terminé,
+                    // sans anticiper l'état renderComplete utilisé par la progress-bar.
+                    this.releaseToolsLoadingState();
+                }],
                 ['renderComplete', () => this.completePdfRender()],
                 ['scaleChange', () => this.refreshWorkspace()],
                 ['change', () => this.saveData(localStorage.getItem('disableFormAlert') === "true")]
