@@ -242,7 +242,8 @@ body.es-signrequest-page .modal.es-signrequest-sidepanel .modal-footer {
     pointer-events: none !important;
 }
 
-body.es-spot-add-mode .es-main-content > *:not(.es-spot-add-scope):not(.es-spot-add-admin-scope):not(#sidebar):not(.es-sidebar) {
+body.es-spot-add-mode .es-main-content > *:not(.es-spot-add-scope):not(.es-spot-add-admin-scope):not(#sidebar):not(.es-sidebar),
+body.es-pdf-render-mode .es-main-content > *:not(.es-pdf-render-scope):not(.es-spot-add-admin-scope):not(#sidebar):not(.es-sidebar) {
     opacity: 0.35;
     filter: grayscale(1);
     transition: opacity 0.15s ease, filter 0.15s ease;
@@ -251,31 +252,41 @@ body.es-spot-add-mode .es-main-content > *:not(.es-spot-add-scope):not(.es-spot-
 body.es-spot-add-mode .es-signrequest-main-content > #sidebar,
 body.es-spot-add-mode .es-signrequest-main-content > #sidebar *,
 body.es-spot-add-mode .es-signrequest-main-content > .es-sidebar,
-body.es-spot-add-mode .es-signrequest-main-content > .es-sidebar * {
+body.es-spot-add-mode .es-signrequest-main-content > .es-sidebar *,
+body.es-pdf-render-mode .es-signrequest-main-content > #sidebar,
+body.es-pdf-render-mode .es-signrequest-main-content > #sidebar *,
+body.es-pdf-render-mode .es-signrequest-main-content > .es-sidebar,
+body.es-pdf-render-mode .es-signrequest-main-content > .es-sidebar * {
     opacity: 1 !important;
     filter: none !important;
 }
 
-body.es-spot-add-mode .es-spot-add-scope > *:not(#workspace) {
+body.es-spot-add-mode .es-spot-add-scope > *:not(#workspace),
+body.es-pdf-render-mode .es-pdf-render-scope > *:not(#workspace):not(#tools) {
     opacity: 0.35;
     filter: grayscale(1);
     transition: opacity 0.15s ease, filter 0.15s ease;
 }
 
 body.es-spot-add-mode .es-spot-add-scope > .es-spot-workspace-row,
-body.es-spot-add-mode .es-spot-add-admin-scope > .es-spot-workspace-row {
+body.es-spot-add-mode .es-spot-add-admin-scope > .es-spot-workspace-row,
+body.es-pdf-render-mode .es-pdf-render-scope > .es-spot-workspace-row,
+body.es-pdf-render-mode .es-spot-add-admin-scope > .es-spot-workspace-row {
     opacity: 1;
     filter: none;
 }
 
-body.es-spot-add-mode .es-spot-add-admin-scope > *:not(.es-spot-workspace-row) {
+body.es-spot-add-mode .es-spot-add-admin-scope > *:not(.es-spot-workspace-row),
+body.es-pdf-render-mode .es-spot-add-admin-scope > *:not(.es-spot-workspace-row) {
     opacity: 0.35;
     filter: grayscale(1);
     transition: opacity 0.15s ease, filter 0.15s ease;
 }
 
 body.es-spot-add-mode .es-spot-add-scope > .es-spot-workspace-row > *:not(.es-spot-workspace-host),
-body.es-spot-add-mode .es-spot-add-admin-scope > .es-spot-workspace-row > *:not(.es-spot-workspace-host) {
+body.es-spot-add-mode .es-spot-add-admin-scope > .es-spot-workspace-row > *:not(.es-spot-workspace-host),
+body.es-pdf-render-mode .es-pdf-render-scope > .es-spot-workspace-row > *:not(.es-spot-workspace-host),
+body.es-pdf-render-mode .es-spot-add-admin-scope > .es-spot-workspace-row > *:not(.es-spot-workspace-host) {
     opacity: 0.35;
     filter: grayscale(1);
     transition: opacity 0.15s ease, filter 0.15s ease;
@@ -284,7 +295,11 @@ body.es-spot-add-mode .es-spot-add-admin-scope > .es-spot-workspace-row > *:not(
 body.es-spot-add-mode .es-spot-add-scope > .es-spot-workspace-row > .es-spot-workspace-host,
 body.es-spot-add-mode .es-spot-add-scope > .es-spot-workspace-row > .es-spot-workspace-host *,
 body.es-spot-add-mode .es-spot-add-admin-scope > .es-spot-workspace-row > .es-spot-workspace-host,
-body.es-spot-add-mode .es-spot-add-admin-scope > .es-spot-workspace-row > .es-spot-workspace-host * {
+body.es-spot-add-mode .es-spot-add-admin-scope > .es-spot-workspace-row > .es-spot-workspace-host *,
+body.es-pdf-render-mode .es-pdf-render-scope > .es-spot-workspace-row > .es-spot-workspace-host,
+body.es-pdf-render-mode .es-pdf-render-scope > .es-spot-workspace-row > .es-spot-workspace-host *,
+body.es-pdf-render-mode .es-spot-add-admin-scope > .es-spot-workspace-row > .es-spot-workspace-host,
+body.es-pdf-render-mode .es-spot-add-admin-scope > .es-spot-workspace-row > .es-spot-workspace-host * {
     opacity: 1 !important;
     filter: none !important;
 }
@@ -295,7 +310,12 @@ body.es-spot-add-mode #pdf *,
 body.es-spot-add-mode #cross_999999,
 body.es-spot-add-mode #cross_999999 *,
 body.es-spot-add-mode #spot-modal,
-body.es-spot-add-mode #spot-modal * {
+body.es-spot-add-mode #spot-modal *,
+body.es-pdf-render-mode #workspace,
+body.es-pdf-render-mode #pdf,
+body.es-pdf-render-mode #pdf *,
+body.es-pdf-render-mode #pdf-progress-bar,
+body.es-pdf-render-mode #pdf-progress-bar * {
     opacity: 1 !important;
     filter: none !important;
 }

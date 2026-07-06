@@ -673,6 +673,7 @@ export class SignRequestParams extends EventFactory {
             "<button id='submit-add-spot' type='button' class='btn btn-sm btn-transparent text-success' title='Enregistrer'><i class='fi fi-rr-floppy-disk-pen'></i></button>" +
             "</div>";
         this.cross.prepend(spotToolsHtml);
+        this.#refreshToolsPosition();
         this.tools.remove();
         this.border.remove();
         this.cross.css("border", "1px solid var(--color-rgba-0-0-0-01)");
@@ -1306,7 +1307,10 @@ export class SignRequestParams extends EventFactory {
     }
 
     #refreshToolsPosition() {
-        if (this.tools == null || !this.tools.length || this.cross == null || !this.cross.length) {
+        const tools = this.signImages === SPECIAL_SIGN_IMAGE_NUMBERS.SPOT
+            ? $("#spot-tools_" + this.id)
+            : this.tools;
+        if (tools == null || !tools.length || this.cross == null || !this.cross.length) {
             return;
         }
         const crossRect = this.cross.get(0)?.getBoundingClientRect?.();
@@ -1327,17 +1331,16 @@ export class SignRequestParams extends EventFactory {
             }
             return undefined;
         });
-        const toolsHeight = this.tools.outerHeight() || 46;
-        const topOffset = -toolsHeight - 1;
+        const topOffset = -46;
         if (pageTop != null && crossRect.top + topOffset < pageTop) {
-            this.tools.css({
-                top: Math.round(this.cross.outerHeight() + 1) + "px",
+            tools.css({
+                top: Math.round(this.cross.outerHeight() + 2) + "px",
                 bottom: "auto",
                 "z-index": 1031
             });
             return;
         }
-        this.tools.css({
+        tools.css({
             top: topOffset + "px",
             bottom: "auto",
             "z-index": 1031

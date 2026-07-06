@@ -408,16 +408,6 @@ body.home-page.home-loading .home-list-loading-placeholder {
     color: var(--bs-secondary);
 }
 
-body.es-signrequest-page #tools.signrequest-tools-loading-shell {
-    min-height: 72px;
-    transition: opacity 0.18s ease;
-}
-
-body.es-signrequest-page.signrequest-tools-loading #tools.signrequest-tools-loading-shell {
-    visibility: hidden;
-    opacity: 0;
-}
-
 body.signbooks-list-page #listSignRequestTable.signbooks-table-loading-shell {
     min-height: calc(100vh - 190px);
 }

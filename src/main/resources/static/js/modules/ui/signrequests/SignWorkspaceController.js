@@ -47,6 +47,7 @@ export class SignWorkspaceController {
         this.formInitialized = false;
         this.isPdf = isPdf;
         this.pdfRenderComplete = !isPdf;
+        this.pdfRenderScope = $();
         this.isOtp = isOtp;
         this.phone = phone;
         this.changeModeSelector = null;
@@ -538,26 +539,15 @@ export class SignWorkspaceController {
         this.signPlacementController.updateScales(this.pdfViewer.scale);
     }
 
-    setToolsLoadingState(isLoading) {
-        if (document?.body == null) {
-            return;
-        }
-        document.body.classList.toggle('signrequest-tools-loading', Boolean(isLoading));
-    }
-
     releaseToolsLoadingState() {
         if (this.toolsLoadingStateReleased) {
             return;
         }
         this.toolsLoadingStateReleased = true;
-        window.requestAnimationFrame(() => {
-            window.requestAnimationFrame(() => {
-                this.setToolsLoadingState(false);
-                this.setToolsBarDisabled(false);
-                this.refreshToolbarAccessibility();
-                this.focusPrimaryToolbarAction();
-            });
-        });
+        this.setPdfRenderMode(false);
+        this.setToolsBarDisabled(false);
+        this.refreshToolbarAccessibility();
+        this.focusPrimaryToolbarAction();
     }
 
     getPrimaryToolbarFocusSelectors() {
@@ -580,9 +570,26 @@ export class SignWorkspaceController {
 
     beginPdfRender() {
         this.toolsLoadingStateReleased = false;
-        this.setToolsLoadingState(true);
+        this.setPdfRenderMode(true);
         this.setToolsBarDisabled(true);
         this.setPdfRenderComplete(false);
+    }
+
+    setPdfRenderMode(enabled) {
+        const active = Boolean(enabled);
+        $("body").toggleClass("es-pdf-render-mode", active);
+        if (active) {
+            const workspace = $("#workspace");
+            const mainContent = workspace.closest(".es-main-content");
+            const workspaceElement = workspace.get(0);
+            this.pdfRenderScope = mainContent.length && workspaceElement != null
+                ? mainContent.children().has(workspaceElement)
+                : $();
+            this.pdfRenderScope.addClass("es-pdf-render-scope");
+            return;
+        }
+        this.pdfRenderScope.removeClass("es-pdf-render-scope");
+        this.pdfRenderScope = $();
     }
 
     completePdfRender() {
