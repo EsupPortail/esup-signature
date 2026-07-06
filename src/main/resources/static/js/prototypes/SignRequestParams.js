@@ -453,6 +453,7 @@ export class SignRequestParams extends EventFactory {
         }
         this.#centerOnCurrentViewport();
         this.applyCurrentSignRequestParams();
+        this.refreshVisualState();
     }
 
     #refreshPageAttributeFromRect(rect) {
@@ -970,6 +971,14 @@ export class SignRequestParams extends EventFactory {
             return;
         }
         this.#unlock();
+    }
+
+    hideDuringInitialPlacement() {
+        this.cross?.css("visibility", "hidden");
+    }
+
+    showAfterInitialPlacement() {
+        this.cross?.css("visibility", "");
     }
 
     #enableCanvas() {
