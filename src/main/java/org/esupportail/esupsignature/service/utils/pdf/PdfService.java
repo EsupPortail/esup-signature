@@ -189,6 +189,9 @@ public class PdfService {
     private void stampImageToPage(SignRequest signRequest, SignRequestParams signRequestParams, User user, SignType signType, PdfParameters pdfParameters, PDDocument pdDocument, PDPage pdPage, int pageNumber, Date newDate, Boolean otp, Boolean endingWithCert, PDOptionalContentGroup ocg) throws IOException {
         DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.FRENCH);
         InputStream signImage = null;
+        Float fixFactor = globalProperties.getFixFactor();
+        float requestedRenderedSignWidth = signRequestParams.getSignWidth() * signRequestParams.getSignScale() * fixFactor;
+        float requestedRenderedSignHeight = signRequestParams.getSignHeight() * signRequestParams.getSignScale() * fixFactor;
         if (signRequestParams.getSignImageNumber() < 0) {
             signImage = fileService.getFaImageByIndex(signRequestParams.getSignImageNumber());
         } else {
@@ -226,7 +229,6 @@ public class PdfService {
 
         float tx = 0;
         float ty = 0;
-        Float fixFactor = globalProperties.getFixFactor();
         PDRectangle pageBox = pdPage.getCropBox();
         float renderedSignWidth = signRequestParams.getSignWidth() * signRequestParams.getSignScale() * fixFactor;
         float renderedSignHeight = signRequestParams.getSignHeight() * signRequestParams.getSignScale() * fixFactor;
@@ -247,6 +249,15 @@ public class PdfService {
             }
         }
         float xAdjusted = signRequestParams.getxPos() * fixFactor;
+        if ((pdfParameters.getRotation() == 0 || pdfParameters.getRotation() == 180)
+                && !fitsTopLeftBounds(pageBox, xAdjusted, signRequestParams.getyPos() * fixFactor, renderedSignWidth, renderedSignHeight)
+                && fitsTopLeftBounds(pageBox, xAdjusted, signRequestParams.getyPos() * fixFactor, requestedRenderedSignWidth, requestedRenderedSignHeight)) {
+            float availableWidth = pageBox.getUpperRightX() - xAdjusted;
+            float availableHeight = pageBox.getHeight() - signRequestParams.getyPos() * fixFactor;
+            float ratio = Math.min(availableWidth / renderedSignWidth, availableHeight / renderedSignHeight);
+            renderedSignWidth = renderedSignWidth * ratio;
+            renderedSignHeight = renderedSignHeight * ratio;
+        }
         float yAdjusted;
 
         if (pdfParameters.getRotation() == 0) {
@@ -352,6 +363,16 @@ public class PdfService {
                     "La signature est hors page (page=%d, x=%.2f, y=%.2f, width=%.2f, height=%.2f, pageWidth=%.2f, pageHeight=%.2f)",
                     pageNumber, x, y, width, height, pageBox.getWidth(), pageBox.getHeight()));
         }
+    }
+
+    private boolean fitsTopLeftBounds(PDRectangle pageBox, float x, float yFromTop, float width, float height) {
+        float y = pageBox.getLowerLeftY() + pageBox.getHeight() - yFromTop - height;
+        return width > 0
+                && height > 0
+                && x >= pageBox.getLowerLeftX()
+                && y >= pageBox.getLowerLeftY()
+                && x + width <= pageBox.getUpperRightX()
+                && y + height <= pageBox.getUpperRightY();
     }
 
     private PDRectangle getSignatureFieldRectangle(PDDocument pdDocument, String pdSignatureFieldName) {

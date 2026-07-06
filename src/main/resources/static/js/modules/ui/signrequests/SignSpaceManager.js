@@ -311,16 +311,39 @@ export class SignSpaceManager {
 		resizedUi.size.width = resizedUi.size.width - 2;
 		resizedUi.size.height = resizedUi.size.height - 2;
 		signRequestParams.resize(resizedUi);
-		cross.css("width", signRequestParams.signWidth * pdfViewer.scale);
-		cross.css("background-size", signRequestParams.signWidth * pdfViewer.scale);
-		cross.css("height", signRequestParams.signHeight * pdfViewer.scale);
+
+		for (let i = 0; i < 4; i++) {
+			const renderedWidth = signRequestParams.signWidth * pdfViewer.scale;
+			const renderedHeight = signRequestParams.signHeight * pdfViewer.scale;
+			if (renderedWidth <= maxWidth - 2 && renderedHeight <= maxHeight - 2) {
+				break;
+			}
+			const resizeRatio = Math.min((maxWidth - 2) / renderedWidth, (maxHeight - 2) / renderedHeight);
+			if (!Number.isFinite(resizeRatio) || resizeRatio <= 0) {
+				break;
+			}
+			signRequestParams.resize({
+				size: {
+					width: renderedWidth * resizeRatio,
+					height: renderedHeight * resizeRatio
+				}
+			});
+		}
+
+		const finalRenderedWidth = signRequestParams.signWidth * pdfViewer.scale;
+		const finalRenderedHeight = signRequestParams.signHeight * pdfViewer.scale;
+		const finalFits = finalRenderedWidth <= maxWidth - 2 && finalRenderedHeight <= maxHeight - 2;
+		cross.css("width", finalRenderedWidth);
+		cross.css("background-size", finalRenderedWidth);
+		cross.css("height", finalRenderedHeight);
+		signRequestParams.inside = finalFits;
 		signRequestParams.dropped = true;
 
 		const slotIndex = parseInt(signSpaceDiv.attr("id")?.split("_")[1], 10);
 		if (Number.isFinite(slotIndex) && signPlacementController.currentSignRequestParamses?.[slotIndex] != null) {
-			signPlacementController.currentSignRequestParamses[slotIndex].ready = true;
+			signPlacementController.currentSignRequestParamses[slotIndex].ready = finalFits;
 		}
-		signRequestParams.ready = true;
+		signRequestParams.ready = finalFits;
 		if (typeof signRequestParams.refreshVisualState === "function") {
 			signRequestParams.refreshVisualState();
 		}

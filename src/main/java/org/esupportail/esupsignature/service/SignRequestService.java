@@ -34,6 +34,7 @@ import org.esupportail.esupsignature.service.security.otp.OtpService;
 import org.esupportail.esupsignature.service.utils.StepStatus;
 import org.esupportail.esupsignature.service.utils.WebUtilsService;
 import org.esupportail.esupsignature.service.utils.file.FileService;
+import org.esupportail.esupsignature.service.utils.pdf.PdfParameters;
 import org.esupportail.esupsignature.service.utils.metric.CustomMetricsService;
 import org.esupportail.esupsignature.service.utils.pdf.PdfService;
 import org.esupportail.esupsignature.service.utils.sign.SignService;
@@ -1362,6 +1363,7 @@ public class SignRequestService {
 		if(recipient == null && liveWorkflowStep.getRecipients().size() > 1 && Boolean.TRUE.equals(liveWorkflowStep.getAllSignToComplete())) {
 			throw new EsupSignatureException("Impossible d'ajouter un champ signature générique s'il y a plusieurs participants dans l'étape ; merci de cibler un destinataire");
 		}
+		validateSpotBounds(signRequest, pageNumber, posX, posY, signWidth, signHeight);
 		SignRequestParams signRequestParams = signRequestParamsService.createSignRequestParams(pageNumber, posX, posY);
 		if(signWidth != null && signHeight != null) {
 			signRequestParams.setSignWidth(signWidth);
@@ -1372,6 +1374,34 @@ public class SignRequestService {
 		signRequestParams.setRecipient(recipient);
 		liveWorkflowStep.getSignRequestParams().add(signRequestParams);
 		return signRequestParams.getId();
+	}
+
+	private void validateSpotBounds(SignRequest signRequest, Integer pageNumber, Integer posX, Integer posY, Integer signWidth, Integer signHeight) throws EsupSignatureException {
+		if(signRequest.getOriginalDocuments().isEmpty()) {
+			return;
+		}
+		Document document = signRequest.getOriginalDocuments().get(0);
+		if(!document.isPdf()) {
+			return;
+		}
+		int resolvedPageNumber = pageNumber == null || pageNumber < 1 ? 1 : pageNumber;
+		int resolvedX = posX == null ? 0 : posX;
+		int resolvedY = posY == null ? 0 : posY;
+		int resolvedWidth = signWidth == null ? 200 : signWidth;
+		int resolvedHeight = signHeight == null ? 100 : signHeight;
+		PdfParameters pdfParameters = pdfService.getPdfParameters(document.getInputStream(), resolvedPageNumber);
+		if(pdfParameters == null) {
+			return;
+		}
+		boolean outOfBounds = resolvedWidth <= 0
+				|| resolvedHeight <= 0
+				|| resolvedX < 0
+				|| resolvedY < 0
+				|| resolvedX + resolvedWidth > pdfParameters.getWidth()
+				|| resolvedY + resolvedHeight > pdfParameters.getHeight();
+		if(outOfBounds) {
+			throw new EsupSignatureException("L'emplacement de signature doit etre entierement dans une page");
+		}
 	}
 
 	private Recipient resolveSpotRecipient(LiveWorkflowStep liveWorkflowStep, Long recipientId) throws EsupSignatureException {
