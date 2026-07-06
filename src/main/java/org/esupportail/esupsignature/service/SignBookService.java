@@ -2769,55 +2769,40 @@ public class SignBookService {
     @Transactional
     public void archiveSignRequests(Long signBookId, String authUserEppn) throws EsupSignatureRuntimeException {
         SignBook signBook = getById(signBookId);
-        if(!needToBeArchived(signBook)) {
+        String archiveUri = getArchiveUri(signBook);
+        if(!StringUtils.hasText(archiveUri)) {
+            logger.debug("archive document was skipped");
             return;
         }
-        String archiveUri = globalProperties.getArchiveUri();
-        if(signBook.getLiveWorkflow().getWorkflow() != null && StringUtils.hasText(signBook.getLiveWorkflow().getWorkflow().getArchiveTarget())) {
-            if(signBook.getEndDate().after(signBook.getLiveWorkflow().getWorkflow().getStartArchiveDate())) {
-                if(StringUtils.hasText(signBook.getLiveWorkflow().getWorkflow().getArchiveTarget())) {
-                    archiveUri = signBook.getLiveWorkflow().getWorkflow().getArchiveTarget();
+        logger.info("start archiving documents");
+        boolean result = true;
+        for(SignRequest signRequest : signBook.getSignRequests()) {
+            Document signedFile = signRequest.getLastSignedDocument();
+            if(signedFile != null) {
+                String subPath = getArchiveSubPath(signBook);
+                if(signBook.getStatus().equals(SignRequestStatus.refused)) {
+                    subPath += "refused/";
                 }
-            } else {
-                return;
+                if (signRequest.getExportedDocumentURI() == null) {
+                    String name = generateName(signRequest.getId(), getWorkflow(signRequest.getParentSignBook()), signRequest.getCreateBy(), false, true, null);
+                    if(signRequest.getParentSignBook().getSignRequests().size() > 1) {
+                        name = fileService.getNameOnly(signedFile.getFileName());
+                    }
+                    String documentUri = documentService.archiveDocument(signedFile, archiveUri, subPath, signedFile.getId() + "_" + name);
+                    if (documentUri != null) {
+                        signRequest.setExportedDocumentURI(documentUri);
+                        signRequestService.updateStatus(signRequest.getId(), SignRequestStatus.completed, "Archivé", documentUri, "SUCCESS", null, null, null, null, authUserEppn, authUserEppn);
+                        signRequest.setArchiveStatus(ArchiveStatus.archived);
+                        logger.info("archive done to " + subPath + name + " in " + archiveUri);
+                    } else {
+                        logger.error("unable to archive " + subPath + name + " in " + archiveUri);
+                        result = false;
+                    }
+                }
             }
         }
-        if(archiveUri != null) {
-            logger.info("start archiving documents");
-            boolean result = true;
-            for(SignRequest signRequest : signBook.getSignRequests()) {
-                Document signedFile = signRequest.getLastSignedDocument();
-                if(signedFile != null) {
-                    // TODO: générer le sous-dossier d'archivage avec l'id + "_" + le titre du circuit
-                    // pour les workflows, et conserver un comportement hors circuit cohérent pour les demandes
-                    // sans workflow.
-                    String subPath = "/" + signRequest.getParentSignBook().getWorkflowName().replaceAll("[^a-zA-Z0-9]", "_") + "/";
-                    if(signBook.getStatus().equals(SignRequestStatus.refused)) {
-                        subPath += "refused/";
-                    }
-                    if (signRequest.getExportedDocumentURI() == null) {
-                        String name = generateName(signRequest.getId(), signRequest.getParentSignBook().getLiveWorkflow().getWorkflow(), signRequest.getCreateBy(), false, true, null);
-                        if(signRequest.getParentSignBook().getSignRequests().size() > 1) {
-                            name = fileService.getNameOnly(signedFile.getFileName());
-                        }
-                        String documentUri = documentService.archiveDocument(signedFile, archiveUri, subPath, signedFile.getId() + "_" + name);
-                        if (documentUri != null) {
-                            signRequest.setExportedDocumentURI(documentUri);
-                            signRequestService.updateStatus(signRequest.getId(), SignRequestStatus.completed, "Archivé", documentUri, "SUCCESS", null, null, null, null, authUserEppn, authUserEppn);
-                            signRequest.setArchiveStatus(ArchiveStatus.archived);
-                            logger.info("archive done to " + subPath + name + " in " + archiveUri);
-                        } else {
-                            logger.error("unable to archive " + subPath + name + " in " + archiveUri);
-                            result = false;
-                        }
-                    }
-                }
-            }
-            if(result) {
-                signBook.setArchiveStatus(ArchiveStatus.archived);
-            }
-        } else {
-            logger.debug("archive document was skipped");
+        if(result) {
+            signBook.setArchiveStatus(ArchiveStatus.archived);
         }
     }
 
@@ -2856,24 +2841,53 @@ public class SignBookService {
     }
 
     /**
-     * Détermine si un SignBook doit être archivé en fonction de son état de workflow en cours.
+     * Détermine la cible d'archivage d'un signbook.
      *
      * @param signBook L'objet SignBook à évaluer. Ce dernier contient des informations sur le workflow en cours.
-     * @return true si le SignBook doit être archivé, false sinon. La condition est remplie si le workflow en cours existe
-     *         mais n'est pas défini, ou si une date de début d'archivage est spécifiée, qu'une cible d'archivage est
-     *         renseignée, et que la date de début d'archivage se situe avant la date actuelle.
+     * @return cible d'archivage globale ou propre au workflow.
      */
-    @Transactional
-    public boolean needToBeArchived(SignBook signBook) {
-        // TODO: traiter les circuits personnels (workflow.createBy != system) comme les demandes hors circuit :
-        // ils n'ont pas d'archiveTarget saisissable et doivent utiliser global.archive-uri.
-        return signBook.getLiveWorkflow() != null
-                && (signBook.getLiveWorkflow().getWorkflow() == null
-                || (signBook.getLiveWorkflow().getWorkflow().getStartArchiveDate() != null
-                && StringUtils.hasText(signBook.getLiveWorkflow().getWorkflow().getArchiveTarget())
-                && signBook.getLiveWorkflow().getWorkflow().getStartArchiveDate().before(new Date())
-        )
-        );
+    private String getArchiveUri(SignBook signBook) {
+        Workflow workflow = getWorkflow(signBook);
+        if(workflow != null && StringUtils.hasText(workflow.getArchiveTarget())) {
+            if(isBeforeArchiveStartDate(signBook, workflow)) {
+                return null;
+            }
+            return workflow.getArchiveTarget();
+        }
+        return globalProperties.getArchiveUri();
+    }
+
+    private boolean isBeforeArchiveStartDate(SignBook signBook, Workflow workflow) {
+        return workflow.getStartArchiveDate() != null
+                && (signBook.getEndDate() == null || signBook.getEndDate().before(workflow.getStartArchiveDate()));
+    }
+
+    private String getArchiveSubPath(SignBook signBook) {
+        Workflow workflow = getWorkflow(signBook);
+        if(workflow == null || StringUtils.hasText(workflow.getArchiveTarget())) {
+            return "/";
+        }
+        return "/" + getArchiveWorkflowName(signBook, workflow).replaceAll("[^a-zA-Z0-9]", "_") + "/";
+    }
+
+    private String getArchiveWorkflowName(SignBook signBook, Workflow workflow) {
+        if(StringUtils.hasText(signBook.getWorkflowName())) {
+            return signBook.getWorkflowName();
+        }
+        if(StringUtils.hasText(workflow.getDescription())) {
+            return workflow.getDescription();
+        }
+        if(StringUtils.hasText(workflow.getName())) {
+            return workflow.getName();
+        }
+        return "Sans nom";
+    }
+
+    private Workflow getWorkflow(SignBook signBook) {
+        if(signBook.getLiveWorkflow() == null) {
+            return null;
+        }
+        return signBook.getLiveWorkflow().getWorkflow();
     }
 
     private String generateName(Long signRequestId, Workflow workflow, User user, Boolean target, Boolean archive, Long signBookId) {
