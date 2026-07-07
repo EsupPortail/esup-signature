@@ -738,7 +738,9 @@ export class SignWorkspaceController {
         console.info("refresh workspace");
         clearTimeout(this.refreshWorkspaceTimer);
         this.refreshWorkspaceTimer = setTimeout(() => {
-            this.pdfViewer.startRender();
+            if (!this.pdfViewer.applyScaleWithoutRerender()) {
+                this.pdfViewer.startRender();
+            }
             localStorage.setItem("scale", this.pdfViewer.scale);
         }, 75);
     }

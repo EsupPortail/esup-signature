@@ -55,6 +55,7 @@ export class PdfViewer extends EventFactory {
         this.pendingRender = false;
         this.pendingRenderPdf = null;
         this.renderComplete = false;
+        this.renderedScale = this.scale;
         this.renderedPagesMap = new Map();
         this.displayedPagesMap = new Map();
         this.lastWidth = window.innerWidth;
@@ -259,6 +260,43 @@ export class PdfViewer extends EventFactory {
             }
         });
         this.processRenderQueue();
+    }
+
+    applyScaleWithoutRerender() {
+        if (!Number.isFinite(this.renderedScale) || this.renderedScale <= 0) {
+            return false;
+        }
+        const scaleRatio = this.scale / this.renderedScale;
+        if (!Number.isFinite(scaleRatio) || scaleRatio <= 0) {
+            return false;
+        }
+
+        for (let i = 1; i <= this.numPages; i++) {
+            const container = document.getElementById(`page_${i}`);
+            if (!container) {
+                continue;
+            }
+            const renderedWidth = Number.parseFloat(container.dataset.renderedWidth || '0');
+            const renderedHeight = Number.parseFloat(container.dataset.renderedHeight || '0');
+            if (!Number.isFinite(renderedWidth) || !Number.isFinite(renderedHeight) || renderedWidth <= 0 || renderedHeight <= 0) {
+                continue;
+            }
+
+            container.style.width = `${Math.floor(renderedWidth * scaleRatio)}px`;
+            container.style.height = `${Math.floor(renderedHeight * scaleRatio)}px`;
+            container.style.marginBottom = `${10 * this.scale}px`;
+
+            const pageDiv = container.querySelector('.page');
+            if (pageDiv) {
+                pageDiv.style.transformOrigin = 'top left';
+                pageDiv.style.transform = scaleRatio === 1 ? '' : `scale(${scaleRatio})`;
+            }
+        }
+
+        this.refreshTools();
+        this.restoreScrolling();
+        this.updateHorizontalOverflowState();
+        return true;
     }
 
     getVisiblePages() {
@@ -586,6 +624,7 @@ export class PdfViewer extends EventFactory {
                         self.applyLinkAnnotationsVisibility().catch(err => console.error('Erreur masquage liens OCG:', err));
                     } else {
                         if(self.pages.length === self.numPages) {
+                            self.renderedScale = self.scale;
                             self.stopProgress();
                             const progressBar = $("#pdf-progress-bar");
                             progressBar.removeClass("es-progress-visible");
@@ -777,10 +816,14 @@ export class PdfViewer extends EventFactory {
                     pageDiv.style.height = `${Math.floor(viewport.height)}px`;
                     pageDiv.style.padding = '0';
                     pageDiv.style.margin = '0';
+                    pageDiv.style.transform = '';
+                    pageDiv.style.transformOrigin = '';
                 }
                 container.style.width = `${Math.floor(viewport.width)}px`;
                 container.style.height = `${Math.floor(viewport.height)}px`;
                 container.style.overflow = 'hidden';
+                container.dataset.renderedWidth = `${Math.floor(viewport.width)}`;
+                container.dataset.renderedHeight = `${Math.floor(viewport.height)}`;
                 const layerWidth = Math.floor(viewport.width);
                 const layerHeight = Math.floor(viewport.height);
                 const annotationLayer = container.querySelector('.annotationLayer');
@@ -1770,6 +1813,7 @@ export class PdfViewer extends EventFactory {
     }
 
     zoomInit(e) {
+        this.saveScrolling = Math.round(this.getScrollTop() / this.scale);
         this.scale = 1.2;
         console.info('zoom in, scale = ' + this.scale);
         this.fireEvent("scaleChange", ['in']);
@@ -1804,6 +1848,7 @@ export class PdfViewer extends EventFactory {
         if (this.scale <= minZoomLimit) {
             return;
         }
+        this.saveScrolling = Math.round(this.getScrollTop() / this.scale);
         this.scale = Math.max(minZoomLimit, Math.round((this.scale - this.zoomStep) * 1000) / 1000);
         console.info('zoom out, scale = ' + this.scale);
         this.fireEvent("scaleChange", ['out']);
@@ -1815,6 +1860,7 @@ export class PdfViewer extends EventFactory {
         let newScale = Math.round(workspaceWidth / 600 * 10) / 10 - .1;
         console.info("full width " + newScale);
         if (newScale !== this.scale) {
+            this.saveScrolling = Math.round(this.getScrollTop() / this.scale);
             this.scale = newScale;
             console.info('zoom in, scale = ' + this.scale);
             this.fireEvent("scaleChange", ['in']);
@@ -1825,6 +1871,7 @@ export class PdfViewer extends EventFactory {
         console.info("full height " + window.innerHeight);
         let newScale = (Math.round((window.innerHeight - 200) / 100) / 10) - 0.1;
         if (newScale !== this.scale) {
+            this.saveScrolling = Math.round(this.getScrollTop() / this.scale);
             this.scale = newScale;
             console.info('zoom in, scale = ' + this.scale);
             this.fireEvent("scaleChange", ['in']);
