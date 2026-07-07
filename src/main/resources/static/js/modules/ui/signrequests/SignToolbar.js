@@ -266,8 +266,8 @@ export class SignToolbar {
 
     setSpotActionButtonsDisabled(disabled) {
         $("#commentsTools")
-            .toggleClass("disabled", disabled)
-            .attr("aria-disabled", disabled ? "true" : "false").css("opacity", disabled ? "0.5" : "1");
+            .toggleClass("tools-disabled", disabled)
+            .attr("aria-disabled", disabled ? "true" : "false");
         $("#addSpotButton").prop("disabled", disabled);
         $("#addCommentButton").prop("disabled", disabled);
         $("#addSpotButton2").prop("disabled", disabled);
