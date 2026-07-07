@@ -1,7 +1,7 @@
 import {SignRequestParams} from "../../../prototypes/SignRequestParams.js?version=@version@";
 import {EventFactory} from "../../utils/EventFactory.js?version=@version@";
-import {UserUi} from '../users/UserUi.js?version=@version@';
-import {SignatureImageResolver, SPECIAL_SIGN_IMAGE_NUMBERS} from './SignatureImageResolver.js?version=@version@';
+import {UserUi} from "../users/UserUi.js?version=@version@";
+import {SignatureImageResolver, SPECIAL_SIGN_IMAGE_NUMBERS} from "./SignatureImageResolver.js?version=@version@";
 
 export class SignPlacementController extends EventFactory {
 

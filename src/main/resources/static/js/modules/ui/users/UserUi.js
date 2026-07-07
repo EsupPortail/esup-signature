@@ -1,7 +1,7 @@
 import {UserSignaturePad} from "./UserSignaturePad.js?version=@version@";
 import {UserSignatureCrop} from "./UserSignatureCrop.js?version=@version@";
-import {SignRequestParams} from '../../../prototypes/SignRequestParams.js?version=@version@';
-import {attachDirtyIndicator} from '../DirtyIndicator.js?version=@version@';
+import {SignRequestParams} from "../../../prototypes/SignRequestParams.js?version=@version@";
+import {attachDirtyIndicator} from "../DirtyIndicator.js?version=@version@";
 
 export class UserUi {
 

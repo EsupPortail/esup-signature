@@ -1,7 +1,14 @@
 import {EventBus} from "../../customs/ui_utils.js?version=@version@";
 import {EventFactory} from "./EventFactory.js?version=@version@";
 import {DataField} from "../../prototypes/DataField.js?version=@version@";
-import { LayerHighlighter } from './LayerHighlighter.js';
+import {LayerHighlighter} from "./pdf/LayerHighlighter.js?version=@version@";
+import {PdfHandPanController} from "./pdf/PdfHandPanController.js?version=@version@";
+import {PdfLayerController} from "./pdf/PdfLayerController.js?version=@version@";
+import {PdfLinkFieldValidator} from "./pdf/PdfLinkFieldValidator.js?version=@version@";
+import {PdfFormManager} from "./pdf/PdfFormManager.js?version=@version@";
+import {PdfNavigationController} from "./pdf/PdfNavigationController.js?version=@version@";
+import {PdfProgressController} from "./pdf/PdfProgressController.js?version=@version@";
+import {PdfRendererController} from "./pdf/PdfRendererController.js?version=@version@";
 
 export class PdfViewer extends EventFactory {
 
@@ -63,6 +70,13 @@ export class PdfViewer extends EventFactory {
         this.lastHeight = window.innerHeight;
         this.currentOptionalContentConfig = null;
         this._activeLayerView = null; // { stepNumber: number, solo: boolean } | null
+        this.navigationController = new PdfNavigationController(this);
+        this.handPanController = new PdfHandPanController(this);
+        this.layerController = new PdfLayerController(this);
+        this.linkFieldValidator = new PdfLinkFieldValidator(this);
+        this.formManager = new PdfFormManager(this);
+        this.progressController = new PdfProgressController(this);
+        this.rendererController = new PdfRendererController(this);
         let self = this;
         $(document).ready(function() {
             if (!globalThis.pdfjsLib || !Promise.withResolvers) {
@@ -155,307 +169,55 @@ export class PdfViewer extends EventFactory {
     }
 
     getWorkspaceElement() {
-        return document.getElementById('workspace');
+        return this.navigationController.getWorkspaceElement();
     }
 
     getScrollTop() {
-        const workspace = this.getWorkspaceElement();
-        return workspace ? workspace.scrollTop : window.scrollY;
+        return this.navigationController.getScrollTop();
     }
 
     getViewportHeight() {
-        const workspace = this.getWorkspaceElement();
-        return workspace ? workspace.clientHeight : window.innerHeight;
+        return this.navigationController.getViewportHeight();
     }
 
     getScrollLeft() {
-        const workspace = this.getWorkspaceElement();
-        return workspace ? workspace.scrollLeft : window.scrollX;
+        return this.navigationController.getScrollLeft();
     }
 
     scrollToPosition(top, behavior = 'auto') {
-        const workspace = this.getWorkspaceElement();
-        if (workspace) {
-            workspace.scrollTo({
-                top: Math.max(0, top),
-                left: 0,
-                behavior: behavior,
-            });
-            return;
-        }
-        window.scrollTo({
-            top: Math.max(0, top),
-            left: 0,
-            behavior: behavior,
-        });
+        return this.navigationController.scrollToPosition(top, behavior);
     }
 
     animateScrollToPosition(top) {
-        const targetTop = Math.max(0, top);
-        const workspace = this.getWorkspaceElement();
-        if (workspace) {
-            $(workspace).stop().animate({
-                scrollTop: targetTop
-            }, 100);
-            return;
-        }
-        $('html, body').stop().animate({
-            scrollTop: targetTop
-        }, 100);
+        return this.navigationController.animateScrollToPosition(top);
     }
 
     initHandPan() {
-        const workspace = this.getWorkspaceElement();
-        if (!workspace || workspace.dataset.esHandPanBound === 'true') {
-            return;
-        }
-        workspace.dataset.esHandPanBound = 'true';
-        this.ensureHandPanStyles();
-        this.ensureHandPanOverlay();
-
-        const setHandPanCursor = (cursor, target = null) => {
-            document.body.classList.toggle('es-hand-pan-grab', cursor === 'grab');
-            document.body.classList.toggle('es-hand-pan-grabbing', cursor === 'grabbing');
-            workspace.classList.toggle('es-hand-pan-grab', cursor === 'grab');
-            workspace.classList.toggle('es-hand-pan-grabbing', cursor === 'grabbing');
-            if (this.pdfDiv?.length) {
-                this.pdfDiv.toggleClass('es-hand-pan-grab', cursor === 'grab');
-                this.pdfDiv.toggleClass('es-hand-pan-grabbing', cursor === 'grabbing');
-            }
-            workspace.style.cursor = cursor;
-            const previousTarget = workspace._esHandPanCursorTarget;
-            if (previousTarget instanceof Element && previousTarget !== target) {
-                previousTarget.style.cursor = '';
-            }
-            if (target instanceof Element) {
-                target.style.cursor = cursor;
-                workspace._esHandPanCursorTarget = target;
-            } else {
-                workspace._esHandPanCursorTarget = null;
-            }
-        };
-
-        const refreshHandPanCursor = (event = null) => {
-            if (this.handPanState) {
-                const draggingTarget = workspace._esHandPanCursorTarget instanceof Element
-                    ? workspace._esHandPanCursorTarget
-                    : this.pdfDiv?.get?.(0);
-                setHandPanCursor('grabbing', draggingTarget);
-                return;
-            }
-            const target = event?.target ?? document.elementFromPoint(window.innerWidth / 2, window.innerHeight / 2);
-            if (target instanceof Element && this.canStartHandPan({
-                button: 0,
-                defaultPrevented: false,
-                target: target,
-            })) {
-                const pannableTarget = target.closest('.pdf-page, .page, .canvasWrapper, canvas');
-                setHandPanCursor('grab', pannableTarget);
-                return;
-            }
-            setHandPanCursor('');
-        };
-
-        workspace.addEventListener('mousedown', event => {
-            if (!this.canStartHandPan(event)) {
-                return;
-            }
-            this.handPanState = {
-                startClientX: event.clientX,
-                startClientY: event.clientY,
-                startScrollLeft: this.getScrollLeft(),
-                startScrollTop: this.getScrollTop(),
-                dragging: false,
-            };
-            const pannableTarget = event.target instanceof Element
-                ? event.target.closest('.pdf-page, .page, .canvasWrapper, canvas')
-                : null;
-            setHandPanCursor('grabbing', pannableTarget);
-        });
-
-        workspace.addEventListener('mousemove', refreshHandPanCursor);
-        workspace.addEventListener('mouseenter', refreshHandPanCursor);
-
-        document.addEventListener('mousemove', event => {
-            if (!this.handPanState) {
-                return;
-            }
-
-            const deltaX = event.clientX - this.handPanState.startClientX;
-            const deltaY = event.clientY - this.handPanState.startClientY;
-            if (!this.handPanState.dragging) {
-                if (Math.abs(deltaX) < 4 && Math.abs(deltaY) < 4) {
-                    return;
-                }
-                this.handPanState.dragging = true;
-                setHandPanCursor('grabbing', workspace._esHandPanCursorTarget);
-                document.body.classList.add('user-select-none');
-            }
-
-            event.preventDefault();
-            if (workspace) {
-                workspace.scrollLeft = this.handPanState.startScrollLeft - deltaX;
-                workspace.scrollTop = this.handPanState.startScrollTop - deltaY;
-            } else {
-                window.scrollTo({
-                    left: this.handPanState.startScrollLeft - deltaX,
-                    top: this.handPanState.startScrollTop - deltaY,
-                    behavior: 'auto'
-                });
-            }
-        }, { passive: false });
-
-        const stopHandPan = () => {
-            if (!this.handPanState) {
-                return;
-            }
-            this.handPanState = null;
-            document.body.classList.remove('user-select-none');
-            refreshHandPanCursor();
-        };
-
-        document.addEventListener('mouseup', stopHandPan);
-        workspace.addEventListener('mouseleave', () => {
-            if (!this.handPanState) {
-                setHandPanCursor('');
-            }
-        });
-        window.addEventListener('blur', stopHandPan);
+        return this.handPanController.initHandPan();
     }
 
     ensureHandPanStyles() {
-        if (document.getElementById('pdf-hand-pan-style')) {
-            return;
-        }
-        const style = document.createElement('style');
-        style.id = 'pdf-hand-pan-style';
-        style.appendChild(document.createTextNode(`
-            #workspace.es-hand-pan-grab,
-            #workspace.es-hand-pan-grab #pdf,
-            #workspace.es-hand-pan-grab .pdf-page,
-            #workspace.es-hand-pan-grab .page,
-            #workspace.es-hand-pan-grab .canvasWrapper,
-            #workspace.es-hand-pan-grab canvas {
-                cursor: grab !important;
-            }
-            body.es-hand-pan-grabbing,
-            body.es-hand-pan-grabbing #workspace,
-            body.es-hand-pan-grabbing #workspace *,
-            #workspace.es-hand-pan-grabbing,
-            #workspace.es-hand-pan-grabbing *,
-            #pdf.es-hand-pan-grabbing,
-            #pdf.es-hand-pan-grabbing * {
-                cursor: grabbing !important;
-            }
-            #pdf-hand-pan-overlay {
-                position: fixed;
-                inset: 0;
-                display: none;
-                background: transparent;
-                cursor: grabbing !important;
-                z-index: 2147483647;
-            }
-            body.es-hand-pan-grabbing #pdf-hand-pan-overlay {
-                display: block;
-            }
-        `));
-        document.head.appendChild(style);
+        return this.handPanController.ensureHandPanStyles();
     }
 
     ensureHandPanOverlay() {
-        let overlay = document.getElementById('pdf-hand-pan-overlay');
-        if (overlay == null) {
-            overlay = document.createElement('div');
-            overlay.id = 'pdf-hand-pan-overlay';
-            overlay.setAttribute('aria-hidden', 'true');
-            document.body.appendChild(overlay);
-        }
-        this.handPanOverlay = overlay;
+        return this.handPanController.ensureHandPanOverlay();
     }
 
     canStartHandPan(event) {
-        if (event.button !== 0 || event.defaultPrevented) {
-            return false;
-        }
-        if (this.isRendering || this.pendingRender) {
-            return false;
-        }
-        const target = event.target;
-        if (!(target instanceof Element)) {
-            return false;
-        }
-        const interactiveSelector = [
-            'input',
-            'textarea',
-            'select',
-            'option',
-            'button',
-            'label',
-            'a',
-            '[contenteditable="true"]',
-            '.annotationLayer',
-            '.annotationLayer *',
-            '.annotationEditorLayer',
-            '.annotationEditorLayer *',
-            '.linkAnnotation',
-            '.linkAnnotation *',
-            '.textLayer span',
-            '.textLayer br',
-            '.ui-draggable',
-            '.ui-resizable-handle',
-            '.sign-space',
-            '.sign-space *',
-            '.spot',
-            '.spot *',
-            '.postit',
-            '.postit *',
-            '.toggle-layer-btn',
-            '.display-layer-btn',
-            '.pdf-link-test-btn',
-            '.pdf-link-display-btn',
-            '.search-completion',
-            '.custom-autocompletion',
-            '.custom-autocompletion *'
-        ].join(', ');
-
-        if (target.closest(interactiveSelector)) {
-            return false;
-        }
-
-        const pageContainer = target.closest('.pdf-page, .page, .canvasWrapper, canvas, .textLayer');
-        return pageContainer != null;
+        return this.handPanController.canStartHandPan(event);
     }
 
     getPageRelativeTop(pageNum) {
-        const page = $("#page_" + pageNum);
-        if (!page.length) {
-            return 0;
-        }
-        const firstPage = $("#page_1");
-        const pageTop = page.position()?.top ?? 0;
-        if (!firstPage.length) {
-            return Math.round(pageTop);
-        }
-        const firstPageTop = firstPage.position()?.top ?? 0;
-        return Math.round(pageTop - firstPageTop);
+        return this.navigationController.getPageRelativeTop(pageNum);
     }
 
-    // Absolute top within #pdf positioning context (used by absolute overlays).
     getPageTopInPdf(pageNum) {
-        const page = $("#page_" + pageNum);
-        if (!page.length) {
-            return 0;
-        }
-        return Math.round(page.position()?.top ?? 0);
+        return this.navigationController.getPageTopInPdf(pageNum);
     }
 
-    // Absolute left within #pdf positioning context (used by absolute overlays).
     getPageLeftInPdf(pageNum) {
-        const page = $("#page_" + pageNum);
-        if (!page.length) {
-            return 0;
-        }
-        return Math.round(page.position()?.left ?? 0);
+        return this.navigationController.getPageLeftInPdf(pageNum);
     }
 
     set optionalContentConfigPromise(promise) {
@@ -529,226 +291,43 @@ export class PdfViewer extends EventFactory {
     }
 
     getVisiblePages() {
-        const visiblePages = [];
-        const scrollTop = this.getScrollTop();
-        const scrollBottom = scrollTop + this.getViewportHeight();
-
-        for (let i = 1; i <= this.numPages; i++) {
-            const pageElement = document.getElementById(`page_${i}`);
-            if (pageElement) {
-                const elementTop = this.getPageRelativeTop(i);
-                const elementBottom = elementTop + pageElement.offsetHeight;
-                if (elementBottom > scrollTop && elementTop < scrollBottom) {
-                    visiblePages.push(i);
-                }
-            }
-        }
-        return visiblePages;
+        return this.navigationController.getVisiblePages();
     }
 
     restoreScrolling() {
-        let newScrolling = Math.round(this.saveScrolling * this.scale);
-        this.scrollToPosition(newScrolling);
+        return this.navigationController.restoreScrolling();
     }
 
     listenToSearchCompletion() {
-        let controller = new AbortController();
-        let signal = controller.signal;
-        console.info("listen to search autocompletion");
-        $(".search-completion").each(function () {
-            const $input = $(this);
-            if ($input.data("esAutocompleteBound") === true) {
-                return;
-            }
-            let serviceName = $input.attr("search-completion-service-name");
-            let searchType = $input.attr("search-completion-type");
-            let searchReturn = $input.attr("search-completion-return");
-            $input.autocomplete({
-                delay: 500,
-                source: function( request, response ) {
-                    if(request.term.length > 2) {
-                        controller.abort();
-                        controller = new AbortController()
-                        signal = controller.signal;
-                        $.ajax({
-                            url: "/user/users/search-extvalue?searchType=" + searchType + "&searchString=" + request.term + "&serviceName=" + serviceName + "&searchReturn=" + searchReturn,
-                            dataType: "json",
-                            signal: signal,
-                            data: {
-                                q: request.term
-                            },
-                            success: function (data) {
-                                console.debug("debug - " + "search user " + request.term);
-                                response($.map(data, function (item) {
-                                    return {
-                                        label: item.text,
-                                        value: item.value
-                                    };
-                                }));
-                            }
-                        });
-                    }
-                }
-            });
-            $input.data("esAutocompleteBound", true);
-        });
+        return this.formManager.listenToSearchCompletion();
     }
 
     annotationLinkTargetBlank() {
-        $('.linkAnnotation').each(function (){
-            const $linkAnnotation = $(this);
-            $linkAnnotation.children().attr('target', '_blank');
-            if ($linkAnnotation.data('esDroppableBound') === true) {
-                return;
-            }
-            $linkAnnotation.droppable({
-                tolerance: "touch",
-                drop: function( event, ui ) {
-                    if($(ui.draggable).attr("id") != null && ($(ui.draggable).attr("id").includes("cross_") || $($(ui.draggable).attr("id").includes("border_")))) {
-                        $("#border_" + $(ui.draggable).attr("id").split("_")[1]).addClass("cross-warning");
-                    }
-                },
-                over: function( event, ui ) {
-                    if($(ui.draggable).attr("id") != null && ($(ui.draggable).attr("id").includes("cross_") || $($(ui.draggable).attr("id").includes("border_")))) {
-                        $("#border_" + $(ui.draggable).attr("id").split("_")[1]).addClass("cross-warning");
-                    }
-                },
-                out: function( event, ui ) {
-                    if($(ui.draggable).attr("id") != null && ($(ui.draggable).attr("id").includes("cross_") || $($(ui.draggable).attr("id").includes("border_")))) {
-                        $("#border_" + $(ui.draggable).attr("id").split("_")[1]).removeClass("cross-warning");
-                    }
-                }
-            });
-            $linkAnnotation.data('esDroppableBound', true);
-        });
+        return this.formManager.annotationLinkTargetBlank();
     }
 
     annotationLinkRemove() {
-        $('.linkAnnotation').each(function (){
-            $(this).css("opacity", 0);
-            $(this).click(function(e) {
-                e.preventDefault();
-            });
-        });
+        return this.formManager.annotationLinkRemove();
     }
 
     async applyLinkAnnotationsVisibility() {
-        if (!this.pdfDoc) {
-            return;
-        }
-        const config = await Promise.resolve(this._optionalContentConfigPromise);
-        if (!config) {
-            return;
-        }
-
-        const visibleLayerNames = new Set();
-        for (const [id, group] of config) {
-            if (group?.visible) {
-                visibleLayerNames.add(group.name);
-            }
-        }
-
-        const tasks = [];
-        for (let pageNum = 1; pageNum <= this.numPages; pageNum++) {
-            tasks.push(this.applyLinkAnnotationsVisibilityForPage(pageNum, visibleLayerNames));
-        }
-        await Promise.all(tasks);
+        return this.layerController.applyLinkAnnotationsVisibility();
     }
 
     async applyLinkAnnotationsVisibilityForPage(pageNum, visibleLayerNames) {
-        const pageContainer = document.getElementById(`page_${pageNum}`);
-        if (!pageContainer) {
-            return;
-        }
-        const annotationLayer = pageContainer.querySelector('.annotationLayer');
-        if (!annotationLayer) {
-            return;
-        }
-
-        const page = await this.pdfDoc.getPage(pageNum);
-        const annotations = await page.getAnnotations();
-        const annotationsById = new Map();
-        annotations.forEach(annotation => {
-            if (annotation?.id != null) {
-                annotationsById.set(String(annotation.id), annotation);
-            }
-        });
-
-        annotationLayer.querySelectorAll('section.linkAnnotation[data-annotation-id]').forEach(section => {
-            const annotation = annotationsById.get(String(section.dataset.annotationId));
-            if (!annotation) {
-                section.style.removeProperty('display');
-                return;
-            }
-
-            const layerIds = this.extractAnnotationLayerIds(annotation);
-            if (!layerIds.length) {
-                section.style.removeProperty('display');
-                return;
-            }
-
-            const shouldDisplay = layerIds.some(layerId => visibleLayerNames.has(layerId));
-            section.style.display = shouldDisplay ? '' : 'none';
-        });
+        return this.layerController.applyLinkAnnotationsVisibilityForPage(pageNum, visibleLayerNames);
     }
 
     extractAnnotationLayerIds(annotation) {
-        const layerIds = new Set();
-        if (!annotation) {
-            return [];
-        }
-
-        [annotation.annotationName, annotation.name, annotation.ocgName, annotation.layerName].forEach(value => {
-            if (typeof value === 'string' && value.trim()) {
-                layerIds.add(value.trim());
-            }
-        });
-
-        [annotation.contents, annotation.contentsObj?.str, annotation.title].forEach(value => {
-            if (typeof value !== 'string' || !value.trim()) {
-                return;
-            }
-            try {
-                const parsed = JSON.parse(value);
-                if (parsed?.layer_id) {
-                    layerIds.add(String(parsed.layer_id).trim());
-                }
-            } catch (e) {
-                const match = value.match(/"layer_id"\s*:\s*"([^"]+)"/);
-                if (match?.[1]) {
-                    layerIds.add(match[1].trim());
-                }
-            }
-        });
-
-        return Array.from(layerIds);
+        return this.layerController.extractAnnotationLayerIds(annotation);
     }
 
     isApplicationLayerName(layerName) {
-        if (typeof layerName !== 'string' || !layerName.trim()) {
-            return false;
-        }
-        return /^layer_\d+$/.test(layerName)
-            || /^sign_\d+_.+/.test(layerName)
-            || /^SignStep_\d+_.+/.test(layerName);
+        return this.layerController.isApplicationLayerName(layerName);
     }
 
     checkCurrentPage(e) {
-        if(this.renderedPages < this.numPages) return;
-        let numPages = this.pdfDoc.numPages;
-
-        for(let i = 1; i < numPages + 1; i++) {
-            let pagePos = this.getPageRelativeTop(i);
-
-            if(e > pagePos - 250) {
-                this.pageNum = i;
-                document.getElementById('page_num').value = this.pageNum;
-                if((this.pageNum === this.numPages || this.numPages === 1) && !this.viewed) {
-                    this.viewed = true;
-                    this.fireEvent("reachEnd", ['ok'])
-                }
-            }
-        }
+        return this.navigationController.checkCurrentPage(e);
     }
 
     adjustZoom() {
@@ -762,175 +341,19 @@ export class PdfViewer extends EventFactory {
     }
 
     async startRender(pdf) {
-        if (pdf != null && this.pdfDoc == null) {
-            this.pdfDoc = pdf;
-        }
-        if (this.pdfDoc == null) {
-            return;
-        }
-        if (this.isRendering || this.activeRenders > 0 || this.renderQueue.length > 0) {
-            this.pendingRender = true;
-            this.pendingRenderPdf = pdf ?? this.pdfDoc;
-            return;
-        }
-
-        this.isRendering = true;
-        this.renderComplete = false;
-        this.pendingRender = false;
-        this.pendingRenderPdf = null;
-        const currentRenderCycleId = ++this.renderCycleId;
-        this.fireEvent("renderStarted", ['ok']);
-        this.pdfDiv.css('opacity', 0);
-        this.numPages = this.pdfDoc.numPages;
-        document.getElementById('page_count').textContent = this.pdfDoc.numPages;
-        this.renderedPages = 0;
-        this.pages = [];
-        this.renderQueue = [];
-        this.activeRenders = 0;
-        this.disableScrollBtn();
-        this.resetProgress();
-        $("#pdf-progress-bar").addClass("es-progress-visible");
-        this.startProgress();
-
-        try {
-            const config = await this.pdfDoc.getOptionalContentConfig().catch(e => {
-                console.error("Error getting optional content config: " + e);
-                return null;
-            });
-            this._optionalContentConfigPromise = Promise.resolve(config);
-        } catch (e) {
-            console.error("Error getting optional content config: " + e);
-            this._optionalContentConfigPromise = Promise.resolve(null);
-        }
-
-        for (let i = 1; i <= this.numPages; i++) {
-            this.renderQueue.push(i);
-        }
-        this.processRenderQueue(currentRenderCycleId);
-
-        this.refreshTools();
-        this.fireEvent("ready", ['ok']);
+        return this.rendererController.startRender(pdf);
     }
 
     processRenderQueue(renderCycleId = this.renderCycleId) {
-        while (this.activeRenders < this.maxConcurrentRenders && this.renderQueue.length > 0) {
-            const pageNum = this.renderQueue.shift();
-            this.activeRenders++;
-
-            let self = this;
-            this.pdfDoc.getPage(pageNum).then(page => {
-                return self.renderTask(page, pageNum, self._optionalContentConfigPromise.catch(e => {
-                    console.error("Error in optionalContentConfigPromise: " + e);
-                    return null;
-                }), renderCycleId);
-            }).then(async function() {
-                self.activeRenders--;
-                if (renderCycleId !== self.renderCycleId) {
-                    if (self.activeRenders === 0 && self.pendingRender) {
-                        self.isRendering = false;
-                        const pendingPdf = self.pendingRenderPdf ?? self.pdfDoc;
-                        self.pendingRender = false;
-                        self.pendingRenderPdf = null;
-                        await self.startRender(pendingPdf);
-                    }
-                    return;
-                }
-                self.renderedPages++;
-                self.updateRenderProgress();
-
-                if(self.renderQueue.length === 0 && self.activeRenders === 0) {
-                    self.isRendering = false;
-                    if (self.pendingRender) {
-                        const pendingPdf = self.pendingRenderPdf ?? self.pdfDoc;
-                        self.pendingRender = false;
-                        self.pendingRenderPdf = null;
-                        await self.startRender(pendingPdf);
-                        return;
-                    }
-                    // Si c'est un refresh OCG, ne pas lancer postRenderAll
-                    if (self._isRefreshingOCG) {
-                        self._isRefreshingOCG = false;
-                        self.applyLinkAnnotationsVisibility().catch(err => console.error('Erreur masquage liens OCG:', err));
-                    } else {
-                        if(self.pages.length === self.numPages) {
-                            self.renderedScale = self.scale;
-                            self.stopProgress();
-                            const progressBar = $("#pdf-progress-bar");
-                            progressBar.removeClass("es-progress-visible");
-                            await self.postRenderAll();
-                            self.enableScrollBtn();
-                            self.fireEvent("renderFinished", ['ok']);
-                            $(document).trigger("renderFinished");
-                            self.fireRenderCompleteAfterProgressHidden(progressBar);
-                        }
-                    }
-                } else {
-                    self.processRenderQueue(renderCycleId);
-                }
-            })
-                .catch(async err => {
-                    if (renderCycleId !== self.renderCycleId) {
-                        self.activeRenders--;
-                        if (self.activeRenders === 0 && self.pendingRender) {
-                            self.isRendering = false;
-                            const pendingPdf = self.pendingRenderPdf ?? self.pdfDoc;
-                            self.pendingRender = false;
-                            self.pendingRenderPdf = null;
-                            await self.startRender(pendingPdf);
-                        }
-                        return;
-                    }
-                    console.error(`Erreur rendu page ${pageNum}:`, err);
-                    self.activeRenders--;
-                    self.isRendering = false;
-                    self._isRefreshingOCG = false;
-                    if (self.pendingRender && self.activeRenders === 0) {
-                        const pendingPdf = self.pendingRenderPdf ?? self.pdfDoc;
-                        self.pendingRender = false;
-                        self.pendingRenderPdf = null;
-                        await self.startRender(pendingPdf);
-                        return;
-                    }
-                    self.processRenderQueue(renderCycleId);
-                });
-        }
+        return this.rendererController.processRenderQueue(renderCycleId);
     }
 
     fireRenderCompleteAfterProgressHidden(progressBar) {
-        const progressElement = progressBar?.get?.(0);
-        let completed = false;
-        const complete = () => {
-            if (completed) {
-                return;
-            }
-            completed = true;
-            this.renderComplete = true;
-            this.fireEvent("renderComplete", ['ok']);
-        };
-        if (progressElement == null) {
-            complete();
-            return;
-        }
-        const computedOpacity = Number.parseFloat(window.getComputedStyle(progressElement).opacity);
-        if (Number.isFinite(computedOpacity) && computedOpacity === 0) {
-            complete();
-            return;
-        }
-        progressElement.addEventListener("transitionend", event => {
-            if (event.target === progressElement && event.propertyName === "opacity") {
-                complete();
-            }
-        });
-        // Keep the visual fade-out in sync with the CSS opacity transition (1000ms)
-        window.setTimeout(complete, 1000);
+        return this.rendererController.fireRenderCompleteAfterProgressHidden(progressBar);
     }
 
     scrollToPage(num) {
-        let page = $("#page_" + num);
-        if(page.length) {
-            let scrollTo = this.getPageRelativeTop(num);
-            this.animateScrollToPosition(scrollTo);
-        }
+        return this.navigationController.scrollToPage(num);
     }
 
     enableScrollBtn() {
@@ -965,1080 +388,111 @@ export class PdfViewer extends EventFactory {
     }
 
     async renderTask(page, i, configPromise, renderCycleId = this.renderCycleId) {
-        return new Promise((resolve, reject) => {
-            let container = document.getElementById(`page_${i}`);
-            if (!container) {
-                container = document.createElement("div");
-                container.id = `page_${i}`;
-                container.setAttribute("page-num", i);
-                container.className = "drop-shadows pdf-page";
-                container.style.marginBottom = `${10 * this.scale}px`;
-                this.insertPageAtCorrectPosition(container, i);
-            } else {
-                container.innerHTML = "";
-                container.style.marginBottom = `${10 * this.scale}px`;
-            }
-            $(container).droppable({
-                drop: (event, ui) => ui.helper.attr("page", i)
-            });
-
-            const browserZoom = this.getBrowserZoom();
-            const pageRotation = this.getPageRotation(page);
-
-            const viewport = page.getViewport({
-                scale: this.scale,
-                rotation: pageRotation
-            });
-
-            const dispatchToDOM = false;
-            const pdfPageView = new pdfjsViewer.PDFPageView({
-                eventBus: this.eventBus,
-                container: container,
-                id: i,
-                scale: this.scale,
-                defaultViewport: viewport,
-                useOnlyCssZoom: true,
-                defaultZoomDelay: 0,
-                textLayerMode: 1,
-                annotationMode: pdfjsLib.AnnotationMode.ENABLE_FORMS,
-                optionalContentConfigPromise: configPromise
-            });
-
-            pdfPageView.setPdfPage(page);
-
-            pdfPageView.draw().then(() => {
-                if (renderCycleId !== this.renderCycleId || this.pendingRender) {
-                    resolve("obsolete");
-                    return;
-                }
-                const container = document.getElementById(`page_${i}`);
-                if (!container) {
-                    if (renderCycleId !== this.renderCycleId || this.pendingRender) {
-                        resolve("obsolete");
-                        return;
-                    }
-                    reject(new Error("Container disparu"));
-                    return;
-                }
-                const canvas = container.querySelector('canvas');
-                if (!canvas) {
-                    if (renderCycleId !== this.renderCycleId || this.pendingRender) {
-                        resolve("obsolete");
-                        return;
-                    }
-                    reject(new Error("Pas de canvas"));
-                    return;
-                }
-                canvas.style.width = `${Math.floor(viewport.width)}px`;
-                canvas.style.height = `${Math.floor(viewport.height)}px`;
-                const canvasWrapper = container.querySelector('.canvasWrapper');
-                if (canvasWrapper) {
-                    canvasWrapper.style.width = `${Math.floor(viewport.width)}px`;
-                    canvasWrapper.style.height = `${Math.floor(viewport.height)}px`;
-                    canvasWrapper.style.padding = '0';
-                    canvasWrapper.style.margin = '0';
-                    canvasWrapper.style.overflow = 'hidden';
-                }
-                const pageDiv = container.querySelector('.page');
-                if (pageDiv) {
-                    pageDiv.style.width = `${Math.floor(viewport.width)}px`;
-                    pageDiv.style.height = `${Math.floor(viewport.height)}px`;
-                    pageDiv.style.padding = '0';
-                    pageDiv.style.margin = '0';
-                    pageDiv.style.transform = '';
-                    pageDiv.style.transformOrigin = '';
-                }
-                container.style.width = `${Math.floor(viewport.width)}px`;
-                container.style.height = `${Math.floor(viewport.height)}px`;
-                container.style.overflow = 'hidden';
-                container.dataset.renderedWidth = `${Math.floor(viewport.width)}`;
-                container.dataset.renderedHeight = `${Math.floor(viewport.height)}`;
-                const layerWidth = Math.floor(viewport.width);
-                const layerHeight = Math.floor(viewport.height);
-                const annotationLayer = container.querySelector('.annotationLayer');
-                if (annotationLayer) {
-                    annotationLayer.setAttribute("data-main-rotation", pageRotation);
-                    annotationLayer.style.width = `${layerWidth}px`;
-                    annotationLayer.style.height = `${layerHeight}px`;
-                    annotationLayer.style.setProperty('--scale-factor', this.scale);
-                    annotationLayer.style.setProperty('--total-scale-factor', this.scale);
-                }
-                const textLayer = container.querySelector('.textLayer');
-                if (textLayer) {
-                    textLayer.style.width = `${layerWidth}px`;
-                    textLayer.style.height = `${layerHeight}px`;
-                    textLayer.style.left = '0';
-                    textLayer.style.top = '0';
-                    textLayer.style.setProperty('--scale-factor', this.scale);
-                    textLayer.style.setProperty('--total-scale-factor', this.scale);
-                }
-                this.pages[i - 1] = page;
-                resolve("ok");
-            }).catch(err => {
-                if (renderCycleId !== this.renderCycleId || this.pendingRender) {
-                    resolve("obsolete");
-                    return;
-                }
-                console.error("Erreur dans pdfPageView.draw() page", i, ":", err);
-                reject(err);
-            });
-        });
+        return this.rendererController.renderTask(page, i, configPromise, renderCycleId);
     }
 
     insertPageAtCorrectPosition(container, pageNum) {
-        const pdfDivElement = this.pdfDiv[0];
-        const allPages = pdfDivElement.querySelectorAll('.pdf-page');
-        let inserted = false;
-        for (let page of allPages) {
-            const currentPageNum = parseInt(page.getAttribute('page-num'));
-            if (currentPageNum > pageNum) {
-                pdfDivElement.insertBefore(container, page);
-                inserted = true;
-                break;
-            }
-        }
-        if (!inserted) {
-            pdfDivElement.appendChild(container);
-        }
+        return this.rendererController.insertPageAtCorrectPosition(container, pageNum);
     }
 
     async postRenderAll() {
-        const renderTasks = [];
-        for(let i = 0; i < this.numPages; i++) {
-            if (this.pages[i] != null) {
-                renderTasks.push(this.postRender(this.pages[i]));
-            }
-        }
-        await Promise.all(renderTasks);
-        this.annotationLinkTargetBlank();
-        await this.promiseRestoreValue();
-        this.restoreScrolling();
-        this.updateHorizontalOverflowState();
-        await this.applyLinkAnnotationsVisibility().catch(err => console.error('Erreur postRenderAll liens OCG:', err));
+        return this.rendererController.postRenderAll();
     }
 
     updateHorizontalOverflowState() {
-        const workspace = this.getWorkspaceElement();
-        if (!workspace) {
-            return;
-        }
-        workspace.style.overflowX = 'auto';
-        const firstPage = document.getElementById('page_1');
-        if (!firstPage) {
-            return;
-        }
-        const hasHorizontalOverflow = firstPage.offsetWidth > workspace.clientWidth;
-        // Bootstrap's justify-content-center uses !important; override with inline !important on overflow.
-        if (hasHorizontalOverflow) {
-            workspace.style.setProperty('justify-content', 'flex-start', 'important');
-        } else {
-            workspace.style.removeProperty('justify-content');
-        }
-        this.pdfDiv.css('align-items', hasHorizontalOverflow ? 'flex-start' : 'center');
-        if (!hasHorizontalOverflow) {
-            workspace.scrollLeft = 0;
-        }
+        return this.rendererController.updateHorizontalOverflowState();
     }
 
     async postRender(page) {
-        await this.promiseRenderForm(false, page);
-        console.groupEnd();
+        return this.rendererController.postRender(page);
     }
 
     promiseRenderForm(isField, page) {
-        return page.getAnnotations().then(items => {
-            this.renderPdfFormWithFields(items);
-            return "Réussite";
-        });
+        return this.formManager.promiseRenderForm(isField, page);
     }
 
     promiseToggleFields(enable) {
-        if(this.pdfDoc != null) {
-            for (let i = 1; i < this.pdfDoc.numPages + 1; i++) {
-                this.pdfDoc.getPage(i).then(page => page.getAnnotations().then(items => this.toggleItems(items, enable)));
-            }
-        }
+        return this.formManager.promiseToggleFields(enable);
     }
 
     toggleItems(items, enable) {
-        console.info("toggle fields " + items.length);
-        for (let i = 0; i < items.length; i++) {
-            if(items[i].fieldName != null) {
-                let inputField = $('input[name=\'' + items[i].fieldName.split(/\$|#|!/)[0] + '\'], textarea[name=\'' + items[i].fieldName.split(/\$|#|!/)[0] + '\']');
-                inputField.prop("disabled", !enable);
-            }
-        }
+        return this.formManager.toggleItems(items, enable);
     }
 
     async promiseSaveValues() {
-        console.log("save");
-        console.info("launch save values");
-        const tasks = [];
-        for (let i = 1; i < this.pdfDoc.numPages + 1; i++) {
-            tasks.push(this.pdfDoc.getPage(i).then(page => page.getAnnotations().then(items => this.saveValues(items))));
-        }
-        await Promise.all(tasks);
+        return this.formManager.promiseSaveValues();
     }
 
     saveValues(items) {
-        console.log("saving " + items.length + " fields");
-        if(this.dataFields.length > 0) {
-            for (let i = 0; i < this.dataFields.length; i++) {
-                let dataField = this.dataFields[i];
-                let item = items.filter(function (e) {
-                    return e.fieldName != null && e.fieldName === dataField.name
-                })[0];
-                if (item != null && item.fieldName != null) {
-                    this.saveValue(item);
-                } else {
-                    if(this.savedFields.get(dataField.name) == null) {
-                        this.savedFields.set(dataField.name, dataField.defaultValue);
-                    }
-                }
-            }
-        } else {
-            for (let i = 0; i < items.length; i++) {
-                this.saveValue(items[i]);
-            }
-        }
+        return this.formManager.saveValues(items);
     }
 
     saveValue(item) {
-        if(item != null && item.fieldName != null) {
-            let inputName = item.fieldName;
-            let inputField = $("[name='" + $.escapeSelector(inputName) + "']");
-            if (inputField.length > 0) {
-                if (inputField.val() != null) {
-                    if (inputField.is(':checkbox')) {
-                        if (!inputField[0].checked) {
-                            this.savedFields.set(item.fieldName, 'off');
-                        } else {
-                            this.savedFields.set(item.fieldName, 'on');
-                        }
-                        return;
-                    }
-                    if (inputField.is(':radio')) {
-                        let radio = $('input[name=\'' + inputField.attr("name") + '\']');
-                        let self = this;
-                        radio.each(function() {
-                            if ($(this).prop("checked")) {
-                                self.savedFields.set(item.fieldName, $(this).val());
-                            }
-                        });
-                        return;
-                    }
-                    if (inputField.is('select')) {
-                        let value = inputField.val();
-                        this.savedFields.set(item.fieldName, value);
-                        return;
-                    }
-                    let value = inputField.val();
-                    this.savedFields.set(item.fieldName, value);
-                }
-            }
-        }
+        return this.formManager.saveValue(item);
     }
 
     async promiseRestoreValue() {
-        if(this.savedFields.size === 0) {
-            await this.promiseSaveValues();
-        }
-        const tasks = [];
-        for(let i = 1; i < this.pdfDoc.numPages + 1; i++) {
-            tasks.push(this.pdfDoc.getPage(i).then(page => page.getAnnotations().then(items => this.restoreValues(items))));
-        }
-        await Promise.all(tasks);
-        this.fireEvent("render", ['end']);
+        return this.formManager.promiseRestoreValue();
     }
 
     restoreValues(items) {
-        console.log("set fields " + items.length);
-        for (let i = 0; i < items.length; i++) {
-            if(items[i].fieldName != null) {
-                let inputName = items[i].fieldName.split(/\$|#|!/)[0];
-                let savedValue = this.savedFields.get(items[i].fieldName);
-                let inputField = $('[name="' + inputName + '"]');
-                if (inputField.val() != null) {
-                    if(savedValue != null) {
-                        if (inputField.is(':checkbox')) {
-                            if (savedValue === 'on') {
-                                inputField.prop("checked", true);
-                            } else {
-                                inputField.prop("checked", false);
-                            }
-                            continue;
-                        }
-                        if (inputField.is(':radio')) {
-                            let radio = $('input[name=\'' + inputName + '\'][value=\'' + items[i].buttonValue + '\']');
-                            if (savedValue === radio.val()) {
-                                radio.prop("checked", true);
-                            }
-                            continue;
-                        }
-                        inputField.val(savedValue);
-                        continue;
-                    }
-                }
-                let textareaField = $('textarea[name=\'' + inputName + '\']');
-                if (textareaField.val() != null) {
-                    if (savedValue != null) {
-                        textareaField.val(savedValue);
-                        continue;
-                    }
-                }
-                if (inputField.is('select')) {
-                    $("#" + inputName + " option[value='" + savedValue + "']").prop('selected', true);
-                    inputField.val(savedValue);
-                    continue;
-                }
-                let selectField = $('select[name=\'' + inputName + '\']');
-                if (selectField.val() != null) {
-                    let savedFields = this.savedFields;
-                    $('#' + inputName + ' option').each(function() {
-                        let fieldName = items[i].fieldName;
-                        let value = $(this).val();
-                        if(savedFields.get(fieldName) === value) {
-                            $(this).prop("selected", true);
-                        }
-                    });
-                }
-            }
-        }
+        return this.formManager.restoreValues(items);
     }
 
     renderPdfFormWithFields(items) {
-        let self = this;
-        let datePickerIndex = 40;
-        console.debug("debug - " + "rending pdfForm items");
-        let signFieldNumber = 0;
-        for (let i = 0; i < items.length; i++) {
-            if(items[i].fieldType === undefined) {
-                if(items[i].title && items[i].title.toLowerCase().includes('sign')) {
-                    signFieldNumber = signFieldNumber + 1;
-                    $('.popupWrapper').remove();
-                }
-                continue;
-            }
-            let inputName = items[i].fieldName.split(/\$|#|!/)[0];
-            let dataField;
-            if(this.dataFields != null && items[i].fieldName != null) {
-                dataField = this.dataFields.filter(obj => {
-                    return obj.name === inputName
-                })[0];
-            }
-            let canvasField = $('section[data-annotation-id=' + items[i].id + '] > canvas');
-            if (canvasField.length) {
-                canvasField.remove();
-            }
-            let inputField = $('section[data-annotation-id=' + items[i].id + '] > input');
-            if (inputField.length) {
-                inputField.addClass("field-type-text");
-                inputField.on('input', function (e) {
-                    clearTimeout(self.timer);
-                    self.timer = setTimeout(e => self.fireEvent("change", ['checked']), 500);
-                });
-                inputField.removeAttr("hidden");
-                if (dataField == null) continue;
-                this.disableInput(inputField, dataField, items[i].readOnly);
-                if (this.disableAllFields) continue;
-                let section = $('section[data-annotation-id=' + items[i].id + ']');
-                inputField.attr('name', inputName);
-                inputField.attr('placeholder', " ");
-                inputField.removeAttr("maxlength");
-                inputField.attr('id', inputName);
-                inputField.attr('title', dataField.description);
-                if (dataField.favorisable && !$("#div_" + inputField.attr('id')).length) {
-                    let sendField = inputField;
-                    $.ajax({
-                        type: "GET",
-                        url: '/ws-secure/ui/favorites/fields/' + dataField.id,
-                        success: response => this.autocomplete(response, sendField)
-                    });
-                }
-                if (dataField.editable) {
-                    inputField.val(items[i].fieldValue);
-                    if (dataField.defaultValue != null) {
-                        inputField.val(dataField.defaultValue);
-                    }
-                    this.enableInputField(inputField, dataField)
-                } else {
-                    inputField.val(items[i].fieldValue);
-                }
-
-                if (dataField.searchServiceName) {
-                    inputField.addClass("search-completion");
-                    inputField.attr("search-completion-service-name", dataField.searchServiceName);
-                    inputField.attr("search-completion-return", dataField.searchReturn);
-                    inputField.attr("search-completion-type", dataField.searchType);
-                }
-
-                if (dataField.type === "number") {
-                    inputField.get(0).type = "number";
-                }
-
-                if (dataField.type === "link") {
-                    this.ensureLinkFieldStyles();
-                    inputField.addClass("field-type-link pdf-link-input");
-
-                    const currentValue = (items[i].fieldValue && items[i].fieldValue.length)
-                        ? items[i].fieldValue
-                        : (dataField.defaultValue || '');
-
-                    const testerId = inputName + "_test_btn";
-                    const disabledLinkId = inputName + "_link_btn";
-                    section.css('overflow', 'visible');
-                    section.find('#' + testerId + ', #' + disabledLinkId).remove();
-
-                    if (this.isFieldEnable(dataField)) {
-                        inputField.attr('type', 'url');
-                        inputField.attr('inputmode', 'url');
-                        inputField.attr('placeholder', 'https://exemple.org');
-                        inputField.show();
-                        if (currentValue) {
-                            inputField.val(currentValue);
-                        }
-
-                        const $tester = $('<button type="button" id="' + testerId + '" class="pdf-link-test-btn" disabled>Tester</button>');
-                        section.append($tester);
-
-                        const getLiveInputField = () => {
-                            const $liveInput = $('section[data-annotation-id=' + items[i].id + '] > input[name="' + inputName + '"]');
-                            if ($liveInput.length) {
-                                return $liveInput;
-                            }
-                            return $('section[data-annotation-id=' + items[i].id + '] > input').first();
-                        };
-
-                        const updateLinkState = () => {
-                            const $liveInput = getLiveInputField();
-                            const value = ($liveInput.val() || '').trim();
-                            const element = $liveInput.get(0);
-                            const normalizedValue = this.normalizeLinkValue(value);
-                            const currentState = this.linkValidationStates.get(inputName);
-
-                            if (!value) {
-                                this.clearLinkReachabilityCheck(inputName);
-                                this.linkValidationStates.set(inputName, {
-                                    status: 'empty',
-                                    value: '',
-                                    normalizedValue: ''
-                                });
-                                $tester.prop('disabled', true);
-                                $tester.data('href', '');
-                                $liveInput.removeClass('pdf-link-invalid pdf-link-valid');
-                                if (element && typeof element.setCustomValidity === 'function') {
-                                    element.setCustomValidity('');
-                                }
-                                return;
-                            }
-
-                            if (!this.isValidLinkValue(value)) {
-                                this.clearLinkReachabilityCheck(inputName);
-                                this.linkValidationStates.set(inputName, {
-                                    status: 'format-invalid',
-                                    value: value,
-                                    normalizedValue: ''
-                                });
-                                $liveInput.addClass('pdf-link-invalid');
-                                $liveInput.removeClass('pdf-link-valid');
-                                $tester.prop('disabled', true);
-                                $tester.data('href', '');
-                                if (element && typeof element.setCustomValidity === 'function') {
-                                    element.setCustomValidity('URL invalide');
-                                }
-                                return;
-                            }
-
-                            if (currentState && currentState.normalizedValue === normalizedValue) {
-                                if (currentState.status === 'reachable') {
-                                    $tester.prop('disabled', false);
-                                    $tester.data('href', currentState.normalizedValue || '');
-                                    $liveInput.removeClass('pdf-link-invalid').addClass('pdf-link-valid');
-                                    if (element && typeof element.setCustomValidity === 'function') {
-                                        element.setCustomValidity('');
-                                    }
-                                    return;
-                                }
-                                if (currentState.status === 'checking') {
-                                    $tester.prop('disabled', true);
-                                    $tester.data('href', '');
-                                    $liveInput.removeClass('pdf-link-invalid pdf-link-valid');
-                                    if (element && typeof element.setCustomValidity === 'function') {
-                                        element.setCustomValidity('Vérification du lien en cours');
-                                    }
-                                    return;
-                                }
-                                if (currentState.status === 'unreachable') {
-                                    $tester.prop('disabled', true);
-                                    $tester.data('href', '');
-                                    $liveInput.addClass('pdf-link-invalid').removeClass('pdf-link-valid');
-                                    if (element && typeof element.setCustomValidity === 'function') {
-                                        element.setCustomValidity('Lien inaccessible');
-                                    }
-                                    return;
-                                }
-                            }
-
-                            this.scheduleLinkReachabilityCheck(inputName, value, (state) => {
-                                const $currentInput = getLiveInputField();
-                                const currentElement = $currentInput.get(0);
-
-                                if (state.status === 'checking') {
-                                    $tester.prop('disabled', true);
-                                    $tester.data('href', '');
-                                    $currentInput.removeClass('pdf-link-invalid pdf-link-valid');
-                                    if (currentElement && typeof currentElement.setCustomValidity === 'function') {
-                                        currentElement.setCustomValidity('Vérification du lien en cours');
-                                    }
-                                    return;
-                                }
-
-                                if (state.status === 'reachable') {
-                                    $tester.prop('disabled', false);
-                                    $tester.data('href', state.normalizedValue || '');
-                                    $currentInput.removeClass('pdf-link-invalid').addClass('pdf-link-valid');
-                                    if (currentElement && typeof currentElement.setCustomValidity === 'function') {
-                                        currentElement.setCustomValidity('');
-                                    }
-                                    return;
-                                }
-
-                                $tester.prop('disabled', true);
-                                $tester.data('href', '');
-                                $currentInput.addClass('pdf-link-invalid').removeClass('pdf-link-valid');
-                                if (currentElement && typeof currentElement.setCustomValidity === 'function') {
-                                    currentElement.setCustomValidity('Lien inaccessible');
-                                }
-                            });
-                        };
-
-                        section.off('.pdf_link_' + items[i].id);
-                        section.on('input.pdf_link_' + items[i].id + ' keyup.pdf_link_' + items[i].id + ' change.pdf_link_' + items[i].id + ' blur.pdf_link_' + items[i].id, 'input[name="' + inputName + '"]', () => {
-                            updateLinkState();
-                        });
-
-                        $tester.off('click.pdf_link');
-                        $tester.off('mousedown.pdf_link');
-                        $tester.on('mousedown.pdf_link', (e) => {
-                            e.preventDefault();
-                        });
-                        $tester.on('click.pdf_link', (e) => {
-                            e.preventDefault();
-                            const href = $tester.data('href');
-                            if (!href) {
-                                return;
-                            }
-                            window.open(href, '_blank', 'noopener,noreferrer');
-                        });
-
-                        updateLinkState();
-                    } else {
-                        inputField.attr('type', 'url');
-                        inputField.attr('inputmode', 'url');
-                        inputField.show();
-                        inputField.prop('readonly', true);
-                        inputField.prop('disabled', false);
-                        inputField.removeClass('disabled-field disable-selection');
-                        inputField.parent().removeClass('disable-div-selection');
-                        inputField.addClass('pdf-link-disabled-input');
-                        const rawValue = (currentValue || '').trim();
-                        const valid = this.isValidLinkValue(rawValue);
-                        const href = valid ? this.normalizeLinkValue(rawValue) : '#';
-                        const label = valid ? 'Ouvrir le lien' : 'Lien indisponible';
-                        const $linkButton = $('<a id="' + disabledLinkId + '" class="pdf-link-display-btn" target="_blank" rel="noopener noreferrer"></a>');
-
-                        $linkButton.attr('href', href);
-                        $linkButton.text(label);
-
-                        if (!valid) {
-                            $linkButton.addClass('is-disabled');
-                            $linkButton.on('click', (e) => e.preventDefault());
-                        }
-
-                        inputField.off('click.pdf_link_disabled keydown.pdf_link_disabled');
-                        if (valid) {
-                            inputField.attr('title', rawValue);
-                            inputField.on('click.pdf_link_disabled', (e) => {
-                                e.preventDefault();
-                                window.open(href, '_blank', 'noopener,noreferrer');
-                            });
-                            inputField.on('keydown.pdf_link_disabled', (e) => {
-                                if (e.key === 'Enter' || e.key === ' ') {
-                                    e.preventDefault();
-                                    window.open(href, '_blank', 'noopener,noreferrer');
-                                }
-                            });
-                        }
-
-                        section.append($linkButton);
-                    }
-
-                    if (this.isFieldEnable(dataField)) {
-                        if (dataField.required) {
-                            inputField.prop('required', true);
-                            inputField.addClass('required-field');
-                        } else {
-                            inputField.prop('required', false);
-                            inputField.removeClass('required-field');
-                        }
-                    } else {
-                        inputField.prop('required', false);
-                    }
-                }
-
-                if (dataField.type === "radio") {
-                    inputField.addClass("field-type-radio");
-                    if (this.isFieldEnable(dataField)) {
-                        if (dataField.required) {
-                            inputField.parent().addClass('required-field');
-                        }
-                    }
-                    inputField.val(items[i].buttonValue);
-                    inputField.attr("id", dataField.name + items[i].buttonValue);
-                    if (dataField.defaultValue === items[i].buttonValue) {
-                        inputField.attr("checked", "checked");
-                        inputField.prop("checked", true);
-                    }
-                    inputField.unbind();
-                    inputField.on('click', e => this.fireEvent("change", ['checked']));
-                }
-                if (dataField.type === 'checkbox') {
-                    inputField.addClass("field-type-checkbox");
-                    inputField.val('on');
-                    if (dataField.defaultValue === 'on') {
-                        inputField.attr("checked", "checked");
-                        inputField.prop("checked", true);
-                    }
-                    inputField.unbind();
-                    inputField.on('click', e => this.fireEvent("change", ['checked']));
-                }
-
-                if (dataField.type === "date") {
-                    datePickerIndex--;
-                    const inputElement = inputField[0];
-
-                    const picker = new tempusDominus.TempusDominus(inputElement, {
-                        localization: {
-                            today: 'Aller à aujourd\'hui',
-                            clear: 'Effacer la sélection',
-                            close: 'Fermer le sélecteur',
-                            selectMonth: 'Sélectionner le mois',
-                            previousMonth: 'Mois précédent',
-                            nextMonth: 'Mois suivant',
-                            selectYear: 'Sélectionner l\'année',
-                            previousYear: 'Année précédente',
-                            nextYear: 'Année suivante',
-                            selectDecade: 'Sélectionner la décennie',
-                            previousDecade: 'Décennie précédente',
-                            nextDecade: 'Décennie suivante',
-                            previousCentury: 'Siècle précédent',
-                            nextCentury: 'Siècle suivant',
-                            pickHour: 'Choisir l\'heure',
-                            incrementHour: 'Augmenter l\'heure',
-                            decrementHour: 'Diminuer l\'heure',
-                            pickMinute: 'Choisir les minutes',
-                            incrementMinute: 'Augmenter les minutes',
-                            decrementMinute: 'Diminuer les minutes',
-                            pickSecond: 'Choisir les secondes',
-                            incrementSecond: 'Augmenter les secondes',
-                            decrementSecond: 'Diminuer les secondes',
-                            toggleMeridiem: 'Basculer AM/PM',
-                            selectTime: 'Sélectionner l\'heure',
-                            selectDate: 'Sélectionner la date',
-                            locale: 'fr',
-                            startOfTheWeek: 1,
-                            format: 'dd/MM/yyyy',
-                            toggleAriaLabel: 'Modifier la date',
-                        },
-                        display: {
-                            icons: {
-                                time: 'fi fi-rr-clock',
-                                date: 'fi fi-rr-calendar-day',
-                                up: 'fi fi-rr-angle-small-up',
-                                down: 'fi fi-rr-angle-small-down',
-                                previous: 'fi fi-rr-angle-small-left',
-                                next: 'fi fi-rr-angle-small-right',
-                                today: 'fi fi-rr-calendar-check',
-                                clear: 'fi fi-rr-empty-set',
-                                close: 'fi fi-rr-check'
-                            },
-                            components: {
-                                calendar: true,
-                                date: true,
-                                month: true,
-                                year: true,
-                                decades: false,
-                                clock: false,
-                                hours: false,
-                                minutes: false,
-                                seconds: false
-                            },
-                            toolbarPlacement: 'bottom',
-                            buttons: {
-                                today: true,
-                                clear: true,
-                                close: true
-                            }
-                        }
-                    });
-
-                    inputField.on("focus", function () {
-                        section.css("z-index", datePickerIndex + 2000);
-                    });
-                    inputField.on("focusout", function () {
-                        section.css("z-index", 4);
-                    });
-
-                    inputElement.addEventListener('change', (e) => {
-                        this.fireEvent("change", ['date']);
-                    });
-                }
-
-                if (dataField.type === "time") {
-                    datePickerIndex--;
-                    const inputElement = inputField[0];
-
-                    const picker = new tempusDominus.TempusDominus(inputElement, {
-                        localization: {
-                            locale: 'fr',
-                            format: 'HH:mm',
-                        },
-                        stepping: 5,
-                        display: {
-                            viewMode: 'clock',
-                            icons: {
-                                time: 'fi fi-rr-clock',
-                                date: 'fi fi-rr-calendar-day',
-                                up: 'fi fi-rr-angle-small-up',
-                                down: 'fi fi-rr-angle-small-down',
-                                previous: 'fi fi-rr-angle-small-left',
-                                next: 'fi fi-rr-angle-small-right',
-                                today: 'fi fi-rr-calendar-check',
-                                clear: 'fi fi-rr-trash',
-                                close: 'fi fi-rr-check'
-                            },
-                            components: {
-                                calendar: false,
-                                date: false,
-                                month: false,
-                                year: false,
-                                decades: false,
-                                clock: true,
-                                hours: true,
-                                minutes: true,
-                                seconds: false
-                            },
-                            toolbarPlacement: 'bottom',
-                            buttons: {
-                                today: true,
-                                clear: true,
-                                close: true
-                            }
-                        }
-                    });
-
-                    inputField.on("focus", function () {
-                        section.css("z-index", datePickerIndex + 2000);
-                    });
-                    inputField.on("focusout", function () {
-                        section.css("z-index", datePickerIndex);
-                    });
-
-                    inputElement.addEventListener('change', (e) => {
-                        this.fireEvent("change", ['time']);
-                    });
-                }
-            }
-
-            inputField = $('section[data-annotation-id=' + items[i].id + '] > textarea');
-            if (inputField.length) {
-                inputField.addClass("field-type-textarea");
-                inputField.on('input', function(e) {
-                    clearTimeout(self.timer);
-                    self.timer = setTimeout(e => self.fireEvent("change", ['checked']), 500);
-                });
-                inputField.removeAttr("hidden");
-                if(dataField == null) continue;
-                this.disableInput(inputField, dataField, items[i].readOnly);
-                if(this.disableAllFields) continue;
-                let sendField = inputField;
-                if (dataField.favorisable) {
-                    $.ajax({
-                        type: "GET",
-                        url: '/ws-secure/ui/favorites/fields/' + dataField.id,
-                        success: response => this.autocomplete(response, sendField)
-                    });
-                }
-                inputField.attr('name', inputName);
-                inputField.attr('placeholder', " ");
-                inputField.removeAttr("maxlength");
-                inputField.attr('id', inputName);
-                if (this.isFieldEnable(dataField)) {
-                    if(dataField.defaultValue != null) {
-                        inputField.val(dataField.defaultValue);
-                    }
-                    this.enableInputField(inputField, dataField)
-                }
-            }
-
-            inputField = $('section[data-annotation-id=' + items[i].id + '] > select');
-            if (inputField.length) {
-                inputField.addClass("field-type-select");
-                inputField.on('change', e => this.fireEvent("change", ['checked']));
-                if(dataField == null) continue;
-                this.disableInput(inputField, dataField, items[i].readOnly);
-                inputField.removeAttr("hidden");
-                if(this.disableAllFields) continue;
-                inputField.removeAttr('size');
-                inputField.attr('name', inputName);
-                inputField.attr('id', inputName);
-                if (dataField.editable) {
-                    inputField.val(dataField.defaultValue);
-                    this.enableInputField(inputField, dataField)
-                }
-            }
-        }
-        console.debug("debug - " + ">>End compute field");
-        $(".annotationLayer").each(function() {
-            $(this).removeClass("d-none");
-        });
-        this.listenToSearchCompletion();
+        return this.formManager.renderPdfFormWithFields(items);
     }
 
     ensureLinkFieldStyles() {
-        if (document.getElementById('pdf-link-style')) {
-            return;
-        }
-        const css = `
-            .pdf-link-input {
-                border-radius: 0 !important;
-                padding-right: 72px !important;
-            }
-            .pdf-link-disabled-input {
-                cursor: pointer;
-                background: #fff !important;
-                color: inherit !important;
-            }
-            .pdf-link-disabled-input:focus {
-                outline: 1px solid #0d6efd;
-                outline-offset: 0;
-            }
-            .pdf-link-test-btn,
-            .pdf-link-display-btn {
-                position: absolute;
-                top: 0;
-                right: 0;
-                height: 100%;
-                min-width: 68px;
-                border: 1px solid #6c757d;
-                background: #fff;
-                color: #212529;
-                padding: 0 10px;
-                cursor: pointer;
-                text-decoration: none;
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                z-index: 2;
-            }
-            .pdf-link-test-btn[disabled],
-            .pdf-link-display-btn.is-disabled {
-                color: #6c757d;
-                background: #f1f3f5;
-                cursor: not-allowed;
-                pointer-events: none;
-            }
-            .pdf-link-invalid {
-                border-color: #c82333 !important;
-            }
-            .pdf-link-valid {
-                border-color: #198754 !important;
-            }
-        `;
-        const style = document.createElement('style');
-        style.id = 'pdf-link-style';
-        style.appendChild(document.createTextNode(css));
-        document.head.appendChild(style);
+        return this.linkFieldValidator.ensureLinkFieldStyles();
     }
 
     normalizeLinkValue(value) {
-        const trimmedValue = (value || '').trim();
-        if (!trimmedValue) {
-            return '';
-        }
-        if (/^[a-zA-Z][a-zA-Z0-9+\-.]*:/.test(trimmedValue)) {
-            return trimmedValue;
-        }
-        return 'https://' + trimmedValue;
+        return this.linkFieldValidator.normalizeLinkValue(value);
     }
 
     isValidLinkValue(value) {
-        const normalizedValue = this.normalizeLinkValue(value);
-        if (!normalizedValue) {
-            return false;
-        }
-        try {
-            const url = new URL(normalizedValue);
-            if (!['http:', 'https:'].includes(url.protocol)) {
-                return false;
-            }
-            if (!url.hostname || !url.hostname.includes('.')) {
-                return false;
-            }
-            return true;
-        } catch (e) {
-            return false;
-        }
+        return this.linkFieldValidator.isValidLinkValue(value);
     }
 
     clearLinkReachabilityCheck(fieldName) {
-        const timer = this.linkValidationTimers.get(fieldName);
-        if (timer) {
-            clearTimeout(timer);
-            this.linkValidationTimers.delete(fieldName);
-        }
-        const controller = this.linkValidationControllers.get(fieldName);
-        if (controller) {
-            controller.abort();
-            this.linkValidationControllers.delete(fieldName);
-        }
+        return this.linkFieldValidator.clearLinkReachabilityCheck(fieldName);
     }
 
     async checkLinkReachability(url, signal) {
-        try {
-            await fetch(url, {
-                method: 'HEAD',
-                mode: 'no-cors',
-                cache: 'no-store',
-                redirect: 'follow',
-                signal: signal,
-            });
-            return true;
-        } catch (headError) {
-            if (signal?.aborted) {
-                throw headError;
-            }
-            await fetch(url, {
-                method: 'GET',
-                mode: 'no-cors',
-                cache: 'no-store',
-                redirect: 'follow',
-                signal: signal,
-            });
-            return true;
-        }
+        return this.linkFieldValidator.checkLinkReachability(url, signal);
     }
 
     scheduleLinkReachabilityCheck(fieldName, value, onStateChange) {
-        const normalizedValue = this.normalizeLinkValue(value);
-        if (!normalizedValue) {
-            const emptyState = { status: 'empty', value: value, normalizedValue: '' };
-            this.linkValidationStates.set(fieldName, emptyState);
-            onStateChange(emptyState);
-            return;
-        }
-
-        this.clearLinkReachabilityCheck(fieldName);
-        const sequence = (this.linkValidationSeq.get(fieldName) || 0) + 1;
-        this.linkValidationSeq.set(fieldName, sequence);
-
-        const checkingState = {
-            status: 'checking',
-            value: value,
-            normalizedValue: normalizedValue,
-        };
-        this.linkValidationStates.set(fieldName, checkingState);
-        onStateChange(checkingState);
-
-        const timer = setTimeout(async () => {
-            const controller = new AbortController();
-            this.linkValidationControllers.set(fieldName, controller);
-            const timeoutId = setTimeout(() => controller.abort(), 4000);
-
-            try {
-                await this.checkLinkReachability(normalizedValue, controller.signal);
-                if (this.linkValidationSeq.get(fieldName) !== sequence) {
-                    return;
-                }
-                const reachableState = {
-                    status: 'reachable',
-                    value: value,
-                    normalizedValue: normalizedValue,
-                };
-                this.linkValidationStates.set(fieldName, reachableState);
-                onStateChange(reachableState);
-            } catch (error) {
-                if (this.linkValidationSeq.get(fieldName) !== sequence) {
-                    return;
-                }
-                const unreachableState = {
-                    status: 'unreachable',
-                    value: value,
-                    normalizedValue: normalizedValue,
-                };
-                this.linkValidationStates.set(fieldName, unreachableState);
-                onStateChange(unreachableState);
-            } finally {
-                clearTimeout(timeoutId);
-                this.linkValidationControllers.delete(fieldName);
-            }
-        }, 350);
-
-        this.linkValidationTimers.set(fieldName, timer);
+        return this.linkFieldValidator.scheduleLinkReachabilityCheck(fieldName, value, onStateChange);
     }
 
     isFieldEnable(dataField) {
-        return dataField.editable && !dataField.readOnly;
+        return this.formManager.isFieldEnable(dataField);
     }
 
     enableInputField(inputField, dataField) {
-        if (!dataField.required) {
-            inputField.prop('required', false);
-            inputField.removeClass('required-field');
-        } else {
-            inputField.prop('required', true);
-            inputField.addClass('required-field');
-        }
-        if (!dataField.readOnly) {
-            inputField.prop('disabled', false);
-            inputField.removeClass('disabled-field disable-selection');
-        }
-        inputField.attr('title', dataField.description);
+        return this.formManager.enableInputField(inputField, dataField);
     }
 
     disableInput(inputField, dataField, readOnly) {
-        if (readOnly || dataField == null || dataField.readOnly || this.disableAllFields || !this.isFieldEnable(dataField)) {
-            inputField.addClass('disabled-field disable-selection');
-            inputField.prop('disabled', true);
-            inputField.prop('required', false);
-            inputField.parent().addClass('disable-div-selection');
-        }
+        return this.formManager.disableInput(inputField, dataField, readOnly);
     }
 
     prevPage() {
-        this.fireEvent("beforeChange", ['prev']);
-        if (!this.isFirstPage()) {
-            this.pageNum--;
-        }
-        this.scrollToPage(this.pageNum);
-        return true;
+        return this.navigationController.prevPage();
     }
 
     nextPage() {
-        if (this.isLastPage()) {
-            return false;
-        }
-        this.pageNum++;
-        this.scrollToPage(this.pageNum);
-        return true;
+        return this.navigationController.nextPage();
     }
 
     isFirstPage() {
-        return this.pageNum <= 1;
+        return this.navigationController.isFirstPage();
     }
 
     isLastPage() {
-        return this.pageNum >= this.numPages;
+        return this.navigationController.isLastPage();
     }
 
     zoomInit(e) {
@@ -2119,188 +573,39 @@ export class PdfViewer extends EventFactory {
     }
 
     autocomplete(response, inputField) {
-        let id = inputField.attr('id');
-        let div = "<div class='custom-autocompletion' id='div_" + id +"'></div>";
-        $(div).insertAfter(inputField);
-        inputField.autocomplete({
-            delay: 500,
-            source: response,
-            appendTo: "#div_" + id,
-            minLength:0
-        }).bind('focus', function(){ $(this).autocomplete("search"); } );
+        return this.formManager.autocomplete(response, inputField);
     }
 
     checkForm() {
-        return new Promise((resolve, reject) => {
-            let formData = new Map();
-            console.info("check data name");
-            let self = this;
-            let resolveOk = "ok";
-            let warningFields = [];
-            $(self.dataFields).each(function (e, item) {
-                let savedField = self.savedFields.get(item.name)
-                formData[item.name] = savedField;
-                item.validationError = null;
-                const isMissingRequiredValue = item.required && self.isFieldEnable(item) &&
-                    (!savedField || (savedField === "off" && item.type === "checkbox"));
-                const isInvalidLinkValue = item.type === "link" && self.isFieldEnable(item)
-                    && !!savedField && !self.isValidLinkValue(savedField);
-                const linkValidationState = item.type === "link"
-                    ? self.linkValidationStates.get(item.name)
-                    : null;
-                const isUnverifiedOrUnreachableLink = item.type === "link" && self.isFieldEnable(item)
-                    && !!savedField
-                    && self.isValidLinkValue(savedField)
-                    && (!linkValidationState || !['reachable'].includes(linkValidationState.status));
-
-                if (isMissingRequiredValue || isInvalidLinkValue || isUnverifiedOrUnreachableLink) {
-                    if (isInvalidLinkValue) {
-                        item.validationError = 'invalid_link';
-                    } else if (isUnverifiedOrUnreachableLink) {
-                        item.validationError = linkValidationState?.status === 'checking'
-                            ? 'checking_link'
-                            : 'unreachable_link';
-                    } else {
-                        item.validationError = 'required';
-                    }
-                    let addWarning = true;
-                    for(let i = 0; i < warningFields.length; i++) {
-                        if(warningFields[i].name === item.name) {
-                            addWarning = false;
-                        }
-                    }
-                    if(addWarning) {
-                        warningFields.push($(this)[0]);
-                    }
-                }
-            });
-            if (warningFields.length > 0) {
-                warningFields.sort((a, b) => a.compareByPage(b))
-                let text = "Certain champs requis n'ont pas été remplis dans ce formulaire<ul>";
-                if (warningFields.length < 2 && warningFields[0].name != null) {
-                    const fieldLabel = warningFields[0].description != null && warningFields[0].description !== ""
-                        ? warningFields[0].description
-                        : warningFields[0].name;
-                    if (warningFields[0].validationError === 'invalid_link') {
-                        text = "Le champ " + fieldLabel + " contient une URL invalide";
-                    } else if (warningFields[0].validationError === 'checking_link') {
-                        text = "Le champ " + fieldLabel + " est encore en cours de vérification";
-                    } else if (warningFields[0].validationError === 'unreachable_link') {
-                        text = "Le champ " + fieldLabel + " contient un lien inaccessible";
-                    } else {
-                        text = "Le champ " + fieldLabel + " n'est pas rempli";
-                    }
-                    if (warningFields[0].page != null) {
-                        text += " en page " + warningFields[0].page;
-                    }
-                } else {
-                    warningFields.forEach(function (field) {
-                        let suffix = '';
-                        if (field.validationError === 'invalid_link') {
-                            suffix = ' : URL invalide';
-                        } else if (field.validationError === 'checking_link') {
-                            suffix = ' : vérification en cours';
-                        } else if (field.validationError === 'unreachable_link') {
-                            suffix = ' : lien inaccessible';
-                        }
-                        if (field.description != null && field.description !== "") {
-                            text += "<li>" + field.description + suffix;
-                            if(field.page != null) {
-                                text += " (en page " + (field.page + 1) + ")";
-                            }
-                            text +="</li>";
-                        } else {
-                            text += "<li>" + field.name + suffix;
-                            if(field.page != null) {
-                                text += " (en page " + (field.page + 1) + ")";
-                            }
-                            text +="</li>";
-                        }
-                    });
-                }
-                text += "</ul>"
-                bootbox.alert(text, function () {
-                    let field = $('#' + warningFields[0].name);
-                    setTimeout(function () {
-                        self.focusField(field)
-                    }, 100);
-                });
-                resolveOk = $(this)[0].name;
-                $('#sendModal').modal('hide');
-            }
-            resolve(resolveOk);
-        });
+        return this.formManager.checkForm();
     }
 
     focusField(field) {
-        if(field.attr("type") === "radio") {
-            this.highlightRadio(field);
-        }
-        field.focus();
-        let offset = field.offset();
-        if(offset != null) {
-            const workspace = this.getWorkspaceElement();
-            if (workspace) {
-                const workspaceOffset = $(workspace).offset();
-                if (workspaceOffset != null) {
-                    $(workspace).animate({
-                        scrollTop: offset.top - workspaceOffset.top + workspace.scrollTop - 170,
-                        scrollLeft: 0
-                    });
-                    return;
-                }
-            }
-            $('html, body').animate({
-                scrollTop: offset.top - 170,
-                scrollLeft: offset.left
-            });
-        }
+        return this.navigationController.focusField(field);
     }
 
     highlightRadio(field) {
-        $("[name='" + field.attr('name') + "']").each(function() {
-            let radio = $(this);
-            let i = 0;
-            let flashInterval = setInterval(
-                function() {
-                    radio.toggleClass('highlight');
-                    if(i > 4) {
-                        clearInterval(flashInterval);
-                        radio.removeClass('highlight');
-                    }
-                    i++;
-                },
-                1000
-            );
-        });
+        return this.navigationController.highlightRadio(field);
     }
 
     startProgress() {
-        this.updateProgress(5, "Préparation du rendu…", true);
+        return this.progressController.startProgress();
     }
 
     stopProgress(){
-        this.updateProgress(100, "Chargement terminé", false);
-        clearInterval(this.interval);
+        return this.progressController.stopProgress();
     }
 
     resetProgress() {
-        $("#pdf-progress-bar").removeClass("es-progress-visible");
-        this.updateProgress(0, "", false);
-        clearInterval(this.interval);
+        return this.progressController.resetProgress();
     }
 
     updateRenderProgress() {
-        const progress = this.numPages > 0 ? Math.round(this.renderedPages / this.numPages * 100) : 0;
-        this.updateProgress(progress, "Chargement de la page " + this.renderedPages + "/" + this.numPages, this.renderedPages < this.numPages);
+        return this.progressController.updateRenderProgress();
     }
 
     updateProgress(progress, text, animated) {
-        $("#pdf-progress-bar .progress-bar")
-            .toggleClass("progress-bar-striped progress-bar-animated", animated)
-            .css("width", progress + "%")
-            .attr("aria-valuenow", progress)
-            .text(text);
+        return this.progressController.updateProgress(progress, text, animated);
     }
 
     getBrowserZoom() {
@@ -2308,186 +613,38 @@ export class PdfViewer extends EventFactory {
     }
 
     getApplicationLayers(config) {
-        const layers = [];
-        if (!config) {
-            return layers;
-        }
-        for (const [id, group] of config) {
-            if (group?.name && this.isApplicationLayerName(group.name)) {
-                layers.push({ id, name: group.name, visible: group.visible });
-            }
-        }
-        return layers;
+        return this.layerController.getApplicationLayers(config);
     }
 
     resolveLayerName(stepNumber, requestedLayerName, layers) {
-        if (requestedLayerName) {
-            const exactMatch = layers.find(group => group.name === requestedLayerName);
-            if (exactMatch) {
-                return exactMatch.name;
-            }
-            const requestedLayerId = Number.parseInt(String(requestedLayerName).replace('layer_', ''), 10);
-            if (!Number.isNaN(requestedLayerId)) {
-                const compatibleMatch = layers.find(group => {
-                    const liveWorkflowStepId = this.extractStableLayerStepId(group.name);
-                    return liveWorkflowStepId === requestedLayerId;
-                });
-                if (compatibleMatch) {
-                    return compatibleMatch.name;
-                }
-            }
-
-            return null;
-        }
-        return layers[stepNumber - 1]?.name || null;
+        return this.layerController.resolveLayerName(stepNumber, requestedLayerName, layers);
     }
 
     extractStableLayerStepId(layerName) {
-        if (typeof layerName !== 'string') {
-            return null;
-        }
-        let match = layerName.match(/^layer_(\d+)$/);
-        if (match) {
-            return Number.parseInt(match[1], 10);
-        }
-        match = layerName.match(/^sign_(\d+)_/);
-        if (match) {
-            return Number.parseInt(match[1], 10);
-        }
-        return null;
+        return this.layerController.extractStableLayerStepId(layerName);
     }
 
     async showLayerByStep(stepNumber, solo, layerName = null) {
-        if (!this.pdfDoc) {
-            return;
-        }
-        try {
-            const config = await this.pdfDoc.getOptionalContentConfig().catch(e => {
-                console.error("Error getting optional content config: " + e);
-                return null;
-            });
-            if (!config) {
-                return;
-            }
-            const allGroups = this.getApplicationLayers(config);
-            const resolvedLayerName = this.resolveLayerName(stepNumber, layerName, allGroups);
-            if (!resolvedLayerName && stepNumber !== 0) {
-                console.warn(`showLayerByStep: layer introuvable pour step=${stepNumber}, layerName=${layerName}`);
-                return;
-            }
-            if(solo) {
-                allGroups.forEach((group) => {
-                    const shouldBeVisible = group.name === resolvedLayerName;
-                    config.setVisibility(group.id, shouldBeVisible);
-                });
-            } else {
-                allGroups.forEach((group) => {
-                    const selectedGroupIndex = allGroups.findIndex(candidate => candidate.name === resolvedLayerName);
-                    const currentGroupIndex = allGroups.findIndex(candidate => candidate.name === group.name);
-                    const shouldBeVisible = stepNumber === 0 ? false : (selectedGroupIndex >= 0 && currentGroupIndex <= selectedGroupIndex);
-                    config.setVisibility(group.id, shouldBeVisible);
-                });
-            }
-            this.optionalContentConfigPromise = Promise.resolve(config);
-            this._activeLayerView = { stepNumber, solo, layerId: resolvedLayerName };
-            this.updateLayerButtonsState();
-        } catch(err) {
-            console.error('Erreur showLayerByStep:', err);
-        }
+        return this.layerController.showLayerByStep(stepNumber, solo, layerName);
     }
 
     updateLayerButtonsState() {
-        // Reset all button "on" states
-        const onClasses = ['active', 'bg-primary-subtle', 'text-primary', 'border', 'border-primary-subtle'];
-        $('.display-layer-btn, .toggle-layer-btn').each(function () {
-            onClasses.forEach(c => $(this).removeClass(c));
-        });
-
-        if (!this._activeLayerView) {
-            return;
-        }
-
-        const selector = this._activeLayerView.solo
-            ? `.toggle-layer-btn[data-layer-id="${this._activeLayerView.layerId}"]`
-            : `.display-layer-btn[data-layer-id="${this._activeLayerView.layerId}"]`;
-
-        const $btn = $(selector);
-        if ($btn.length) {
-            onClasses.forEach(c => $btn.addClass(c));
-        }
+        return this.layerController.updateLayerButtonsState();
     }
 
     async showAllLayers() {
-        if (!this.pdfDoc) {
-            return;
-        }
-        try {
-            const config = await this.pdfDoc.getOptionalContentConfig().catch(e => {
-                console.error("Error getting optional content config: " + e);
-                return null;
-            });
-            if (!config) {
-                return;
-            }
-            for (const group of this.getApplicationLayers(config)) {
-                config.setVisibility(group.id, true);
-            }
-            this.optionalContentConfigPromise = Promise.resolve(config);
-            this._activeLayerView = null;
-            this.updateLayerButtonsState();
-        } catch(err) {
-            console.error('Erreur showAllLayers:', err);
-        }
+        return this.layerController.showAllLayers();
     }
 
     async toggleLayerByStep(stepNumber, solo, layerId = null) {
-        // Si on reclique sur le même stepNumber déjà actif (même mode), on repasse sur tous les calques.
-        if (this._activeLayerView
-            && this._activeLayerView.solo === solo
-            && this._activeLayerView.layerId === (layerId || this._activeLayerView.layerId)) {
-            await this.showAllLayers();
-            return;
-        }
-        await this.showLayerByStep(stepNumber, solo, layerId);
+        return this.layerController.toggleLayerByStep(stepNumber, solo, layerId);
     }
 
     async highlightStep(stepNumber, layerId = null) {
-        if (!this.highlighter) {
-            console.error('highlightStep: LayerHighlighter non initialisé');
-            return;
-        }
-
-        try {
-            const config = await Promise.resolve(this._optionalContentConfigPromise).catch(e => {
-                console.error("Error resolving optionalContentConfigPromise: " + e);
-                return null;
-            });
-            if (!config) {
-                console.warn('highlightStep: Aucun calque disponible');
-                return;
-            }
-            const allGroups = this.getApplicationLayers(config);
-
-            const resolvedLayerName = this.resolveLayerName(stepNumber, layerId, allGroups);
-            const targetGroup = resolvedLayerName
-                ? allGroups.find(group => group.name === resolvedLayerName)
-                : null;
-            if (!targetGroup) {
-                console.warn(`highlightStep: layer introuvable pour step=${stepNumber}, layerId=${layerId}`);
-                return;
-            }
-            this.highlighter.clearHighlights();
-            await this.highlighter.highlightLayer(targetGroup.id);
-            console.log(`highlightStep(${stepNumber}): Calque "${targetGroup.name}" en ${this.highlighter.highlightColor}`);
-        } catch(err) {
-            console.error('highlightStep error:', err);
-        }
+        return this.layerController.highlightStep(stepNumber, layerId);
     }
 
     clearHighlight() {
-        if (this.highlighter) {
-            this.highlighter.clearHighlights();
-            console.log('Highlight effacé');
-        }
+        return this.layerController.clearHighlight();
     }
 }
