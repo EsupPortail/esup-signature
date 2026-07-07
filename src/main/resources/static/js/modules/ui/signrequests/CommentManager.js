@@ -25,6 +25,7 @@ export class CommentManager {
             isAddCommentEnabled: options.isAddCommentEnabled ?? (() => false),
             setAddCommentEnabled: options.setAddCommentEnabled ?? (() => {}),
             setToolsDisabled: options.setToolsDisabled ?? (() => {}),
+            setInsertActionsDisabled: options.setInsertActionsDisabled ?? (() => {}),
             setSignSpacesDroppableEnabled: options.setSignSpacesDroppableEnabled ?? (() => {}),
             setCommentAddButtonsState: options.setCommentAddButtonsState ?? (() => {}),
             lockSigns: options.lockSigns ?? (() => {}),
@@ -549,6 +550,7 @@ export class CommentManager {
 
         this.exitCommentAddMode();
         this.options.setSignSpacesDroppableEnabled(false);
+        this.options.setInsertActionsDisabled(true);
         this.activateAddCommentMode();
         this.options.setAddSpotEnabled(false);
 
@@ -591,6 +593,7 @@ export class CommentManager {
         $('#hideCommentButton').off('click' + this.options.commentDialogNamespace);
         $("#comment-div").hide();
         this.options.setToolsDisabled(false);
+        this.options.setInsertActionsDisabled(false);
         this.options.setSignSpacesDroppableEnabled(true);
         this.deactivateAddCommentMode();
         this.options.setAddSpotEnabled(false);

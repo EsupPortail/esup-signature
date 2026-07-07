@@ -23,6 +23,7 @@ export class SpotManager {
             getCsrf: options.getCsrf ?? (() => null),
             getPdfViewer: options.getPdfViewer ?? (() => null),
             setToolsDisabled: options.setToolsDisabled ?? (() => {}),
+            setInsertActionsDisabled: options.setInsertActionsDisabled ?? (() => {}),
             setSignSpacesDroppableEnabled: options.setSignSpacesDroppableEnabled ?? (() => {}),
             setSpotActionButtonsDisabled: options.setSpotActionButtonsDisabled ?? (() => {}),
             exitCommentAddMode: options.exitCommentAddMode ?? (() => {}),
@@ -65,12 +66,6 @@ export class SpotManager {
             opacity: 1,
             filter: 'none'
         });
-        if (pdfViewer?.pdfDiv != null) {
-            pdfViewer.pdfDiv.css({
-                'pointer-events': 'auto',
-                'cursor': 'crosshair'
-            });
-        }
         $("#cross_999999, #cross_999999 *").css('pointer-events', 'auto');
         $("#spot-modal, #spot-modal *").css('pointer-events', 'auto');
         $("#spot-modal .ss-main, #spot-modal .ss-main *, .ss-content, .ss-content *").css('pointer-events', 'auto');
@@ -112,6 +107,7 @@ export class SpotManager {
         $(document).off("keydown" + this.options.spotAddNamespace);
         $("#spot-modal").off("hidden.bs.modal" + this.options.spotAddNamespace);
         this.options.setToolsDisabled(false);
+        this.options.setInsertActionsDisabled(false);
         this.options.setSignSpacesDroppableEnabled(true);
         this.deactivateSpotAddMode();
         this.options.setSpotActionButtonsDisabled(false);
@@ -618,6 +614,7 @@ export class SpotManager {
         this.options.exitCommentAddMode();
         this.exitSpotAddMode();
         this.refreshSpotStepOptions();
+        this.options.setInsertActionsDisabled(true);
         this.options.setSignSpacesDroppableEnabled(false);
         this.activateSpotAddMode();
         $(document).off("click" + this.options.spotAddNamespace);

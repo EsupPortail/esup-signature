@@ -972,3 +972,11 @@ input, textarea, select {
     z-index: 9999;
     max-width: 300px;
 }
+
+.theme-explorer-fa6 .file-thumb-progress .progress {
+    margin-bottom: 5px;
+}
+
+.kv-upload-progress .progress-bar {
+    color: var(--bs-dark);
+}
