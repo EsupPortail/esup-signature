@@ -1608,16 +1608,8 @@ public class SignRequestService {
 			throw new EsupSignatureException("Étape invalide : " + stepNumber);
 		}
 		SignRequest signRequest = getById(signRequestId);
-		// Même règle que les téléchargements "classiques"
-		if (signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null
-				&& BooleanUtils.isTrue(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getForbidDownloadsBeforeEnd())
-				&& !signRequest.getStatus().equals(SignRequestStatus.completed)
-				&& !signRequest.getStatus().equals(SignRequestStatus.exported)
-				&& !signRequest.getStatus().equals(SignRequestStatus.refused)
-				&& !signRequest.getArchiveStatus().equals(ArchiveStatus.archived)
-				&& !signRequest.getArchiveStatus().equals(ArchiveStatus.cleaned)
-		) {
-			throw new EsupSignatureException("Téléchargement interdit avant la fin du circuit pour : " + signRequestId);
+		if (!canDownloadLayeredPdfAtStep(signRequest, stepNumber)) {
+			throw new EsupSignatureException("Téléchargement interdit pour cette étape pour : " + signRequestId);
 		}
 
 		if (stepNumber == 0 && signRequest.getOriginalDocuments() != null && !signRequest.getOriginalDocuments().isEmpty()) {
@@ -1649,6 +1641,32 @@ public class SignRequestService {
 
 		byte[] pdfBytes = inputStream.readAllBytes();
 		return pdfService.removeOptionalContentAfterStep(pdfBytes, stepNumber);
+	}
+
+	public boolean canDownloadLayeredPdfAtStep(SignRequest signRequest, int stepNumber) {
+		if (signRequest == null || signRequest.getStatus() == null || stepNumber < 0) {
+			return false;
+		}
+		if (signRequest.getStatus().equals(SignRequestStatus.completed)
+				|| signRequest.getStatus().equals(SignRequestStatus.exported)
+				|| signRequest.getStatus().equals(SignRequestStatus.refused)
+				|| signRequest.getArchiveStatus().equals(ArchiveStatus.archived)
+				|| signRequest.getArchiveStatus().equals(ArchiveStatus.cleaned)) {
+			return true;
+		}
+		if (stepNumber == 0) {
+			return false;
+		}
+		if (signRequest.getParentSignBook() == null
+				|| signRequest.getParentSignBook().getLiveWorkflow() == null
+				|| signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber() == null) {
+			return false;
+		}
+		if (signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps() != null
+				&& stepNumber > signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().size()) {
+			return false;
+		}
+		return stepNumber < signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber();
 	}
 
 	/**

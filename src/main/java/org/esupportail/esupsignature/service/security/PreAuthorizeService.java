@@ -212,6 +212,14 @@ public class PreAuthorizeService {
         return false;
     }
 
+    public boolean signRequestLayeredDownload(Long id, int stepNumber, String userEppn, String authUserEppn) {
+        if (!signRequestView(id, userEppn, authUserEppn)) {
+            return false;
+        }
+        SignRequest signRequest = signRequestService.getById(id);
+        return signRequestService.canDownloadLayeredPdfAtStep(signRequest, stepNumber);
+    }
+
     public boolean attachmentCreator(Long id, String userEppn, String authUserEppn) {
         if(userEppn != null && authUserEppn != null) {
             User user = userService.getByEppn(userEppn);
