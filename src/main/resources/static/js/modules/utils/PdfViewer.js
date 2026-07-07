@@ -12,7 +12,7 @@ import {PdfRendererController} from "./pdf/PdfRendererController.js?version=@ver
 
 export class PdfViewer extends EventFactory {
 
-    constructor(url, signable, editable, currentStepNumber, forcePageNum, fields, disableAllFields) {
+    constructor(url, signable, editable, currentStepNumber, forcePageNum, fields, disableAllFields, options = {}) {
         super();
         console.info("Starting PDF Viewer, signable : " + signable);
         this.highlighter = new LayerHighlighter(this);
@@ -63,7 +63,9 @@ export class PdfViewer extends EventFactory {
         this.pendingRenderPdf = null;
         this.renderComplete = false;
         this.renderedScale = this.scale;
+        this.renderScale = this.scale;
         this.handPanState = null;
+        this.handPanEnabled = options.handPanEnabled === true;
         this.renderedPagesMap = new Map();
         this.displayedPagesMap = new Map();
         this.lastWidth = window.innerWidth;
@@ -194,6 +196,15 @@ export class PdfViewer extends EventFactory {
 
     initHandPan() {
         return this.handPanController.initHandPan();
+    }
+
+    setHandPanEnabled(enabled) {
+        this.handPanEnabled = enabled === true;
+        if (this.handPanEnabled) {
+            this.initHandPan();
+        } else {
+            this.handPanController.stopHandPan?.();
+        }
     }
 
     ensureHandPanStyles() {
@@ -338,6 +349,17 @@ export class PdfViewer extends EventFactory {
         this.scale = newScale;
         console.info('zoom in, scale = ' + this.scale);
         this.fireEvent("scaleChange", ['in']);
+    }
+
+    getMaxZoomLimit() {
+        const workspaceDiv = document.getElementById('workspace');
+        const workspaceWidth = workspaceDiv ? workspaceDiv.offsetWidth : window.innerWidth;
+        const baseLimit = Math.round(workspaceWidth / 600 * 10) / 10 - 0.1;
+        // On small screens, allow controlled overflow so text stays readable.
+        const overflowBonus = workspaceWidth < 1200
+            ? ((1200 - workspaceWidth) / 1200) * 1.2
+            : 0;
+        return Math.min(3.2, Math.max(baseLimit + overflowBonus, 1.8));
     }
 
     async startRender(pdf) {
@@ -503,19 +525,12 @@ export class PdfViewer extends EventFactory {
     }
 
     zoomIn(e) {
-        const workspaceDiv = document.getElementById('workspace');
-        const workspaceWidth = workspaceDiv ? workspaceDiv.offsetWidth : window.innerWidth;
-        const baseLimit = Math.round(workspaceWidth / 600 * 10) / 10 - 0.1;
-        // On small screens, allow controlled overflow so text stays readable.
-        const overflowBonus = workspaceWidth < 1200
-            ? ((1200 - workspaceWidth) / 1200) * 1.2
-            : 0;
-        const maxZoomLimit = Math.min(3.2, Math.max(baseLimit + overflowBonus, 1.8));
+        const maxZoomLimit = this.getMaxZoomLimit();
         if (this.scale >= maxZoomLimit) {
             return;
         }
         this.saveScrolling = Math.round(this.getScrollTop() / this.scale);
-        this.scale = Math.round((this.scale + this.zoomStep) * 1000) / 1000;
+        this.scale = Math.min(maxZoomLimit, Math.round((this.scale + this.zoomStep) * 1000) / 1000);
         console.info('zoom in, scale = ' + this.scale);
         this.fireEvent("scaleChange", ['in']);
     }

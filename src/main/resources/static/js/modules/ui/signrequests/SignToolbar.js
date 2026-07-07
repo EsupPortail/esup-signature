@@ -265,10 +265,13 @@ export class SignToolbar {
     }
 
     setSpotActionButtonsDisabled(disabled) {
-        $("#addSpotButton").attr("disabled", disabled);
-        $("#addCommentButton").attr("disabled", disabled);
-        $("#addSpotButton2").attr("disabled", disabled);
-        $("#addCommentButton2").attr("disabled", disabled);
+        $("#commentsTools")
+            .toggleClass("disabled", disabled)
+            .attr("aria-disabled", disabled ? "true" : "false");
+        $("#addSpotButton").prop("disabled", disabled);
+        $("#addCommentButton").prop("disabled", disabled);
+        $("#addSpotButton2").prop("disabled", disabled);
+        $("#addCommentButton2").prop("disabled", disabled);
     }
 
     destroy() {
@@ -278,4 +281,3 @@ export class SignToolbar {
     }
 
 }
-

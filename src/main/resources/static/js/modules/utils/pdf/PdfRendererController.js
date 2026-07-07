@@ -21,6 +21,8 @@ export class PdfRendererController {
         this.viewer.renderComplete = false;
         this.viewer.pendingRender = false;
         this.viewer.pendingRenderPdf = null;
+        this.viewer.renderScale = Math.max(this.viewer.scale, this.viewer.getMaxZoomLimit());
+        this.applyInitialRenderTransform();
         const currentRenderCycleId = ++this.viewer.renderCycleId;
         this.viewer.fireEvent("renderStarted", ['ok']);
         this.viewer.pdfDiv.css('opacity', 0);
@@ -94,7 +96,9 @@ export class PdfRendererController {
                         this.viewer.applyLinkAnnotationsVisibility().catch(err => console.error('Erreur masquage liens OCG:', err));
                     } else {
                         if(this.viewer.pages.length === this.viewer.numPages) {
-                            this.viewer.renderedScale = this.viewer.scale;
+                            this.viewer.renderedScale = this.viewer.renderScale;
+                            this.viewer.applyScaleWithoutRerender();
+                            this.clearInitialRenderTransform();
                             this.viewer.stopProgress();
                             const progressBar = $("#pdf-progress-bar");
                             progressBar.removeClass("es-progress-visible");
@@ -165,6 +169,25 @@ export class PdfRendererController {
         window.setTimeout(complete, 1000);
     }
 
+    applyInitialRenderTransform() {
+        const scaleRatio = this.viewer.scale / this.viewer.renderScale;
+        if (!Number.isFinite(scaleRatio) || scaleRatio <= 0 || scaleRatio === 1) {
+            this.clearInitialRenderTransform();
+            return;
+        }
+        this.viewer.pdfDiv.css({
+            transform: `scale(${scaleRatio})`,
+            transformOrigin: 'top center',
+        });
+    }
+
+    clearInitialRenderTransform() {
+        this.viewer.pdfDiv.css({
+            transform: '',
+            transformOrigin: '',
+        });
+    }
+
     async renderTask(page, i, configPromise, renderCycleId = this.viewer.renderCycleId) {
         return new Promise((resolve, reject) => {
             let container = document.getElementById(`page_${i}`);
@@ -173,11 +196,11 @@ export class PdfRendererController {
                 container.id = `page_${i}`;
                 container.setAttribute("page-num", i);
                 container.className = "drop-shadows pdf-page";
-                container.style.marginBottom = `${10 * this.viewer.scale}px`;
+                container.style.marginBottom = `${10 * this.viewer.renderScale}px`;
                 this.insertPageAtCorrectPosition(container, i);
             } else {
                 container.innerHTML = "";
-                container.style.marginBottom = `${10 * this.viewer.scale}px`;
+                container.style.marginBottom = `${10 * this.viewer.renderScale}px`;
             }
             $(container).droppable({
                 drop: (event, ui) => ui.helper.attr("page", i)
@@ -186,7 +209,7 @@ export class PdfRendererController {
             const pageRotation = this.viewer.getPageRotation(page);
 
             const viewport = page.getViewport({
-                scale: this.viewer.scale,
+                scale: this.viewer.renderScale,
                 rotation: pageRotation
             });
 
@@ -194,7 +217,7 @@ export class PdfRendererController {
                 eventBus: this.viewer.eventBus,
                 container: container,
                 id: i,
-                scale: this.viewer.scale,
+                scale: this.viewer.renderScale,
                 defaultViewport: viewport,
                 useOnlyCssZoom: true,
                 defaultZoomDelay: 0,
@@ -259,8 +282,8 @@ export class PdfRendererController {
                     annotationLayer.setAttribute("data-main-rotation", pageRotation);
                     annotationLayer.style.width = `${layerWidth}px`;
                     annotationLayer.style.height = `${layerHeight}px`;
-                    annotationLayer.style.setProperty('--scale-factor', this.viewer.scale);
-                    annotationLayer.style.setProperty('--total-scale-factor', this.viewer.scale);
+                    annotationLayer.style.setProperty('--scale-factor', this.viewer.renderScale);
+                    annotationLayer.style.setProperty('--total-scale-factor', this.viewer.renderScale);
                 }
                 const textLayer = container.querySelector('.textLayer');
                 if (textLayer) {
@@ -268,8 +291,8 @@ export class PdfRendererController {
                     textLayer.style.height = `${layerHeight}px`;
                     textLayer.style.left = '0';
                     textLayer.style.top = '0';
-                    textLayer.style.setProperty('--scale-factor', this.viewer.scale);
-                    textLayer.style.setProperty('--total-scale-factor', this.viewer.scale);
+                    textLayer.style.setProperty('--scale-factor', this.viewer.renderScale);
+                    textLayer.style.setProperty('--total-scale-factor', this.viewer.renderScale);
                 }
                 this.viewer.pages[i - 1] = page;
                 resolve("ok");

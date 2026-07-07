@@ -368,7 +368,9 @@ export class Nexu {
     static updateProgressBar(action, percent) {
         console.log("update " + action);
         Nexu.find('#bar-text').html(action);
-        Nexu.find('#bar').width(percent);
+        const bar = Nexu.find('#bar');
+        bar.width(percent);
+        bar.closest('.progress').attr('aria-valuenow', Number.parseInt(percent, 10));
     }
 
     checkNexuClient() {

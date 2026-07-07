@@ -195,6 +195,7 @@ export class SignPlacementController extends EventFactory {
         signRequestParams.addEventListener("placementStateChanged", () => {
             this.refreshSteps?.();
             this.syncAddSignButtonState();
+            this.fireEvent("signPlacementChanged", []);
         });
         signRequestParams.addEventListener("spotSaved", e => this.onSpotSaved(e));
         signRequestParams.addEventListener("spotDeleted", e => this.onSpotDeleted(e));
@@ -346,6 +347,7 @@ export class SignPlacementController extends EventFactory {
         }
         this.refreshSteps();
         this.syncAddSignButtonState();
+        this.fireEvent("signPlacementChanged", []);
     }
 
     onSpotSaved(spotData) {

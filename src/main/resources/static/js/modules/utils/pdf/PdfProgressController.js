@@ -25,10 +25,11 @@ export class PdfProgressController {
     }
 
     updateProgress(progress, text, animated) {
-        $("#pdf-progress-bar .progress-bar")
+        const progressBar = $("#pdf-progress-bar .progress-bar");
+        progressBar
             .toggleClass("progress-bar-striped progress-bar-animated", animated)
             .css("width", progress + "%")
-            .attr("aria-valuenow", progress)
-            .text(text);
+            .attr("aria-valuenow", progress);
+        $("#pdf-progress-bar .progress-label").text(text);
     }
 }

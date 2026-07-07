@@ -4,9 +4,13 @@ export class PdfHandPanController {
         this.viewer = viewer;
     }
 
+    isEnabled() {
+        return this.viewer.handPanEnabled === true;
+    }
+
     initHandPan() {
         const workspace = this.viewer.getWorkspaceElement();
-        if (!workspace || workspace.dataset.esHandPanBound === 'true') {
+        if (!this.isEnabled() || !workspace || workspace.dataset.esHandPanBound === 'true') {
             return;
         }
         workspace.dataset.esHandPanBound = 'true';
@@ -36,6 +40,10 @@ export class PdfHandPanController {
         };
 
         const refreshHandPanCursor = (event = null) => {
+            if (!this.isEnabled()) {
+                setHandPanCursor('');
+                return;
+            }
             if (this.viewer.handPanState) {
                 const draggingTarget = workspace._esHandPanCursorTarget instanceof Element
                     ? workspace._esHandPanCursorTarget
@@ -77,7 +85,7 @@ export class PdfHandPanController {
         workspace.addEventListener('mouseenter', refreshHandPanCursor);
 
         document.addEventListener('mousemove', event => {
-            if (!this.viewer.handPanState) {
+            if (!this.isEnabled() || !this.viewer.handPanState) {
                 return;
             }
 
@@ -121,6 +129,23 @@ export class PdfHandPanController {
             }
         });
         window.addEventListener('blur', stopHandPan);
+    }
+
+    stopHandPan() {
+        const workspace = this.viewer.getWorkspaceElement();
+        this.viewer.handPanState = null;
+        document.body.classList.remove('user-select-none', 'es-hand-pan-grab', 'es-hand-pan-grabbing');
+        if (workspace != null) {
+            workspace.classList.remove('es-hand-pan-grab', 'es-hand-pan-grabbing');
+            workspace.style.cursor = '';
+            if (workspace._esHandPanCursorTarget instanceof Element) {
+                workspace._esHandPanCursorTarget.style.cursor = '';
+            }
+            workspace._esHandPanCursorTarget = null;
+        }
+        if (this.viewer.pdfDiv?.length) {
+            this.viewer.pdfDiv.removeClass('es-hand-pan-grab es-hand-pan-grabbing');
+        }
     }
 
     ensureHandPanStyles() {
@@ -174,6 +199,9 @@ export class PdfHandPanController {
     }
 
     canStartHandPan(event) {
+        if (!this.isEnabled()) {
+            return false;
+        }
         if (event.button !== 0 || event.defaultPrevented) {
             return false;
         }

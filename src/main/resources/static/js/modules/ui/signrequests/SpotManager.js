@@ -39,6 +39,7 @@ export class SpotManager {
         const pdfViewer = this.options.getPdfViewer();
         const workspace = $("#workspace");
         const signrequestScope = $(".es-signrequest-main-content *");
+        const navigationToolsSelector = "#fullheight, #fullheight *, #fullwidth, #fullwidth *, #zoomout, #zoomout *, #zoomin, #zoomin *, #prev, #prev *, #next, #next *, #end-button, #end-button *, #page_num";
         const sidebarRoots = $(".es-signrequest-main-content #sidebar, .es-signrequest-main-content > .es-sidebar");
         this.preservedSidebarScope = sidebarRoots.length
             ? sidebarRoots.parentsUntil(".es-signrequest-main-content").addBack()
@@ -52,6 +53,7 @@ export class SpotManager {
         this.activeWorkspaceScope.addClass("es-spot-add-scope");
         $("body").addClass("es-spot-add-mode");
         signrequestScope.css('pointer-events', 'none');
+        $(navigationToolsSelector).css('pointer-events', 'auto');
         $('#workspace, #workspace *').css('pointer-events', 'auto');
         this.preservedSidebarScope.css({
             opacity: 1,
@@ -616,7 +618,6 @@ export class SpotManager {
         this.options.exitCommentAddMode();
         this.exitSpotAddMode();
         this.refreshSpotStepOptions();
-        this.options.setToolsDisabled(true);
         this.options.setSignSpacesDroppableEnabled(false);
         this.activateSpotAddMode();
         $(document).off("click" + this.options.spotAddNamespace);
@@ -630,13 +631,7 @@ export class SpotManager {
                 this.cancelSpotAddMode();
             }
         });
-        $("#spot-modal")
-            .off("hidden.bs.modal" + this.options.spotAddNamespace)
-            .on("hidden.bs.modal" + this.options.spotAddNamespace, () => {
-                if (this.spotAddEnabled) {
-                    this.cancelSpotAddMode();
-                }
-            });
+        $("#spot-modal").off("hidden.bs.modal" + this.options.spotAddNamespace);
         $("#commentHelp").remove();
         this.options.setSpotActionButtonsDisabled(true);
         this.options.startSpotPlacement();
