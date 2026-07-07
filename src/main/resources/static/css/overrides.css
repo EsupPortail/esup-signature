@@ -123,6 +123,16 @@ textarea:invalid {
     background-color: var(--color-rgba-200-200-200-05);
 }
 
+#commentsTools.tools-disabled {
+    pointer-events: none;
+    opacity: 0.45;
+}
+
+#commentsTools.tools-disabled,
+#commentsTools.tools-disabled * {
+    pointer-events: none !important;
+}
+
 .file-drop-zone {
     border: 2px dashed var(--color-dee2e6);
     min-height: revert;

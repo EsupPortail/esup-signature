@@ -282,8 +282,7 @@ export class SignWorkspaceController {
                 ['renderStarted', () => this.beginPdfRender()],
                 ['renderFinished', () => {
                     this.initSignWorkspace();
-                    // Débloquer l'UI dès que le rendu métier est terminé,
-                    // sans anticiper l'état renderComplete utilisé par la progress-bar.
+                    this.setPdfRenderComplete(true);
                     this.releaseToolsLoadingState();
                 }],
                 ['renderComplete', () => this.completePdfRender()],
@@ -571,6 +570,7 @@ export class SignWorkspaceController {
         this.toolsLoadingStateReleased = true;
         this.setPdfRenderMode(false);
         this.setToolsBarDisabled(false);
+        this.updateAnnotationActionButtonsAvailability();
         this.refreshToolbarAccessibility();
         this.focusPrimaryToolbarAction();
     }
@@ -899,8 +899,12 @@ export class SignWorkspaceController {
         this.toolbar.setSpotActionButtonsDisabled(disabled || !this.canUseAnnotationActions());
     }
 
+    shouldKeepToolsEnabledDuringPdfRender() {
+        return ['completed', 'exported', 'refused'].includes(this.status);
+    }
+
     setToolsBarDisabled(disabled) {
-        this.toolbar.setToolsDisabled(disabled);
+        this.toolbar.setToolsDisabled(disabled && !this.shouldKeepToolsEnabledDuringPdfRender());
     }
 
 
