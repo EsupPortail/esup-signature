@@ -261,7 +261,7 @@ body.es-pdf-render-mode .es-signrequest-main-content > .es-sidebar * {
     filter: none !important;
 }
 
-body.es-spot-add-mode .es-spot-add-scope > *:not(#workspace),
+body.es-spot-add-mode .es-spot-add-scope > *:not(#workspace):not(.es-nav-tools),
 body.es-pdf-render-mode .es-pdf-render-scope > *:not(#workspace):not(#tools) {
     opacity: 0.35;
     filter: grayscale(1);

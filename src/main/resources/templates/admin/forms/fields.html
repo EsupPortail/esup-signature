@@ -303,7 +303,7 @@
             </div>
             <div class="modal-body">
                 <script th:inline="javascript" type="module">
-                    import {FormManualAdd } from '/js/modules/ui/forms/FormManualAdd.js?version=@[(${versionApp})]@';
+                    import {FormManualAdd} from '/js/modules/ui/forms/FormManualAdd.js?version=@[(${versionApp})]@';
                     new FormManualAdd();
                 </script>
                 <form th:action="'/' + ${workflowRole} + '/forms/add-field/' + ${form.id}" method="post">

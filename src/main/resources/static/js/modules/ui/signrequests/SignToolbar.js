@@ -265,10 +265,21 @@ export class SignToolbar {
     }
 
     setSpotActionButtonsDisabled(disabled) {
-        $("#addSpotButton").attr("disabled", disabled);
-        $("#addCommentButton").attr("disabled", disabled);
-        $("#addSpotButton2").attr("disabled", disabled);
-        $("#addCommentButton2").attr("disabled", disabled);
+        $("#commentsTools")
+            .toggleClass("disabled", disabled)
+            .attr("aria-disabled", disabled ? "true" : "false").css("opacity", disabled ? "0.5" : "1");
+        $("#addSpotButton").prop("disabled", disabled);
+        $("#addCommentButton").prop("disabled", disabled);
+        $("#addSpotButton2").prop("disabled", disabled);
+        $("#addCommentButton2").prop("disabled", disabled);
+    }
+
+    setInsertActionsDisabled(disabled) {
+        const insertTools = $("#insert-btn-div");
+        insertTools
+            .toggleClass("opacity-50", disabled)
+            .attr("aria-disabled", disabled ? "true" : "false");
+        insertTools.find("button").prop("disabled", disabled);
     }
 
     destroy() {
@@ -278,4 +289,3 @@ export class SignToolbar {
     }
 
 }
-

@@ -34,6 +34,81 @@ textarea:invalid {
     box-shadow:none;
 }
 
+.progress {
+    --es-progress-track: var(--color-rgba-0-0-0-01);
+    --es-progress-fill: var(--color-rgba-13-110-253-03);
+    --es-progress-text: var(--bs-dark);
+    position: relative;
+    height: 1.35rem;
+    overflow: hidden;
+    border: 0;
+    border-radius: 999px;
+    background: var(--es-progress-track);
+    box-shadow: none;
+    color: var(--es-progress-text);
+    font-size: .78rem;
+    font-weight: 700;
+    letter-spacing: 0;
+}
+
+.progress-bar,
+.progress-bar-striped,
+.progress-bar-success,
+.progress-bar-danger {
+    position: relative;
+    overflow: hidden;
+    height: 100%;
+    border-radius: inherit;
+    background-color: var(--es-progress-fill) !important;
+    background-image: none !important;
+    background-size: auto !important;
+    box-shadow: none;
+    color: transparent;
+    transition: width .35s ease;
+}
+
+.progress-bar-animated {
+    animation: none !important;
+}
+
+.progress-label {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+    padding: 0 .75rem;
+    overflow: hidden;
+    color: var(--es-progress-text);
+    line-height: 1;
+    pointer-events: none;
+    text-align: center;
+    text-overflow: ellipsis;
+    text-shadow: none;
+    white-space: nowrap;
+}
+
+.es-pdf-progress-card {
+    box-shadow: none !important;
+}
+
+#pdf-progress-bar .progress {
+    height: 1.35rem;
+    background: var(--es-progress-track);
+}
+
+#pdf-progress-bar .progress-bar {
+    min-width: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .progress-bar {
+        transition: none !important;
+    }
+}
+
 .btn-transparent {
     background: var(--color-transparent);
     color: var(--color-f8f9fa);
@@ -896,4 +971,12 @@ input, textarea, select {
     position: absolute;
     z-index: 9999;
     max-width: 300px;
+}
+
+.theme-explorer-fa6 .file-thumb-progress .progress {
+    margin-bottom: 5px;
+}
+
+.kv-upload-progress .progress-bar {
+    color: var(--bs-dark);
 }

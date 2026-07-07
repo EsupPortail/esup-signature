@@ -1,4 +1,4 @@
-import {attachDirtyIndicator} from '../DirtyIndicator.js?version=@version@';
+import {attachDirtyIndicator} from "../DirtyIndicator.js?version=@version@";
 
 export default class ShareUi {
 

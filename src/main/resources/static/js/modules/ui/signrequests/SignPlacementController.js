@@ -1,7 +1,7 @@
 import {SignRequestParams} from "../../../prototypes/SignRequestParams.js?version=@version@";
 import {EventFactory} from "../../utils/EventFactory.js?version=@version@";
-import {UserUi} from '../users/UserUi.js?version=@version@';
-import {SignatureImageResolver, SPECIAL_SIGN_IMAGE_NUMBERS} from './SignatureImageResolver.js?version=@version@';
+import {UserUi} from "../users/UserUi.js?version=@version@";
+import {SignatureImageResolver, SPECIAL_SIGN_IMAGE_NUMBERS} from "./SignatureImageResolver.js?version=@version@";
 
 export class SignPlacementController extends EventFactory {
 
@@ -195,6 +195,7 @@ export class SignPlacementController extends EventFactory {
         signRequestParams.addEventListener("placementStateChanged", () => {
             this.refreshSteps?.();
             this.syncAddSignButtonState();
+            this.fireEvent("signPlacementChanged", []);
         });
         signRequestParams.addEventListener("spotSaved", e => this.onSpotSaved(e));
         signRequestParams.addEventListener("spotDeleted", e => this.onSpotDeleted(e));
@@ -346,6 +347,7 @@ export class SignPlacementController extends EventFactory {
         }
         this.refreshSteps();
         this.syncAddSignButtonState();
+        this.fireEvent("signPlacementChanged", []);
     }
 
     onSpotSaved(spotData) {

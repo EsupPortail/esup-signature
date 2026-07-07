@@ -1,5 +1,5 @@
 import {EventFactory} from "../modules/utils/EventFactory.js?version=@version@";
-import {UserUi} from '../modules/ui/users/UserUi.js?version=@version@';
+import {UserUi} from "../modules/ui/users/UserUi.js?version=@version@";
 import {UserSignaturePad} from "../modules/ui/users/UserSignaturePad.js?version=@version@";
 import NotificationCenter from "../modules/ui/NotificationCenter.js?version=@version@";
 import {SignatureImageResolver, SPECIAL_SIGN_IMAGE_NUMBERS} from "../modules/ui/signrequests/SignatureImageResolver.js?version=@version@";
