@@ -111,8 +111,8 @@ export class SpotManager {
         $("#spot-modal").off("hidden.bs.modal" + this.options.spotAddNamespace);
         this.options.setToolsDisabled(false);
         this.options.setSignSpacesDroppableEnabled(true);
-        this.options.setSpotActionButtonsDisabled(false);
         this.deactivateSpotAddMode();
+        this.options.setSpotActionButtonsDisabled(false);
     }
 
     cancelSpotAddMode() {
@@ -650,4 +650,3 @@ export class SpotManager {
     }
 
 }
-

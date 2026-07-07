@@ -1,5 +1,7 @@
 export class SignSpaceManager {
 
+	static SIGNATURE_PLACEMENT_MARGIN = 2;
+
 	constructor(state, options = {}) {
 		this.state = state;
 		this.options = {
@@ -308,19 +310,50 @@ export class SignSpaceManager {
 			resizedUi.size.height = maxHeight;
 			resizedUi.size.width  = resizedUi.size.height * ratio;
 		}
-		resizedUi.size.width = resizedUi.size.width - 2;
-		resizedUi.size.height = resizedUi.size.height - 2;
+		const placementMargin = SignSpaceManager.SIGNATURE_PLACEMENT_MARGIN;
+		const maxInnerWidth = maxWidth - placementMargin;
+		const maxInnerHeight = maxHeight - placementMargin;
+		if (maxInnerWidth <= 0 || maxInnerHeight <= 0) {
+			return false;
+		}
+		resizedUi.size.width = resizedUi.size.width - placementMargin;
+		resizedUi.size.height = resizedUi.size.height - placementMargin;
 		signRequestParams.resize(resizedUi);
-		cross.css("width", signRequestParams.signWidth * pdfViewer.scale);
-		cross.css("background-size", signRequestParams.signWidth * pdfViewer.scale);
-		cross.css("height", signRequestParams.signHeight * pdfViewer.scale);
+
+		for (let i = 0; i < 4; i++) {
+			const renderedWidth = signRequestParams.signWidth * pdfViewer.scale;
+			const renderedHeight = signRequestParams.signHeight * pdfViewer.scale;
+			if (renderedWidth <= maxInnerWidth && renderedHeight <= maxInnerHeight) {
+				break;
+			}
+			const resizeRatio = Math.min(maxInnerWidth / renderedWidth, maxInnerHeight / renderedHeight);
+			if (!Number.isFinite(resizeRatio) || resizeRatio <= 0) {
+				break;
+			}
+			signRequestParams.resize({
+				size: {
+					width: renderedWidth * resizeRatio,
+					height: renderedHeight * resizeRatio
+				}
+			});
+		}
+
+		const finalRenderedWidth = signRequestParams.signWidth * pdfViewer.scale;
+		const finalRenderedHeight = signRequestParams.signHeight * pdfViewer.scale;
+		const fitTolerance = 1;
+		const finalFits = finalRenderedWidth <= maxInnerWidth + fitTolerance
+			&& finalRenderedHeight <= maxInnerHeight + fitTolerance;
+		cross.css("width", finalRenderedWidth);
+		cross.css("background-size", finalRenderedWidth);
+		cross.css("height", finalRenderedHeight);
+		signRequestParams.inside = finalFits;
 		signRequestParams.dropped = true;
 
 		const slotIndex = parseInt(signSpaceDiv.attr("id")?.split("_")[1], 10);
 		if (Number.isFinite(slotIndex) && signPlacementController.currentSignRequestParamses?.[slotIndex] != null) {
-			signPlacementController.currentSignRequestParamses[slotIndex].ready = true;
+			signPlacementController.currentSignRequestParamses[slotIndex].ready = finalFits;
 		}
-		signRequestParams.ready = true;
+		signRequestParams.ready = finalFits;
 		if (typeof signRequestParams.refreshVisualState === "function") {
 			signRequestParams.refreshVisualState();
 		}

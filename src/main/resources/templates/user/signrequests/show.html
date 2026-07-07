@@ -5,7 +5,7 @@
 <!--/*@thymesVar id="signRequestLight" type="org.esupportail.esupsignature.dto.page.user.signrequest.ShowSignRequestDto.SignRequestLightDto"*/-->
 <!--/*@thymesVar id="globalProperties" type="org.esupportail.esupsignature.config.GlobalProperties"*/-->
 <head th:replace="~{fragments/head-full :: head}"></head>
-<body class="es-signrequest-page" th:classappend="${signRequestFull.signable && showSignRequest.toSignDocumentContentType == 'application/pdf'} ? ' signrequest-tools-loading' : ''">
+<body class="es-signrequest-page" th:classappend="${signRequestFull.signable && showSignRequest.toSignDocumentContentType == 'application/pdf'} ? ' es-pdf-render-mode' : ''">
 <script th:inline="javascript" type="module" th:if="${globalProperties.enableHelp}">
     import {SignRequestHelp} from '/js/modules/help/SignRequestHelp.js?version=@[(${versionApp})]@';
 
@@ -234,16 +234,16 @@
 
                 <nav th:if="${user.userType.name() == 'external'}" id="sidebar" th:insert="~{fragments/sides/side-otp :: side-otp}" th:unless="${showSignRequest.workflow.disableSidebarForExternal}"></nav>
                 <nav th:unless="${user.userType.name() == 'external'}" th:insert="~{fragments/sides/side-sign :: side-sign}"></nav>
-                <div class="es-workspace d-flex flex-column">
+                <div class="es-workspace d-flex flex-column" th:classappend="${signRequestFull.signable && showSignRequest.toSignDocumentContentType == 'application/pdf'} ? ' es-pdf-render-scope' : ''">
                     <div class="es-nav-tools d-flex justify-content-start" role="toolbar" aria-label="Outils du document" th:if="${showSignRequest.toSignDocumentContentType == 'application/pdf'}">
                         <div class="es-nav-tools-breadcrumb d-none" th:insert="~{user/signrequests/includes/show-sections :: breadcrumb-content}"></div>
                         <div class="d-flex justify-content-center align-items-center" th:if="${showSignRequest.toSignDocumentContentType == 'application/pdf'}">
                             <div id="commentsTools" th:if="${(signRequestFull.editable || signRequestFull.manager) && showSignRequest.toSignDocumentContentType == 'application/pdf'}" class="d-flex text-start gap-1">
-                                <button th:if="${signRequestFull.manager && signRequestFull.formId == null && (signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}" id="addSpotButton"
+                                <button type="button" disabled th:if="${signRequestFull.manager && signRequestFull.formId == null && (signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}" id="addSpotButton"
                                         class="d-none d-lg-flex align-items-center btn btn-transparent text-warning-emphasis" style="max-height: 33px;">
                                     <i class="fi fi-rr-digital-signature"></i><span class="d-none d-xxxl-flex"> Emplacement</span>
                                 </button>
-                                <button th:if="${signRequestFull.editable}" id="addCommentButton"
+                                <button type="button" disabled th:if="${signRequestFull.editable}" id="addCommentButton"
                                         class="d-none d-lg-flex align-items-center btn btn-transparent text-warning-emphasis" style="max-height: 33px;">
                                     <i class="fi fi-rr-comment"></i><span class="d-none d-xxxl-flex"> Annotation</span>
                                 </button>

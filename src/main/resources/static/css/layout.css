@@ -408,19 +408,27 @@ body.es-signrequest-page .es-signrequest-main-content > .es-workspace {
 }
 
 #pdf-progress-bar {
-    position: absolute;
-    top: 0;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     width: 100%;
+    height: auto;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 1rem;
-    z-index: 4;
-    opacity: 1;
-    -webkit-transition:opacity 1s linear;
-    -moz-transition: opacity 1s linear;
-    -o-transition:opacity 1s linear;
+    z-index: 2000;
+    opacity: 0;
+    transition: opacity 1s linear;
+    -webkit-transition: opacity 1s linear;
     pointer-events: none;
+}
+
+#pdf-progress-bar.es-progress-visible {
+    opacity: 1;
+    transition: none !important;
+    -webkit-transition: none !important;
 }
 
 .es-pdf-progress-card {

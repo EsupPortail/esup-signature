@@ -249,6 +249,12 @@ export class SignatureFlowController {
 
     prepareLaunchSign(forcePanel = false) {
         const signUi = this.signUi;
+        const signPlacementController = signUi.workspace?.signPlacementController;
+        if (signPlacementController?.hasInvalidSignaturePlacement?.()) {
+            bootbox.alert("Merci de placer la signature entierement dans une page avant de signer");
+            signPlacementController.refreshSteps?.();
+            return;
+        }
         this.setContextualSignAll(signUi.nbSignRequests > 1 ? null : false);
         console.info("launch sign modal");
         window.onbeforeunload = null;

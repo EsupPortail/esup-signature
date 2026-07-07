@@ -74,6 +74,9 @@ export class CommentManager {
         const pdfViewer = this.options.getPdfViewer();
         let target = e.target;
         let page = $(target).closest('.pdf-page');
+        if (!page.length && this.options.isAddSpotEnabled()) {
+            return;
+        }
         if (!page.length) {
             page = $("#page_" + pdfViewer.pageNum);
         }
@@ -86,6 +89,11 @@ export class CommentManager {
         $('#commentPageNumber').val(pageNumber);
         let xPos = Math.round(e.clientX - pageRect.left);
         let yPos = Math.round(e.clientY - pageRect.top);
+        if (this.options.isAddSpotEnabled()) {
+            const correctedCoordinates = this.getCorrectedCommentCoordinates(pageNumber, xPos, yPos);
+            xPos = correctedCoordinates.x * (pdfViewer.scale || 1);
+            yPos = correctedCoordinates.y * (pdfViewer.scale || 1);
+        }
         $("#commentPosX").val(xPos);
         $('#commentPosY').val(yPos);
         console.debug("debug - mouse pos : " + xPos + ", " + yPos);
@@ -110,6 +118,12 @@ export class CommentManager {
         let spotStepNumber = "";
         if(addSpotEnabled) {
             spotStepNumber = spotStepNumberVal.val();
+            const scale = this.options.getPdfViewer()?.scale || 1;
+            const correctedCoordinates = this.getCorrectedCommentCoordinates($("#commentPageNumber").val(), xPos * scale, yPos * scale);
+            xPos = correctedCoordinates.x;
+            yPos = correctedCoordinates.y;
+            $("#commentPosX").val(xPos);
+            $("#commentPosY").val(yPos);
         }
         const csrf = this.options.csrf();
         let commentUrlParams =
@@ -276,8 +290,8 @@ export class CommentManager {
             0,
             pageHeight,
             targetHeight,
-            CommentManager.COMMENT_COORDINATE_MARGIN_Y * pdfViewer.scale,
-            CommentManager.COMMENT_COORDINATE_MARGIN_Y * pdfViewer.scale
+            CommentManager.COMMENT_COORDINATE_MARGIN_X * pdfViewer.scale,
+            CommentManager.COMMENT_COORDINATE_MARGIN_X * pdfViewer.scale
         );
         const clampedRenderedX = this.clampDialogCoordinate(renderedX || 0, xBounds);
         const clampedRenderedY = this.clampDialogCoordinate(renderedY || 0, yBounds);
@@ -610,6 +624,3 @@ export class CommentManager {
     }
 
 }
-
-
-
