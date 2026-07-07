@@ -153,7 +153,7 @@ public class GlobalWsSecureController {
                 .body(pdf);
     }
 
-    @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
+    @PreAuthorize("@preAuthorizeService.signRequestLayeredDownload(#id, #stepNumber, #userEppn, #authUserEppn)")
     @GetMapping("/get-layered-file/{id}/{stepNumber}")
     public ResponseEntity<byte[]> downloadLayeredDocumentAtStep(
             @PathVariable Long id,
