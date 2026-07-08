@@ -430,6 +430,9 @@ public class GlobalProperties {
     /** Taille de police par défaut pour le texte des signatures */
     private Integer defaultFontSize = 14;
 
+    /** Interligne des informations ajoutées aux signatures */
+    private Float signatureExtraLineHeightFactor = 1.5f;
+
 
     public String newVersion;
 
@@ -1038,5 +1041,16 @@ public class GlobalProperties {
 
     public void setDefaultFontSize(Integer defaultFontSize) {
         this.defaultFontSize = defaultFontSize;
+    }
+
+    public Float getSignatureExtraLineHeightFactor() {
+        if(signatureExtraLineHeightFactor == null || !Float.isFinite(signatureExtraLineHeightFactor) || signatureExtraLineHeightFactor <= 0) {
+            return 1.5f;
+        }
+        return signatureExtraLineHeightFactor;
+    }
+
+    public void setSignatureExtraLineHeightFactor(Float signatureExtraLineHeightFactor) {
+        this.signatureExtraLineHeightFactor = signatureExtraLineHeightFactor;
     }
 }

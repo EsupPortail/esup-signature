@@ -317,7 +317,7 @@
 
     .workspace,
     .es-workspace {
-        margin-top: -45px;
+        margin-top: -40px;
     }
 
     .pdf-alerts-btn {
@@ -421,7 +421,7 @@
 
     .workspace,
     .es-workspace {
-        margin-top: -45px;
+        margin-top: -40px;
     }
 
     body.es-signrequest-page #tools.es-tools {
@@ -500,6 +500,10 @@
     }
     .es-content-full {
         /*margin-top: 40px;*/
+    }
+    .workspace,
+    .es-workspace {
+        margin-top: 0px;
     }
     .main-content, .es-main-content {
         margin-top: -40px !important;
@@ -608,7 +612,7 @@
 
     .workspace,
     .es-workspace {
-        margin-top: -45px;
+        margin-top: 0px;
     }
 
     body.es-signrequest-page #tools.es-tools {

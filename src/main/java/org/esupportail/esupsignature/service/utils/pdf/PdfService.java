@@ -191,8 +191,8 @@ public class PdfService {
         DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.FRENCH);
         InputStream signImage = null;
         Float fixFactor = globalProperties.getFixFactor();
-        float requestedRenderedSignWidth = signRequestParams.getSignWidth() * signRequestParams.getSignScale() * fixFactor;
-        float requestedRenderedSignHeight = signRequestParams.getSignHeight() * signRequestParams.getSignScale() * fixFactor;
+        float maxRenderedSignWidth = signRequestParams.getSignWidth() * signRequestParams.getSignScale() * fixFactor;
+        float maxRenderedSignHeight = signRequestParams.getSignHeight() * signRequestParams.getSignScale() * fixFactor;
         if (signRequestParams.getSignImageNumber() < 0) {
             signImage = fileService.getFaImageByIndex(signRequestParams.getSignImageNumber());
         } else {
@@ -228,31 +228,33 @@ public class PdfService {
             }
         }
 
+        BufferedImage bufferedSignImage = signImage != null ? ImageIO.read(signImage) : null;
         float tx = 0;
         float ty = 0;
         PDRectangle pageBox = pdPage.getCropBox();
-        float renderedSignWidth = signRequestParams.getSignWidth() * signRequestParams.getSignScale() * fixFactor;
-        float renderedSignHeight = signRequestParams.getSignHeight() * signRequestParams.getSignScale() * fixFactor;
         if(BooleanUtils.isTrue(signRequestParams.getConstrainToSignatureField()) && StringUtils.hasText(signRequestParams.getPdSignatureFieldName())) {
             PDRectangle signatureFieldRectangle = getSignatureFieldRectangle(pdDocument, signRequestParams.getPdSignatureFieldName());
-            float maxRenderedSignWidth = signatureFieldRectangle != null ? signatureFieldRectangle.getWidth() : signRequestParams.getSignWidth() * fixFactor;
-            float maxRenderedSignHeight = signatureFieldRectangle != null ? signatureFieldRectangle.getHeight() : signRequestParams.getSignHeight() * fixFactor;
-            if(renderedSignWidth > 0 && renderedSignHeight > 0
-                    && maxRenderedSignWidth > 0 && maxRenderedSignHeight > 0
-                    && (renderedSignWidth > maxRenderedSignWidth || renderedSignHeight > maxRenderedSignHeight)) {
-                float ratio = renderedSignWidth / renderedSignHeight;
-                renderedSignWidth = maxRenderedSignWidth;
-                renderedSignHeight = renderedSignWidth / ratio;
-                if(renderedSignHeight > maxRenderedSignHeight) {
-                    renderedSignHeight = maxRenderedSignHeight;
-                    renderedSignWidth = renderedSignHeight * ratio;
-                }
+            if (signatureFieldRectangle != null) {
+                maxRenderedSignWidth = signatureFieldRectangle.getWidth();
+                maxRenderedSignHeight = signatureFieldRectangle.getHeight();
+            }
+        }
+        float renderedSignWidth = maxRenderedSignWidth;
+        float renderedSignHeight = maxRenderedSignHeight;
+        if (bufferedSignImage != null && maxRenderedSignWidth > 0 && maxRenderedSignHeight > 0
+                && bufferedSignImage.getWidth() > 0 && bufferedSignImage.getHeight() > 0) {
+            float imageRatio = (float) bufferedSignImage.getWidth() / bufferedSignImage.getHeight();
+            renderedSignWidth = maxRenderedSignWidth;
+            renderedSignHeight = renderedSignWidth / imageRatio;
+            if (renderedSignHeight > maxRenderedSignHeight) {
+                renderedSignHeight = maxRenderedSignHeight;
+                renderedSignWidth = renderedSignHeight * imageRatio;
             }
         }
         float xAdjusted = signRequestParams.getxPos() * fixFactor;
         if ((pdfParameters.getRotation() == 0 || pdfParameters.getRotation() == 180)
                 && !fitsTopLeftBounds(pageBox, xAdjusted, signRequestParams.getyPos() * fixFactor, renderedSignWidth, renderedSignHeight)
-                && fitsTopLeftBounds(pageBox, xAdjusted, signRequestParams.getyPos() * fixFactor, requestedRenderedSignWidth, requestedRenderedSignHeight)) {
+                && fitsTopLeftBounds(pageBox, xAdjusted, signRequestParams.getyPos() * fixFactor, maxRenderedSignWidth, maxRenderedSignHeight)) {
             float availableWidth = pageBox.getUpperRightX() - xAdjusted;
             float availableHeight = pageBox.getHeight() - signRequestParams.getyPos() * fixFactor;
             float ratio = Math.min(availableWidth / renderedSignWidth, availableHeight / renderedSignHeight);
@@ -297,8 +299,7 @@ public class PdfService {
 
         contentStream.beginMarkedContent(COSName.OC, ocg);
 
-        if (signImage != null) {
-            BufferedImage bufferedSignImage = ImageIO.read(signImage);
+        if (bufferedSignImage != null) {
             validateSignatureBounds(pageBox, xAdjusted, yAdjusted, renderedSignWidth, renderedSignHeight, pageNumber);
             logger.info("stamp image to " + Math.round(xAdjusted) + ", " + Math.round(yAdjusted) + " on page : " + pageNumber);
             ByteArrayOutputStream signImageByteArrayOutputStream = new ByteArrayOutputStream();

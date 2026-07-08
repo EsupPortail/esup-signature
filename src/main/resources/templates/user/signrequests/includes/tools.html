@@ -12,7 +12,8 @@
     </div>
     <div class="d-flex justify-content-around align-items-center m-2 bg-white rounded-3 shadow-sm"
         th:if="${annotation == null}"
-        th:with="isCompletedRequest=${signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported}"
+        th:with="isCompletedRequest=${signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned},
+                 isCompletedSignBook=${showSignRequest.signBookLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || showSignRequest.signBookLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || showSignRequest.signBookLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived || showSignRequest.signBookLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned}"
         style="min-height: 72px; height: auto;">
         <a tabindex="1" id="start-button" role="button" class="btn p-3 btn-success pulse-success" title="Démarrer le circuit" data-bs-toggle="modal" data-bs-target="#sendModal" th:if="${!signRequestFull.signable && signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}">
             <i class="fi fi-rr-play-alt" style="margin-top: 0"></i> Envoyer la demande
@@ -43,14 +44,21 @@
             <i class="fi fi-rr-flag"></i> Vous avez signé ce document
         </div>
         <a class="ms-1 d-flex justify-content-center btn btn-success p-3 d-flex h-100" th:if="${isCompletedRequest}" tabindex="1" th:href="'/ws-secure/global/get-last-file/' + ${signRequestLight.id}" target="_blank">
-            <i class="fi fi-rr-download " style="margin-top: 0"></i> Télécharger le document signé
+            <i class="fi fi-rr-download d-flex align-items-center" style="margin-top: 0"></i> Télécharger le document signé
         </a>
-        <a class="ms-1 d-flex justify-content-center btn btn-outline-success p-3 h-100"
+        <a class="ms-1 d-none d-md-flex justify-content-center btn btn-outline-success p-3 h-100"
+            th:if="${signRequestFull.nbSignRequests > 1 && isCompletedSignBook}"
+            tabindex="1"
+            th:href="'/ws-secure/global/get-last-files/' + ${showSignRequest.signBookLight.id}"
+            target="_blank" >
+            <i class="fi fi-rr-box d-flex align-items-center" style="margin-top: 0"></i> Tout télécharger
+        </a>
+        <a class="ms-1 d-none d-sm-flex justify-content-center btn btn-outline-success p-3 h-100"
             th:if="${isCompletedRequest && showSignRequest.nextSignRequestId != null}"
             tabindex="1"
             th:href="'/' + ${showSignRequest.urlProfil} + '/signrequests/' + ${showSignRequest.nextSignRequestId}"
             title="Aller à la demande suivante">
-            <i class="fi fi-rr-arrow-small-right" style="margin-top: 0"></i> Aller à la suivante
+            <i class="fi fi-rr-arrow-small-right d-flex align-items-center" style="margin-top: 0"></i><span class="d-none d-md-block"> Aller à la suivante<span>
         </a>
         <div class="es-steps-responsive-nav" th:if="${signRequestFull.signable}">
             <div class="steps-horizontal-v2 d-flex justify-content-center" style="width: 100%;">

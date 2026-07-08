@@ -221,7 +221,49 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
                 )
             )
         """)
-    Page<SignBook> findByWorkflowName(User recipientUser, SignRequestStatus statusFilter, Boolean deleted, Long workflowId, String docTitleFilter, User creatorFilter, Date startDateFilter, Date endDateFilter, Pageable pageable, User user);
+    Page<SignBook> findByWorkflowId(User recipientUser, SignRequestStatus statusFilter, Boolean deleted, Long workflowId, String docTitleFilter, User creatorFilter, Date startDateFilter, Date endDateFilter, Pageable pageable, User user);
+
+    @Query("""
+           select sb from SignBook sb
+           where :user not member of sb.hidedBy
+            and size(sb.signRequests) > 0
+            and (:workflowId is null or sb.liveWorkflow.workflow.id = :workflowId)
+            and (:docTitleFilter is null or lower(sb.subject) like :docTitleFilter escape '\\')
+            and (:creatorFilter is null or sb.createBy = :creatorFilter)
+            and (:statusFilter is null or :statusFilter = 'deleted' or sb.status = :statusFilter)
+            and (:statusFilter is null or (sb.deleted is null and :statusFilter != 'deleted') or sb.deleted = :deleted or (:deleted = true and sb.status = 'deleted'))
+            and (sb.createDate between :startDateFilter and :endDateFilter)
+            and (
+                :recipientUser is null
+                or exists (
+                    select 1 from SignRequest sr
+                    join sr.recipientHasSigned rhs
+                    where sr.parentSignBook = sb
+                      and (key(rhs).user = :recipientUser)
+                )
+                or exists (
+                    select 1 from LiveWorkflowStep lws
+                    join lws.recipients r
+                    where lws member of sb.liveWorkflow.liveWorkflowSteps
+                    and r.user = :recipientUser
+                )
+            )
+            order by
+                case when :endDateSortAsc = true then coalesce(
+                    sb.endDate,
+                    (select max(signedDocument.createDate) from SignRequest signedRequest join signedRequest.signedDocuments signedDocument where signedRequest.parentSignBook = sb),
+                    (select max(originalDocument.createDate) from SignRequest originalRequest join originalRequest.originalDocuments originalDocument where originalRequest.parentSignBook = sb),
+                    sb.createDate
+                ) end asc,
+                case when :endDateSortAsc = false then coalesce(
+                    sb.endDate,
+                    (select max(signedDocument.createDate) from SignRequest signedRequest join signedRequest.signedDocuments signedDocument where signedRequest.parentSignBook = sb),
+                    (select max(originalDocument.createDate) from SignRequest originalRequest join originalRequest.originalDocuments originalDocument where originalRequest.parentSignBook = sb),
+                    sb.createDate
+                ) end desc,
+                sb.id desc
+        """)
+    Page<SignBook> findByWorkflowIdOrderByEffectiveEndDate(User recipientUser, SignRequestStatus statusFilter, Boolean deleted, Long workflowId, String docTitleFilter, User creatorFilter, Date startDateFilter, Date endDateFilter, Pageable pageable, User user, Boolean endDateSortAsc);
 
     @Query("""
             select sb from SignBook sb
@@ -245,7 +287,45 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
                       and r.user = :recipientUser
                   ))
             """)
-    Page<SignBook> findByWorkflowNameHided(User recipientUser, SignRequestStatus statusFilter, Boolean deleted, Long workflowId, String docTitleFilter, User creatorFilter, Date startDateFilter, Date endDateFilter, Pageable pageable, User user);
+    Page<SignBook> findByWorkflowIdHided(User recipientUser, SignRequestStatus statusFilter, Boolean deleted, Long workflowId, String docTitleFilter, User creatorFilter, Date startDateFilter, Date endDateFilter, Pageable pageable, User user);
+
+    @Query("""
+            select sb from SignBook sb
+            where (:workflowId is null or sb.liveWorkflow.workflow.id = :workflowId)
+              and (:docTitleFilter is null or lower(sb.subject) like :docTitleFilter escape '\\')
+              and (:creatorFilter is null or sb.createBy = :creatorFilter)
+              and (:statusFilter is null or :statusFilter = 'deleted' or sb.status = :statusFilter)
+              and (:statusFilter is null or (sb.deleted is null and :statusFilter != 'deleted') or sb.deleted = :deleted or (:deleted = true and sb.status = 'deleted'))
+              and size(sb.signRequests) > 0
+              and :user member of sb.hidedBy
+              and (sb.createDate between :startDateFilter and :endDateFilter)
+              and (:recipientUser is null or exists (
+                    select 1 from SignRequest sr
+                    join sr.recipientHasSigned rhs
+                    where sr.parentSignBook = sb
+                      and key(rhs).user = :recipientUser
+                  ) or exists (
+                    select 1 from LiveWorkflowStep lws
+                    join lws.recipients r
+                    where lws in elements(sb.liveWorkflow.liveWorkflowSteps)
+                      and r.user = :recipientUser
+                  ))
+              order by
+                  case when :endDateSortAsc = true then coalesce(
+                      sb.endDate,
+                      (select max(signedDocument.createDate) from SignRequest signedRequest join signedRequest.signedDocuments signedDocument where signedRequest.parentSignBook = sb),
+                      (select max(originalDocument.createDate) from SignRequest originalRequest join originalRequest.originalDocuments originalDocument where originalRequest.parentSignBook = sb),
+                      sb.createDate
+                  ) end asc,
+                  case when :endDateSortAsc = false then coalesce(
+                      sb.endDate,
+                      (select max(signedDocument.createDate) from SignRequest signedRequest join signedRequest.signedDocuments signedDocument where signedRequest.parentSignBook = sb),
+                      (select max(originalDocument.createDate) from SignRequest originalRequest join originalRequest.originalDocuments originalDocument where originalRequest.parentSignBook = sb),
+                      sb.createDate
+                  ) end desc,
+                  sb.id desc
+            """)
+    Page<SignBook> findByWorkflowIdHidedOrderByEffectiveEndDate(User recipientUser, SignRequestStatus statusFilter, Boolean deleted, Long workflowId, String docTitleFilter, User creatorFilter, Date startDateFilter, Date endDateFilter, Pageable pageable, User user, Boolean endDateSortAsc);
 
     @Query("""
             select distinct sb.subject from SignBook sb

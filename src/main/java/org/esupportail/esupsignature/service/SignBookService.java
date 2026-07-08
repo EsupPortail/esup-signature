@@ -46,8 +46,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.MessageSource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaTypeFactory;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -245,15 +247,31 @@ public class SignBookService {
         }
 
         Page<SignBook> signBooks;
-        if(hided) {
-            signBooks = signBookRepository.findByWorkflowNameHided(userFilter, statusFilter, SignRequestStatus.deleted.equals(statusFilter), workflowId, docTitleLikeFilter, creatorFilterUser, startDateFilter, endDateFilter, pageable, user);
+        Sort.Order effectiveEndDateOrder = getEffectiveEndDateOrder(pageable);
+        if(effectiveEndDateOrder != null) {
+            Pageable unsortedPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
+            if(hided) {
+                signBooks = signBookRepository.findByWorkflowIdHidedOrderByEffectiveEndDate(userFilter, statusFilter, SignRequestStatus.deleted.equals(statusFilter), workflowId, docTitleLikeFilter, creatorFilterUser, startDateFilter, endDateFilter, unsortedPageable, user, effectiveEndDateOrder.isAscending());
+            } else {
+                signBooks = signBookRepository.findByWorkflowIdOrderByEffectiveEndDate(userFilter, statusFilter, SignRequestStatus.deleted.equals(statusFilter), workflowId, docTitleLikeFilter, creatorFilterUser, startDateFilter, endDateFilter, unsortedPageable, user, effectiveEndDateOrder.isAscending());
+            }
+            signBooks = new PageImpl<>(signBooks.getContent(), pageable, signBooks.getTotalElements());
+        } else if(hided) {
+            signBooks = signBookRepository.findByWorkflowIdHided(userFilter, statusFilter, SignRequestStatus.deleted.equals(statusFilter), workflowId, docTitleLikeFilter, creatorFilterUser, startDateFilter, endDateFilter, pageable, user);
         } else {
-            signBooks = signBookRepository.findByWorkflowName(userFilter, statusFilter, SignRequestStatus.deleted.equals(statusFilter), workflowId, docTitleLikeFilter, creatorFilterUser, startDateFilter, endDateFilter, pageable, user);
+            signBooks = signBookRepository.findByWorkflowId(userFilter, statusFilter, SignRequestStatus.deleted.equals(statusFilter), workflowId, docTitleLikeFilter, creatorFilterUser, startDateFilter, endDateFilter, pageable, user);
         }
         for(SignBook signBook : signBooks) {
             signBook.setDisplayNotif(signRequestService.isDisplayNotif(signBook.getSignRequests().get(0), userEppn));
         }
         return signBooks;
+    }
+
+    private Sort.Order getEffectiveEndDateOrder(Pageable pageable) {
+        if (pageable == null || pageable.getSort().isUnsorted()) {
+            return null;
+        }
+        return pageable.getSort().getOrderFor("endDate");
     }
 
     @Transactional(readOnly = true)
@@ -418,6 +436,15 @@ public class SignBookService {
     @Transactional(readOnly = true)
     public List<ShowSignRequestDto.TargetDto> getLiveWorkflowTargetDtos(Long signBookId) {
         return uiSignBookMapper.toLiveWorkflowTargetDtos(signBookRepository.findTargetProjectionsById(signBookId));
+    }
+
+    public int countPendingSignRequests(SignBook signBook) {
+        if (signBook == null || signBook.getSignRequests() == null) {
+            return 0;
+        }
+        return (int) signBook.getSignRequests().stream()
+                .filter(signRequest -> SignRequestStatus.pending.equals(signRequest.getStatus()) && !Boolean.TRUE.equals(signRequest.getDeleted()))
+                .count();
     }
 
     /**
@@ -1537,8 +1564,13 @@ public class SignBookService {
         if(targetUrl != null && !targetUrl.isEmpty()) {
             signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(targetUrl, true, false, false, false));
         }
-        Map<SignBook, String> signBookStringMap = sendSignBook(signBook, pending, steps.get(0).getComment(), steps, createByEppn, createByEppn, forceSendEmail);
         Map<Integer, List<SignRequestParams>> integerListMap = new HashMap<>();
+        if(!StringUtils.hasText(signRequestParamsDetectionPattern)) {
+            for(SignRequest signRequest : signBook.getSignRequests()) {
+                integerListMap = replaceSignRequestParamsWithDtoParams(steps, signRequest);
+            }
+        }
+        Map<SignBook, String> signBookStringMap = sendSignBook(signBook, pending, steps.get(0).getComment(), steps, createByEppn, createByEppn, forceSendEmail);
         for(SignRequest signRequest : signBook.getSignRequests()) {
             if(StringUtils.hasText(signRequestParamsDetectionPattern)) {
                 if(authUser.getFavoriteSignRequestParams() != null) {
@@ -1564,8 +1596,6 @@ public class SignBookService {
                     }
                 }
                 dispatchSignRequestParams(signRequest);
-            } else {
-                integerListMap = replaceSignRequestParamsWithDtoParams(steps, signRequest);
             }
         }
         int stepNumber = 0;
@@ -2418,7 +2448,7 @@ public class SignBookService {
         for(Long id : ids) {
             SignBook signBook = getById(id);
             for (SignRequest signRequest : signBook.getSignRequests()) {
-                if(signRequest.getStatus().equals(SignRequestStatus.completed) || signRequest.getStatus().equals(SignRequestStatus.exported)) {
+                if(isDownloadableSignedStatus(signRequest.getStatus())) {
                     FsFile fsFile = signRequestService.getLastSignedFsFile(signRequest);
                     if(fsFile != null) {
                         fsFiles.add(fsFile);
@@ -2445,6 +2475,13 @@ public class SignBookService {
         zipOutputStream.close();
     }
 
+    private boolean isDownloadableSignedStatus(SignRequestStatus status) {
+        return SignRequestStatus.completed.equals(status)
+                || SignRequestStatus.exported.equals(status)
+                || SignRequestStatus.archived.equals(status)
+                || SignRequestStatus.cleaned.equals(status);
+    }
+
     /**
      * Cette méthode permet de récupérer plusieurs documents signés avec leurs rapports et de les compresser dans un fichier ZIP à télécharger.
      *
@@ -2461,7 +2498,7 @@ public class SignBookService {
         for(Long id : ids) {
             SignBook signBook = getById(id);
             for (SignRequest signRequest : signBook.getSignRequests()) {
-                if(signRequest.getStatus().equals(SignRequestStatus.completed) || signRequest.getStatus().equals(SignRequestStatus.exported))
+                if(isDownloadableSignedStatus(signRequest.getStatus()))
                     documents.put(signRequestService.getZipWithDocAndReport(signRequest, httpServletRequest, httpServletResponse), signBook.getSubject());
             }
         }

@@ -550,7 +550,11 @@
 			<groupId>com.github.jai-imageio</groupId>
 			<artifactId>jai-imageio-core</artifactId>
 			<version>1.4.0</version>
-			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.github.jai-imageio</groupId>
+			<artifactId>jai-imageio-jpeg2000</artifactId>
+			<version>1.4.0</version>
 		</dependency>
 		<dependency>
 			<groupId>io.github.jpenren</groupId>
