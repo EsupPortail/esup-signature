@@ -223,6 +223,11 @@ public class GlobalProperties {
     private Boolean pdfOnly = false;
 
     /**
+     * Désactiver la normalisation des PDF.
+     */
+    private Boolean disableNormalizePdf = false;
+
+    /**
      * Exporter les pièces jointes (si actif, l'export sera un dossier contenant le document signé ainsi que les PJ)
      */
     public Boolean exportAttachements = true;
@@ -717,6 +722,14 @@ public class GlobalProperties {
 
     public void setPdfOnly(Boolean pdfOnly) {
         this.pdfOnly = pdfOnly;
+    }
+
+    public Boolean getDisableNormalizePdf() {
+        return disableNormalizePdf;
+    }
+
+    public void setDisableNormalizePdf(Boolean disableNormalizePdf) {
+        this.disableNormalizePdf = disableNormalizePdf;
     }
 
     public boolean getExportAttachements() {
