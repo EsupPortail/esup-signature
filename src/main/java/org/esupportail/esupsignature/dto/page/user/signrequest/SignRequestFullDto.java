@@ -32,6 +32,7 @@ public class SignRequestFullDto {
     private SignRequestStatus status;
     private String action;
     private Integer nbSignRequests;
+    private Integer nbPendingSignRequests;
     private Boolean notSigned;
     private Boolean attachmentAlert;
     private Boolean attachmentRequire;
@@ -82,6 +83,8 @@ public class SignRequestFullDto {
     public void setAction(String action) { this.action = action; }
     public Integer getNbSignRequests() { return nbSignRequests; }
     public void setNbSignRequests(Integer nbSignRequests) { this.nbSignRequests = nbSignRequests; }
+    public Integer getNbPendingSignRequests() { return nbPendingSignRequests; }
+    public void setNbPendingSignRequests(Integer nbPendingSignRequests) { this.nbPendingSignRequests = nbPendingSignRequests; }
     public Boolean getNotSigned() { return notSigned; }
     public void setNotSigned(Boolean notSigned) { this.notSigned = notSigned; }
     public Boolean getAttachmentAlert() { return attachmentAlert; }
@@ -118,6 +121,7 @@ public class SignRequestFullDto {
     public SignRequestStatus status() { return status; }
     public String action() { return action; }
     public Integer nbSignRequests() { return nbSignRequests; }
+    public Integer nbPendingSignRequests() { return nbPendingSignRequests; }
     public Boolean notSigned() { return notSigned; }
     public Boolean attachmentAlert() { return attachmentAlert; }
     public Boolean attachmentRequire() { return attachmentRequire; }

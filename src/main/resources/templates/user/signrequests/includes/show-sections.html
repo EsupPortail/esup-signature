@@ -11,7 +11,7 @@
     </div>
 
     <div style="flex: 1 1 auto; min-width: 0;" th:replace="~{user/signrequests/includes/ws-tabs :: ws-tabs}"></div>
-    <div class="btn-group me-2 ms-auto" role="group" aria-label="Ouverture automatique de la demande suivante" th:if="${showSignRequest.nextSignRequestId != null}">
+    <div class="btn-group me-2 ms-auto d-none d-md-block" role="group" aria-label="Ouverture automatique de la demande suivante" th:if="${showSignRequest.nextSignRequestId != null}">
         <button type="button"
                 class="btn btn-sm text-uppercase d-flex align-items-center gap-2 text-dark js-sign-goto-next-switch"
                 aria-pressed="false"
@@ -107,7 +107,7 @@
                 <i class="fi fi-rr-download " style="margin-top: 0"></i>
             </a>
         </div>
-        <div th:if="${signRequestFull.nbSignRequests > 1 && signRequestLight.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
+        <div th:if="${signRequestFull.nbSignRequests > 1 && (showSignRequest.signBookLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || showSignRequest.signBookLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || showSignRequest.signBookLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived || showSignRequest.signBookLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned)}">
             <a tabindex="1" class="d-flex justify-content-center btn btn-transparent text-dark me-1 d-none d-sm-flex"
                th:href="'/ws-secure/global/get-last-files/' + ${showSignRequest.signBookLight.id}" target="_blank"
                title="Télécharger la dernière version des documents dans une archive ZIP">
@@ -168,5 +168,4 @@
 </div>
 
 </html>
-
 

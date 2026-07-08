@@ -130,6 +130,7 @@ export class SignUiFrontDto {
         this.status = source.status ?? null;
         this.action = source.action ?? null;
         this.nbSignRequests = source.nbSignRequests ?? 0;
+        this.nbPendingSignRequests = source.nbPendingSignRequests ?? 0;
         this.notSigned = Boolean(source.notSigned);
         this.attachmentAlert = Boolean(source.attachmentAlert);
         this.attachmentRequire = Boolean(source.attachmentRequire);

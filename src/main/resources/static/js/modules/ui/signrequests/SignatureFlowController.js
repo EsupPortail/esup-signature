@@ -255,7 +255,7 @@ export class SignatureFlowController {
             signPlacementController.refreshSteps?.();
             return;
         }
-        this.setContextualSignAll(signUi.nbSignRequests > 1 ? null : false);
+        this.setContextualSignAll(signUi.nbPendingSignRequests > 1 ? null : false);
         console.info("launch sign modal");
         window.onbeforeunload = null;
         signUi.workspace.signPlacementController.lockSigns();
@@ -495,7 +495,7 @@ export class SignatureFlowController {
     requestContextualInfo() {
         const signUi = this.signUi;
         const needsPassword = signUi.certTypeSelect.val() === "userCert" && this.getContextualPassword().trim() === "";
-        const needsSignAll = signUi.nbSignRequests > 1 && this.contextualSignAll == null;
+        const needsSignAll = signUi.nbPendingSignRequests > 1 && this.contextualSignAll == null;
 
         if (signUi.certTypeSelect.val() !== "userCert") {
             this.setContextualPassword("");

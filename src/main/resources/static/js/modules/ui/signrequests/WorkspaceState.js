@@ -25,6 +25,7 @@ export class WorkspaceState {
         this.currentStepNumber = signUiDto.currentStepNumber;
         this.currentStepMinSignLevel = signUiDto.currentStepMinSignLevel;
         this.nbSignRequests = signUiDto.nbSignRequests;
+        this.nbPendingSignRequests = signUiDto.nbPendingSignRequests;
         this.attachmentRequire = signUiDto.attachmentRequire;
         this.attachmentAlert = signUiDto.attachmentAlert;
         this.status = signUiDto.status;
@@ -90,4 +91,3 @@ export class WorkspaceState {
     }
 
 }
-

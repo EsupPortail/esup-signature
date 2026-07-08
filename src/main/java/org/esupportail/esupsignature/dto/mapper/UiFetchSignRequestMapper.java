@@ -170,6 +170,11 @@ public class UiFetchSignRequestMapper {
         dto.setStatus(signRequest.getStatus());
         dto.setAction(signRequest.getData() != null && signRequest.getData().getForm() != null ? signRequest.getData().getForm().getAction() : null);
         dto.setNbSignRequests(signBook != null && signBook.getSignRequests() != null ? signBook.getSignRequests().size() : 0);
+        dto.setNbPendingSignRequests(signBook != null && signBook.getSignRequests() != null
+                ? (int) signBook.getSignRequests().stream()
+                    .filter(sr -> SignRequestStatus.pending.equals(sr.getStatus()) && !Boolean.TRUE.equals(sr.getDeleted()))
+                    .count()
+                : 0);
         dto.setNotSigned(false);
         dto.setAttachmentAlert(false);
         dto.setAttachmentRequire(false);
@@ -310,6 +315,7 @@ public class UiFetchSignRequestMapper {
         dto.setStatus(context.getSignRequestStatus());
         dto.setAction(context.getAction());
         dto.setNbSignRequests(context.getNbSignRequestInSignBookParent());
+        dto.setNbPendingSignRequests(context.getNbPendingSignRequestInSignBookParent());
         dto.setNotSigned(context.isNotSigned());
         dto.setAttachmentAlert(context.isAttachmentAlert());
         dto.setAttachmentRequire(context.isAttachmentRequire());

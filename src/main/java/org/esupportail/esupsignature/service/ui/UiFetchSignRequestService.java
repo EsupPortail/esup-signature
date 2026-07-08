@@ -177,6 +177,7 @@ public class UiFetchSignRequestService {
         List<ShowSignRequestDto.SignRequestTabDto> signRequestTabs = signRequestService
                 .getSignRequestTabProjections(signBook.getId(), userEppn).stream().map(mapper::toSignRequestTabDto).toList();
         int nbSignRequestInSignBookParent = signRequestTabs.size();
+        int nbPendingSignRequestInSignBookParent = signBookService.countPendingSignRequests(signBook);
         boolean lastStep = !steps.isEmpty() && currentStepNumber != null && currentStepNumber >= steps.size();
         Map<Long, ShowSignRequestDto.RecipientActionDto> recipientActions = new LinkedHashMap<>();
         if (signRequest.getRecipientHasSigned() != null) {
@@ -267,6 +268,7 @@ public class UiFetchSignRequestService {
         context.setCurrentStepRepeatableSignType(currentStepRepeatableSignType);
         context.setStepRepeatable(stepRepeatable);
         context.setNbSignRequestInSignBookParent(nbSignRequestInSignBookParent);
+        context.setNbPendingSignRequestInSignBookParent(nbPendingSignRequestInSignBookParent);
         context.setLastStep(lastStep);
         context.setSteps(steps);
         context.setTargets(targets);
@@ -417,6 +419,7 @@ public class UiFetchSignRequestService {
         dto.setStatus(common.getStatus());
         dto.setAction(common.getAction());
         dto.setNbSignRequests(common.getNbSignRequests());
+        dto.setNbPendingSignRequests(common.getNbPendingSignRequests());
         dto.setNotSigned(common.getNotSigned());
         dto.setAttachmentAlert(common.getAttachmentAlert());
         dto.setAttachmentRequire(common.getAttachmentRequire());

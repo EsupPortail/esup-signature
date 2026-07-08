@@ -122,6 +122,10 @@ export class SignUi {
         return this.state.nbSignRequests;
     }
 
+    get nbPendingSignRequests() {
+        return this.state.nbPendingSignRequests;
+    }
+
     get attachmentRequire() {
         return this.state.attachmentRequire;
     }
