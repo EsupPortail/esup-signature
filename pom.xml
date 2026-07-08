@@ -12,7 +12,7 @@
 	</parent>
 	<groupId>org.esupportail</groupId>
 	<artifactId>esup-signature</artifactId>
-	<version>1.37.15-SNAPSHOT</version>
+	<version>1.37.16-SNAPSHOT</version>
 	<name>esup-signature</name>
 	<properties>
 		<startClass>org.esupportail.esupsignature.EsupSignatureApplication</startClass>
@@ -20,7 +20,7 @@
 		<bouncycastle.version>1.84</bouncycastle.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<dss.version>6.4</dss.version>
-        <pdfbox.version>3.0.6</pdfbox.version>
+	        <pdfbox.version>3.0.6</pdfbox.version>
 		<playwright.version>1.49.0</playwright.version>
 		<skipDockerCompose>true</skipDockerCompose>
 		<skipSurefire>false</skipSurefire>
