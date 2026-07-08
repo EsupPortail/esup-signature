@@ -988,6 +988,9 @@ public class PdfService {
      * @throws EsupSignatureRuntimeException Si la normalisation échoue
      */
     public byte[] normalizePDF(byte[] originalBytes, boolean rotate, boolean force) throws IOException, EsupSignatureRuntimeException {
+        if (Boolean.TRUE.equals(globalProperties.getDisableNormalizePdf())) {
+            return originalBytes;
+        }
         try (PDDocument pdDocument = Loader.loadPDF(originalBytes)) {
             boolean hasWidgets = false;
             for (PDPage page : pdDocument.getPages()) {
