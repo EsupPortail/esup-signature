@@ -34,6 +34,7 @@ import org.esupportail.esupsignature.service.security.otp.OtpService;
 import org.esupportail.esupsignature.service.utils.StepStatus;
 import org.esupportail.esupsignature.service.utils.WebUtilsService;
 import org.esupportail.esupsignature.service.utils.file.FileService;
+import org.esupportail.esupsignature.service.utils.pdf.PdfParameters;
 import org.esupportail.esupsignature.service.utils.metric.CustomMetricsService;
 import org.esupportail.esupsignature.service.utils.pdf.PdfService;
 import org.esupportail.esupsignature.service.utils.sign.SignService;
@@ -1362,6 +1363,7 @@ public class SignRequestService {
 		if(recipient == null && liveWorkflowStep.getRecipients().size() > 1 && Boolean.TRUE.equals(liveWorkflowStep.getAllSignToComplete())) {
 			throw new EsupSignatureException("Impossible d'ajouter un champ signature générique s'il y a plusieurs participants dans l'étape ; merci de cibler un destinataire");
 		}
+		validateSpotBounds(signRequest, pageNumber, posX, posY, signWidth, signHeight);
 		SignRequestParams signRequestParams = signRequestParamsService.createSignRequestParams(pageNumber, posX, posY);
 		if(signWidth != null && signHeight != null) {
 			signRequestParams.setSignWidth(signWidth);
@@ -1372,6 +1374,34 @@ public class SignRequestService {
 		signRequestParams.setRecipient(recipient);
 		liveWorkflowStep.getSignRequestParams().add(signRequestParams);
 		return signRequestParams.getId();
+	}
+
+	private void validateSpotBounds(SignRequest signRequest, Integer pageNumber, Integer posX, Integer posY, Integer signWidth, Integer signHeight) throws EsupSignatureException {
+		if(signRequest.getOriginalDocuments().isEmpty()) {
+			return;
+		}
+		Document document = signRequest.getOriginalDocuments().get(0);
+		if(!document.isPdf()) {
+			return;
+		}
+		int resolvedPageNumber = pageNumber == null || pageNumber < 1 ? 1 : pageNumber;
+		int resolvedX = posX == null ? 0 : posX;
+		int resolvedY = posY == null ? 0 : posY;
+		int resolvedWidth = signWidth == null ? 200 : signWidth;
+		int resolvedHeight = signHeight == null ? 100 : signHeight;
+		PdfParameters pdfParameters = pdfService.getPdfParameters(document.getInputStream(), resolvedPageNumber);
+		if(pdfParameters == null) {
+			return;
+		}
+		boolean outOfBounds = resolvedWidth <= 0
+				|| resolvedHeight <= 0
+				|| resolvedX < 0
+				|| resolvedY < 0
+				|| resolvedX + resolvedWidth > pdfParameters.getWidth()
+				|| resolvedY + resolvedHeight > pdfParameters.getHeight();
+		if(outOfBounds) {
+			throw new EsupSignatureException("L'emplacement de signature doit etre entierement dans une page");
+		}
 	}
 
 	private Recipient resolveSpotRecipient(LiveWorkflowStep liveWorkflowStep, Long recipientId) throws EsupSignatureException {
@@ -1578,16 +1608,8 @@ public class SignRequestService {
 			throw new EsupSignatureException("Étape invalide : " + stepNumber);
 		}
 		SignRequest signRequest = getById(signRequestId);
-		// Même règle que les téléchargements "classiques"
-		if (signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null
-				&& BooleanUtils.isTrue(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getForbidDownloadsBeforeEnd())
-				&& !signRequest.getStatus().equals(SignRequestStatus.completed)
-				&& !signRequest.getStatus().equals(SignRequestStatus.exported)
-				&& !signRequest.getStatus().equals(SignRequestStatus.refused)
-				&& !signRequest.getArchiveStatus().equals(ArchiveStatus.archived)
-				&& !signRequest.getArchiveStatus().equals(ArchiveStatus.cleaned)
-		) {
-			throw new EsupSignatureException("Téléchargement interdit avant la fin du circuit pour : " + signRequestId);
+		if (!canDownloadLayeredPdfAtStep(signRequest, stepNumber)) {
+			throw new EsupSignatureException("Téléchargement interdit pour cette étape pour : " + signRequestId);
 		}
 
 		if (stepNumber == 0 && signRequest.getOriginalDocuments() != null && !signRequest.getOriginalDocuments().isEmpty()) {
@@ -1619,6 +1641,32 @@ public class SignRequestService {
 
 		byte[] pdfBytes = inputStream.readAllBytes();
 		return pdfService.removeOptionalContentAfterStep(pdfBytes, stepNumber);
+	}
+
+	public boolean canDownloadLayeredPdfAtStep(SignRequest signRequest, int stepNumber) {
+		if (signRequest == null || signRequest.getStatus() == null || stepNumber < 0) {
+			return false;
+		}
+		if (signRequest.getStatus().equals(SignRequestStatus.completed)
+				|| signRequest.getStatus().equals(SignRequestStatus.exported)
+				|| signRequest.getStatus().equals(SignRequestStatus.refused)
+				|| signRequest.getArchiveStatus().equals(ArchiveStatus.archived)
+				|| signRequest.getArchiveStatus().equals(ArchiveStatus.cleaned)) {
+			return true;
+		}
+		if (stepNumber == 0) {
+			return false;
+		}
+		if (signRequest.getParentSignBook() == null
+				|| signRequest.getParentSignBook().getLiveWorkflow() == null
+				|| signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber() == null) {
+			return false;
+		}
+		if (signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps() != null
+				&& stepNumber > signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().size()) {
+			return false;
+		}
+		return stepNumber < signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber();
 	}
 
 	/**

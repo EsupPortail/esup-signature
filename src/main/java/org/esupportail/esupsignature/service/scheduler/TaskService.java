@@ -156,8 +156,7 @@ public class TaskService {
      * d'exportation, elle est ignorée. En cas d'erreur lors de l'archivage d'un
      * SignBook, celle-ci est enregistrée sans interrompre le processus global.
      *
-     * Conditions préalables :
-     * - Une URI d'archivage (`globalProperties.getArchiveUri()`) doit être définie.
+     * Condition préalable :
      * - La tâche d'archivage ne doit pas déjà être en cours (`!isEnableArchiveTask()`).
      *
      * Journalisation :
@@ -167,7 +166,7 @@ public class TaskService {
      */
     @Async
     public void initArchive() {
-        if(globalProperties.getArchiveUri() != null && !isEnableArchiveTask()) {
+        if(!isEnableArchiveTask()) {
             setEnableArchiveTask(true);
             logger.debug("scan all signRequest to archive");
             List<Long> signBooksIds = signBookRepository.findIdToArchive();

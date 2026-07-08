@@ -1,6 +1,6 @@
 import {Message} from "../../../prototypes/Message.js?version=@version@";
 import NotificationCenter from "../NotificationCenter.js?version=@version@";
-import {attachDirtyIndicator} from '../DirtyIndicator.js?version=@version@';
+import {attachDirtyIndicator} from "../DirtyIndicator.js?version=@version@";
 
 export default class FormSignsUi {
 

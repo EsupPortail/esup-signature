@@ -60,10 +60,9 @@
                 <h5 class="es-status-card__title mb-1">Progression de la procédure de signature</h5>
                 <p class="es-status-card__description">Le certificat est chargé puis les documents sont signés et enregistrés automatiquement.</p>
                 <div class="es-status-card__content">
-                    <div class="progress" role="progressbar" aria-label="Progression de la signature" aria-valuemin="0" aria-valuemax="100">
-                        <div class="progress-bar active" style="width: 20%;" id="bar">
-                            <span id="bar-text">Chargement du certificat...</span>
-                        </div>
+                    <div class="progress" role="progressbar" aria-label="Progression de la signature" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated active" style="width: 20%;" id="bar"></div>
+                        <span class="progress-label" id="bar-text">Chargement du certificat...</span>
                     </div>
                 </div>
             </div>
@@ -116,7 +115,5 @@
     </section>
 </div>
 </html>
-
-
 
 

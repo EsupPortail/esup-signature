@@ -29,7 +29,7 @@ import java.io.IOException;
 import java.util.List;
 
 @EnableScheduling
-//@Profile("!dev")
+@Profile("!dev")
 @Component
 public class ScheduledTaskService {
 

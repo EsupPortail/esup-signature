@@ -27,6 +27,7 @@ import org.esupportail.esupsignature.repository.LiveWorkflowStepRepository;
 import org.esupportail.esupsignature.repository.WorkflowRepository;
 import org.esupportail.esupsignature.service.interfaces.workflow.ClassWorkflow;
 import org.esupportail.esupsignature.service.utils.WebUtilsService;
+import org.esupportail.esupsignature.service.utils.pdf.PdfParameters;
 import org.esupportail.esupsignature.service.utils.pdf.PdfService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -571,11 +572,36 @@ public class FormService {
 	@Transactional
 	public Long addSignRequestParamsSteps(Long formId, Integer step, Integer signPageNumber, Integer xPos, Integer yPos, Integer commentWidth, Integer commentHeight) {
 		Form form = getById(formId);
+		validateSpotBounds(form, signPageNumber, xPos, yPos, commentWidth, commentHeight);
 		SignRequestParams signRequestParams = signRequestParamsService.createSignRequestParams(signPageNumber, xPos, yPos);
 		signRequestParams.setSignWidth(commentWidth);
 		signRequestParams.setSignHeight(commentHeight);
 		form.getWorkflow().getWorkflowSteps().get(step - 1).getSignRequestParams().add(signRequestParams);
 		return signRequestParams.getId();
+	}
+
+	private void validateSpotBounds(Form form, Integer pageNumber, Integer posX, Integer posY, Integer signWidth, Integer signHeight) {
+		if(form.getDocument() == null || !form.getDocument().isPdf()) {
+			return;
+		}
+		int resolvedPageNumber = pageNumber == null || pageNumber < 1 ? 1 : pageNumber;
+		int resolvedX = posX == null ? 0 : posX;
+		int resolvedY = posY == null ? 0 : posY;
+		int resolvedWidth = signWidth == null ? 200 : signWidth;
+		int resolvedHeight = signHeight == null ? 100 : signHeight;
+		PdfParameters pdfParameters = pdfService.getPdfParameters(form.getDocument().getInputStream(), resolvedPageNumber);
+		if(pdfParameters == null) {
+			return;
+		}
+		boolean outOfBounds = resolvedWidth <= 0
+				|| resolvedHeight <= 0
+				|| resolvedX < 0
+				|| resolvedY < 0
+				|| resolvedX + resolvedWidth > pdfParameters.getWidth()
+				|| resolvedY + resolvedHeight > pdfParameters.getHeight();
+		if(outOfBounds) {
+			throw new EsupSignatureRuntimeException("L'emplacement de signature doit etre entierement dans une page");
+		}
 	}
 
 	@Transactional

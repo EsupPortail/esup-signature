@@ -1,7 +1,7 @@
 import {SignRequestParams} from "../../../prototypes/SignRequestParams.js?version=@version@";
 import {EventFactory} from "../../utils/EventFactory.js?version=@version@";
-import {UserUi} from '../users/UserUi.js?version=@version@';
-import {SignatureImageResolver, SPECIAL_SIGN_IMAGE_NUMBERS} from './SignatureImageResolver.js?version=@version@';
+import {UserUi} from "../users/UserUi.js?version=@version@";
+import {SignatureImageResolver, SPECIAL_SIGN_IMAGE_NUMBERS} from "./SignatureImageResolver.js?version=@version@";
 
 export class SignPlacementController extends EventFactory {
 
@@ -195,6 +195,7 @@ export class SignPlacementController extends EventFactory {
         signRequestParams.addEventListener("placementStateChanged", () => {
             this.refreshSteps?.();
             this.syncAddSignButtonState();
+            this.fireEvent("signPlacementChanged", []);
         });
         signRequestParams.addEventListener("spotSaved", e => this.onSpotSaved(e));
         signRequestParams.addEventListener("spotDeleted", e => this.onSpotDeleted(e));
@@ -346,6 +347,7 @@ export class SignPlacementController extends EventFactory {
         }
         this.refreshSteps();
         this.syncAddSignButtonState();
+        this.fireEvent("signPlacementChanged", []);
     }
 
     onSpotSaved(spotData) {
@@ -440,19 +442,27 @@ export class SignPlacementController extends EventFactory {
             signRequestParams = new SignRequestParams(this.isOtp, initialSignRequestParamsModel, id, this.currentScale, page, this.userName, this.authUserName, false, false, false, this.isOtp, this.phone, false, null, this.scrollTop, this.csrf, this.signType, this.signatureUiConfig, this.signRequestId);
         }
 
-        this.signRequestParamses.set(id, signRequestParams);
-        this.applySpecialSignImageNumbers(signRequestParams);
-        this.bindSignRequestParamsEvents(signRequestParams, id, signImageNumber, isParaph);
-        this.syncAddSignButtonState();
+        if (!isSpot && typeof signRequestParams.hideDuringInitialPlacement === "function") {
+            signRequestParams.hideDuringInitialPlacement();
+        }
 
-        if (signImageNumber != null && signImageNumber !== SPECIAL_SIGN_IMAGE_NUMBERS.SPOT && (!isVisaPlacement || isParaph)) {
-            await signRequestParams.changeSignImage(signImageNumber);
-            if (!restore && typeof signRequestParams.syncExtraLayoutFromState === "function") {
-                signRequestParams.syncExtraLayoutFromState();
+        try {
+            this.signRequestParamses.set(id, signRequestParams);
+            this.applySpecialSignImageNumbers(signRequestParams);
+            this.bindSignRequestParamsEvents(signRequestParams, id, signImageNumber, isParaph);
+            this.syncAddSignButtonState();
+
+            if (signImageNumber != null && signImageNumber !== SPECIAL_SIGN_IMAGE_NUMBERS.SPOT && (!isVisaPlacement || isParaph)) {
+                await signRequestParams.changeSignImage(signImageNumber);
+                if (!restore && typeof signRequestParams.syncExtraLayoutFromState === "function") {
+                    signRequestParams.syncExtraLayoutFromState();
+                }
+                if (currentSignRequestParams == null && typeof signRequestParams.centerOnCurrentViewport === "function") {
+                    signRequestParams.centerOnCurrentViewport();
+                }
             }
-            if (currentSignRequestParams == null && typeof signRequestParams.centerOnCurrentViewport === "function") {
-                signRequestParams.centerOnCurrentViewport();
-            }
+        } finally {
+            signRequestParams.showAfterInitialPlacement?.();
         }
 
         this.id++;
@@ -568,8 +578,7 @@ export class SignPlacementController extends EventFactory {
             return false;
         }
 
-        const hasInvalidPlacement = activeSigns.some(signRequestParams => signRequestParams.inside === false);
-        if (hasInvalidPlacement) {
+        if (this.hasInvalidSignaturePlacement()) {
             return false;
         }
 
@@ -582,6 +591,10 @@ export class SignPlacementController extends EventFactory {
         }
 
         return true;
+    }
+
+    hasInvalidSignaturePlacement() {
+        return this.getActiveSigns().some(signRequestParams => signRequestParams.inside === false);
     }
 
     isSignatureActionReady() {
@@ -597,12 +610,16 @@ export class SignPlacementController extends EventFactory {
         const enabled = forceEnabled == null
             ? this.isSignatureActionReady()
             : forceEnabled;
+        const disabled = this.hasInvalidSignaturePlacement();
 
-        signLaunchButton.prop("disabled", false);
-        signAdvancedLaunchButton.prop("disabled", false);
+        signLaunchButton.prop("disabled", disabled);
+        signAdvancedLaunchButton.prop("disabled", disabled);
+        signLaunchButton.attr("aria-disabled", disabled ? "true" : "false");
+        signAdvancedLaunchButton.attr("aria-disabled", disabled ? "true" : "false");
+        $("#signActionButtons").attr("aria-busy", disabled ? "true" : "false");
         this.setButtonVariant(signLaunchButton, enabled ? "btn-success" : "btn-secondary");
         this.setButtonVariant(signAdvancedLaunchButton, enabled ? "btn-success" : "btn-secondary");
-        if(enabled && !skipFocus) {
+        if(enabled && !disabled && !skipFocus) {
             signLaunchButton.focus();
         }
     }

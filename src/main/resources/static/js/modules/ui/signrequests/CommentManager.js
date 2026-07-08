@@ -25,6 +25,7 @@ export class CommentManager {
             isAddCommentEnabled: options.isAddCommentEnabled ?? (() => false),
             setAddCommentEnabled: options.setAddCommentEnabled ?? (() => {}),
             setToolsDisabled: options.setToolsDisabled ?? (() => {}),
+            setInsertActionsDisabled: options.setInsertActionsDisabled ?? (() => {}),
             setSignSpacesDroppableEnabled: options.setSignSpacesDroppableEnabled ?? (() => {}),
             setCommentAddButtonsState: options.setCommentAddButtonsState ?? (() => {}),
             lockSigns: options.lockSigns ?? (() => {}),
@@ -74,6 +75,9 @@ export class CommentManager {
         const pdfViewer = this.options.getPdfViewer();
         let target = e.target;
         let page = $(target).closest('.pdf-page');
+        if (!page.length && this.options.isAddSpotEnabled()) {
+            return;
+        }
         if (!page.length) {
             page = $("#page_" + pdfViewer.pageNum);
         }
@@ -86,6 +90,11 @@ export class CommentManager {
         $('#commentPageNumber').val(pageNumber);
         let xPos = Math.round(e.clientX - pageRect.left);
         let yPos = Math.round(e.clientY - pageRect.top);
+        if (this.options.isAddSpotEnabled()) {
+            const correctedCoordinates = this.getCorrectedCommentCoordinates(pageNumber, xPos, yPos);
+            xPos = correctedCoordinates.x * (pdfViewer.scale || 1);
+            yPos = correctedCoordinates.y * (pdfViewer.scale || 1);
+        }
         $("#commentPosX").val(xPos);
         $('#commentPosY').val(yPos);
         console.debug("debug - mouse pos : " + xPos + ", " + yPos);
@@ -110,6 +119,12 @@ export class CommentManager {
         let spotStepNumber = "";
         if(addSpotEnabled) {
             spotStepNumber = spotStepNumberVal.val();
+            const scale = this.options.getPdfViewer()?.scale || 1;
+            const correctedCoordinates = this.getCorrectedCommentCoordinates($("#commentPageNumber").val(), xPos * scale, yPos * scale);
+            xPos = correctedCoordinates.x;
+            yPos = correctedCoordinates.y;
+            $("#commentPosX").val(xPos);
+            $("#commentPosY").val(yPos);
         }
         const csrf = this.options.csrf();
         let commentUrlParams =
@@ -276,8 +291,8 @@ export class CommentManager {
             0,
             pageHeight,
             targetHeight,
-            CommentManager.COMMENT_COORDINATE_MARGIN_Y * pdfViewer.scale,
-            CommentManager.COMMENT_COORDINATE_MARGIN_Y * pdfViewer.scale
+            CommentManager.COMMENT_COORDINATE_MARGIN_X * pdfViewer.scale,
+            CommentManager.COMMENT_COORDINATE_MARGIN_X * pdfViewer.scale
         );
         const clampedRenderedX = this.clampDialogCoordinate(renderedX || 0, xBounds);
         const clampedRenderedY = this.clampDialogCoordinate(renderedY || 0, yBounds);
@@ -492,7 +507,9 @@ export class CommentManager {
         postit.addClass("alert-warning");
         this.options.setAddCommentEnabled(true);
         const png = '/images/icons/rr-comment-32.png';
+        const navigationToolsSelector = "#fullheight, #fullheight *, #fullwidth, #fullwidth *, #zoomout, #zoomout *, #zoomin, #zoomin *, #prev, #prev *, #next, #next *, #end-button, #end-button *, #page_num";
         $('.es-signrequest-main-content *').css('pointer-events', 'none');
+        $(navigationToolsSelector).css('pointer-events', 'auto');
         this.options.getPdfViewer().pdfDiv.css({
             'pointer-events': 'auto',
             'cursor': `url("${png}"), auto`
@@ -532,8 +549,8 @@ export class CommentManager {
         }
 
         this.exitCommentAddMode();
-        this.options.setToolsDisabled(true);
         this.options.setSignSpacesDroppableEnabled(false);
+        this.options.setInsertActionsDisabled(true);
         this.activateAddCommentMode();
         this.options.setAddSpotEnabled(false);
 
@@ -576,6 +593,7 @@ export class CommentManager {
         $('#hideCommentButton').off('click' + this.options.commentDialogNamespace);
         $("#comment-div").hide();
         this.options.setToolsDisabled(false);
+        this.options.setInsertActionsDisabled(false);
         this.options.setSignSpacesDroppableEnabled(true);
         this.deactivateAddCommentMode();
         this.options.setAddSpotEnabled(false);
@@ -610,6 +628,3 @@ export class CommentManager {
     }
 
 }
-
-
-

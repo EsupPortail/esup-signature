@@ -46,6 +46,8 @@ export class SignWorkspaceController {
         this.ready = false;
         this.formInitialized = false;
         this.isPdf = isPdf;
+        this.pdfRenderComplete = !isPdf;
+        this.pdfRenderScope = $();
         this.isOtp = isOtp;
         this.phone = phone;
         this.changeModeSelector = null;
@@ -119,6 +121,7 @@ export class SignWorkspaceController {
             userName, authUserName, signable, this.forcePageNum, this.isOtp, this.phone, this.csrf, this.signatureUiConfig, this.isPdf, this.signRequestId);
         this.signPlacementController.addEventListener("spotSaved", spotData => this.onSpotSaved(spotData));
         this.signPlacementController.addEventListener("spotDeleted", spotId => this.onSpotDeleted(spotId));
+        this.signPlacementController.addEventListener("signPlacementChanged", () => this.updateAnnotationActionButtonsAvailability());
         this.currentSignRequestParamses = currentSignRequestParamses;
         // Mode system deprecated: UI is now driven by rights (signable/editable).
         this.wheelDetector = new WheelDetector();
@@ -153,6 +156,7 @@ export class SignWorkspaceController {
             isAddCommentEnabled: () => this.addCommentEnabled,
             setAddCommentEnabled: value => { this.addCommentEnabled = value; },
             setToolsDisabled: disabled => this.setToolsBarDisabled(disabled),
+            setInsertActionsDisabled: disabled => this.toolbar.setInsertActionsDisabled(disabled),
             setSignSpacesDroppableEnabled: enabled => this.setSignSpacesDroppableEnabled(enabled),
             setCommentAddButtonsState: enabled => this.setCommentAddButtonsState(enabled),
             lockSigns: () => this.signPlacementController.lockSigns(),
@@ -165,7 +169,7 @@ export class SignWorkspaceController {
             showAllPostits: () => this.showAllPostits(),
             hideAllPostits: () => this.hideAllPostits(),
             reloadPage: () => document.location.reload(),
-            restoreAddSpotButton: () => $("#addSpotButton").attr("disabled", false),
+            restoreAddSpotButton: () => this.updateAnnotationActionButtonsAvailability(),
             signRequestId: () => this.signRequestId,
             isOtp: () => this.isOtp,
             csrf: () => this.csrf,
@@ -190,6 +194,7 @@ export class SignWorkspaceController {
             getCsrf: () => this.csrf,
             getPdfViewer: () => this.pdfViewer,
             setToolsDisabled: disabled => this.setToolsBarDisabled(disabled),
+            setInsertActionsDisabled: disabled => this.toolbar.setInsertActionsDisabled(disabled),
             setSignSpacesDroppableEnabled: enabled => this.setSignSpacesDroppableEnabled(enabled),
             setSpotActionButtonsDisabled: disabled => this.setSpotActionButtonsDisabled(disabled),
             exitCommentAddMode: () => this.exitCommentAddMode(),
@@ -259,16 +264,32 @@ export class SignWorkspaceController {
         const eventNamespace = this.eventNamespace;
         if (this.isPdf) {
             [
-                ['#prev', 'click', () => this.pdfViewer.prevPage()],
-                ['#next', 'click', () => this.pdfViewer.nextPage()],
-                ['#end-button', 'click', () => this.pdfViewer.nextPage()],
+                ['#prev', 'click', () => {
+                    this.pdfViewer.prevPage();
+                    this.updateAnnotationActionButtonsAvailability();
+                }],
+                ['#next', 'click', () => {
+                    this.pdfViewer.nextPage();
+                    this.updateAnnotationActionButtonsAvailability();
+                }],
+                ['#end-button', 'click', () => {
+                    this.pdfViewer.nextPage();
+                    this.updateAnnotationActionButtonsAvailability();
+                }],
                 [`[name='spotStepNumber']`, 'change', () => this.changeSpotStep()]
             ].forEach(([selector, event, handler]) => $(selector).off(event + eventNamespace).on(event + eventNamespace, handler));
             [
-                ['renderFinished', () => this.initSignWorkspace()],
+                ['renderStarted', () => this.beginPdfRender()],
+                ['renderFinished', () => {
+                    this.initSignWorkspace();
+                    this.setPdfRenderComplete(true);
+                    this.releaseToolsLoadingState();
+                }],
+                ['renderComplete', () => this.completePdfRender()],
                 ['scaleChange', () => this.refreshWorkspace()],
                 ['change', () => this.saveData(localStorage.getItem('disableFormAlert') === "true")]
             ].forEach(([event, handler]) => this.pdfViewer.addEventListener(event, handler));
+            this.setPdfRenderComplete(Boolean(this.pdfViewer.renderComplete));
             if (this.currentSignType !== "form") {
                 this.pdfViewer.addEventListener('reachEnd', () => this.markAsViewed());
             }
@@ -276,6 +297,7 @@ export class SignWorkspaceController {
         }
         this.toolbar.bind();
         this.refreshToolbarAccessibility();
+        this.updateAnnotationActionButtonsAvailability();
         this.postitManager.bind();
 
         $("#signImageBtn").off('click' + eventNamespace).on('click' + eventNamespace, () => this.signPlacementController.popUserUi());
@@ -297,8 +319,14 @@ export class SignWorkspaceController {
 
     bindWheelEvents() {
         [
-            ["down", e => this.pdfViewer.checkCurrentPage(e)],
-            ["up", e => this.pdfViewer.checkCurrentPage(e)],
+            ["down", e => {
+                this.pdfViewer.checkCurrentPage(e);
+                this.updateAnnotationActionButtonsAvailability();
+            }],
+            ["up", e => {
+                this.pdfViewer.checkCurrentPage(e);
+                this.updateAnnotationActionButtonsAvailability();
+            }],
             ["zoomin", e => this.pdfViewer.zoomOut(e)],
             ["zoomout", e => this.pdfViewer.zoomIn(e)],
             ["zoominit", e => this.pdfViewer.zoomInit(e)]
@@ -343,6 +371,7 @@ export class SignWorkspaceController {
         }
         if (Number.isFinite(signNum)) {
             this.signSpaceManager.placeSignOnSlot(signNum, signRequestParams);
+            this.updateAnnotationActionButtonsAvailability();
             return;
         }
         if (typeof signRequestParams.activatePlacement === "function") {
@@ -350,6 +379,7 @@ export class SignWorkspaceController {
             activatePlacement();
             window.requestAnimationFrame?.(activatePlacement);
         }
+        this.updateAnnotationActionButtonsAvailability();
     }
 
     shouldDisplayCommentsOnLoad(comments = this.comments) {
@@ -531,14 +561,6 @@ export class SignWorkspaceController {
             .off('mousedown' + this.eventNamespace)
             .on('mousedown' + this.eventNamespace, () => this.signPlacementController.lockSigns());
         this.signPlacementController.updateScales(this.pdfViewer.scale);
-        this.releaseToolsLoadingState();
-    }
-
-    setToolsLoadingState(isLoading) {
-        if (document?.body == null) {
-            return;
-        }
-        document.body.classList.toggle('signrequest-tools-loading', Boolean(isLoading));
     }
 
     releaseToolsLoadingState() {
@@ -546,13 +568,11 @@ export class SignWorkspaceController {
             return;
         }
         this.toolsLoadingStateReleased = true;
-        window.requestAnimationFrame(() => {
-            window.requestAnimationFrame(() => {
-                this.setToolsLoadingState(false);
-                this.refreshToolbarAccessibility();
-                this.focusPrimaryToolbarAction();
-            });
-        });
+        this.setPdfRenderMode(false);
+        this.setToolsBarDisabled(false);
+        this.updateAnnotationActionButtonsAvailability();
+        this.refreshToolbarAccessibility();
+        this.focusPrimaryToolbarAction();
     }
 
     getPrimaryToolbarFocusSelectors() {
@@ -566,6 +586,75 @@ export class SignWorkspaceController {
         if (this.toolbar != null && typeof this.toolbar.refreshAccessibility === 'function') {
             this.toolbar.refreshAccessibility();
         }
+    }
+
+    setPdfRenderComplete(complete) {
+        this.pdfRenderComplete = Boolean(complete);
+        this.updateAnnotationActionButtonsAvailability();
+    }
+
+    beginPdfRender() {
+        this.toolsLoadingStateReleased = false;
+        this.setPdfRenderMode(true);
+        this.setToolsBarDisabled(true);
+        this.setPdfRenderComplete(false);
+    }
+
+    setPdfRenderMode(enabled) {
+        const active = Boolean(enabled);
+        $("body").toggleClass("es-pdf-render-mode", active);
+        if (active) {
+            const workspace = $("#workspace");
+            const mainContent = workspace.closest(".es-main-content");
+            const workspaceElement = workspace.get(0);
+            this.pdfRenderScope = mainContent.length && workspaceElement != null
+                ? mainContent.children().has(workspaceElement)
+                : $();
+            this.pdfRenderScope.addClass("es-pdf-render-scope");
+            return;
+        }
+        this.pdfRenderScope.removeClass("es-pdf-render-scope");
+        this.pdfRenderScope = $();
+    }
+
+    completePdfRender() {
+        this.setPdfRenderComplete(true);
+        this.releaseToolsLoadingState();
+    }
+
+    canUseAnnotationActions() {
+        return this.editable
+            && (!this.isPdf || this.pdfRenderComplete)
+            && !this.addCommentEnabled
+            && !this.addSpotEnabled
+            && !$("body").hasClass("es-spot-add-mode")
+            && !this.hasActiveSignRequestParamsOnCurrentPage();
+    }
+
+    hasActiveSignRequestParamsOnCurrentPage() {
+        const currentPage = parseInt(this.pdfViewer?.pageNum, 10);
+        if (!Number.isFinite(currentPage) || this.signPlacementController?.signRequestParamses == null) {
+            return false;
+        }
+        return Array.from(this.signPlacementController.signRequestParamses.values()).some(signRequestParams => {
+            const signPageNumber = parseInt(signRequestParams?.signPageNumber, 10);
+            const signImageNumber = parseInt(signRequestParams?.signImageNumber, 10);
+            return signRequestParams?.isSign === true
+                && signImageNumber !== 999999
+                && Number.isFinite(signPageNumber)
+                && signPageNumber === currentPage;
+        });
+    }
+
+    updateAnnotationActionButtonsAvailability() {
+        if (this.toolbar == null) {
+            return;
+        }
+        if (this.addCommentEnabled) {
+            this.toolbar.setCommentAddActive(true);
+            return;
+        }
+        this.toolbar.setSpotActionButtonsDisabled(!this.canUseAnnotationActions());
     }
 
     focusPrimaryToolbarAction() {
@@ -689,7 +778,13 @@ export class SignWorkspaceController {
         console.info("refresh workspace");
         clearTimeout(this.refreshWorkspaceTimer);
         this.refreshWorkspaceTimer = setTimeout(() => {
-            this.pdfViewer.startRender();
+            if (!this.pdfViewer.applyScaleWithoutRerender()) {
+                this.pdfViewer.startRender();
+            } else {
+                this.signPlacementController.updateScales(this.pdfViewer.scale);
+                this.refreshSignFields();
+                this.commentManager.refresh();
+            }
             localStorage.setItem("scale", this.pdfViewer.scale);
         }, 75);
     }
@@ -715,7 +810,7 @@ export class SignWorkspaceController {
     enableSignMode() {
         console.info("apply unified workspace ui");
         this.disableAllModes();
-        this.setToolsBarDisabled(false);
+        this.setToolsBarDisabled(this.isPdf && !this.pdfRenderComplete);
         this.refreshToolbarAccessibility();
         this.setSignSpacesDroppableEnabled(true);
         this.signPlacementController.pointItEnable = false;
@@ -749,7 +844,7 @@ export class SignWorkspaceController {
             this.pdfViewer.scrollToPage(this.forcePageNum && this.currentSignRequestParamses?.[0] != null ? this.forcePageNum : 1);
         }
         $("#cross_999999").remove();
-        $("#addCommentButton, #addSpotButton").attr("disabled", false);
+        this.updateAnnotationActionButtonsAvailability();
         if (this.isPdf) {
             this.refreshAfterPageChange();
         }
@@ -776,11 +871,17 @@ export class SignWorkspaceController {
     }
 
     enableCommentAdd(e) {
+        if (!this.canUseAnnotationActions()) {
+            return;
+        }
         return this.commentManager.enableCommentAdd(e);
     }
 
     setCommentAddButtonsState(enabled) {
         this.toolbar.setCommentAddActive(enabled);
+        if (!enabled) {
+            this.updateAnnotationActionButtonsAvailability();
+        }
     }
 
     exitCommentAddMode() {
@@ -788,15 +889,22 @@ export class SignWorkspaceController {
     }
 
     enableSpotAdd() {
+        if (!this.canUseAnnotationActions()) {
+            return;
+        }
         return this.spotManager.enableSpotAdd();
     }
 
     setSpotActionButtonsDisabled(disabled) {
-        this.toolbar.setSpotActionButtonsDisabled(disabled);
+        this.toolbar.setSpotActionButtonsDisabled(disabled || !this.canUseAnnotationActions());
+    }
+
+    shouldKeepToolsEnabledDuringPdfRender() {
+        return ['completed', 'exported', 'refused'].includes(this.status);
     }
 
     setToolsBarDisabled(disabled) {
-        this.toolbar.setToolsDisabled(disabled);
+        this.toolbar.setToolsDisabled(disabled && !this.shouldKeepToolsEnabledDuringPdfRender());
     }
 
 
@@ -948,4 +1056,3 @@ export class SignWorkspaceController {
     }
 
 }
-
