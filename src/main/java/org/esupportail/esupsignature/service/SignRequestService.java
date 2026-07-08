@@ -617,7 +617,7 @@ public class SignRequestService {
 							bytes = outputStream.toByteArray();
 							} else {
 								for (SignRequestParams signRequestParams : signRequestParamses) {
-									toAddSignRequestParams.add(signRequestParamsService.createSignRequestParams(signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos()));
+									toAddSignRequestParams.add(createSignRequestParamsForDocument(signRequestParams));
 								}
 							}
 							signRequest.getSignRequestParams().addAll(toAddSignRequestParams);
@@ -673,7 +673,7 @@ public class SignRequestService {
 						bytes = outputStream.toByteArray();
 					} else {
 						for (SignRequestParams signRequestParams : signRequestParamses) {
-							toAddSignRequestParams.add(signRequestParamsService.createSignRequestParams(signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos()));
+							toAddSignRequestParams.add(createSignRequestParamsForDocument(signRequestParams));
 						}
 					}
 					signRequest.getSignRequestParams().addAll(toAddSignRequestParams);
@@ -701,6 +701,17 @@ public class SignRequestService {
 			logger.warn("error on converting files", e);
 			throw new EsupSignatureIOException("Erreur lors de la conversion du document", e);
 		}
+	}
+
+	private SignRequestParams createSignRequestParamsForDocument(SignRequestParams source) {
+		SignRequestParams signRequestParams = signRequestParamsService.createSignRequestParams(source.getSignPageNumber(), source.getxPos(), source.getyPos());
+		signRequestParams.setSignDocumentNumber(source.getSignDocumentNumber());
+		signRequestParams.setSignWidth(source.getSignWidth());
+		signRequestParams.setSignHeight(source.getSignHeight());
+		signRequestParams.setSignScale(source.getSignScale());
+		signRequestParams.setPdSignatureFieldName(source.getPdSignatureFieldName());
+		signRequestParams.setRotate(source.getRotate());
+		return signRequestParams;
 	}
 
 	/**

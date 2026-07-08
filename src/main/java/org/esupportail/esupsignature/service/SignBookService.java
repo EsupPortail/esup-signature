@@ -1564,8 +1564,13 @@ public class SignBookService {
         if(targetUrl != null && !targetUrl.isEmpty()) {
             signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(targetUrl, true, false, false, false));
         }
-        Map<SignBook, String> signBookStringMap = sendSignBook(signBook, pending, steps.get(0).getComment(), steps, createByEppn, createByEppn, forceSendEmail);
         Map<Integer, List<SignRequestParams>> integerListMap = new HashMap<>();
+        if(!StringUtils.hasText(signRequestParamsDetectionPattern)) {
+            for(SignRequest signRequest : signBook.getSignRequests()) {
+                integerListMap = replaceSignRequestParamsWithDtoParams(steps, signRequest);
+            }
+        }
+        Map<SignBook, String> signBookStringMap = sendSignBook(signBook, pending, steps.get(0).getComment(), steps, createByEppn, createByEppn, forceSendEmail);
         for(SignRequest signRequest : signBook.getSignRequests()) {
             if(StringUtils.hasText(signRequestParamsDetectionPattern)) {
                 if(authUser.getFavoriteSignRequestParams() != null) {
@@ -1591,8 +1596,6 @@ public class SignBookService {
                     }
                 }
                 dispatchSignRequestParams(signRequest);
-            } else {
-                integerListMap = replaceSignRequestParamsWithDtoParams(steps, signRequest);
             }
         }
         int stepNumber = 0;
