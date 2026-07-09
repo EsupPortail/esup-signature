@@ -42,7 +42,11 @@
 		<script th:src="@{/webjars/popperjs__core/dist/umd/popper.js}"></script>
 		<script th:src="@{/webjars/eonasdan__tempus-dominus/dist/js/tempus-dominus.js}"></script>
 		<script type="module" th:src="@{/webjars/pdfjs-dist/legacy/build/pdf.min.mjs}"></script>
-		<script type="module" th:src="@{/webjars/pdfjs-dist/legacy/build/pdf.worker.min.mjs}"></script>
+		<script type="module">
+			if (globalThis.pdfjsLib?.GlobalWorkerOptions) {
+				globalThis.pdfjsLib.GlobalWorkerOptions.workerSrc = '/webjars/pdfjs-dist/legacy/build/pdf.worker.min.mjs';
+			}
+		</script>
 		<script type="module" th:src="@{/webjars/pdfjs-dist/legacy/web/pdf_viewer.mjs}"></script>
 		<script th:src="@{/webjars/slim-select/dist/slimselect.js}"></script>
 		<script th:src="@{/js/customs/jquery.simulate.js}"></script>

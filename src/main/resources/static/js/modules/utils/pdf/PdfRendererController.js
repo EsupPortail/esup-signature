@@ -22,7 +22,7 @@ export class PdfRendererController {
         this.viewer.pendingRender = false;
         this.viewer.pendingRenderPdf = null;
         this.viewer.renderScale = Math.max(this.viewer.scale, this.viewer.getMaxZoomLimit());
-        this.applyInitialRenderTransform();
+        this.clearInitialRenderTransform();
         const currentRenderCycleId = ++this.viewer.renderCycleId;
         this.viewer.fireEvent("renderStarted", ['ok']);
         this.viewer.pdfDiv.css('opacity', 0);
@@ -188,6 +188,14 @@ export class PdfRendererController {
         });
     }
 
+    getDisplayScaleRatio() {
+        const scaleRatio = this.viewer.scale / this.viewer.renderScale;
+        if (!Number.isFinite(scaleRatio) || scaleRatio <= 0) {
+            return 1;
+        }
+        return scaleRatio;
+    }
+
     async renderTask(page, i, configPromise, renderCycleId = this.viewer.renderCycleId) {
         return new Promise((resolve, reject) => {
             let container = document.getElementById(`page_${i}`);
@@ -196,11 +204,11 @@ export class PdfRendererController {
                 container.id = `page_${i}`;
                 container.setAttribute("page-num", i);
                 container.className = "drop-shadows pdf-page";
-                container.style.marginBottom = `${10 * this.viewer.renderScale}px`;
+                container.style.marginBottom = `${10 * this.viewer.scale}px`;
                 this.insertPageAtCorrectPosition(container, i);
             } else {
                 container.innerHTML = "";
-                container.style.marginBottom = `${10 * this.viewer.renderScale}px`;
+                container.style.marginBottom = `${10 * this.viewer.scale}px`;
             }
             $(container).droppable({
                 drop: (event, ui) => ui.helper.attr("page", i)
@@ -212,6 +220,15 @@ export class PdfRendererController {
                 scale: this.viewer.renderScale,
                 rotation: pageRotation
             });
+            const renderedWidth = Math.floor(viewport.width);
+            const renderedHeight = Math.floor(viewport.height);
+            const scaleRatio = this.getDisplayScaleRatio();
+            const displayWidth = Math.floor(renderedWidth * scaleRatio);
+            const displayHeight = Math.floor(renderedHeight * scaleRatio);
+            container.style.width = `${displayWidth}px`;
+            container.style.height = `${displayHeight}px`;
+            container.style.overflow = 'hidden';
+            container.style.visibility = 'hidden';
 
             const pdfPageView = new pdfjsViewer.PDFPageView({
                 eventBus: this.viewer.eventBus,
@@ -251,32 +268,32 @@ export class PdfRendererController {
                     reject(new Error("Pas de canvas"));
                     return;
                 }
-                canvas.style.width = `${Math.floor(viewport.width)}px`;
-                canvas.style.height = `${Math.floor(viewport.height)}px`;
+                canvas.style.width = `${renderedWidth}px`;
+                canvas.style.height = `${renderedHeight}px`;
                 const canvasWrapper = container.querySelector('.canvasWrapper');
                 if (canvasWrapper) {
-                    canvasWrapper.style.width = `${Math.floor(viewport.width)}px`;
-                    canvasWrapper.style.height = `${Math.floor(viewport.height)}px`;
+                    canvasWrapper.style.width = `${renderedWidth}px`;
+                    canvasWrapper.style.height = `${renderedHeight}px`;
                     canvasWrapper.style.padding = '0';
                     canvasWrapper.style.margin = '0';
                     canvasWrapper.style.overflow = 'hidden';
                 }
                 const pageDiv = container.querySelector('.page');
                 if (pageDiv) {
-                    pageDiv.style.width = `${Math.floor(viewport.width)}px`;
-                    pageDiv.style.height = `${Math.floor(viewport.height)}px`;
+                    pageDiv.style.width = `${renderedWidth}px`;
+                    pageDiv.style.height = `${renderedHeight}px`;
                     pageDiv.style.padding = '0';
                     pageDiv.style.margin = '0';
-                    pageDiv.style.transform = '';
-                    pageDiv.style.transformOrigin = '';
+                    pageDiv.style.transformOrigin = 'top left';
+                    pageDiv.style.transform = scaleRatio === 1 ? '' : `scale(${scaleRatio})`;
                 }
-                container.style.width = `${Math.floor(viewport.width)}px`;
-                container.style.height = `${Math.floor(viewport.height)}px`;
+                container.style.width = `${displayWidth}px`;
+                container.style.height = `${displayHeight}px`;
                 container.style.overflow = 'hidden';
-                container.dataset.renderedWidth = `${Math.floor(viewport.width)}`;
-                container.dataset.renderedHeight = `${Math.floor(viewport.height)}`;
-                const layerWidth = Math.floor(viewport.width);
-                const layerHeight = Math.floor(viewport.height);
+                container.dataset.renderedWidth = `${renderedWidth}`;
+                container.dataset.renderedHeight = `${renderedHeight}`;
+                const layerWidth = renderedWidth;
+                const layerHeight = renderedHeight;
                 const annotationLayer = container.querySelector('.annotationLayer');
                 if (annotationLayer) {
                     annotationLayer.setAttribute("data-main-rotation", pageRotation);
@@ -295,6 +312,8 @@ export class PdfRendererController {
                     textLayer.style.setProperty('--total-scale-factor', this.viewer.renderScale);
                 }
                 this.viewer.pages[i - 1] = page;
+                container.style.visibility = '';
+                this.updateHorizontalOverflowState();
                 resolve("ok");
             }).catch(err => {
                 if (renderCycleId !== this.viewer.renderCycleId || this.viewer.pendingRender) {
