@@ -10,16 +10,22 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.Duration;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @RestController
 public class CspReportController {
 
     private static final Logger logger = LoggerFactory.getLogger("CSP_VIOLATION");
     private static final int MAX_LOGGED_VALUE_LENGTH = 500;
+    private static final long DUPLICATE_TTL_MILLIS = Duration.ofMinutes(10).toMillis();
+    private static final int MAX_DEDUPLICATION_KEYS = 1000;
     private static final TypeReference<Map<String, Object>> MAP_TYPE = new TypeReference<>() {};
 
     private final ObjectMapper objectMapper;
+    private final Map<String, Long> alreadyLoggedReports = new ConcurrentHashMap<>();
 
     public CspReportController(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
@@ -35,6 +41,9 @@ public class CspReportController {
             return ResponseEntity.noContent().build();
         }
         Map<String, Object> report = getReport(payload);
+        if(isDuplicate(report)) {
+            return ResponseEntity.noContent().build();
+        }
         logger.info("effectiveDirective={} violatedDirective={} blockedUri={} documentUri={} sourceFile={} lineNumber={} columnNumber={} disposition={} statusCode={} remoteAddr={} userAgent={}",
                 value(report, "effective-directive"),
                 value(report, "violated-directive"),
@@ -48,6 +57,38 @@ public class CspReportController {
                 request.getRemoteAddr(),
                 sanitize(request.getHeader("User-Agent")));
         return ResponseEntity.noContent().build();
+    }
+
+    private boolean isDuplicate(Map<String, Object> report) {
+        long now = System.currentTimeMillis();
+        cleanupOldReports(now);
+        String key = value(report, "effective-directive") + "|" +
+                value(report, "violated-directive") + "|" +
+                value(report, "blocked-uri") + "|" +
+                value(report, "document-uri") + "|" +
+                value(report, "source-file") + "|" +
+                value(report, "line-number") + "|" +
+                value(report, "column-number") + "|" +
+                value(report, "disposition") + "|" +
+                value(report, "status-code");
+        Long previous = alreadyLoggedReports.putIfAbsent(key, now);
+        return previous != null && now - previous < DUPLICATE_TTL_MILLIS;
+    }
+
+    private void cleanupOldReports(long now) {
+        if(alreadyLoggedReports.size() < MAX_DEDUPLICATION_KEYS) {
+            return;
+        }
+        Iterator<Map.Entry<String, Long>> iterator = alreadyLoggedReports.entrySet().iterator();
+        while(iterator.hasNext()) {
+            Map.Entry<String, Long> entry = iterator.next();
+            if(now - entry.getValue() >= DUPLICATE_TTL_MILLIS) {
+                iterator.remove();
+            }
+        }
+        if(alreadyLoggedReports.size() >= MAX_DEDUPLICATION_KEYS) {
+            alreadyLoggedReports.clear();
+        }
     }
 
     @SuppressWarnings("unchecked")
