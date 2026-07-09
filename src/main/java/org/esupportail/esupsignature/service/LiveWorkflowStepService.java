@@ -35,8 +35,9 @@ public class LiveWorkflowStepService {
     private final SignBookRepository signBookRepository;
     private final ActionService actionService;
     private final OtpService otpService;
+    private final LogService logService;
 
-    public LiveWorkflowStepService(LiveWorkflowStepRepository liveWorkflowStepRepository, RecipientService recipientService, UserService userService, SignRequestService signRequestService, SignBookRepository signBookRepository, ActionService actionService, OtpService otpService) {
+    public LiveWorkflowStepService(LiveWorkflowStepRepository liveWorkflowStepRepository, RecipientService recipientService, UserService userService, SignRequestService signRequestService, SignBookRepository signBookRepository, ActionService actionService, OtpService otpService, LogService logService) {
         this.liveWorkflowStepRepository = liveWorkflowStepRepository;
         this.recipientService = recipientService;
         this.userService = userService;
@@ -44,6 +45,7 @@ public class LiveWorkflowStepService {
         this.signBookRepository = signBookRepository;
         this.actionService = actionService;
         this.otpService = otpService;
+        this.logService = logService;
     }
 
     public LiveWorkflowStep getById(Long liveWorkflowStepId) {
@@ -204,12 +206,18 @@ public class LiveWorkflowStepService {
 
     @Transactional
     public void replaceRecipientsToWorkflowStep(Long signBookId, Integer stepNumber, List<RecipientWsDto> recipientWsDtos) throws EsupSignatureException {
+        replaceRecipientsToWorkflowStep(signBookId, stepNumber, recipientWsDtos, null);
+    }
+
+    @Transactional
+    public void replaceRecipientsToWorkflowStep(Long signBookId, Integer stepNumber, List<RecipientWsDto> recipientWsDtos, String authUserEppn) throws EsupSignatureException {
         SignBook signBook = signBookRepository.findById(signBookId).orElseThrow();
         LiveWorkflowStep liveWorkflowStep = signBook.getLiveWorkflow().getLiveWorkflowSteps().get(stepNumber - 1);
         if (signBook.getLiveWorkflow().getLiveWorkflowSteps().indexOf(liveWorkflowStep) + 1 < signBook.getLiveWorkflow().getCurrentStepNumber()) {
             throw new EsupSignatureException("Impossible de modifier les destinataires d'une étape déjà passée");
         }
         List<Recipient> oldRecipients = new ArrayList<>(liveWorkflowStep.getRecipients());
+        String oldRecipientsLabel = recipientsToLogLabel(oldRecipients);
         liveWorkflowStep.getRecipients().clear();
         for(Recipient oldRecipient : oldRecipients) {
             otpService.deleteOtp(signBookId, oldRecipient.getUser());
@@ -222,6 +230,7 @@ public class LiveWorkflowStepService {
             }
         }
         List<Recipient> recipients = addRecipientsToWorkflowStep(signBook, liveWorkflowStep, recipientWsDtos);
+        String newRecipientsLabel = recipientsToLogLabel(recipients);
         if (signBook.getLiveWorkflow().getCurrentStep().equals(liveWorkflowStep)) {
             for (SignRequest signRequest : signBook.getSignRequests()) {
                 for (Recipient recipient : oldRecipients) {
@@ -235,6 +244,39 @@ public class LiveWorkflowStepService {
                 }
             }
         }
+        logRecipientsReplacement(signBook, stepNumber, oldRecipientsLabel, newRecipientsLabel, authUserEppn);
+    }
+
+    private void logRecipientsReplacement(SignBook signBook, Integer stepNumber, String oldRecipientsLabel, String newRecipientsLabel, String authUserEppn) {
+        String action = "Modification des destinataires de l'étape " + stepNumber;
+        String comment = "Anciens destinataires : " + oldRecipientsLabel + "\nNouveaux destinataires : " + newRecipientsLabel;
+        String logUserEppn = StringUtils.hasText(authUserEppn) ? authUserEppn : null;
+        for (SignRequest signRequest : signBook.getSignRequests()) {
+            logService.create(signRequest.getId(), signBook.getSubject(), signBook.getWorkflowName(), signRequest.getStatus(), action, comment, "SUCCESS", null, null, null, stepNumber, logUserEppn, logUserEppn);
+        }
+    }
+
+    private String recipientsToLogLabel(List<Recipient> recipients) {
+        if (recipients == null || recipients.isEmpty()) {
+            return "-";
+        }
+        List<String> labels = new ArrayList<>();
+        for (Recipient recipient : recipients) {
+            User user = recipient.getUser();
+            if (user == null) {
+                continue;
+            }
+            labels.add(userDisplayName(user) + " <" + user.getEmail() + ">");
+        }
+        return String.join(", ", labels);
+    }
+
+    private String userDisplayName(User user) {
+        String displayName = ((user.getFirstname() == null ? "" : user.getFirstname()) + " " + (user.getName() == null ? "" : user.getName())).trim();
+        if (StringUtils.hasText(displayName)) {
+            return displayName;
+        }
+        return user.getEmail();
     }
 
 }

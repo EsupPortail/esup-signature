@@ -351,7 +351,7 @@ public class SignBookController {
     @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
     @DeleteMapping(value = "/remove-live-step/{id}/{step}")
     public String removeStep(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @PathVariable("step") Integer step, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) {
-        String result = signBookService.removeStep(id, step);
+        String result = signBookService.removeStep(id, step, authUserEppn);
         if (result == null) {
             redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "L'étape a été supprimés"));
         } else {
@@ -541,7 +541,7 @@ public class SignBookController {
             recipientWsDtos.add(recipientWsDto);
         }
         try {
-            liveWorkflowStepService.replaceRecipientsToWorkflowStep(id, stepNumber, recipientWsDtos);
+            liveWorkflowStepService.replaceRecipientsToWorkflowStep(id, stepNumber, recipientWsDtos, authUserEppn);
         } catch (EsupSignatureException e) {
             redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", e.getMessage()));
         }

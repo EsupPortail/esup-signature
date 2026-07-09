@@ -199,6 +199,10 @@
                                 </td>
                                 <td class="text-left">
                                     <span th:text="${log.action}"></span>
+                                    <div th:if="${log.comment != null && !#strings.isEmpty(log.comment)}"
+                                         class="small text-muted mt-1"
+                                         style="white-space: pre-line;"
+                                         th:text="${log.comment}"></div>
                                 </td>
                                 <td class="text-left" th:if="${log.action == 'Apposition de la signature'}">
                                     <span th:text="'Apposition d`un visuel en page ' + ${log.pageNumber} + ' aux coordonnées (' + ${log.posX} + ', ' + ${log.posY} + ')'"></span>

@@ -9,6 +9,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.ldap.query.LdapQuery;
 import org.springframework.ldap.query.LdapQueryBuilder;
+import org.springframework.ldap.support.LdapEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -31,19 +32,19 @@ public class LdapPersonLightService {
     }
 
     public List<PersonLightLdap> searchLight(String searchString) {
-        String formattedFilter = MessageFormat.format(ldapProperties.getUsersSearchFilter(), (Object[]) new String[] { searchString });
+        String formattedFilter = MessageFormat.format(ldapProperties.getUsersSearchFilter(), (Object[]) new String[] { LdapEncoder.filterEncode(searchString) });
         logger.debug("search PersonLdapLight with : " + formattedFilter);
         return launchLdapQuery(formattedFilter);
     }
 
     public List<PersonLightLdap> getPersonLdapLight(String authName) {
-        String formattedFilter = MessageFormat.format(ldapProperties.getUserIdSearchFilter(), (Object[]) new String[] { authName });
+        String formattedFilter = MessageFormat.format(ldapProperties.getUserIdSearchFilter(), (Object[]) new String[] { LdapEncoder.filterEncode(authName) });
         logger.debug("search PersonLdapLight with : " + formattedFilter);
         return launchLdapQuery(formattedFilter);
     }
 
     public List<PersonLightLdap> getPersonLdapLightByEppn(String eppn) {
-        String formattedFilter = MessageFormat.format(ldapProperties.getUserEppnSearchFilter(), (Object[]) new String[] { eppn });
+        String formattedFilter = MessageFormat.format(ldapProperties.getUserEppnSearchFilter(), (Object[]) new String[] { LdapEncoder.filterEncode(eppn) });
         logger.debug("search PersonLdapLight by eppn");
         return launchLdapQuery(formattedFilter);
     }

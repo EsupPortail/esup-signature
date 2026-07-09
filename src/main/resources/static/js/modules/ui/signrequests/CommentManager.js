@@ -402,9 +402,11 @@ export class CommentManager {
                             }
                             postitDiv.on('mouseup' + postitNamespace, e => {
                                 e.stopPropagation();
+                                const message = document.createElement('p');
+                                message.textContent = postitDiv.attr("es-comment-text") ?? "";
                                 bootbox.dialog({
                                     title: postitDiv.attr("es-comment-title"),
-                                    message: postitDiv.attr("es-comment-text"),
+                                    message: message,
                                     buttons: buttons
                                 }).find('.modal-content').css({'background-color': 'var(--bs-warning-bg-subtle)'});
                             });
