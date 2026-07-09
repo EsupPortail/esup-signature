@@ -41,6 +41,9 @@ public class CspReportController {
             return ResponseEntity.noContent().build();
         }
         Map<String, Object> report = getReport(payload);
+        if(isIgnoredReport(report)) {
+            return ResponseEntity.noContent().build();
+        }
         if(isDuplicate(report)) {
             return ResponseEntity.noContent().build();
         }
@@ -57,6 +60,15 @@ public class CspReportController {
                 request.getRemoteAddr(),
                 sanitize(request.getHeader("User-Agent")));
         return ResponseEntity.noContent().build();
+    }
+
+    private boolean isIgnoredReport(Map<String, Object> report) {
+        String effectiveDirective = value(report, "effective-directive");
+        String sourceFile = value(report, "source-file");
+        String lineNumber = value(report, "line-number");
+        return "script-src-elem".equals(effectiveDirective)
+                && sourceFile.endsWith("/js/modules/ui/signrequests/Nexu.js")
+                && "529".equals(lineNumber);
     }
 
     private boolean isDuplicate(Map<String, Object> report) {
