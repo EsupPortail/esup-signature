@@ -490,7 +490,7 @@ public class UserAndOtpSignRequestController {
             Map<String, String> response = new HashMap<>();
             response.put("token", token);
             response.put("url", mobileSignUrl);
-            response.put("qrcodeUrl", "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" + java.net.URLEncoder.encode(mobileSignUrl, "UTF-8"));
+            response.put("qrcodeUrl", buildMobileSignQrCodeUrl(token));
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
@@ -509,6 +509,10 @@ public class UserAndOtpSignRequestController {
             baseUrl = baseUrl.substring(0, baseUrl.length() - 1);
         }
         return baseUrl + "/public/mobile-sign/" + token;
+    }
+
+    private String buildMobileSignQrCodeUrl(String token) {
+        return "/public/mobile-sign/" + token + "/qrcode.png";
     }
 
     private boolean isAjaxRequest(HttpServletRequest httpServletRequest) {
