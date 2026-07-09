@@ -30,7 +30,7 @@
                                 <span th:text="'Etape ' + ${stepNumber}"></span>
                                 <table class="table table-sm table-hover table-borderless mb-1">
                                     <th:block th:each="recipient : ${liveWorkflowStep.recipients}">
-                                        <tr onmouseover="this.style.cursor = 'pointer'" th:onclick="'$(\'#menu-' + ${recipient.id} + '\').show();'">
+                                        <tr class="js-step-menu-show" th:attr="data-menu-target='menu-' + ${recipient.id}" style="cursor: pointer;">
                                             <td th:if="${!#strings.isEmpty(recipient.user.firstname) && !#strings.isEmpty(recipient.user.name)}" th:title="${recipient.user.email}" th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></td>
                                             <td th:if="${#strings.isEmpty(recipient.user.firstname) && #strings.isEmpty(recipient.user.name)}" th:title="${recipient.user.email}" th:text="${recipient.user.email}"></td>
                                             <td th:if="${stepNumber >= signBook.liveWorkflowCurrentStepNumber  && signBook.status == 'pending'}" th:switch="${recipient.signed}">

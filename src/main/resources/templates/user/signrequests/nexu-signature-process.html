@@ -16,13 +16,7 @@
         </div>
     </div>
 </main>
-<script th:inline="javascript" type="module">
-    import {NexuProcessUi} from '/js/modules/ui/signrequests/NexuProcessUi.js?version=@[(${versionApp})]@';
-
-    $(document).ready(function() {
-        NexuProcessUi.initWithin(document);
-    });
-</script>
+<script type="module" th:src="'/js/modules/bootstrap/NexuSignatureProcessBootstrap.js?version=' + ${versionApp}"></script>
 <footer th:replace="~{fragments/footer :: footer}"></footer>
 </body>
 </html>

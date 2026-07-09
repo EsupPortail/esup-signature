@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.web.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -57,12 +58,13 @@ public class UserAndOtpSignRequestController {
     private final UiFetchSignRequestService uiFetchSignRequestService;
     private final PreAuthorizeService preAuthorizeService;
     private final MobileSignTokenService mobileSignTokenService;
+    private final ObjectMapper objectMapper;
 
     private Object getLock(String authUserEppn) {
         return userLocks.computeIfAbsent(authUserEppn, k -> new Object());
     }
 
-    public UserAndOtpSignRequestController(SignRequestService signRequestService, CommentService commentService, UserService userService, GlobalProperties globalProperties, SignBookService signBookService, UiFetchService uiFetchService, UiFetchSignRequestService uiFetchSignRequestService, PreAuthorizeService preAuthorizeService, MobileSignTokenService mobileSignTokenService) {
+    public UserAndOtpSignRequestController(SignRequestService signRequestService, CommentService commentService, UserService userService, GlobalProperties globalProperties, SignBookService signBookService, UiFetchService uiFetchService, UiFetchSignRequestService uiFetchSignRequestService, PreAuthorizeService preAuthorizeService, MobileSignTokenService mobileSignTokenService, ObjectMapper objectMapper) {
         this.signRequestService = signRequestService;
         this.commentService = commentService;
         this.userService = userService;
@@ -72,6 +74,7 @@ public class UserAndOtpSignRequestController {
         this.uiFetchSignRequestService = uiFetchSignRequestService;
         this.preAuthorizeService = preAuthorizeService;
         this.mobileSignTokenService = mobileSignTokenService;
+        this.objectMapper = objectMapper;
     }
 
     @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
@@ -96,8 +99,13 @@ public class UserAndOtpSignRequestController {
             userService.setUiParams(authUserEppn, UiParams.workflowVisaAlert, context.getWorkflowId().toString() + ",");
         }
         ShowSignRequestDto showSignRequest = context.getShowSignRequest();
+        SignatureUiConfigDto signatureUiConfig = SignatureUiConfigDto.fromGlobalProperties(globalProperties);
         model.addAttribute("favoriteSignRequestParamsJson", favoriteSignRequestParamsJson);
-        model.addAttribute("signatureUiConfig", SignatureUiConfigDto.fromGlobalProperties(globalProperties));
+        model.addAttribute("signatureUiConfig", signatureUiConfig);
+        model.addAttribute("signatureUiConfigJson", objectMapper.writeValueAsString(signatureUiConfig));
+        model.addAttribute("originalDocumentsJson", objectMapper.writeValueAsString(showSignRequest.getOriginalDocuments()));
+        model.addAttribute("signedDocumentsJson", objectMapper.writeValueAsString(showSignRequest.getSignedDocuments()));
+        model.addAttribute("signImagesJson", objectMapper.writeValueAsString(showSignRequest.signRequestFull().getSignImages()));
         model.addAttribute("showSignRequest", showSignRequest);
         model.addAttribute("signRequestFull", showSignRequest.signRequestFull());
         model.addAttribute("signRequestLight", showSignRequest.signRequestLight());
@@ -482,7 +490,7 @@ public class UserAndOtpSignRequestController {
             Map<String, String> response = new HashMap<>();
             response.put("token", token);
             response.put("url", mobileSignUrl);
-            response.put("qrcodeUrl", "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" + java.net.URLEncoder.encode(mobileSignUrl, "UTF-8"));
+            response.put("qrcodeUrl", buildMobileSignQrCodeUrl(token));
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
@@ -501,6 +509,10 @@ public class UserAndOtpSignRequestController {
             baseUrl = baseUrl.substring(0, baseUrl.length() - 1);
         }
         return baseUrl + "/public/mobile-sign/" + token;
+    }
+
+    private String buildMobileSignQrCodeUrl(String token) {
+        return "/public/mobile-sign/" + token + "/qrcode.png";
     }
 
     private boolean isAjaxRequest(HttpServletRequest httpServletRequest) {

@@ -3,21 +3,11 @@
 <!--/*@thymesVar id="showSignRequest" type="org.esupportail.esupsignature.dto.page.user.signrequest.ShowSignRequestDto"*/-->
 <!--/*@thymesVar id="signRequestLight" type="org.esupportail.esupsignature.dto.page.user.signrequest.ShowSignRequestDto.SignRequestLightDto"*/-->
 <div th:fragment="details">
-    <script>
-        const displayPdfAlertsDropdown = () => $('#display-pdf-alerts-dropdown');
-        $("#infos-btn").on("click", function (e) {
-            $(this).removeClass("form-dirty-indicator");
-        })
-    </script>
     <div id="display-pdf-alerts-dropdown" class="display-pdf-alerts-dropdown d-none">
         <div id="pdf-alerts" class="pdf-alerts">
             <div class="d-flex flex-column gap-1">
                 <th:block th:if="${signRequestFull.comments.size() > 0 && (showSignRequest.workflow.externalCanReaderAnnotations || user.userType.name() != 'external')}">
-                    <script>
-                        displayPdfAlertsDropdown().removeClass("d-none");
-                        $("#infos-btn").addClass("form-dirty-indicator");
-                    </script>
-                    <div id="postitHelp" class="alert alert-light es-status-card es-status-card--warning">
+                    <div id="postitHelp" class="alert alert-light es-status-card es-status-card--warning es-pdf-alert-marker">
                         <div class="es-status-card__icon">
                             <i class="fi fi-rr-info"></i>
                         </div>
@@ -43,11 +33,7 @@
                         <p class="es-status-card__description">En raison de la configuration des prochaines étapes, aucun mode de signature n’est disponible pour garantir l’intégrité du document ou de la signature. Merci de contacter le gestionnaire du circuit si besoin.</p>
                     </div>
                 </div>
-                <div class="alert alert-light es-status-card es-status-card--success" th:if="${showSignRequest.currentUserAsSigned && signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && !signRequestFull.signable}">
-                    <script>
-                        displayPdfAlertsDropdown().removeClass("d-none");
-                        $("#infos-btn").addClass("form-dirty-indicator");
-                    </script>
+                <div class="alert alert-light es-status-card es-status-card--success es-pdf-alert-marker" th:if="${showSignRequest.currentUserAsSigned && signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && !signRequestFull.signable}">
                     <div class="es-status-card__icon">
                         <i class="fi fi-rr-check-circle"></i>
                     </div>
@@ -75,7 +61,7 @@
                         <p class="es-status-card__description">Votre environnement ne remplit pas les conditions nécessaires pour signer cette demande. Si possible, lancez Esup-DSS-Client ou <a href="https://github.com/EsupPortail/esup-dss-client/releases/latest" target="_blank">téléchargez-le ici</a> pour utiliser un certificat personnel.</p>
                     </div>
                 </div>
-                <div id="alertSign" class="alert alert-light es-status-card" th:if="${showSignRequest.signatureIds.size() > 0}" th:classappend="${showSignRequest.signatureIssue ? ' es-status-card--secondary' : ' es-status-card--success'}">
+                <div id="alertSign" class="alert alert-light es-status-card es-pdf-alert-marker" th:if="${showSignRequest.signatureIds.size() > 0}" th:classappend="${showSignRequest.signatureIssue ? ' es-status-card--secondary' : ' es-status-card--success'}">
                     <div class="es-status-card__icon">
                         <i th:class="${showSignRequest.signatureIssue ? 'fi fi-rr-info' : 'fi fi-rr-check-circle'}"></i>
                     </div>
@@ -93,22 +79,14 @@
                             <button es-modal-style="bg-warning" class="btn btn-sm btn-dark d-none reportModalBtn" data-bs-toggle="collapse" data-bs-target="#reportModal" th:if="${showSignRequest.signatureIssue}">Voir la/les signature(s)</button>
                         </div>
                     </div>
-                    <script th:if="${showSignRequest.signatureIds.size() >= 1}">
-                        displayPdfAlertsDropdown().removeClass("d-none");
-                        $("#infos-btn").addClass("form-dirty-indicator");
-                    </script>
                 </div>
                 <div id="warningPdfA"
-                     class="alert alert-light es-status-card es-status-card--danger"
+                     class="alert alert-light es-status-card es-status-card--danger es-pdf-alert-marker"
                      th:if="${showSignRequest.pdfaCheck != null &&
                             (showSignRequest.pdfaCheck.contains('6.2') ||
                              showSignRequest.pdfaCheck.contains('6.3') ||
                              showSignRequest.pdfaCheck.contains('6.5')) &&
                             !globalProperties.disablePdfFontAlert}">
-                    <script>
-                        displayPdfAlertsDropdown().removeClass("d-none");
-                        $("#infos-btn").addClass("form-dirty-indicator");
-                    </script>
                     <div class="es-status-card__icon">
                         <i class="fi fi-rr-triangle-warning"></i>
                     </div>

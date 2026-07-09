@@ -623,8 +623,9 @@ class GlobalSecurityAttackSurfaceTest {
             ValidationService validationService = mock(ValidationService.class);
             SignService signService = mock(SignService.class);
             MobileSignTokenService mobileSignTokenService = mock(MobileSignTokenService.class);
+            GlobalProperties globalProperties = mock(GlobalProperties.class);
 
-            PublicController controller = publicController(logService, signRequestService, auditTrailService, fileService, userService, xsltService, preAuthorizeService, validationService, signService, mobileSignTokenService);
+            PublicController controller = publicController(logService, globalProperties, signRequestService, auditTrailService, fileService, userService, xsltService, preAuthorizeService, validationService, signService, mobileSignTokenService);
 
             AuditTrail auditTrail = new AuditTrail();
             auditTrail.setToken("known-public-token");
@@ -656,8 +657,9 @@ class GlobalSecurityAttackSurfaceTest {
             ValidationService validationService = mock(ValidationService.class);
             SignService signService = mock(SignService.class);
             MobileSignTokenService mobileSignTokenService = mock(MobileSignTokenService.class);
+            GlobalProperties globalProperties = mock(GlobalProperties.class);
 
-            PublicController controller = publicController(logService, signRequestService, auditTrailService, fileService, userService, xsltService, preAuthorizeService, validationService, signService, mobileSignTokenService);
+            PublicController controller = publicController(logService, globalProperties, signRequestService, auditTrailService, fileService, userService, xsltService, preAuthorizeService, validationService, signService, mobileSignTokenService);
 
             when(auditTrailService.getAuditTrailByToken("missing-token")).thenReturn(null);
 
@@ -680,8 +682,9 @@ class GlobalSecurityAttackSurfaceTest {
             SignService signService = mock(SignService.class);
 
             MobileSignTokenService mobileSignTokenService = mock(MobileSignTokenService.class);
+            GlobalProperties globalProperties = mock(GlobalProperties.class);
 
-            PublicController controller = publicController(logService, signRequestService, auditTrailService, fileService, userService, xsltService, preAuthorizeService, validationService, signService, mobileSignTokenService);
+            PublicController controller = publicController(logService, globalProperties, signRequestService, auditTrailService, fileService, userService, xsltService, preAuthorizeService, validationService, signService, mobileSignTokenService);
 
             AuditTrail auditTrail = new AuditTrail();
             auditTrail.setToken("known-token");
@@ -722,8 +725,9 @@ class GlobalSecurityAttackSurfaceTest {
             SignService signService = mock(SignService.class);
 
             MobileSignTokenService mobileSignTokenService = mock(MobileSignTokenService.class);
+            GlobalProperties globalProperties = mock(GlobalProperties.class);
 
-            PublicController controller = publicController(logService, signRequestService, auditTrailService, fileService, userService, xsltService, preAuthorizeService, validationService, signService, mobileSignTokenService);
+            PublicController controller = publicController(logService, globalProperties, signRequestService, auditTrailService, fileService, userService, xsltService, preAuthorizeService, validationService, signService, mobileSignTokenService);
 
             MockMultipartFile multipartFile = new MockMultipartFile("multipartFile", "test.pdf", "application/pdf", "payload".getBytes());
             when(fileService.getFileChecksum(multipartFile.getInputStream())).thenReturn("checksum-1");
@@ -750,8 +754,9 @@ class GlobalSecurityAttackSurfaceTest {
             SignService signService = mock(SignService.class);
 
             MobileSignTokenService mobileSignTokenService = mock(MobileSignTokenService.class);
+            GlobalProperties globalProperties = mock(GlobalProperties.class);
 
-            PublicController controller = publicController(logService, signRequestService, auditTrailService, fileService, userService, xsltService, preAuthorizeService, validationService, signService, mobileSignTokenService);
+            PublicController controller = publicController(logService, globalProperties, signRequestService, auditTrailService, fileService, userService, xsltService, preAuthorizeService, validationService, signService, mobileSignTokenService);
 
             MockMultipartFile multipartFile = new MockMultipartFile("multipartFile", "test.pdf", "application/pdf", "payload".getBytes());
             when(fileService.getFileChecksum(multipartFile.getInputStream())).thenReturn("checksum-2");
@@ -777,8 +782,9 @@ class GlobalSecurityAttackSurfaceTest {
             ValidationService validationService = mock(ValidationService.class);
             SignService signService = mock(SignService.class);
             MobileSignTokenService mobileSignTokenService = mock(MobileSignTokenService.class);
+            GlobalProperties globalProperties = mock(GlobalProperties.class);
 
-            PublicController controller = publicController(logService, signRequestService, auditTrailService, fileService, userService, xsltService, preAuthorizeService, validationService, signService, mobileSignTokenService);
+            PublicController controller = publicController(logService, globalProperties, signRequestService, auditTrailService, fileService, userService, xsltService, preAuthorizeService, validationService, signService, mobileSignTokenService);
 
             when(mobileSignTokenService.tokenExists("mobile-token")).thenReturn(true);
             when(mobileSignTokenService.validateToken("mobile-token")).thenReturn(false);
@@ -810,8 +816,9 @@ class GlobalSecurityAttackSurfaceTest {
             ValidationService validationService = mock(ValidationService.class);
             SignService signService = mock(SignService.class);
             MobileSignTokenService mobileSignTokenService = mock(MobileSignTokenService.class);
+            GlobalProperties globalProperties = mock(GlobalProperties.class);
 
-            PublicController controller = publicController(logService, signRequestService, auditTrailService, fileService, userService, xsltService, preAuthorizeService, validationService, signService, mobileSignTokenService);
+            PublicController controller = publicController(logService, globalProperties, signRequestService, auditTrailService, fileService, userService, xsltService, preAuthorizeService, validationService, signService, mobileSignTokenService);
 
             when(mobileSignTokenService.tokenExists("mobile-token")).thenReturn(true);
             when(mobileSignTokenService.validateToken("mobile-token")).thenReturn(true);
@@ -838,8 +845,9 @@ class GlobalSecurityAttackSurfaceTest {
             ValidationService validationService = mock(ValidationService.class);
             SignService signService = mock(SignService.class);
             MobileSignTokenService mobileSignTokenService = mock(MobileSignTokenService.class);
+            GlobalProperties globalProperties = mock(GlobalProperties.class);
 
-            PublicController controller = publicController(logService, signRequestService, auditTrailService, fileService, userService, xsltService, preAuthorizeService, validationService, signService, mobileSignTokenService);
+            PublicController controller = publicController(logService, globalProperties, signRequestService, auditTrailService, fileService, userService, xsltService, preAuthorizeService, validationService, signService, mobileSignTokenService);
 
             when(mobileSignTokenService.getPendingSignaturePreview("mobile-token")).thenReturn("data:image/png;base64,abc123");
 
@@ -874,8 +882,9 @@ class GlobalSecurityAttackSurfaceTest {
             ValidationService validationService = mock(ValidationService.class);
             SignService signService = mock(SignService.class);
             MobileSignTokenService mobileSignTokenService = mock(MobileSignTokenService.class);
+            GlobalProperties globalProperties = mock(GlobalProperties.class);
 
-            PublicController controller = publicController(logService, signRequestService, auditTrailService, fileService, userService, xsltService, preAuthorizeService, validationService, signService, mobileSignTokenService);
+            PublicController controller = publicController(logService, globalProperties, signRequestService, auditTrailService, fileService, userService, xsltService, preAuthorizeService, validationService, signService, mobileSignTokenService);
 
             when(mobileSignTokenService.validateToken("mobile-token")).thenReturn(false);
             when(mobileSignTokenService.isTokenUsed("mobile-token")).thenReturn(true);
@@ -1141,13 +1150,14 @@ class GlobalSecurityAttackSurfaceTest {
         return new WsAccessTokenService(repository, signRequestService, workflowService, userService);
     }
 
-    private PublicController publicController(LogService logService, SignRequestService signRequestService, AuditTrailService auditTrailService,
+    private PublicController publicController(LogService logService, GlobalProperties globalProperties, SignRequestService signRequestService, AuditTrailService auditTrailService,
                                               FileService fileService, UserService userService,
                                               org.esupportail.esupsignature.dss.service.XSLTService xsltService,
                                               PreAuthorizeService preAuthorizeService, ValidationService validationService,
                                               SignService signService, MobileSignTokenService mobileSignTokenService) {
         return new PublicController(
                 null,
+                globalProperties,
                 logService,
                 signRequestService,
                 auditTrailService,
