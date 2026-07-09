@@ -28,17 +28,12 @@
                                     <div class="position-relative">
                                         <input required class="form-control" id="multipartSignedDoc" name="multipartSignedDoc" type="file">
                                         <button type="button" id="clearFileBtn"
-                                                class="btn btn-sm btn-light position-absolute top-0 end-0 me-1 mt-1 border"
+                                                class="btn btn-sm btn-light position-absolute top-0 end-0 me-1 mt-1 border js-clear-file-input"
+                                                data-clear-target="multipartSignedDoc"
                                                 title="Effacer le fichier">
                                             ✕
                                         </button>
                                     </div>
-                                    <script>
-                                        document.getElementById('clearFileBtn').addEventListener('click', () => {
-                                            const input = document.getElementById('multipartSignedDoc');
-                                            input.value = '';
-                                        });
-                                    </script>
                                 </div>
                                 <div class="form-group mb-3">
                                     <div class="custom-file">
@@ -48,19 +43,15 @@
                                         <div class="position-relative">
                                             <input class="form-control" id="multipartSignature" name="multipartSignature" type="file">
                                             <button type="button" id="clearSignatureBtn"
-                                                    class="btn btn-sm btn-light position-absolute top-0 end-0 me-1 mt-1 border"
+                                                    class="btn btn-sm btn-light position-absolute top-0 end-0 me-1 mt-1 border js-clear-file-input"
+                                                    data-clear-target="multipartSignature"
                                                     title="Effacer le fichier">
                                                 ✕
                                             </button>
                                         </div>
-                                        <script>
-                                            document.getElementById('clearSignatureBtn').addEventListener('click', () => {
-                                                const input = document.getElementById('multipartSignature');
-                                                input.value = '';
-                                            });
-                                        </script>
                                     </div>
                                 </div>
+                                <script type="module" th:src="'/js/modules/bootstrap/ValidationFormBootstrap.js?version=' + ${versionApp}"></script>
                                 <div class="form-group w-100 text-end">
                                     <input alt="Upload" class="btn btn-success end" id="Upload" title="Upload" type="submit" value="Envoyer"/>
                                 </div>

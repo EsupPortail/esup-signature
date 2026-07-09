@@ -23,7 +23,7 @@
                     <button id="closeModal" type="button" class="btn btn-secondary align-self-center" data-bs-dismiss="modal">
                         Fermer
                     </button>
-                    <button id="validModal" onclick="location.reload();" class="btn btn-secondary">Terminer</button>
+                    <button id="validModal" type="button" class="btn btn-secondary js-reload-page">Terminer</button>
                 </div>
             </div>
         </div>
@@ -192,28 +192,7 @@
                                                     </div>
                                                     <div class="d-flex col-12">
                                                         <label th:for="'phone_' + ${iterator.index}" class="col-3">Mobile</label>
-                                                        <input th:id="'phone_' + ${iterator.index}" class="form-control me-2" th:value="${recipient.user.phone}" type="text" name="phones" value="">
-                                                        <script th:inline="javascript">
-                                                            $(document).ready(function() {
-                                                                const phoneInput = document.querySelector("#phone_[[${iterator.index}]]");
-                                                                let iti = null;
-                                                                if (phoneInput) {
-                                                                    iti = intlTelInput(phoneInput, {
-                                                                        validationNumberTypes: "FIXED_LINE_OR_MOBILE",
-                                                                        strictMode: true,
-                                                                        separateDialCode: false,
-                                                                        nationalMode: true,
-                                                                        countryOrder: ["fr"],
-                                                                        initialCountry: "auto",
-                                                                        geoIpLookup: callback => {
-                                                                            callback(navigator.language.split('-')[0]);
-                                                                        },
-                                                                        customPlaceholder: (selectedCountryPlaceholder, selectedCountryData) => "Saisir un numéro",
-                                                                        searchPlaceholder: "Rechercher",
-                                                                    });
-                                                                }
-                                                            });
-                                                        </script>
+                                                        <input th:id="'phone_' + ${iterator.index}" class="form-control me-2 js-intl-phone-input" th:value="${recipient.user.phone}" type="text" name="phones" value="">
                                                     </div>
                                                 </div>
                                             </div>
@@ -235,28 +214,7 @@
                                                     </div>
                                                     <div class="d-flex col-12">
                                                         <label th:for="'phone_' + ${iterator.index + 999}">Mobile</label>
-                                                        <input th:id="'phone_' + ${iterator.index + 999}" class="form-control me-2" type="text" name="phones" th:value="${user.phone}">
-                                                        <script th:inline="javascript">
-                                                            $(document).ready(function() {
-                                                                const phoneInput = document.querySelector("#phone_[[${iterator.index + 999}]]");
-                                                                let iti = null;
-                                                                if (phoneInput) {
-                                                                    iti = intlTelInput(phoneInput, {
-                                                                        validationNumberTypes: "FIXED_LINE_OR_MOBILE",
-                                                                        strictMode: true,
-                                                                        separateDialCode: false,
-                                                                        nationalMode: true,
-                                                                        countryOrder: ["fr"],
-                                                                        initialCountry: "auto",
-                                                                        geoIpLookup: callback => {
-                                                                            callback(navigator.language.split('-')[0]);
-                                                                        },
-                                                                        customPlaceholder: (selectedCountryPlaceholder, selectedCountryData) => "Saisir un numéro",
-                                                                        searchPlaceholder: "Rechercher",
-                                                                    });
-                                                                }
-                                                            });
-                                                        </script>
+                                                        <input th:id="'phone_' + ${iterator.index + 999}" class="form-control me-2 js-intl-phone-input" type="text" name="phones" th:value="${user.phone}">
                                                     </div>
                                                 </div>
                                             </div>
@@ -496,98 +454,7 @@
                             </select>
                             <p class="text-muted small mt-2">Attention : la version choisie peut contenir des signatures/annotations des étapes précédentes.</p>
                         </div>
-                        <script th:inline="javascript" type="module">
-                            // toggle upload / existing selection
-                            $(document).ready(function() {
-                                function toggleSource() {
-                                    const useExisting = $('#docSourceExisting').is(':checked');
-                                    if(useExisting) {
-                                        $('#existingBlock').show();
-                                        $('#uploadBlock').hide();
-                                        $('#multipartFiles1').prop('required', false);
-                                    } else {
-                                        $('#existingBlock').hide();
-                                        $('#uploadBlock').show();
-                                        $('#multipartFiles1').prop('required', true);
-                                    }
-                                }
-                                $('input[name="documentSource"]').on('change', toggleSource);
-                                toggleSource();
-                            });
-                            $("#multipartFiles1").fileinput({
-                                    language: "fr",
-                                    showCaption: false,
-                                    minFileSize: 1,
-                                    showClose: false,
-                                    showCancel: false,
-                                    showBrowse: true,
-                                    showUpload: false,
-                                    showUploadStats: false,
-                                    progressDelay: 50,
-                                    maxAjaxThreads: 1,
-                                    uploadAsync: false,
-                                    theme: 'explorer-fa6',
-                                    pdfRendererUrl: 'http://plugins.krajee.com/pdfjs/web/viewer.html',
-                                    overwriteInitial: false,
-                                    preferIconicPreview: true,
-                                    showRemove: true,
-                                    dropZoneEnabled: true,
-                                    browseOnZoneClick: true,
-                                    allowedFileTypes : [],
-                                    previewFileIconSettings: {
-                                        'pdf': '<i class="fi fi-rr-file-pdf text-danger"></i>',
-                                        'doc': '<i class="fi fi-rr-file-word text-primary"></i>',
-                                        'xls': '<i class="fi fi-rr-file-excel text-success"></i>',
-                                        'ppt': '<i class="fi fi-rr-file-powerpoint text-danger"></i>',
-                                        'zip': '<i class="fi fi-rr-file-zipper text-warning"></i>',
-                                        'htm': '<i class="fi fi-rr-file-code text-info"></i>',
-                                        'txt': '<i class="fi fi-rr-text text-info"></i>',
-                                        'mov': '<i class="fi fi-rr-video-camera text-warning"></i>',
-                                        'mp3': '<i class="fi fi-rr-file-audio text-warning"></i>',
-                                        'jpg': '<i class="fi fi-rr-file-image text-danger"></i>',
-                                        'gif': '<i class="fi fi-rr-file-image text-muted"></i>',
-                                        'png': '<i class="fi fi-rr-file-image text-primary"></i>',
-                                        'signed': '<i class="fi fi-rr-document-signed text-success"></i>',
-                                        'other': '<i class="fi fi-rr-file text-muted"></i>'
-                                    },
-                                    previewFileExtSettings: {
-                                        'other': function() {
-                                            return true;
-                                        },
-                                        'signed': function(ext) {
-                                            return ext.match(/(sce)$/i);
-                                        },
-                                        'pdf': function(ext) {
-                                            return ext.match(/(pdf)$/i);
-                                        },
-                                        'doc': function(ext) {
-                                            return ext.match(/(doc|docx|odt)$/i);
-                                        },
-                                        'xls': function(ext) {
-                                            return ext.match(/(xls|xlsx)$/i);
-                                        },
-                                        'ppt': function(ext) {
-                                            return ext.match(/(odp|ppt|pptx)$/i);
-                                        },
-                                        'zip': function(ext) {
-                                            return ext.match(/(zip|rar|tar|gzip|gz|7z)$/i);
-                                        },
-                                        'htm': function(ext) {
-                                            return ext.match(/(htm|html)$/i);
-                                        },
-                                        'txt': function(ext) {
-                                            return ext.match(/(txt|ini|csv|java|php|js|css)$/i);
-                                        },
-                                        'mov': function(ext) {
-                                            return ext.match(/(avi|mpg|mkv|mov|mp4|3gp|webm|wmv)$/i);
-                                        },
-                                        'mp3': function(ext) {
-                                            return ext.match(/(mp3|wav)$/i);
-                                        }
-                                    }
-                                }
-                            );
-                        </script>
+                        <script type="module" th:src="'/js/modules/bootstrap/SignRequestRefusalModalBootstrap.js?version=' + ${versionApp}"></script>
                         <br>
                         <label for="comment">
                             <b>Commentaire (obligatoire)</b>
@@ -706,9 +573,9 @@
                         ${canEdit ? `
                             <div class="es-postit-edit-form" id="postit-${postit.id}" data-postit-id="${postit.id}">
                                 <textarea style="color: var(--bs-black); width: 100%;height: 75%;resize:none;background-color: ${escapedColor}" name="comment" id="postit-text-${postit.id}" class="postitarea">${escapedText}</textarea>
-                                <button type="button" data-postit-id="${postit.id}" onclick="return window.postitSaveAjax(event, this);" class="btn btn-sm btn-dark float-end position-absolute es-postit-save-btn postit-save-ajax" title="Enregistrer"><i class="fi fi-rr-disk"></i></button>
+                                <button type="button" data-postit-id="${postit.id}" class="btn btn-sm btn-dark float-end position-absolute es-postit-save-btn postit-save-ajax" title="Enregistrer"><i class="fi fi-rr-disk"></i></button>
                             </div>
-                            <button type="button" data-postit-id="${postit.id}" onclick="return window.postitDeleteAjax(event, this);" class="btn btn-sm btn-dark float-start position-absolute es-postit-delete-btn postit-delete-ajax" title="Supprimer">
+                            <button type="button" data-postit-id="${postit.id}" class="btn btn-sm btn-dark float-start position-absolute es-postit-delete-btn postit-delete-ajax" title="Supprimer">
                                 <i class="fi fi-rr-trash"></i>
                             </button>`
                             : `<p id="postit-text-${postit.id}" class="postitarea">${escapedText}</p>`}
@@ -844,37 +711,8 @@
     <div th:replace="~{user/signrequests/includes/modals/attachment :: attachment}"></div>
     <div th:replace="~{user/signrequests/includes/modals/add-doc :: add-doc}"></div>
     <div th:replace="~{user/signrequests/includes/modals/update-signbook :: update-signbook}"></div>
-    <script>
-        function openAttachmentModalIfRequested() {
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get('attachment') === 'true') {
-                const attachmentModal = document.getElementById('attachment');
-                if (attachmentModal) {
-                    const bsModal = new bootstrap.Modal(attachmentModal, {
-                        backdrop: 'static',
-                        keyboard: false
-                    });
-                    bsModal.show();
-                    cleanUrlParameter();
-                    attachmentModal.addEventListener('hidden.bs.modal', function() {
-                        cleanUrlParameter();
-                    });
-                }
-            }
-        }
-
-        function cleanUrlParameter() {
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.has('attachment')) {
-                urlParams.delete('attachment');
-                const newUrl = window.location.pathname +
-                    (urlParams.toString() ? '?' + urlParams.toString() : '');
-                window.history.replaceState({}, document.title, newUrl);
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', openAttachmentModalIfRequested);
-    </script>
+    <script type="module" th:src="'/js/modules/bootstrap/SignRequestPhoneBootstrap.js?version=' + ${versionApp}"></script>
+    <script type="module" th:src="'/js/modules/bootstrap/SignRequestModalsBootstrap.js?version=' + ${versionApp}"></script>
 
     <div data-bs-focus="false" class="modal fade" id="signRequestMobileSignModal" role="dialog" aria-labelledby="signRequestMobileSignModal" aria-hidden="true" style="z-index: 1060;">
         <div class="modal-dialog modal-md border shadow" role="document">

@@ -126,26 +126,18 @@
             </a>
         </div>
         <div th:if="${showSignRequest.lastSignedDocumentContentType == 'application/pdf' && (signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned)}">
-            <a tabindex="1" class="d-flex justify-content-center btn btn-transparent text-dark me-1 d-none d-sm-flex"
-               onclick='alert("Le document ainsi téléchargé est destiné exclusivement à l`impression. Les signatures électroniques ne sont présentes que dans la version numérique")'
+            <a tabindex="1" class="d-flex justify-content-center btn btn-transparent text-dark me-1 d-none d-sm-flex js-print-download-warning"
                th:href="'/ws-secure/global/print-with-code/' + ${signRequestLight.id}" target="_blank"
                title="Imprimer avec un code datamatrix">
                 <i class="fi fi-rr-print " style="margin-top: 0;"></i></a>
         </div>
         <button tabindex="0" th:if="${!showSignRequest.workflow.forbidDownloadsBeforeEnd && signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}"
            class="d-flex justify-content-center btn btn-transparent text-dark  d-none d-lg-flex"
-           onclick="printIt()" target="_blank"
+           id="print-last-file-button"
+           th:attr="data-print-url='/ws-secure/global/get-last-file-inline/' + ${signRequestLight.id}"
+           target="_blank"
            title="Imprimer le document"><i class="fi fi-rr-print"></i></button>
-        <script th:inline="javascript">
-            function printIt() {
-                let win = window.open('/ws-secure/global/get-last-file-inline/[[${signRequestLight.id}]]', '', '');
-                $(win).ready(function() {
-                    setTimeout(function(){
-                        win.window.print();
-                    },500);
-                });
-            }
-        </script>
+        <script type="module" th:src="'/js/modules/bootstrap/SignRequestPrintBootstrap.js?version=' + ${versionApp}"></script>
         <a th:if="${(signRequestLight.createBy.eppn == userEppn || signRequestFull.manager) && signRequestLight.deleted}" tabindex="1" th:href="'/user/signbooks/restore/' + ${showSignRequest.signBookLight.id}" role="button" class="d-flex justify-content-center btn btn-transparent text-primary me-1 d-none d-sm-flex" title="Restaurer">
             <i class="fi fi-rr-trash-restore-alt " style="margin-top: 10px;"></i>
         </a>
@@ -168,4 +160,3 @@
 </div>
 
 </html>
-
