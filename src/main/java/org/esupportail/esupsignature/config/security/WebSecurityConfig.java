@@ -64,6 +64,7 @@ import org.springframework.security.web.authentication.AuthenticationFailureHand
 import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.security.web.authentication.session.RegisterSessionAuthenticationStrategy;
 import org.springframework.security.web.authentication.switchuser.SwitchUserFilter;
+import org.springframework.security.web.header.writers.StaticHeadersWriter;
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
 import org.springframework.util.StringUtils;
@@ -241,6 +242,7 @@ public class WebSecurityConfig {
 				.ignoringRequestMatchers("/h2-console/**")
 				.ignoringRequestMatchers("/login/cas")
 				.ignoringRequestMatchers("/cas/slo")
+				.ignoringRequestMatchers("/csp-report")
 				.ignoringRequestMatchers("/public/mobile-sign/**"));
 		Set<String> formAction = new LinkedHashSet<>();
 		formAction.add("'self'");
@@ -248,10 +250,16 @@ public class WebSecurityConfig {
 		for(SecurityService securityService : activeSecurityServices) {
 			addFormActionOrigin(formAction, securityService.getLoggedOutUrl(), "security service " + securityService.getCode());
 		}
+		Set<String> connectSrc = new LinkedHashSet<>();
+		connectSrc.add("'self'");
+		addConnectSrcOrigin(connectSrc, globalProperties.getNexuUrl(), "globalProperties.nexuUrl");
 
+		String cspPolicy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src " + String.join(" ", connectSrc) + "; object-src blob:; frame-src 'self' blob:; base-uri 'self'; frame-ancestors 'self'; form-action " + String.join(" ", formAction);
+		String cspReportOnlyPolicy = "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; font-src 'self' data:; connect-src " + String.join(" ", connectSrc) + "; object-src 'none'; frame-src 'self'; base-uri 'self'; frame-ancestors 'self'; form-action " + String.join(" ", formAction) + "; report-uri /csp-report";
 		http.headers(headers -> headers
 					.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)
-					.contentSecurityPolicy(csp -> csp.policyDirectives("default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; object-src blob:; frame-src 'self' blob:; base-uri 'self'; frame-ancestors 'self'; form-action " + String.join(" ", formAction))));
+					.contentSecurityPolicy(csp -> csp.policyDirectives(cspPolicy))
+					.addHeaderWriter(new StaticHeadersWriter("Content-Security-Policy-Report-Only", cspReportOnlyPolicy)));
 		setAuthorizeRequests(http);
 		return http.build();
 	}
@@ -313,9 +321,49 @@ public class WebSecurityConfig {
 		}
 	}
 
+	private void addConnectSrcOrigin(Set<String> connectSrc, String url, String source) {
+		if(!StringUtils.hasText(url)) {
+			return;
+		}
+		try {
+			URI uri = new URI(url);
+			String origin = getHttpOrigin(uri);
+			if(origin == null) {
+				logger.warn("Ignoring invalid connect-src URL from {}: {}", source, url);
+				return;
+			}
+			connectSrc.add(origin);
+			if("localhost".equalsIgnoreCase(uri.getHost())) {
+				connectSrc.add(buildOrigin(uri.getScheme(), "127.0.0.1", uri.getPort()));
+			} else if("127.0.0.1".equals(uri.getHost())) {
+				connectSrc.add(buildOrigin(uri.getScheme(), "localhost", uri.getPort()));
+			}
+		} catch (URISyntaxException e) {
+			logger.warn("Ignoring invalid connect-src URL from {}: {}", source, url);
+		}
+	}
+
+	private String getHttpOrigin(URI uri) {
+		String scheme = uri.getScheme();
+		String host = uri.getHost();
+		if(!("http".equalsIgnoreCase(scheme) || "https".equalsIgnoreCase(scheme)) || !StringUtils.hasText(host)) {
+			return null;
+		}
+		return buildOrigin(scheme, host, uri.getPort());
+	}
+
+	private String buildOrigin(String scheme, String host, int port) {
+		StringBuilder origin = new StringBuilder(scheme.toLowerCase()).append("://").append(host);
+		if(port != -1) {
+			origin.append(":").append(port);
+		}
+		return origin.toString();
+	}
+
 	private void setAuthorizeRequests(HttpSecurity http) throws Exception {
 		http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers(("/")).permitAll());
 		http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers(("/logged-out")).permitAll());
+		http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers(("/csp-report")).permitAll());
 		http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers(("/ws/workflows/*/datas/csv"))
 				.access(new WebExpressionAuthorizationManager("hasIpAddress('" + webSecurityProperties.getCsvAccessAuthorizeMask() + "')")));
 		setIpsAutorizations(http, webSecurityProperties.getWsAccessAuthorizeIps(), "/ws/**");

@@ -3,6 +3,7 @@
 !.gitignore
 !src/
 !src/**
+src/main/resources/logback-dev.xml
 src/main/resources/application-dev.yml
 src/main/resources/application-docker.yml
 src/main/resources/static/images/watermark.png
