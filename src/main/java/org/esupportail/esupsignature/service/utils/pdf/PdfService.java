@@ -34,6 +34,7 @@ import org.apache.pdfbox.pdmodel.graphics.optionalcontent.PDOptionalContentGroup
 import org.apache.pdfbox.pdmodel.graphics.optionalcontent.PDOptionalContentProperties;
 import org.apache.pdfbox.pdmodel.interactive.action.PDActionURI;
 import org.apache.pdfbox.pdmodel.interactive.annotation.*;
+import org.apache.pdfbox.pdmodel.interactive.digitalsignature.PDSignature;
 import org.apache.pdfbox.pdmodel.interactive.documentnavigation.outline.PDDocumentOutline;
 import org.apache.pdfbox.pdmodel.interactive.documentnavigation.outline.PDOutlineItem;
 import org.apache.pdfbox.pdmodel.interactive.form.*;
@@ -1007,7 +1008,7 @@ public class PdfService {
             containsJpxDecodeImage = containsJpxDecodeImage(pdDocument);
         }
         Reports reports = validationService.validatePdf(new ByteArrayInputStream(originalBytes));
-        if (reports != null && reports.getSimpleReport() != null && reports.getSimpleReport().getSignatureIdList().isEmpty()) {
+        if (shouldNormalizePdf(originalBytes, reports)) {
             String params = "";
             if(!rotate) {
                 params += " -dAutoRotatePages=/None";
@@ -1052,6 +1053,39 @@ public class PdfService {
             return result;
         } else {
             return originalBytes;
+        }
+    }
+
+    private boolean shouldNormalizePdf(byte[] originalBytes, Reports reports) throws IOException {
+        if (reports != null && reports.getSimpleReport() != null) {
+            return reports.getSimpleReport().getSignatureIdList().isEmpty();
+        }
+        if (hasPdfSignature(originalBytes)) {
+            logger.warn("PDF validation failed before normalization; keep original PDF because a signature is present");
+            return false;
+        }
+        logger.warn("PDF validation failed before normalization; trying GhostScript normalization anyway");
+        return true;
+    }
+
+    private boolean hasPdfSignature(byte[] pdfBytes) throws IOException {
+        try (PDDocument pdDocument = Loader.loadPDF(pdfBytes)) {
+            if (!pdDocument.getSignatureDictionaries().isEmpty()) {
+                return true;
+            }
+            PDAcroForm pdAcroForm = pdDocument.getDocumentCatalog().getAcroForm();
+            if (pdAcroForm == null) {
+                return false;
+            }
+            for (PDField pdField : pdAcroForm.getFieldTree()) {
+                if (pdField instanceof PDSignatureField pdSignatureField) {
+                    PDSignature pdSignature = pdSignatureField.getSignature();
+                    if (pdSignature != null) {
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
     }
 

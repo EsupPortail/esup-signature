@@ -274,7 +274,7 @@ public class SignBookService {
         return pageable.getSort().getOrderFor("endDate");
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public Page<SignBookFullDto> getSignBooksForManagersListItems(SignRequestStatus statusFilter,
                                                                   String recipientsFilter,
                                                                   Long workflowId,
@@ -1064,6 +1064,11 @@ public class SignBookService {
      */
     @Transactional
     public String removeStep(Long signBookId, int step) {
+        return removeStep(signBookId, step, null);
+    }
+
+    @Transactional
+    public String removeStep(Long signBookId, int step, String authUserEppn) {
         SignBook signBook = getById(signBookId);
         int currentStepNumber = signBook.getLiveWorkflow().getCurrentStepNumber();
         if(currentStepNumber <= step + 1) {
@@ -1080,6 +1085,7 @@ public class SignBookService {
                 }
             }
             LiveWorkflowStep liveWorkflowStep = signBook.getLiveWorkflow().getLiveWorkflowSteps().get(step);
+            String recipientsLabel = liveWorkflowStepRecipientsToLogLabel(liveWorkflowStep);
             signBook.getLiveWorkflow().getLiveWorkflowSteps().remove(liveWorkflowStep);
             for (Recipient recipient : liveWorkflowStep.getRecipients()) {
                 for (SignRequest signRequest : signBook.getSignRequests()) {
@@ -1095,6 +1101,7 @@ public class SignBookService {
                 }
             }
             liveWorkflowStepService.delete(liveWorkflowStep);
+            logStepChange(signBook, step + 1, "Suppression de l'étape " + (step + 1), "Destinataires de l'étape supprimée : " + recipientsLabel, authUserEppn);
             return null;
         } else {
             return "L'étape ne peut pas être supprimée, elle précède l'étape en cours";
@@ -1123,11 +1130,14 @@ public class SignBookService {
             signBook.getLiveWorkflow().getCurrentStep().setRepeatable(false);
         }
         LiveWorkflowStep liveWorkflowStep = liveWorkflowStepService.createLiveWorkflowStep(signBook, null, step);
+        int insertedStepNumber;
         if (stepNumber == -1) {
             signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStep);
+            insertedStepNumber = signBook.getLiveWorkflow().getLiveWorkflowSteps().size();
         } else {
             if (stepNumber >= currentStepNumber - 1) {
                 signBook.getLiveWorkflow().getLiveWorkflowSteps().add(stepNumber, liveWorkflowStep);
+                insertedStepNumber = stepNumber + 1;
                 if(stepNumber == currentStepNumber - 1) {
                     signBook.getLiveWorkflow().setCurrentStep(liveWorkflowStep);
                     if(signBook.getStatus().equals(SignRequestStatus.pending)) {
@@ -1137,6 +1147,7 @@ public class SignBookService {
             } else {
                 if(signBook.getStatus().equals(SignRequestStatus.draft)) {
                     signBook.getLiveWorkflow().getLiveWorkflowSteps().add(stepNumber, liveWorkflowStep);
+                    insertedStepNumber = stepNumber + 1;
                     signBook.getLiveWorkflow().setCurrentStep(liveWorkflowStep);
                 } else {
                     throw new EsupSignatureException("L'étape ne peut pas être ajoutée car le circuit est déjà démarré");
@@ -1144,6 +1155,29 @@ public class SignBookService {
             }
         }
         userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUserEppn), Collections.singletonList(step));
+        logStepChange(signBook, insertedStepNumber, "Ajout de l'étape " + insertedStepNumber, "Destinataires de l'étape ajoutée : " + liveWorkflowStepRecipientsToLogLabel(liveWorkflowStep), authUserEppn);
+    }
+
+    private void logStepChange(SignBook signBook, Integer stepNumber, String action, String comment, String authUserEppn) {
+        String logUserEppn = StringUtils.hasText(authUserEppn) ? authUserEppn : null;
+        for (SignRequest signRequest : signBook.getSignRequests()) {
+            logService.create(signRequest.getId(), signBook.getSubject(), signBook.getWorkflowName(), signRequest.getStatus(), action, comment, "SUCCESS", null, null, null, stepNumber, logUserEppn, logUserEppn);
+        }
+    }
+
+    private String liveWorkflowStepRecipientsToLogLabel(LiveWorkflowStep liveWorkflowStep) {
+        if (liveWorkflowStep == null || liveWorkflowStep.getRecipients() == null || liveWorkflowStep.getRecipients().isEmpty()) {
+            return "-";
+        }
+        List<String> labels = new ArrayList<>();
+        for (Recipient recipient : liveWorkflowStep.getRecipients()) {
+            User user = recipient.getUser();
+            if (user == null) {
+                continue;
+            }
+            labels.add(userDisplayName(user) + " <" + user.getEmail() + ">");
+        }
+        return String.join(", ", labels);
     }
 
     /**
@@ -3118,6 +3152,7 @@ public class SignBookService {
             List<SignBook> signBooks = getSignBookForUsers(authUserEppn).stream().filter(signBook -> signBook.getStatus().equals(SignRequestStatus.pending)).collect(Collectors.toList());
             for(SignBook signBook : signBooks) {
                 transfertSignRequest(signBook.getId(), true, user, replacedByUser, false);
+                logTransfer(signBook, user, replacedByUser);
                 i++;
             }
         }
@@ -3148,7 +3183,23 @@ public class SignBookService {
         }
         SignRequest signRequest = signRequestService.getById(signRequestId);
         transfertSignRequest(signRequest.getParentSignBook().getId(), false, user, replacedByUser, keepFollow);
-        logService.create(signRequest.getId(), signRequest.getParentSignBook().getSubject(), signRequest.getParentSignBook().getWorkflowName(), signRequest.getStatus(), "Transfert de la demande de signature à " + replacedByUser.getFirstname() + " " + replacedByUser.getName(), "", "SUCCESS", null, null, null, null, userEppn, userEppn);
+        logService.create(signRequest.getId(), signRequest.getParentSignBook().getSubject(), signRequest.getParentSignBook().getWorkflowName(), signRequest.getStatus(), "Transfert de la demande de signature à " + userDisplayName(replacedByUser), "", "SUCCESS", null, null, null, null, userEppn, userEppn);
+    }
+
+    private void logTransfer(SignBook signBook, User user, User replacedByUser) {
+        String action = "Transfert automatique de la demande de signature à " + userDisplayName(replacedByUser);
+        String comment = "Destinataire remplacé : " + userDisplayName(user) + " <" + user.getEmail() + ">";
+        for (SignRequest signRequest : signBook.getSignRequests()) {
+            logService.create(signRequest.getId(), signBook.getSubject(), signBook.getWorkflowName(), signRequest.getStatus(), action, comment, "SUCCESS", null, null, null, null, user.getEppn(), user.getEppn());
+        }
+    }
+
+    private String userDisplayName(User user) {
+        String displayName = ((user.getFirstname() == null ? "" : user.getFirstname()) + " " + (user.getName() == null ? "" : user.getName())).trim();
+        if (StringUtils.hasText(displayName)) {
+            return displayName;
+        }
+        return user.getEmail();
     }
 
     /**
