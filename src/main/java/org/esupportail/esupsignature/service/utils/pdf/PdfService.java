@@ -28,6 +28,7 @@ import org.apache.pdfbox.pdmodel.font.PDType0Font;
 import org.apache.pdfbox.pdmodel.graphics.PDXObject;
 import org.apache.pdfbox.pdmodel.graphics.color.PDColor;
 import org.apache.pdfbox.pdmodel.graphics.color.PDDeviceRGB;
+import org.apache.pdfbox.pdmodel.graphics.form.PDFormXObject;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.apache.pdfbox.pdmodel.graphics.optionalcontent.PDOptionalContentGroup;
 import org.apache.pdfbox.pdmodel.graphics.optionalcontent.PDOptionalContentProperties;
@@ -991,6 +992,7 @@ public class PdfService {
         if (Boolean.TRUE.equals(globalProperties.getDisableNormalizePdf())) {
             return originalBytes;
         }
+        boolean containsJpxDecodeImage;
         try (PDDocument pdDocument = Loader.loadPDF(originalBytes)) {
             boolean hasWidgets = false;
             for (PDPage page : pdDocument.getPages()) {
@@ -1002,6 +1004,7 @@ public class PdfService {
             if(hasWidgets && !force) {
                 return originalBytes;
             }
+            containsJpxDecodeImage = containsJpxDecodeImage(pdDocument);
         }
         Reports reports = validationService.validatePdf(new ByteArrayInputStream(originalBytes));
         if (reports != null && reports.getSimpleReport() != null && reports.getSimpleReport().getSignatureIdList().isEmpty()) {
@@ -1009,7 +1012,12 @@ public class PdfService {
             if(!rotate) {
                 params += " -dAutoRotatePages=/None";
             }
-            String cmd = pdfConfig.getPdfProperties().getPathToGS() + " -dPDFSTOPONERROR -sstdout=%stderr -dBATCH -dNOPAUSE -dPassThroughJPEGImages=true -dNOSAFER -sDEVICE=pdfwrite" + params + " -d -sOutputFile=- - 2>/dev/null";
+            String cmd;
+            if (containsJpxDecodeImage) {
+                cmd = pdfConfig.getPdfProperties().getPathToGS() + " -dPDFSTOPONERROR -sstdout=%stderr -dBATCH -dNOPAUSE -dNOSAFER -sDEVICE=pdfwrite" + params + " -dPassThroughJPXImages=false -dAutoFilterColorImages=false -dAutoFilterGrayImages=false -dColorImageFilter=/FlateEncode -dGrayImageFilter=/FlateEncode -dDownsampleColorImages=false -dDownsampleGrayImages=false -dDownsampleMonoImages=false -sOutputFile=- - 2>/dev/null";
+            } else {
+                cmd = pdfConfig.getPdfProperties().getPathToGS() + " -dPDFSTOPONERROR -sstdout=%stderr -dBATCH -dNOPAUSE -dPassThroughJPEGImages=true -dNOSAFER -sDEVICE=pdfwrite" + params + " -d -sOutputFile=- - 2>/dev/null";
+            }
             logger.info("GhostScript normalize : " + cmd);
             ProcessBuilder processBuilder = new ProcessBuilder();
             if (SystemUtils.IS_OS_WINDOWS) {
@@ -1045,6 +1053,50 @@ public class PdfService {
         } else {
             return originalBytes;
         }
+    }
+
+    private boolean containsJpxDecodeImage(PDDocument pdDocument) throws IOException {
+        Set<COSBase> visitedXObjects = Collections.newSetFromMap(new IdentityHashMap<>());
+        for (PDPage page : pdDocument.getPages()) {
+            if (containsJpxDecodeImage(page.getResources(), visitedXObjects)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean containsJpxDecodeImage(PDResources resources, Set<COSBase> visitedXObjects) throws IOException {
+        if (resources == null) {
+            return false;
+        }
+        for (COSName xObjectName : resources.getXObjectNames()) {
+            PDXObject xObject = resources.getXObject(xObjectName);
+            if (xObject == null || !visitedXObjects.add(xObject.getCOSObject())) {
+                continue;
+            }
+            if (xObject instanceof PDImageXObject && hasJpxDecodeFilter(xObject.getCOSObject())) {
+                return true;
+            }
+            if (xObject instanceof PDFormXObject formXObject && containsJpxDecodeImage(formXObject.getResources(), visitedXObjects)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean hasJpxDecodeFilter(COSDictionary xObjectDictionary) {
+        COSBase filter = xObjectDictionary.getDictionaryObject(COSName.FILTER);
+        if (COSName.JPX_DECODE.equals(filter)) {
+            return true;
+        }
+        if (filter instanceof COSArray filters) {
+            for (COSBase filterItem : filters) {
+                if (COSName.JPX_DECODE.equals(filterItem)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private boolean isPdfEmpty(byte[] pdfBytes) {
