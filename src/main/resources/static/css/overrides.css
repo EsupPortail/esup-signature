@@ -780,9 +780,14 @@ body.signbooks-list-page.signbooks-list-loading .signbooks-thead-loading-shell {
     max-width: min(92vw, 640px);
     min-height: auto;
     border: 0;
-    pointer-events: none !important;
+    pointer-events: none;
     z-index: -1;
     overflow: hidden;
+}
+
+.toast-es.show,
+.es-notification--panel.show {
+    pointer-events: auto !important;
 }
 
 .toast-es .toast-header,

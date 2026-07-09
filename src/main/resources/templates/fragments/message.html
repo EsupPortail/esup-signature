@@ -17,7 +17,7 @@
 			new NotificationCenter(backendMessage);
 		</script>
 		<th:block th:each="messageNew : ${messageNews}">
-		<div th:id="'toast-message-' + ${messageNew.id}" class="toast toast-es toast-xl es-notification es-notification--panel es-notification--xl bg-white" role="alert" aria-live="assertive" aria-atomic="true" aria-hidden="true" data-es-delay="999999999" data-es-notification-kind="news">
+			<div th:id="'toast-message-' + ${messageNew.id}" class="toast toast-es toast-xl es-notification es-notification--panel es-notification--xl bg-white" role="alert" aria-live="assertive" aria-atomic="true" aria-hidden="true" data-es-delay="999999999" data-es-notification-kind="news">
 			<div class="toast-header pt-3">
 				<h4 class="me-auto">Information !</h4>
 				<button type="button" class="btn-close" title="Fermer" data-es-dismiss="notification" aria-label="Close">

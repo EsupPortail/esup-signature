@@ -35,7 +35,7 @@
                                 <tbody>
                                 <th:block th:each="message :${messages}">
                                 <tr>
-                                    <td th:utext="${message.text}"></td>
+	                                    <td th:utext="${message.text}"></td>
                                     <td th:text="${#dates.format(message.endDate, 'dd/MM/yyyy')}"></td>
                                     <td>
                                         <button type="button" data-bs-toggle="modal" data-bs-target="#modal-warning" th:attr="data-bs-target='#modal-warning' + ${message.id }" class="btn btn-danger">
