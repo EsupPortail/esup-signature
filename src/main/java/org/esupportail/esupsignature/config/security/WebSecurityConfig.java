@@ -250,16 +250,20 @@ public class WebSecurityConfig {
 		for(SecurityService securityService : activeSecurityServices) {
 			addFormActionOrigin(formAction, securityService.getLoggedOutUrl(), "security service " + securityService.getCode());
 		}
-		Set<String> connectSrc = new LinkedHashSet<>();
-		connectSrc.add("'self'");
-		addConnectSrcOrigin(connectSrc, globalProperties.getNexuUrl(), "globalProperties.nexuUrl");
-
-		String cspPolicy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src " + String.join(" ", connectSrc) + "; object-src blob:; frame-src 'self' blob:; base-uri 'self'; frame-ancestors 'self'; form-action " + String.join(" ", formAction);
-		String cspReportOnlyPolicy = "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; font-src 'self' data:; connect-src " + String.join(" ", connectSrc) + "; object-src 'none'; frame-src 'self'; base-uri 'self'; frame-ancestors 'self'; form-action " + String.join(" ", formAction) + "; report-uri /csp-report";
-		http.headers(headers -> headers
-					.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)
-					.contentSecurityPolicy(csp -> csp.policyDirectives(cspPolicy))
-					.addHeaderWriter(new StaticHeadersWriter("Content-Security-Policy-Report-Only", cspReportOnlyPolicy)));
+		http.headers(headers -> {
+			headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin);
+			if(webSecurityProperties.isContentSecurityPolicyEnabled()) {
+				Set<String> connectSrc = new LinkedHashSet<>();
+				connectSrc.add("'self'");
+				addConnectSrcOrigin(connectSrc, globalProperties.getNexuUrl(), "globalProperties.nexuUrl");
+				String cspPolicy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src " + String.join(" ", connectSrc) + "; object-src blob:; frame-src 'self' blob:; base-uri 'self'; frame-ancestors 'self'; form-action " + String.join(" ", formAction);
+				String cspReportOnlyPolicy = "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; font-src 'self' data:; connect-src " + String.join(" ", connectSrc) + "; object-src 'none'; frame-src 'self'; base-uri 'self'; frame-ancestors 'self'; form-action " + String.join(" ", formAction) + "; report-uri /csp-report";
+				headers.contentSecurityPolicy(csp -> csp.policyDirectives(cspPolicy));
+				headers.addHeaderWriter(new StaticHeadersWriter("Content-Security-Policy-Report-Only", cspReportOnlyPolicy));
+			} else {
+				logger.warn("Content-Security-Policy headers are disabled by configuration");
+			}
+		});
 		setAuthorizeRequests(http);
 		return http.build();
 	}
