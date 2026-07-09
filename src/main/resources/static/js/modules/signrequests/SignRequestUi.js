@@ -23,9 +23,12 @@ const csrf = {
     parameterName: metaContent("_csrf_parameter"),
     token: metaContent("_csrf")
 };
+const favoriteSignRequestParamsElement = document.getElementById("favorite-signrequest-params-json");
+
+if (favoriteSignRequestParamsElement) {
 const signRequestProfilePath = document.body.dataset.esupSignrequestProfilePath || "user";
 const signRequestId = document.body.dataset.esupSignrequestId || "0";
-const favoriteSignRequestParamsJson = document.getElementById("favorite-signrequest-params-json")?.value || "{}";
+const favoriteSignRequestParamsJson = favoriteSignRequestParamsElement.value || "{}";
 const signatureUiConfig = parseJsonTextarea("signature-ui-config-json", null);
 const signRequestFrontUrl = `/${signRequestProfilePath}/signrequests/${signRequestId}/front`;
 
@@ -47,3 +50,4 @@ fetch(signRequestFrontUrl, {
         console.error("Impossible de charger le bootstrap front de signature", error);
         bootbox.alert("Impossible de charger l’interface de signature.");
     });
+}

@@ -14,15 +14,16 @@
                data-esup-user-name=${user.name},
                data-esup-user-firstname=${user.firstname},
                data-esup-user-email=${user.email},
+               data-esup-user-type=${user.userType.name()},
                data-esup-creator-id=${signRequestLight.createBy.id},
                data-esup-creator-eppn=${signRequestLight.createBy.eppn},
                data-esup-creator-name=${signRequestLight.createBy.name},
                data-esup-creator-firstname=${signRequestLight.createBy.firstname},
                data-esup-current-step-number=${signRequestFull.currentStepNumber},
                data-esup-signrequest-id=${signRequestLight.id},
+               data-esup-signrequest-status=${signRequestLight.status != null ? signRequestLight.status.name() : ''},
                data-esup-signrequest-profile-path=${showSignRequest.urlProfil},
                data-esup-is-last-step=${showSignRequest.lastStep}">
-<script type="module" th:src="'/js/modules/bootstrap/SignRequestBootstrap.js?version=' + ${versionApp}"></script>
 <header th:replace="~{fragments/nav :: nav}"></header>
 
 <main role="main">
@@ -62,8 +63,6 @@
                             </button>
                         </div>
                     </th:block>
-
-                    <script type="module" th:src="'/js/modules/bootstrap/SignRequestPostitBootstrap.js?version=' + ${versionApp}"></script>
                 </div>
 
                 <nav th:if="${user.userType.name() == 'external'}" id="sidebar" th:insert="~{fragments/sides/side-otp :: side-otp}" th:unless="${showSignRequest.workflow.disableSidebarForExternal}"></nav>
@@ -215,7 +214,6 @@
                         </div>
                         <textarea id="signrequest-original-documents-json" class="d-none" th:text="${originalDocumentsJson}" aria-hidden="true"></textarea>
                         <textarea id="signrequest-signed-documents-json" class="d-none" th:text="${signedDocumentsJson}" aria-hidden="true"></textarea>
-                        <script type="module" th:src="'/js/modules/bootstrap/SignRequestFilesBootstrap.js?version=' + ${versionApp}"></script>
                     </div>
                     <div th:if="${!signRequestFull.signable && showSignRequest.toSignDocumentContentType == null && showSignRequest.originalDocuments.size() > 0}" class="es-workspace alert alert-danger">
                         Un document de cette demande est corrompu. Merci de supprimer la demande et d’en émettre une nouvelle à l’aide d’un fichier valide.
@@ -242,6 +240,6 @@
 <footer th:replace="~{fragments/footer :: footer}"></footer>
 <textarea id="favorite-signrequest-params-json" class="d-none" th:if="${showSignRequest.signBookLight.archiveStatus != T(org.esupportail.esupsignature.entity.enums.ArchiveStatus).cleaned}" th:text="${favoriteSignRequestParamsJson}" aria-hidden="true"></textarea>
 <textarea id="signature-ui-config-json" class="d-none" th:if="${showSignRequest.signBookLight.archiveStatus != T(org.esupportail.esupsignature.entity.enums.ArchiveStatus).cleaned}" th:text="${signatureUiConfigJson}" aria-hidden="true"></textarea>
-<script type="module" th:if="${showSignRequest.signBookLight.archiveStatus != T(org.esupportail.esupsignature.entity.enums.ArchiveStatus).cleaned}" th:src="'/js/modules/bootstrap/SignRequestUiBootstrap.js?version=' + ${versionApp}"></script>
+<script type="module" th:src="'/js/modules/bootstrap/SignRequestPageBootstrap.js?version=' + ${versionApp}"></script>
 </body>
 </html>

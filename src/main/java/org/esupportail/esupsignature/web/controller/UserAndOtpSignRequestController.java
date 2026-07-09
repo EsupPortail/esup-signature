@@ -105,6 +105,7 @@ public class UserAndOtpSignRequestController {
         model.addAttribute("signatureUiConfigJson", objectMapper.writeValueAsString(signatureUiConfig));
         model.addAttribute("originalDocumentsJson", objectMapper.writeValueAsString(showSignRequest.getOriginalDocuments()));
         model.addAttribute("signedDocumentsJson", objectMapper.writeValueAsString(showSignRequest.getSignedDocuments()));
+        model.addAttribute("signImagesJson", objectMapper.writeValueAsString(showSignRequest.signRequestFull().getSignImages()));
         model.addAttribute("showSignRequest", showSignRequest);
         model.addAttribute("signRequestFull", showSignRequest.signRequestFull());
         model.addAttribute("signRequestLight", showSignRequest.signRequestLight());

@@ -137,7 +137,6 @@
            th:attr="data-print-url='/ws-secure/global/get-last-file-inline/' + ${signRequestLight.id}"
            target="_blank"
            title="Imprimer le document"><i class="fi fi-rr-print"></i></button>
-        <script type="module" th:src="'/js/modules/bootstrap/SignRequestPrintBootstrap.js?version=' + ${versionApp}"></script>
         <a th:if="${(signRequestLight.createBy.eppn == userEppn || signRequestFull.manager) && signRequestLight.deleted}" tabindex="1" th:href="'/user/signbooks/restore/' + ${showSignRequest.signBookLight.id}" role="button" class="d-flex justify-content-center btn btn-transparent text-primary me-1 d-none d-sm-flex" title="Restaurer">
             <i class="fi fi-rr-trash-restore-alt " style="margin-top: 10px;"></i>
         </a>

@@ -196,12 +196,23 @@ export class SignUi {
             url: "/ws-secure/validation/short/" + self.signRequestId,
             type: 'GET',
             success: function (data, textStatus, xhr) {
-                let modal = "<div class=\"alert collapse\" data-bs-focus=\"false\" id=\"reportModal\" tabindex=\"-1\" role=\"dialog\" aria-hidden=\"true\">" +
-                    "<h5>Validation de la signature</h5>\n" +
-                    "<div>" +
-                    data +
-                    "</div></div>";
-                $("#alertSign").append(modal);
+                const reportModal = document.createElement("div");
+                reportModal.className = "alert collapse";
+                reportModal.id = "reportModal";
+                reportModal.tabIndex = -1;
+                reportModal.setAttribute("data-bs-focus", "false");
+                reportModal.setAttribute("role", "dialog");
+                reportModal.setAttribute("aria-hidden", "true");
+
+                const title = document.createElement("h5");
+                title.textContent = "Validation de la signature";
+                reportModal.appendChild(title);
+
+                const content = document.createElement("div");
+                $.parseHTML(data, document, false).forEach(node => content.appendChild(node));
+                reportModal.appendChild(content);
+
+                document.getElementById("alertSign")?.appendChild(reportModal);
                 $("#reportSpinner").hide();
                 $(".reportModalBtn").removeClass("d-none");
             }
