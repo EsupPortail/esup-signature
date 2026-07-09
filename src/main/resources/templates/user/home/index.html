@@ -4,71 +4,8 @@
 <!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
 <!--/*@thymesVar id="authUser" type="org.esupportail.esupsignature.entity.User"*/-->
 <head th:replace="~{fragments/head :: head}"></head>
-<script th:inline="javascript" type="module" th:if="${globalProperties.enableHelp}">
-    import {Home2Help} from '/js/modules/help/Home2Help.js?version=@[(${versionApp})]@';
-
-    function readUiMe() {
-        try {
-            const rawUiMe = sessionStorage.getItem('uiMe');
-            return rawUiMe ? JSON.parse(rawUiMe) : null;
-        } catch (e) {
-            return null;
-        }
-    }
-
-    function startHelp(setting) {
-        const help2 = new Home2Help(setting);
-        help2.autoStart();
-    }
-
-    function startHelpFromFreshUiMe(uiMe) {
-        startHelp(uiMe?.uiParams?.home2Help ?? null);
-    }
-
-    function waitForFreshUiMe(callback) {
-        if (document.documentElement.dataset.globalUiReady === 'true') {
-            callback(readUiMe());
-            return;
-        }
-
-        function onUiMeLoaded(event) {
-            document.removeEventListener('globalUiReady', onGlobalUiReady);
-            callback(event.detail ?? null);
-        }
-
-        function onGlobalUiReady() {
-            document.removeEventListener('uiMeLoaded', onUiMeLoaded);
-            callback(readUiMe());
-        }
-
-        document.addEventListener('uiMeLoaded', onUiMeLoaded, {once: true});
-        document.addEventListener('globalUiReady', onGlobalUiReady, {once: true});
-    }
-
-    waitForFreshUiMe(startHelpFromFreshUiMe);
-</script>
-<script th:inline="javascript" type="module">
-    import {HomeUi} from '/js/modules/ui/HomeUi.js?version=@[(${versionApp})]@';
-    new HomeUi();
-</script>
-<script>
-    function toggleSignLevel() {
-        const signType = document.getElementById("signType-1").value;
-        const minSignLevelDiv = $("#minSignLevel");
-        const sealOptions = $("#seal-options")
-        if (signType === "visa") {
-            minSignLevelDiv.hide();
-            sealOptions.show();
-        } else if (signType === "signature") {
-            minSignLevelDiv.show();
-            sealOptions.hide();
-        } else {
-            minSignLevelDiv.hide();
-            sealOptions.hide();
-        }
-    }
-</script>
-<body class="home-page home-loading">
+<script type="module" th:src="'/js/modules/bootstrap/HomeBootstrap.js?version=' + ${versionApp}"></script>
+<body class="home-page home-loading" th:attr="data-esup-home-help-enabled=${globalProperties.enableHelp}">
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
     <div class="es-wrapper">

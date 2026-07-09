@@ -8,6 +8,13 @@
 		<meta name="robots" content="noindex" />
         <meta name="_csrf" th:content="${_csrf.token}">
         <meta name="_csrf_header" th:content="${_csrf.headerName}">
+        <meta name="_csrf_parameter" th:content="${_csrf.parameterName}">
+		<meta name="esup-auth-user-eppn" th:content="${authUserEppn}">
+		<meta name="esup-application-email" th:content="${applicationEmail}">
+		<meta name="esup-max-upload-size" th:content="${globalProperties.maxUploadSize}">
+		<meta name="esup-max-inactive-interval" th:content="${maxInactiveInterval}">
+		<meta name="esup-enable-sms" th:content="${enableSms}">
+		<meta name="esup-sms-required" th:content="${smsRequired}">
 		<base href="/">
 		<link rel="stylesheet" th:href="@{/webjars/jquery-ui/dist/themes/vader/jquery-ui.css}" />
 		<link rel="stylesheet" th:href="@{/webjars/bootstrap/css/bootstrap.min.css}" />
@@ -40,14 +47,7 @@
 		<script th:src="@{/webjars/intro.js/minified/intro.min.js}"></script>
 		<script type="module" th:src="@{/webjars/intl-tel-input/build/js/intlTelInputWithUtils.js}"></script>
 
-		<script th:inline="javascript" type="module" th:if="${versionApp != null}">
-			const enableSms = /*[[${enableSms}]]*/ null;
-			const smsRequired = /*[[${smsRequired}]]*/ null;
-			sessionStorage.setItem("enableSms", JSON.stringify(enableSms));
-			sessionStorage.setItem("smsRequired", JSON.stringify(smsRequired));
-			import {GlobalUi} from '/js/modules/ui/GlobalUi.js?version=@[(${versionApp})]@';
-			new GlobalUi([[${authUserEppn}]], [[${_csrf}]], [[${applicationEmail}]], [[${globalProperties.maxUploadSize}]], [[${maxInactiveInterval}]]);
-		</script>
+		<script type="module" th:if="${versionApp != null}" th:src="'/js/modules/bootstrap/GlobalBootstrap.js?version=' + ${versionApp}"></script>
 
 		<link rel="icon" type="image/png" th:href="@{/images/favicon.ico}" />
 
