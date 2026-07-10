@@ -56,7 +56,13 @@ export class PdfViewer extends EventFactory {
         this.renderedPages = 0;
         this.renderQueue = [];
         this.activeRenders = 0;
-        this.maxConcurrentRenders = 5;
+        this.maxConcurrentRenders = Number.isFinite(options.maxConcurrentRenders)
+            ? Math.max(1, Math.floor(options.maxConcurrentRenders))
+            : 2;
+        this.maxRenderScale = Number.isFinite(options.maxRenderScale) ? options.maxRenderScale : 2;
+        this.renderScaleBuffer = Number.isFinite(options.renderScaleBuffer) ? options.renderScaleBuffer : 0.25;
+        this.renderBufferPages = Number.isFinite(options.renderBufferPages) ? Math.max(0, Math.floor(options.renderBufferPages)) : 2;
+        this.maxRenderedPages = Number.isFinite(options.maxRenderedPages) ? Math.max(1, Math.floor(options.maxRenderedPages)) : 12;
         this.renderCycleId = 0;
         this.isRendering = false;
         this.pendingRender = false;
@@ -67,6 +73,14 @@ export class PdfViewer extends EventFactory {
         this.loadPromise = null;
         this.renderedScale = this.scale;
         this.renderScale = this.scale;
+        this.renderFinishedFired = false;
+        this.renderedPageNums = new Set();
+        this.renderingPageNums = new Set();
+        this.queuedPageNums = new Set();
+        this.textLayerPageNums = new Set();
+        this.textLayerRenderingPageNums = new Set();
+        this.textLayerRenderPromise = null;
+        this.pageViewports = new Map();
         this.handPanState = null;
         this.handPanEnabled = options.handPanEnabled === true;
         this.renderedPagesMap = new Map();
@@ -212,6 +226,17 @@ export class PdfViewer extends EventFactory {
                 self.lastWidth = w;
                 self.lastHeight = h;
             }, DEBOUNCE_DELAY);
+        });
+        const scrollTarget = this.getWorkspaceElement() || window;
+        $(scrollTarget).on('scroll.pdfViewerLazyRender', () => {
+            if (!this.pdfDoc || this.renderFailed) {
+                return;
+            }
+            clearTimeout(this.lazyRenderTimer);
+            this.lazyRenderTimer = setTimeout(() => {
+                this.rendererController.queueVisiblePages();
+                this.rendererController.releaseDistantPages();
+            }, 80);
         });
         $('#page_num').on('change', e => this.scrollToPage(e.target.value));
         if(localStorage.getItem("scale")) {
