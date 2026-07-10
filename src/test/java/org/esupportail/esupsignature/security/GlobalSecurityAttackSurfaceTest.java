@@ -941,6 +941,14 @@ class GlobalSecurityAttackSurfaceTest {
     class WebSecurityPropertiesTests {
 
         @Test
+        void contentSecurityPolicyShouldDefaultToDisabledReportOnlyMode() {
+            WebSecurityProperties webSecurityProperties = new WebSecurityProperties();
+
+            assertFalse(webSecurityProperties.isContentSecurityPolicyEnabled());
+            assertTrue(webSecurityProperties.isContentSecurityPolicyReportOnly());
+        }
+
+        @Test
         void actuatorIpAllowlistShouldImplicitlyReuseWsAllowlistWhenUnset() {
             WebSecurityProperties webSecurityProperties = new WebSecurityProperties();
             String[] wsAllowlist = new String[] {"10.0.0.0/8", "192.168.0.0/16"};

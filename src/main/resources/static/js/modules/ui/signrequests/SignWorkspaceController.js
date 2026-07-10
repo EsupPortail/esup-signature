@@ -15,14 +15,30 @@ export class SignWorkspaceController {
             ? workspaceStateInput
             : WorkspaceState.from(workspaceStateInput, null);
         const {showDataFlow, signUiDto} = workspaceState.toWorkspaceContext();
-        const isPdf = signUiDto.pdf;
-        const id = signUiDto.signRequestId;
+        const domSignRequestId = document.body?.dataset?.esupSignrequestId ?? null;
+        const id = signUiDto.signRequestId ?? (domSignRequestId && domSignRequestId !== "0" ? domSignRequestId : null);
+        const hasResolvedSignRequestId = id != null && id !== "";
+        const hasPdfWorkspace = document.getElementById("workspace") != null && document.getElementById("pdf") != null;
+        const isPdf = (Boolean(signUiDto.pdf) || hasPdfWorkspace) && hasResolvedSignRequestId;
+        if (domSignRequestId != null && domSignRequestId !== "0" && signUiDto.signRequestId == null) {
+            console.warn("Le DTO front ne fournit pas signRequestId. L'id de la page est utilisé pour initialiser le workspace.", domSignRequestId);
+        }
+        if (hasPdfWorkspace && !signUiDto.pdf && hasResolvedSignRequestId) {
+            console.warn("Le DTO front indique pdf=false alors que le DOM contient un workspace PDF. Le viewer PDF est forcé côté client.");
+        }
+        if ((Boolean(signUiDto.pdf) || hasPdfWorkspace) && !hasResolvedSignRequestId) {
+            console.error("Impossible d'initialiser le viewer PDF : aucun signRequestId disponible dans le DTO ni dans le DOM.");
+        }
+        const hasSignableActions = document.getElementById("signLaunchButton") != null;
+        const signable = Boolean(signUiDto.signable) || hasSignableActions;
+        if (hasSignableActions && !signUiDto.signable) {
+            console.warn("Le DTO front indique signable=false alors que le DOM contient les actions de signature. Le mode signable est forcé côté client.");
+        }
         const dataId = signUiDto.dataId;
         const formId = signUiDto.formId;
         const currentSignRequestParamses = signUiDto.currentSignRequestParamses;
         const signImageNumber = signUiDto.signImageNumber;
         const currentSignType = signUiDto.currentSignType;
-        const signable = signUiDto.signable;
         const editable = signUiDto.editable;
         const comments = signUiDto.comments;
         const spots = signUiDto.spots;
@@ -106,9 +122,9 @@ export class SignWorkspaceController {
         }
         if (this.isPdf) {
             if(currentSignType === "form") {
-                this.pdfViewer = new PdfViewer('/' + userName + '/forms/get-file/' + id, signable, editable, currentStepNumber, this.forcePageNum, fields, true);
+                this.pdfViewer = new PdfViewer('/' + userName + '/forms/get-file/' + id, signable, editable, currentStepNumber, this.forcePageNum, fields, true, {autoStart: false});
             } else {
-                this.pdfViewer = new PdfViewer('/ws-secure/global/get-last-file-pdf/' + id, signable, editable, currentStepNumber, this.forcePageNum, fields, false);
+                this.pdfViewer = new PdfViewer('/ws-secure/global/get-last-file-pdf/' + id, signable, editable, currentStepNumber, this.forcePageNum, fields, false, {autoStart: false});
             }
         }
         this.signPlacementController = new SignPlacementController(
@@ -255,6 +271,7 @@ export class SignWorkspaceController {
         this.postitManager.applyVisibility(this.displayComments);
         if (this.isPdf) {
             this.signPlacementController.updateScales(this.pdfViewer.scale);
+            this.pdfViewer.loadDocumentWhenReady();
         } else {
             this.initWorkspace();
         }
@@ -286,6 +303,7 @@ export class SignWorkspaceController {
                     this.releaseToolsLoadingState();
                 }],
                 ['renderComplete', () => this.completePdfRender()],
+                ['renderFailed', error => this.handlePdfRenderFailure(error)],
                 ['scaleChange', () => this.refreshWorkspace()],
                 ['change', () => this.saveData(localStorage.getItem('disableFormAlert') === "true")]
             ].forEach(([event, handler]) => this.pdfViewer.addEventListener(event, handler));
@@ -564,6 +582,9 @@ export class SignWorkspaceController {
     }
 
     releaseToolsLoadingState() {
+        if (this.isPdf && this.pdfViewer?.renderFailed) {
+            return;
+        }
         if (this.toolsLoadingStateReleased) {
             return;
         }
@@ -594,6 +615,7 @@ export class SignWorkspaceController {
     }
 
     beginPdfRender() {
+        $("#pdf-render-error").remove();
         this.toolsLoadingStateReleased = false;
         this.setPdfRenderMode(true);
         this.setToolsBarDisabled(true);
@@ -618,8 +640,39 @@ export class SignWorkspaceController {
     }
 
     completePdfRender() {
+        if (this.pdfViewer?.renderFailed) {
+            return;
+        }
         this.setPdfRenderComplete(true);
         this.releaseToolsLoadingState();
+    }
+
+    handlePdfRenderFailure(error) {
+        console.error("Echec du rendu PDF dans le workspace", error);
+        this.toolsLoadingStateReleased = false;
+        this.setPdfRenderComplete(false);
+        this.setPdfRenderMode(true);
+        this.setToolsBarDisabled(true);
+        this.refreshToolbarAccessibility();
+        this.showPdfRenderError();
+        this.updateAnnotationActionButtonsAvailability();
+    }
+
+    showPdfRenderError() {
+        if (document.getElementById("pdf-render-error") != null) {
+            return;
+        }
+        const pdfElement = document.getElementById("pdf");
+        if (pdfElement == null) {
+            return;
+        }
+        const alert = document.createElement("div");
+        alert.id = "pdf-render-error";
+        alert.className = "alert alert-danger m-3";
+        alert.setAttribute("role", "alert");
+        alert.textContent = "Impossible d’afficher le document PDF. Rechargez la page après vérification du document ou du cache navigateur.";
+        pdfElement.prepend(alert);
+        this.pdfViewer?.pdfDiv?.css('opacity', 1);
     }
 
     canUseAnnotationActions() {

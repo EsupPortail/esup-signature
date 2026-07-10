@@ -11,6 +11,7 @@ export class PdfRendererController {
         if (this.viewer.pdfDoc == null) {
             return;
         }
+        this.viewer.renderFailed = false;
         if (this.viewer.isRendering || this.viewer.activeRenders > 0 || this.viewer.renderQueue.length > 0) {
             this.viewer.pendingRender = true;
             this.viewer.pendingRenderPdf = pdf ?? this.viewer.pdfDoc;
@@ -58,6 +59,9 @@ export class PdfRendererController {
     }
 
     processRenderQueue(renderCycleId = this.viewer.renderCycleId) {
+        if (this.viewer.renderFailed) {
+            return;
+        }
         while (this.viewer.activeRenders < this.viewer.maxConcurrentRenders && this.viewer.renderQueue.length > 0) {
             const pageNum = this.viewer.renderQueue.shift();
             this.viewer.activeRenders++;
@@ -68,7 +72,10 @@ export class PdfRendererController {
                     return null;
                 }), renderCycleId);
             }).then(async () => {
-                this.viewer.activeRenders--;
+                this.viewer.activeRenders = Math.max(0, this.viewer.activeRenders - 1);
+                if (this.viewer.renderFailed) {
+                    return;
+                }
                 if (renderCycleId !== this.viewer.renderCycleId) {
                     if (this.viewer.activeRenders === 0 && this.viewer.pendingRender) {
                         this.viewer.isRendering = false;
@@ -95,18 +102,28 @@ export class PdfRendererController {
                         this.viewer._isRefreshingOCG = false;
                         this.viewer.applyLinkAnnotationsVisibility().catch(err => console.error('Erreur masquage liens OCG:', err));
                     } else {
-                        if(this.viewer.pages.length === this.viewer.numPages) {
+                        const renderedPageCount = this.viewer.pages.filter(page => page != null).length;
+                        if(this.viewer.renderedPages === this.viewer.numPages && renderedPageCount === this.viewer.numPages) {
                             this.viewer.renderedScale = this.viewer.renderScale;
                             this.viewer.applyScaleWithoutRerender();
                             this.clearInitialRenderTransform();
                             this.viewer.stopProgress();
                             const progressBar = $("#pdf-progress-bar");
                             progressBar.removeClass("es-progress-visible");
-                            await this.postRenderAll();
-                            this.viewer.enableScrollBtn();
-                            this.viewer.fireEvent("renderFinished", ['ok']);
-                            $(document).trigger("renderFinished");
-                            this.fireRenderCompleteAfterProgressHidden(progressBar);
+                            try {
+                                await this.postRenderAll();
+                                this.viewer.enableScrollBtn();
+                                this.viewer.fireEvent("renderFinished", ['ok']);
+                                $(document).trigger("renderFinished");
+                                this.fireRenderCompleteAfterProgressHidden(progressBar);
+                            } catch (error) {
+                                this.viewer.failRender(error, "Impossible de finaliser l’affichage du document PDF.");
+                            }
+                        } else {
+                            this.viewer.failRender(
+                                new Error("Rendu PDF incomplet : " + renderedPageCount + "/" + this.viewer.numPages + " pages disponibles."),
+                                "Impossible de rendre toutes les pages du document PDF."
+                            );
                         }
                     }
                 } else {
@@ -114,8 +131,8 @@ export class PdfRendererController {
                 }
             })
                 .catch(async err => {
-                    if (renderCycleId !== this.viewer.renderCycleId) {
-                        this.viewer.activeRenders--;
+                    if (this.viewer.renderFailed || renderCycleId !== this.viewer.renderCycleId) {
+                        this.viewer.activeRenders = Math.max(0, this.viewer.activeRenders - 1);
                         if (this.viewer.activeRenders === 0 && this.viewer.pendingRender) {
                             this.viewer.isRendering = false;
                             const pendingPdf = this.viewer.pendingRenderPdf ?? this.viewer.pdfDoc;
@@ -126,17 +143,9 @@ export class PdfRendererController {
                         return;
                     }
                     console.error(`Erreur rendu page ${pageNum}:`, err);
-                    this.viewer.activeRenders--;
-                    this.viewer.isRendering = false;
+                    this.viewer.activeRenders = Math.max(0, this.viewer.activeRenders - 1);
                     this.viewer._isRefreshingOCG = false;
-                    if (this.viewer.pendingRender && this.viewer.activeRenders === 0) {
-                        const pendingPdf = this.viewer.pendingRenderPdf ?? this.viewer.pdfDoc;
-                        this.viewer.pendingRender = false;
-                        this.viewer.pendingRenderPdf = null;
-                        await this.startRender(pendingPdf);
-                        return;
-                    }
-                    this.processRenderQueue(renderCycleId);
+                    this.viewer.failRender(err, "Impossible de rendre la page " + pageNum + " du document PDF.");
                 });
         }
     }

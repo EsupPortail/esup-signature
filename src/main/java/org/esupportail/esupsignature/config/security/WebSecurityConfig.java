@@ -262,8 +262,9 @@ public class WebSecurityConfig {
 				headers.addHeaderWriter((request, response) -> {
 					Set<String> requestFormAction = new LinkedHashSet<>(formAction);
 					addRequestOrigin(requestFormAction, request);
-					response.setHeader("Content-Security-Policy", buildCspPolicy(connectSrc, requestFormAction, false));
-					response.setHeader("Content-Security-Policy-Report-Only", buildCspPolicy(connectSrc, requestFormAction, true));
+					boolean reportOnly = webSecurityProperties.isContentSecurityPolicyReportOnly();
+					String headerName = reportOnly ? "Content-Security-Policy-Report-Only" : "Content-Security-Policy";
+					response.setHeader(headerName, buildCspPolicy(connectSrc, requestFormAction, reportOnly));
 				});
 			} else {
 				logger.warn("Content-Security-Policy headers are disabled by configuration");

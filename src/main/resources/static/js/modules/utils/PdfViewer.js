@@ -62,6 +62,9 @@ export class PdfViewer extends EventFactory {
         this.pendingRender = false;
         this.pendingRenderPdf = null;
         this.renderComplete = false;
+        this.renderFailed = false;
+        this.loadStarted = false;
+        this.loadPromise = null;
         this.renderedScale = this.scale;
         this.renderScale = this.scale;
         this.handPanState = null;
@@ -79,30 +82,78 @@ export class PdfViewer extends EventFactory {
         this.formManager = new PdfFormManager(this);
         this.progressController = new PdfProgressController(this);
         this.rendererController = new PdfRendererController(this);
-        let self = this;
-        $(document).ready(function() {
-            if (!globalThis.pdfjsLib || !Promise.withResolvers) {
-                bootbox.alert("Votre navigateur ne support pas pdfJs pour l'affichage des PDF.<br>Version minimales : Firefox 121, Chrome 119, Safari 17.4", function () {
-                    document.location = "https://www.mozilla.org/fr/firefox/new/"
-                });
-            } else {
-                if (!self.url) {
-                    throw new Error("PdfViewer: self.url est vide");
-                }
-                if (globalThis.pdfjsLib.GlobalWorkerOptions) {
-                    globalThis.pdfjsLib.GlobalWorkerOptions.workerSrc = '/webjars/pdfjs-dist/legacy/build/pdf.worker.min.mjs';
-                }
-                let loadingTask = globalThis.pdfjsLib.getDocument({
-                    url: self.url,
-                    useWasm: true,
-                    wasmUrl: `/webjars/pdfjs-dist/wasm/`
-                });
-                loadingTask.promise.then(async function(pdf) {
-                    await self.startRender(pdf)
-                });
-            }
-        });
         this.initListeners();
+        if (options.autoStart !== false) {
+            this.loadDocumentWhenReady();
+        }
+    }
+
+    whenDocumentReady() {
+        if (document.readyState === "loading") {
+            return new Promise(resolve => $(document).ready(resolve));
+        }
+        return Promise.resolve();
+    }
+
+    loadDocumentWhenReady() {
+        if (this.loadStarted) {
+            return this.loadPromise;
+        }
+        this.loadStarted = true;
+        this.loadPromise = this.whenDocumentReady().then(() => this.loadDocument());
+        return this.loadPromise;
+    }
+
+    async loadDocument() {
+        try {
+            if (!globalThis.pdfjsLib || !Promise.withResolvers) {
+                const message = "Votre navigateur ne supporte pas pdfJs pour l'affichage des PDF.";
+                const error = new Error(message);
+                this.failRender(error, message);
+                bootbox.alert(message + "<br>Versions minimales : Firefox 121, Chrome 119, Safari 17.4", function () {
+                    document.location = "https://www.mozilla.org/fr/firefox/new/";
+                });
+                return null;
+            }
+            if (!this.url) {
+                throw new Error("PdfViewer: url est vide");
+            }
+            if (globalThis.pdfjsLib.GlobalWorkerOptions) {
+                globalThis.pdfjsLib.GlobalWorkerOptions.workerSrc = '/webjars/pdfjs-dist/legacy/build/pdf.worker.min.mjs';
+            }
+            $("#pdf-progress-bar").addClass("es-progress-visible");
+            this.startProgress();
+            const loadingTask = globalThis.pdfjsLib.getDocument({
+                url: this.url,
+                useWasm: true,
+                wasmUrl: `/webjars/pdfjs-dist/wasm/`
+            });
+            const pdf = await loadingTask.promise;
+            await this.startRender(pdf);
+            return pdf;
+        } catch (error) {
+            this.failRender(error, "Impossible de charger le document PDF.");
+            return null;
+        }
+    }
+
+    failRender(error, message = "Impossible d’afficher le document PDF.") {
+        if (this.renderFailed) {
+            return;
+        }
+        this.renderFailed = true;
+        this.isRendering = false;
+        this.pendingRender = false;
+        this.pendingRenderPdf = null;
+        this.renderQueue = [];
+        this.activeRenders = 0;
+        this.renderCycleId++;
+        this.renderComplete = false;
+        this.pdfDiv.css('opacity', 1);
+        console.error(message, error);
+        this.progressController.failProgress(message);
+        this.fireEvent("renderFailed", [error]);
+        $(document).trigger("renderFailed", [error]);
     }
 
     initListeners() {
