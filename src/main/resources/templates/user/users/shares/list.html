@@ -3,10 +3,7 @@
 <!--/*@thymesVar id="userShare" type="org.esupportail.esupsignature.dto.page.user.share.UserShareViewDto"*/-->
 <!--/*@thymesVar id="forms" type="java.util.List<org.esupportail.esupsignature.entity.Form>"*/-->
 <head th:replace="~{fragments/head:: head}"></head>
-<script th:inline="javascript" type="module">
-    import {default as ShareUi} from '/js/modules/ui/users/ShareUi.js?version=@[(${versionApp})]@';
-    new ShareUi();
-</script>
+<script type="module" th:src="'/js/modules/bootstrap/ShareBootstrap.js?version=' + ${versionApp}"></script>
 <body>
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">

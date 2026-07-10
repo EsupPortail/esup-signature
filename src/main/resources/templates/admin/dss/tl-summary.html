@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org" th:with="currentPage=#{label.tsls.summary}">
 <head th:replace="~{fragments/head :: head}"></head>
+<script type="module" th:src="'/js/modules/bootstrap/DssTlSummaryBootstrap.js?version=' + ${versionApp}"></script>
 <body>
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
@@ -169,13 +170,6 @@
                             </table>
                         </div>
                     </th:block>
-                    <script type="text/javascript" th:inline="javascript">
-                        $('tr > td > a > span').on('click', function(e) {
-                            if(jQuery.inArray( "small_flag", e.target.classList ) != -1){
-                                e.stopPropagation();
-                            }
-                        });
-                    </script>
                 </div>
                 </div>
                 <div class="es-sign-buttons es-fixed-action-btns active">
