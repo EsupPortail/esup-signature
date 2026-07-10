@@ -20,6 +20,7 @@ import org.esupportail.esupsignature.service.interfaces.sms.SmsService;
 import org.esupportail.esupsignature.service.security.LogoutHandlerImpl;
 import org.esupportail.esupsignature.service.security.OidcOtpSecurityService;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
+import org.esupportail.esupsignature.service.security.oauth.OAuth2FailureHandler;
 import org.esupportail.esupsignature.service.security.oauth.OidcUserSecurityServiceResolver;
 import org.esupportail.esupsignature.service.security.otp.OtpService;
 import org.esupportail.esupsignature.service.security.oauth.OAuthAuthenticationSuccessHandler;
@@ -255,6 +256,7 @@ class GlobalSecurityAttackSurfaceTest {
             var session = request.getSession(false);
             assertNotNull(session);
             assertEquals("/otp/signrequests/signbook-redirect/52", session.getAttribute("after_oauth_redirect"));
+            assertEquals("/otp-access/first/sms-required-link", session.getAttribute(OAuth2FailureHandler.AFTER_OAUTH_FAILURE_REDIRECT));
             assertNull(session.getAttribute(SPRING_SECURITY_CONTEXT_KEY));
         }
 
@@ -467,6 +469,40 @@ class GlobalSecurityAttackSurfaceTest {
             var session = request.getSession(false);
             assertNotNull(session);
             assertNull(session.getAttribute(SPRING_SECURITY_CONTEXT_KEY));
+        }
+
+        @Test
+        void otpEntryPointShouldExposeCancelledOauthMessage() throws Exception {
+            GlobalProperties globalProperties = new GlobalProperties();
+            globalProperties.setSmsRequired(true);
+            globalProperties.setNbSignOtpTries(3);
+            OtpService otpService = mock(OtpService.class);
+            SignBookService signBookService = mock(SignBookService.class);
+            UserService userService = mock(UserService.class);
+
+            OtpAccessController controller = new OtpAccessController(
+                    globalProperties,
+                    otpService,
+                    signBookService,
+                    userService,
+                    List.of(),
+                    null,
+                    null,
+                    new SmsProperties()
+            );
+
+            Otp otp = otp("cancelled-oauth-link", false, 0, 55L);
+            when(otpService.getAndCheckOtpFromDatabase("cancelled-oauth-link")).thenReturn(otp);
+            when(signBookService.getExternalAuths(eq(55L), anyList())).thenReturn(List.of());
+
+            ConcurrentModel model = new ConcurrentModel();
+            MockHttpServletRequest request = new MockHttpServletRequest("GET", "/otp-access/first/cancelled-oauth-link");
+            request.setParameter("oauth2_cancelled", "true");
+
+            String view = controller.signin("cancelled-oauth-link", model, request, new RedirectAttributesModelMap());
+
+            assertEquals("otp/signin", view);
+            assertNotNull(model.getAttribute("message"));
         }
 
         @Test
@@ -1169,6 +1205,44 @@ class GlobalSecurityAttackSurfaceTest {
                 signService,
                 mobileSignTokenService
         );
+    }
+
+    @Nested
+    class OAuth2FailureHandlerTests {
+
+        @Test
+        void accessDeniedShouldRedirectToOtpEntryPointWhenFailureRedirectIsStored() throws Exception {
+            OAuth2FailureHandler handler = new OAuth2FailureHandler();
+            MockHttpServletRequest request = new MockHttpServletRequest("GET", "/login/oauth2/code/franceconnect");
+            request.setParameter("error", "access_denied");
+            request.setParameter("error_description", "User auth aborted");
+            request.getSession().setAttribute(OAuth2FailureHandler.AFTER_OAUTH_FAILURE_REDIRECT, "/otp-access/first/url-token");
+            request.getSession().setAttribute("after_oauth_redirect", "/otp/signrequests/signbook-redirect/42");
+            MockHttpServletResponse response = new MockHttpServletResponse();
+
+            handler.onAuthenticationFailure(request, response, new AuthenticationServiceException("[access_denied] User auth aborted"));
+
+            assertEquals("/otp-access/first/url-token?oauth2_cancelled=true", response.getRedirectedUrl());
+            assertNull(request.getSession().getAttribute(OAuth2FailureHandler.AFTER_OAUTH_FAILURE_REDIRECT));
+            assertNull(request.getSession().getAttribute("after_oauth_redirect"));
+        }
+
+        @Test
+        void providerErrorShouldRedirectToOauthErrorPage() throws Exception {
+            OAuth2FailureHandler handler = new OAuth2FailureHandler();
+            MockHttpServletRequest request = new MockHttpServletRequest("GET", "/login/oauth2/code/franceconnect");
+            request.setParameter("error", "server_error");
+            request.setParameter("error_description", "Provider unavailable");
+            request.setParameter("state", "state-123");
+            MockHttpServletResponse response = new MockHttpServletResponse();
+
+            handler.onAuthenticationFailure(request, response, new AuthenticationServiceException("provider failure"));
+
+            assertNotNull(response.getRedirectedUrl());
+            assertTrue(response.getRedirectedUrl().startsWith("/otp-access/oauth2?"));
+            assertTrue(response.getRedirectedUrl().contains("error=server_error"));
+            assertTrue(response.getRedirectedUrl().contains("state=state-123"));
+        }
     }
 
     private Otp otp(String urlId, boolean forceSms, int tries, long signBookId) {

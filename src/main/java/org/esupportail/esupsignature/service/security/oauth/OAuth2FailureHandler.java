@@ -14,17 +14,30 @@ import java.io.IOException;
 public class OAuth2FailureHandler implements AuthenticationFailureHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(OAuth2FailureHandler.class);
+    public static final String AFTER_OAUTH_FAILURE_REDIRECT = "after_oauth_failure_redirect";
+    private static final String ACCESS_DENIED = "access_denied";
 
     @Override
     public void onAuthenticationFailure(HttpServletRequest request,
                                         HttpServletResponse response,
                                         AuthenticationException exception) throws IOException {
-        logger.error("OAuth2 authentication failure", exception);
-
         String error = request.getParameter("error");
         String errorDescription = request.getParameter("error_description");
         String state = request.getParameter("state");
 
+        if (ACCESS_DENIED.equals(error)) {
+            logger.info("OAuth2/OIDC authentication cancelled by user - description: {}, state: {}",
+                    errorDescription, state);
+            String failureRedirect = getSafeFailureRedirect(request);
+            if (failureRedirect != null) {
+                request.getSession().removeAttribute(AFTER_OAUTH_FAILURE_REDIRECT);
+                request.getSession().removeAttribute("after_oauth_redirect");
+                response.sendRedirect(failureRedirect);
+                return;
+            }
+        }
+
+        logger.error("OAuth2 authentication failure", exception);
         logger.warn("OAuth2/OIDC error received - error: {}, description: {}, state: {}",
                 error, errorDescription, state);
 
@@ -57,5 +70,18 @@ public class OAuth2FailureHandler implements AuthenticationFailureHandler {
         }
 
         response.sendRedirect(redirectUrl.toString());
+    }
+
+    private String getSafeFailureRedirect(HttpServletRequest request) {
+        Object redirect = request.getSession().getAttribute(AFTER_OAUTH_FAILURE_REDIRECT);
+        if (redirect == null) {
+            return null;
+        }
+        String redirectUrl = redirect.toString();
+        if (redirectUrl.startsWith("/") && !redirectUrl.startsWith("//")) {
+            return redirectUrl + (redirectUrl.contains("?") ? "&" : "?") + "oauth2_cancelled=true";
+        }
+        logger.warn("Ignoring unsafe OAuth2 failure redirect URL: {}", redirectUrl);
+        return null;
     }
 }

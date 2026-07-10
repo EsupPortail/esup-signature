@@ -20,6 +20,7 @@ import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.interfaces.sms.SmsService;
 import org.esupportail.esupsignature.service.security.OidcOtpSecurityService;
 import org.esupportail.esupsignature.service.security.SecurityService;
+import org.esupportail.esupsignature.service.security.oauth.OAuth2FailureHandler;
 import org.esupportail.esupsignature.service.security.otp.OtpService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -89,6 +90,10 @@ public class OtpAccessController {
             model.addAttribute("enableSms", smsProperties.getServiceName());
             model.addAttribute("externalAuths", signBookService.getExternalAuths(otp.getSignBook().getId(), oidcOtpSecurityServices));
             httpServletRequest.getSession().setAttribute("after_oauth_redirect", "/otp/signrequests/signbook-redirect/" + otp.getSignBook().getId());
+            httpServletRequest.getSession().setAttribute(OAuth2FailureHandler.AFTER_OAUTH_FAILURE_REDIRECT, "/otp-access/first/" + urlId);
+            if("true".equals(httpServletRequest.getParameter("oauth2_cancelled"))) {
+                model.addAttribute("message", new UiMessageDto("info", "Authentification FranceConnect annulée. Vous pouvez réessayer ou choisir une autre méthode."));
+            }
             model.addAttribute("securityServices", oidcOtpSecurityServices);
             model.addAttribute("globalProperties", UiGlobalPropertiesDto.fromGlobalProperties(globalProperties));
             return "otp/signin";
