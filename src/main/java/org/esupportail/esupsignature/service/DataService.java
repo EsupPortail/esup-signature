@@ -90,6 +90,11 @@ public class DataService {
         return dataRepository.findBySignBook(signBook);
     }
 
+    public String getFormActionBySignRequestId(Long signRequestId) {
+        String action = dataRepository.findFormActionBySignRequestId(signRequestId);
+        return StringUtils.hasText(action) ? action : "";
+    }
+
     @Transactional
     public Data getBySignBookForUpdate(SignBook signBook) {
         return dataRepository.findBySignBookForUpdate(signBook);

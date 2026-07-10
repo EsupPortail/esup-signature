@@ -58,10 +58,12 @@ import org.springframework.ui.ConcurrentModel;
 import org.springframework.web.servlet.mvc.support.RedirectAttributesModelMap;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyList;
@@ -946,6 +948,42 @@ class GlobalSecurityAttackSurfaceTest {
 
             assertFalse(webSecurityProperties.isContentSecurityPolicyEnabled());
             assertTrue(webSecurityProperties.isContentSecurityPolicyReportOnly());
+        }
+
+        @Test
+        void contentSecurityPolicyShouldAllowNexuLocalScriptWithoutUnsafeInline() throws Exception {
+            WebSecurityConfig config = webSecurityConfig();
+            Set<String> scriptSrc = new LinkedHashSet<>();
+            scriptSrc.add("'self'");
+            Set<String> connectSrc = new LinkedHashSet<>();
+            connectSrc.add("'self'");
+            Set<String> formAction = new LinkedHashSet<>();
+            formAction.add("'self'");
+
+            var addHttpSrcOrigin = WebSecurityConfig.class.getDeclaredMethod(
+                    "addHttpSrcOrigin",
+                    Set.class,
+                    String.class,
+                    String.class,
+                    String.class
+            );
+            addHttpSrcOrigin.setAccessible(true);
+            addHttpSrcOrigin.invoke(config, scriptSrc, "http://localhost:9795", "test", "script-src");
+            addHttpSrcOrigin.invoke(config, connectSrc, "http://localhost:9795", "test", "connect-src");
+
+            var buildCspPolicy = WebSecurityConfig.class.getDeclaredMethod(
+                    "buildCspPolicy",
+                    Set.class,
+                    Set.class,
+                    Set.class,
+                    boolean.class
+            );
+            buildCspPolicy.setAccessible(true);
+            String policy = (String) buildCspPolicy.invoke(config, scriptSrc, connectSrc, formAction, false);
+
+            assertTrue(policy.contains("script-src 'self' http://localhost:9795 http://127.0.0.1:9795"));
+            assertTrue(policy.contains("connect-src 'self' http://localhost:9795 http://127.0.0.1:9795"));
+            assertFalse(policy.contains("script-src 'self' 'unsafe-inline'"));
         }
 
         @Test

@@ -151,6 +151,7 @@
                 if (!state.loadingPromise) {
                     const attachmentId = modalElement.dataset.attachmentId;
                     state.loadingPromise = pdfjsLib.getDocument({
+                            verbosity: 0,
                             url: getAttachmentInlineUrl(attachmentId),
                             useWasm: true,
                             wasmUrl: `/webjars/pdfjs-dist/wasm/`

@@ -24,6 +24,7 @@ import org.esupportail.esupsignature.service.ui.UiFetchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -58,13 +59,14 @@ public class UserAndOtpSignRequestController {
     private final UiFetchSignRequestService uiFetchSignRequestService;
     private final PreAuthorizeService preAuthorizeService;
     private final MobileSignTokenService mobileSignTokenService;
+    private final DataService dataService;
     private final ObjectMapper objectMapper;
 
     private Object getLock(String authUserEppn) {
         return userLocks.computeIfAbsent(authUserEppn, k -> new Object());
     }
 
-    public UserAndOtpSignRequestController(SignRequestService signRequestService, CommentService commentService, UserService userService, GlobalProperties globalProperties, SignBookService signBookService, UiFetchService uiFetchService, UiFetchSignRequestService uiFetchSignRequestService, PreAuthorizeService preAuthorizeService, MobileSignTokenService mobileSignTokenService, ObjectMapper objectMapper) {
+    public UserAndOtpSignRequestController(SignRequestService signRequestService, CommentService commentService, UserService userService, GlobalProperties globalProperties, SignBookService signBookService, UiFetchService uiFetchService, UiFetchSignRequestService uiFetchSignRequestService, PreAuthorizeService preAuthorizeService, MobileSignTokenService mobileSignTokenService, DataService dataService, ObjectMapper objectMapper) {
         this.signRequestService = signRequestService;
         this.commentService = commentService;
         this.userService = userService;
@@ -74,6 +76,7 @@ public class UserAndOtpSignRequestController {
         this.uiFetchSignRequestService = uiFetchSignRequestService;
         this.preAuthorizeService = preAuthorizeService;
         this.mobileSignTokenService = mobileSignTokenService;
+        this.dataService = dataService;
         this.objectMapper = objectMapper;
     }
 
@@ -125,6 +128,21 @@ public class UserAndOtpSignRequestController {
         ShowSignRequestContextDto context = uiFetchSignRequestService.buildShowSignRequestContext(id, userEppn, authUserEppn, httpSession, isOtpView);
         SignUiFrontDto frontDto = context.getSignUiFront();
         return ResponseEntity.ok(frontDto);
+    }
+
+    @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
+    @GetMapping(value = "/{id}/form-action.js", produces = "application/javascript")
+    @ResponseBody
+    public ResponseEntity<String> getFormActionScript(@ModelAttribute("userEppn") String userEppn,
+                                                      @ModelAttribute("authUserEppn") String authUserEppn,
+                                                      @PathVariable("id") Long id) {
+        String action = dataService.getFormActionBySignRequestId(id);
+        logger.debug("Serving form action script signRequestId={} actionLength={}", id, action.length());
+        String script = "console.debug(\"Executing form action script\", {signRequestId: " + id + ", actionLength: " + action.length() + "});\n" + action;
+        return ResponseEntity.ok()
+                .contentType(MediaType.valueOf("application/javascript"))
+                .header(HttpHeaders.CACHE_CONTROL, "no-store")
+                .body(script);
     }
 
     @PreAuthorize("@preAuthorizeService.signRequestRecipientAndViewers(#id, #userEppn)")

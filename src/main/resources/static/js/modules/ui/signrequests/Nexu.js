@@ -512,50 +512,36 @@ export class Nexu {
             return;
         }
 
-        // Try to fetch script as text first to inspect its content (helps debugging refactors where script may not expose globals)
-        $.ajax({
-            type: "GET",
-            url: url,
-            crossDomain: true,
-            dataType: "text",
-            cache: false,
-            success: function(data) {
-                try {
-                    if (typeof data === 'string' && data.includes('nexu_get_certificates')) {
-                        // inject script content to ensure it executes in global scope
-                        const script = document.createElement('script');
-                        script.type = 'text/javascript';
-                        script.text = data;
-                        document.head.appendChild(script);
-                        startCertificateRetrieval();
-                        return;
-                    }
-                } catch (e) {
-                    console.warn('Unable to inject fetched script:', e);
-                }
+        Nexu.loadClientScript(url)
+            .then(() => startCertificateRetrieval())
+            .catch(error => {
+                const details = error?.message || "chargement du script impossible";
+                Nexu.error({
+                    errorMessage: "Impossible de charger le script Esup-DSS-Client : " + details
+                });
+            });
+    }
 
-                // fallback to standard getScript which will try to load/execute the remote file
-                $.getScript(url).done(function() {
-                    startCertificateRetrieval();
-                }).fail(function(jqXHR, textStatus, errorThrown) {
-                    const details = errorThrown || textStatus || "chargement du script impossible";
-                    Nexu.error({
-                        errorMessage: "Impossible de charger le script Esup-DSS-Client : " + details
-                    });
-                });
-            },
-            error: function(jqXHR, textStatus, errorThrown) {
-                // If fetching as text fails, still try to load script tag
-                $.getScript(url).done(function() {
-                    startCertificateRetrieval();
-                }).fail(function(jqXHR2, textStatus2, errorThrown2) {
-                    const details = errorThrown2 || textStatus2 || "chargement du script impossible";
-                    Nexu.error({
-                        errorMessage: "Impossible de charger le script Esup-DSS-Client : " + details
-                    });
-                });
-            }
+    static loadClientScript(url) {
+        if (Nexu._scriptLoadingPromise != null) {
+            return Nexu._scriptLoadingPromise;
+        }
+        Nexu._scriptLoadingPromise = new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.type = 'text/javascript';
+            script.src = url;
+            script.async = true;
+            script.onload = () => {
+                console.debug("Esup-DSS-Client script loaded", {src: url});
+                resolve();
+            };
+            script.onerror = () => {
+                Nexu._scriptLoadingPromise = null;
+                reject(new Error("erreur de chargement de " + url));
+            };
+            document.head.appendChild(script);
         });
+        return Nexu._scriptLoadingPromise;
     }
 
 }

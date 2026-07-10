@@ -978,11 +978,32 @@ export class SignWorkspaceController {
     }
 
     initFormAction() {
-        if(!this.actionInitialyzed) {
-            console.debug("debug - " + "eval : " + this.action);
-            jQuery.globalEval(this.action);
-            this.actionInitialyzed = true;
+        if(this.actionInitialyzed) {
+            console.debug("Form action script already initialized", {signRequestId: this.signRequestId});
+            return;
         }
+        if(!this.action) {
+            console.debug("No form action script declared for this sign request", {signRequestId: this.signRequestId});
+            return;
+        }
+        if(!this.signRequestId) {
+            console.warn("Unable to load form action script: missing signRequestId");
+            return;
+        }
+        this.actionInitialyzed = true;
+        const script = document.createElement("script");
+        const profilePath = this.isOtp ? "otp" : "user";
+        script.src = `/${profilePath}/signrequests/${encodeURIComponent(this.signRequestId)}/form-action.js`;
+        script.async = false;
+        console.debug("Loading form action script", {src: script.src, profilePath, signRequestId: this.signRequestId});
+        script.onload = () => {
+            console.debug("Form action script loaded", {src: script.src, signRequestId: this.signRequestId});
+        };
+        script.onerror = () => {
+            this.actionInitialyzed = false;
+            console.error("Impossible de charger l'action javascript du formulaire", script.src);
+        };
+        document.head.appendChild(script);
     }
 
     autocollapse() {

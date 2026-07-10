@@ -124,6 +124,7 @@ export class PdfViewer extends EventFactory {
             $("#pdf-progress-bar").addClass("es-progress-visible");
             this.startProgress();
             const loadingTask = globalThis.pdfjsLib.getDocument({
+                verbosity: 0,
                 url: this.url,
                 useWasm: true,
                 wasmUrl: `/webjars/pdfjs-dist/wasm/`
