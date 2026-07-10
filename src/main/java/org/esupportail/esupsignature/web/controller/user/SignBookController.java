@@ -1,7 +1,5 @@
 package org.esupportail.esupsignature.web.controller.user;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -73,9 +71,8 @@ public class SignBookController {
     private final SignRequestService signRequestService;
     private final FormService formService;
     private final TemplateEngine templateEngine;
-    private final ObjectMapper objectMapper;
 
-    public SignBookController(RecipientService recipientService, SignWithService signWithService, LiveWorkflowStepService liveWorkflowStepService, PreAuthorizeService preAuthorizeService, WorkflowService workflowService, SignBookService signBookService, SignRequestService signRequestService, FormService formService, TemplateEngine templateEngine, CertificatService certificatService, GlobalProperties globalProperties, ObjectMapper objectMapper) {
+    public SignBookController(RecipientService recipientService, SignWithService signWithService, LiveWorkflowStepService liveWorkflowStepService, PreAuthorizeService preAuthorizeService, WorkflowService workflowService, SignBookService signBookService, SignRequestService signRequestService, FormService formService, TemplateEngine templateEngine, CertificatService certificatService, GlobalProperties globalProperties) {
         this.recipientService = recipientService;
         this.signWithService = signWithService;
         this.liveWorkflowStepService = liveWorkflowStepService;
@@ -87,7 +84,6 @@ public class SignBookController {
         this.templateEngine = templateEngine;
         this.certificatService = certificatService;
         this.globalProperties = globalProperties;
-        this.objectMapper = objectMapper;
     }
 
     @GetMapping
@@ -104,7 +100,7 @@ public class SignBookController {
                            @SortDefault.SortDefaults({
                                    @SortDefault(sort = "createDate", direction = Sort.Direction.DESC)
                            })
-                           Pageable pageable, Model model) throws JsonProcessingException {
+                           Pageable pageable, Model model) {
         boolean effectiveInfiniteScrolling = infiniteScrolling != null ? infiniteScrolling : Boolean.TRUE.equals(globalProperties.getInfiniteScrolling());
         if(statusFilter == null || statusFilter.equals("all")) statusFilter = "";
         if(workflowFilter != null && (workflowFilter.isEmpty() || workflowFilter.equals("all"))) {
@@ -128,7 +124,6 @@ public class SignBookController {
             signBooks = signBookService.getSignBookListItems(userEppn, authUserEppn, statusFilter, recipientsFilter, workflowFilter, docTitleFilter, creatorFilter, dateFilter, pageable);
         }
         model.addAttribute("signBooks", signBooks);
-        model.addAttribute("signBooksJson", objectMapper.writeValueAsString(signBooks));
         model.addAttribute("nbEmpty", signBookService.countEmpty(userEppn));
         model.addAttribute("statuses", SignRequestStatus.activeValues());
         model.addAttribute("forms", formService.getFormsByUser(userEppn, authUserEppn));

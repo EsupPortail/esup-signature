@@ -33,26 +33,12 @@ function metaContent(name) {
     return document.querySelector(`meta[name="${name}"]`)?.getAttribute("content") ?? "";
 }
 
-function parseJsonTextarea(id, fallback) {
-    const value = document.getElementById(id)?.value;
-    if (value == null || value === "") {
-        return fallback;
-    }
-    try {
-        return JSON.parse(value);
-    } catch (error) {
-        console.error("Unable to parse JSON from " + id, error);
-        return fallback;
-    }
-}
-
 function nullableDataset(dataset, key) {
     const value = dataset[key];
     return value == null || value === "" ? null : value;
 }
 
 function initSignBooksList() {
-    const signBooks = parseJsonTextarea("signbooks-json", {});
     const dataset = document.body.dataset;
     const csrf = {
         headerName: metaContent("_csrf_header"),
@@ -61,7 +47,6 @@ function initSignBooksList() {
     };
 
     new ListSignBooksUi(
-        signBooks,
         nullableDataset(dataset, "statusFilter"),
         nullableDataset(dataset, "recipientsFilter"),
         nullableDataset(dataset, "workflowFilter"),

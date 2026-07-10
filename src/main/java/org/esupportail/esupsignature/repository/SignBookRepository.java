@@ -12,6 +12,8 @@ import org.esupportail.esupsignature.entity.enums.ArchiveStatus;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import jakarta.persistence.LockModeType;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
@@ -21,6 +23,10 @@ import java.util.List;
 import java.util.Optional;
 
 public interface SignBookRepository extends CrudRepository<SignBook, Long> {
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select sb from SignBook sb where sb.id = :id")
+    Optional<SignBook> findByIdForUpdate(@Param("id") Long id);
 
     @Query("""
             select distinct sb from SignBook sb
