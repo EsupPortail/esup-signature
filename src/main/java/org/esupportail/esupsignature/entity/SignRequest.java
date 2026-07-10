@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 @Table(indexes =  {
         @Index(name = "sign_request_create_by_create_date", columnList = "create_by_id, createDate"),
         @Index(name = "sign_request_parent_sign_book", columnList = "parent_sign_book_id"),
+        @Index(name = "sign_request_status_idx", columnList = "status")
 
 })
 public class SignRequest {

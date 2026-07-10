@@ -37,3 +37,16 @@ new GlobalUi(
     parseNumber(metaContent("esup-max-upload-size")),
     parseNumber(metaContent("esup-max-inactive-interval"))
 );
+
+document.addEventListener("change", event => {
+    const selector = event.target.closest(".page-size-selector");
+    if (selector == null) {
+        return;
+    }
+
+    const selectedOption = selector.options[selector.selectedIndex];
+    const pageSizeUrl = selectedOption?.getAttribute("data-page-size-url");
+    if (pageSizeUrl != null && pageSizeUrl !== "") {
+        window.location.href = pageSizeUrl;
+    }
+});

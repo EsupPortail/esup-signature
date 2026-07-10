@@ -6,11 +6,15 @@
 <!--/*@thymesVar id="statusFilter" type="org.esupportail.esupsignature.entity.enums.SignRequestStatus"*/-->
 <!--/*@thymesVar id="form" type="org.esupportail.esupsignature.entity.Form"*/-->
 <head th:replace="~{fragments/head :: head}"></head>
-<script th:inline="javascript" type="module">
-    import {ListSignBooksUi} from '/js/modules/ui/signbooks/ListSignBooksUi.js?version=@[(${versionApp})]@';
-    new ListSignBooksUi([[${statusFilter}]], [[${recipientsFilter}]], [[${workflowFilter}]], [[${creatorFilter}]], [[${docTitleFilter}]], [[${dateFilter}]], [[${infiniteScrolling}]], [[${_csrf}]], "user/manage/workflow/[[${workflow.id}]]");
-</script>
-<body>
+<script type="module" th:src="'/js/modules/bootstrap/SignBooksListBootstrap.js?version=' + ${versionApp}"></script>
+<body th:attr="data-status-filter=${statusFilter},
+               data-recipients-filter=${recipientsFilter},
+               data-workflow-filter=${workflowFilter},
+               data-creator-filter=${creatorFilter},
+               data-doc-title-filter=${docTitleFilter},
+               data-date-filter=${dateFilter},
+               data-infinite-scrolling=${infiniteScrolling},
+               data-signbooks-mode=${'user/manage/workflow/' + workflow.id}">
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
     <div class="es-wrapper">
@@ -42,7 +46,7 @@
                         </th>
                         <th class="d-none d-xl-table-cell">
                             <div class="d-flex text-center">
-                                <input type="date" id="dateFilter" name="dateFilter" placeholder="Date de création" title="Date de création" class="form-control date sign-request-filter" th:value="${dateFilter}" onchange="submit();">
+                                <input type="date" id="dateFilter" name="dateFilter" placeholder="Date de création" title="Date de création" class="form-control date sign-request-filter" th:value="${dateFilter}">
                                 <th:block th:with="order=${signBooks.sort.getOrderFor('createDate')}">
                                     <a sd:pagination-sort="createDate" class="sorted my-auto text-center ms-1" th:classappend="${order == null ? 'text-dark' : 'text-primary'}" style="text-decoration: none;">
                                         <i th:if="${order != null && order.direction.name() == 'ASC'}" class="fi fi-rr-sort-amount-down"></i>
@@ -70,7 +74,7 @@
                         </th>
                         <th class="d-none d-md-table-cell">
                             <div class="d-flex text-center">
-                            <select class="slim-select-filter sign-request-filter" name="statusFilter" id="statusFilter" onchange="submit();">
+                            <select class="slim-select-filter sign-request-filter" name="statusFilter" id="statusFilter">
                                 <option value="" data-placeholder="true">Choisir un statut</option>
                                 <option value="all">Tous</option>
                                 <option value="deleted">Supprimé</option>
