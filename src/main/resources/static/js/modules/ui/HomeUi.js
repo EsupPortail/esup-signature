@@ -40,6 +40,7 @@ export class HomeUi {
             this.initFavoriteToggles();
             this.initPendingListToggle();
             this.initToSignToggle();
+            this.initStopPropagation();
             this.initWarningModals();
             this.initMegaSearch();
             this.handleRequestedStart();
@@ -456,6 +457,12 @@ export class HomeUi {
             row.addEventListener('click', event => this.handleClickableRow(event));
         });
         container.querySelectorAll('[data-es-stop-propagation="true"]').forEach(element => {
+            element.addEventListener('click', event => event.stopPropagation());
+        });
+    }
+
+    initStopPropagation() {
+        document.querySelectorAll('[data-es-stop-propagation="true"]').forEach(element => {
             element.addEventListener('click', event => event.stopPropagation());
         });
     }

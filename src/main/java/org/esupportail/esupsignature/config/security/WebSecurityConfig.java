@@ -49,6 +49,7 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter;
 import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;
 import org.springframework.security.oauth2.server.resource.web.DefaultBearerTokenResolver;
@@ -64,7 +65,6 @@ import org.springframework.security.web.authentication.AuthenticationFailureHand
 import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.security.web.authentication.session.RegisterSessionAuthenticationStrategy;
 import org.springframework.security.web.authentication.switchuser.SwitchUserFilter;
-import org.springframework.security.web.header.writers.StaticHeadersWriter;
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
 import org.springframework.util.StringUtils;
@@ -250,16 +250,21 @@ public class WebSecurityConfig {
 		for(SecurityService securityService : activeSecurityServices) {
 			addFormActionOrigin(formAction, securityService.getLoggedOutUrl(), "security service " + securityService.getCode());
 		}
+		for(OidcSecurityService securityService : getActiveOidcSecurityServices()) {
+			addOidcAuthorizationFormActionOrigin(formAction, securityService);
+		}
 		http.headers(headers -> {
 			headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin);
 			if(webSecurityProperties.isContentSecurityPolicyEnabled()) {
 				Set<String> connectSrc = new LinkedHashSet<>();
 				connectSrc.add("'self'");
 				addConnectSrcOrigin(connectSrc, globalProperties.getNexuUrl(), "globalProperties.nexuUrl");
-				String cspPolicy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src " + String.join(" ", connectSrc) + "; object-src blob:; frame-src 'self' blob:; base-uri 'self'; frame-ancestors 'self'; form-action " + String.join(" ", formAction);
-				String cspReportOnlyPolicy = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src " + String.join(" ", connectSrc) + "; object-src blob:; frame-src 'self' blob:; base-uri 'self'; frame-ancestors 'self'; form-action " + String.join(" ", formAction) + "; report-uri /csp-report";
-				headers.contentSecurityPolicy(csp -> csp.policyDirectives(cspPolicy));
-				headers.addHeaderWriter(new StaticHeadersWriter("Content-Security-Policy-Report-Only", cspReportOnlyPolicy));
+				headers.addHeaderWriter((request, response) -> {
+					Set<String> requestFormAction = new LinkedHashSet<>(formAction);
+					addRequestOrigin(requestFormAction, request);
+					response.setHeader("Content-Security-Policy", buildCspPolicy(connectSrc, requestFormAction, false));
+					response.setHeader("Content-Security-Policy-Report-Only", buildCspPolicy(connectSrc, requestFormAction, true));
+				});
 			} else {
 				logger.warn("Content-Security-Policy headers are disabled by configuration");
 			}
@@ -345,6 +350,53 @@ public class WebSecurityConfig {
 		} catch (URISyntaxException e) {
 			logger.warn("Ignoring invalid connect-src URL from {}: {}", source, url);
 		}
+	}
+
+	private void addOidcAuthorizationFormActionOrigin(Set<String> formAction, OidcSecurityService securityService) {
+		if(clientRegistrationRepository == null) {
+			return;
+		}
+		ClientRegistration registration = clientRegistrationRepository.findByRegistrationId(securityService.getCode());
+		if(registration == null) {
+			return;
+		}
+		addFormActionOrigin(formAction, registration.getProviderDetails().getAuthorizationUri(), "OIDC authorization URI " + securityService.getCode());
+	}
+
+	private String buildCspPolicy(Set<String> connectSrc, Set<String> formAction, boolean reportOnly) {
+		String scriptSrc = reportOnly ? "script-src 'self'" : "script-src 'self' 'unsafe-inline' 'unsafe-eval'";
+		String reportUri = reportOnly ? "; report-uri /csp-report" : "";
+		return "default-src 'self'; "
+				+ scriptSrc
+				+ "; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src " + String.join(" ", connectSrc)
+				+ "; object-src blob:; frame-src 'self' blob:; base-uri 'self'; frame-ancestors 'self'; form-action " + String.join(" ", formAction)
+				+ reportUri;
+	}
+
+	private void addRequestOrigin(Set<String> formAction, HttpServletRequest request) {
+		String forwardedProto = getFirstHeaderValue(request, "X-Forwarded-Proto");
+		String forwardedHost = getFirstHeaderValue(request, "X-Forwarded-Host");
+		if(StringUtils.hasText(forwardedProto) && StringUtils.hasText(forwardedHost)) {
+			addFormActionOrigin(formAction, forwardedProto + "://" + forwardedHost, "request forwarded origin");
+			return;
+		}
+		int port = request.getServerPort();
+		if(isDefaultPort(request.getScheme(), port)) {
+			port = -1;
+		}
+		formAction.add(buildOrigin(request.getScheme(), request.getServerName(), port));
+	}
+
+	private String getFirstHeaderValue(HttpServletRequest request, String headerName) {
+		String header = request.getHeader(headerName);
+		if(!StringUtils.hasText(header)) {
+			return null;
+		}
+		return header.split(",")[0].trim();
+	}
+
+	private boolean isDefaultPort(String scheme, int port) {
+		return ("http".equalsIgnoreCase(scheme) && port == 80) || ("https".equalsIgnoreCase(scheme) && port == 443);
 	}
 
 	private String getHttpOrigin(URI uri) {

@@ -1857,20 +1857,20 @@ tr[aria-expanded="true"] .caret-toggle-expanded {
     margin: var(--text-spacing);
 }
 
-.oidc-connect a {
+.oidc-connect a:not(.oidc-connect-btn) {
     color: var(--color-blue-oidc);
     font-size: .875rem  !important;
     line-height: 1.5rem  !important;
     -webkit-tap-highlight-color: transparent;
 }
 
-.oidc-connect a {
+.oidc-connect a:not(.oidc-connect-btn) {
     --hover-tint: transparent;
     --active-tint: var(--color-e9ecef);
     text-decoration: var(--text-decoration);
 }
 
-.oidc-connect [href] {
+.oidc-connect [href]:not(.oidc-connect-btn) {
     background-image: var(--underline-img), var(--underline-img);
     background-position: var(--underline-x) 100%, var(--underline-x) calc(100% - var(--underline-thickness));
     background-repeat: no-repeat, no-repeat;
@@ -1879,7 +1879,7 @@ tr[aria-expanded="true"] .caret-toggle-expanded {
 }
 
 
-.oidc-connect a::after {
+.oidc-connect a:not(.oidc-connect-btn)::after {
     --icon-size: 1rem;
     background-color: currentColor;
     content: "";
@@ -1893,6 +1893,19 @@ tr[aria-expanded="true"] .caret-toggle-expanded {
     mask-size: 100% 100%;
     vertical-align: calc((.75em - var(--icon-size)) * .5);
     width: var(--icon-size);
+}
+
+.oidc-connect-btn {
+    display: inline-block;
+    flex: 0 0 auto;
+    cursor: pointer;
+    text-decoration: none !important;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.oidc-connect-btn:focus-visible {
+    outline: 2px solid var(--color-blue-oidc);
+    outline-offset: 3px;
 }
 
 .step-vertical {

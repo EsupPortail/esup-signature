@@ -10,7 +10,7 @@
 <main role="main">
     <div class="es-wrapper">
         <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full home-breadcrumb-loading-shell">
-            <div class="col-12 col-xxl-10 mx-auto position-relative" onclick="event.stopPropagation();">
+            <div class="col-12 col-xxl-10 mx-auto position-relative" data-es-stop-propagation="true">
                 <div class="input-group">
                     <label title="Rechercher" class="btn btn-light border-secondary-subtle" style="pointer-events: none;"><i class="fi fi-rr-search"></i></label>
                     <select id="mega-search" class="form-control rounded-end-2"  name="megaSearch" es-search-addable="true" es-search-text="Rechercher documents, circuits ou formulaires..." multiple style="z-index: 2;">
@@ -27,7 +27,7 @@
             </div>
         </nav>
         <div id="content" class="es-content-full-fixed d-flex flex-column align-content-center gap-2 gap-xxl-3 p-2 p-xxl-0" style="height: 100%">
-            <div class="col-12 col-xxl-10 mx-auto position-relative" onclick="event.stopPropagation();">
+            <div class="col-12 col-xxl-10 mx-auto position-relative" data-es-stop-propagation="true">
                 <div class="modal fade" id="mega-result" tabindex="-1" aria-hidden="true" style="display: none;" data-bs-focus="false" data-bs-backdrop="static">
                     <div class="modal-dialog modal-dialog-scrollable">
                         <div class="modal-content" style="height: 100%;">
