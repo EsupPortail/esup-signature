@@ -6,11 +6,15 @@
 <!--/*@thymesVar id="statusFilter" type="org.esupportail.esupsignature.entity.enums.SignRequestStatus"*/-->
 <!--/*@thymesVar id="infiniteScrolling" type="java.lang.Boolean"*/-->
 <head th:replace="~{fragments/head :: head}"></head>
-<script th:inline="javascript" type="module">
-    import {ListSignBooksUi} from '/js/modules/ui/signbooks/ListSignBooksUi.js?version=@[(${versionApp})]@';
-    new ListSignBooksUi([[${statusFilter}]], [[${recipientsFilter}]], [[${workflowFilter}]], [[${creatorFilter}]], [[${docTitleFilter}]], [[${dateFilter}]], [[${infiniteScrolling}]], [[${_csrf}]], "admin");
-</script>
-<body>
+<script type="module" th:src="'/js/modules/bootstrap/SignBooksListBootstrap.js?version=' + ${versionApp}"></script>
+<body th:attr="data-status-filter=${statusFilter},
+               data-recipients-filter=${recipientsFilter},
+               data-workflow-filter=${workflowFilter},
+               data-creator-filter=${creatorFilter},
+               data-doc-title-filter=${docTitleFilter},
+               data-date-filter=${dateFilter},
+               data-infinite-scrolling=${infiniteScrolling},
+               data-signbooks-mode='admin'">
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main" th:style="${infiniteScrolling} ? '' : 'padding-bottom: 0px;'">
     <div class="es-wrapper">

@@ -9,10 +9,7 @@
 <script th:src="@{/webjars/ace-builds/src-noconflict/mode-javascript.js}"></script>
 <script th:src="@{/webjars/ace-builds/src-noconflict/worker-javascript.js}"></script>
 <script th:src="@{/webjars/ace-builds/src-noconflict/ext-keybinding_menu.js}"></script>
-<script th:inline="javascript" type="module">
-    import {FormUi} from '/js/modules/ui/forms/FormUi.js?version=@[(${versionApp})]@';
-    new FormUi();
-</script>
+<script type="module" th:src="'/js/modules/bootstrap/FormUpdateBootstrap.js?version=' + ${versionApp}"></script>
 <body>
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
@@ -172,22 +169,6 @@
                                                     <label for="actionDiv">Actions (javascript)</label>
                                                     <textarea id="actionText" class="form-control" type="text" th:field="*{action}"></textarea>
                                                     <div id="actionDiv"></div>
-                                                    <script language="JavaScript">
-                                                        ace.require("ace/ext/language_tools");
-                                                        let editor = ace.edit("actionDiv", {
-                                                            mode: "ace/mode/javascript",
-                                                            autoScrollEditorIntoView: true,
-                                                            enableBasicAutocompletion: true,
-                                                            selectionStyle: "text"
-                                                        });
-                                                        let textarea = $('#actionText');
-                                                        textarea.hide();
-                                                        editor.getSession().setValue(textarea.val());
-                                                        editor.getSession().on('change', function(){
-                                                            textarea.val(editor.getSession().getValue());
-                                                            textarea.trigger('change');
-                                                        });
-                                                    </script>
                                                 </div>
                                             </div>
                                         </div>
@@ -237,8 +218,7 @@
                 <div class="es-sign-buttons es-fixed-action-btns active">
                     <ul class="list-unstyled">
                         <li>
-                            <button id="saveButton" title="Enregistrer" role="button" class="btn btn-transparent text-dark"
-                                    onclick="$('#formUpdate').submit();">
+                            <button id="saveButton" title="Enregistrer" role="button" type="button" class="btn btn-transparent text-dark">
                                 <i class="fi fi-rr-disk"></i>
                             </button>
                         </li>

@@ -35,6 +35,7 @@ const signRequestFrontUrl = `/${signRequestProfilePath}/signrequests/${signReque
 sessionStorage.setItem("favoriteSignRequestParams", favoriteSignRequestParamsJson);
 
 fetch(signRequestFrontUrl, {
+    cache: "no-store",
     headers: {
         "Accept": "application/json"
     }

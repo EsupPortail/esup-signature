@@ -18,6 +18,7 @@ public class WebSecurityProperties {
     private List<String> excludedEmails = new ArrayList<>();
     private List<String> jwtWsAuthorizedAudiences = new ArrayList<>();
     private boolean contentSecurityPolicyEnabled = false;
+    private boolean contentSecurityPolicyReportOnly = true;
 
     public String[] getWsAccessAuthorizeIps() {
         return wsAccessAuthorizeIps;
@@ -90,5 +91,13 @@ public class WebSecurityProperties {
 
     public void setContentSecurityPolicyEnabled(boolean contentSecurityPolicyEnabled) {
         this.contentSecurityPolicyEnabled = contentSecurityPolicyEnabled;
+    }
+
+    public boolean isContentSecurityPolicyReportOnly() {
+        return contentSecurityPolicyReportOnly;
+    }
+
+    public void setContentSecurityPolicyReportOnly(boolean contentSecurityPolicyReportOnly) {
+        this.contentSecurityPolicyReportOnly = contentSecurityPolicyReportOnly;
     }
 }

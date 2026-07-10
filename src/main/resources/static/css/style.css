@@ -368,6 +368,8 @@ pre {
     -moz-user-select: text !important;
     -webkit-user-select: text !important;
     min-height: 100%;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
 }
 
 #listSignRequestTable th {

@@ -258,12 +258,20 @@ public class WebSecurityConfig {
 			if(webSecurityProperties.isContentSecurityPolicyEnabled()) {
 				Set<String> connectSrc = new LinkedHashSet<>();
 				connectSrc.add("'self'");
-				addConnectSrcOrigin(connectSrc, globalProperties.getNexuUrl(), "globalProperties.nexuUrl");
+				addHttpSrcOrigin(connectSrc, globalProperties.getNexuUrl(), "globalProperties.nexuUrl", "connect-src");
+				Set<String> scriptSrc = new LinkedHashSet<>();
+				scriptSrc.add("'self'");
+				addHttpSrcOrigin(scriptSrc, globalProperties.getNexuUrl(), "globalProperties.nexuUrl", "script-src");
 				headers.addHeaderWriter((request, response) -> {
 					Set<String> requestFormAction = new LinkedHashSet<>(formAction);
 					addRequestOrigin(requestFormAction, request);
-					response.setHeader("Content-Security-Policy", buildCspPolicy(connectSrc, requestFormAction, false));
-					response.setHeader("Content-Security-Policy-Report-Only", buildCspPolicy(connectSrc, requestFormAction, true));
+					boolean reportOnly = webSecurityProperties.isContentSecurityPolicyReportOnly();
+					String headerName = reportOnly ? "Content-Security-Policy-Report-Only" : "Content-Security-Policy";
+					String reportingEndpoint = buildSecureCspReportingEndpoint(request);
+					if(reportingEndpoint != null) {
+						response.setHeader("Reporting-Endpoints", "csp-endpoint=\"" + reportingEndpoint + "\"");
+					}
+					response.setHeader(headerName, buildCspPolicy(scriptSrc, connectSrc, requestFormAction, reportingEndpoint != null));
 				});
 			} else {
 				logger.warn("Content-Security-Policy headers are disabled by configuration");
@@ -330,7 +338,7 @@ public class WebSecurityConfig {
 		}
 	}
 
-	private void addConnectSrcOrigin(Set<String> connectSrc, String url, String source) {
+	private void addHttpSrcOrigin(Set<String> src, String url, String source, String directive) {
 		if(!StringUtils.hasText(url)) {
 			return;
 		}
@@ -338,17 +346,17 @@ public class WebSecurityConfig {
 			URI uri = new URI(url);
 			String origin = getHttpOrigin(uri);
 			if(origin == null) {
-				logger.warn("Ignoring invalid connect-src URL from {}: {}", source, url);
+				logger.warn("Ignoring invalid {} URL from {}: {}", directive, source, url);
 				return;
 			}
-			connectSrc.add(origin);
+			src.add(origin);
 			if("localhost".equalsIgnoreCase(uri.getHost())) {
-				connectSrc.add(buildOrigin(uri.getScheme(), "127.0.0.1", uri.getPort()));
+				src.add(buildOrigin(uri.getScheme(), "127.0.0.1", uri.getPort()));
 			} else if("127.0.0.1".equals(uri.getHost())) {
-				connectSrc.add(buildOrigin(uri.getScheme(), "localhost", uri.getPort()));
+				src.add(buildOrigin(uri.getScheme(), "localhost", uri.getPort()));
 			}
 		} catch (URISyntaxException e) {
-			logger.warn("Ignoring invalid connect-src URL from {}: {}", source, url);
+			logger.warn("Ignoring invalid {} URL from {}: {}", directive, source, url);
 		}
 	}
 
@@ -363,14 +371,30 @@ public class WebSecurityConfig {
 		addFormActionOrigin(formAction, registration.getProviderDetails().getAuthorizationUri(), "OIDC authorization URI " + securityService.getCode());
 	}
 
-	private String buildCspPolicy(Set<String> connectSrc, Set<String> formAction, boolean reportOnly) {
-		String scriptSrc = reportOnly ? "script-src 'self'" : "script-src 'self' 'unsafe-inline' 'unsafe-eval'";
-		String reportUri = reportOnly ? "; report-uri /csp-report" : "";
+	private String buildCspPolicy(Set<String> scriptSrc, Set<String> connectSrc, Set<String> formAction, boolean reportToEnabled) {
 		return "default-src 'self'; "
-				+ scriptSrc
+				+ "script-src " + String.join(" ", scriptSrc)
 				+ "; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src " + String.join(" ", connectSrc)
-				+ "; object-src blob:; frame-src 'self' blob:; base-uri 'self'; frame-ancestors 'self'; form-action " + String.join(" ", formAction)
-				+ reportUri;
+				+ "; worker-src 'self' blob:; object-src blob:; frame-src 'self' blob:; base-uri 'self'; frame-ancestors 'self'; form-action " + String.join(" ", formAction)
+				+ "; report-uri /csp-report"
+				+ (reportToEnabled ? "; report-to csp-endpoint" : "");
+	}
+
+	private String buildSecureCspReportingEndpoint(HttpServletRequest request) {
+		String forwardedProto = getFirstHeaderValue(request, "X-Forwarded-Proto");
+		String scheme = StringUtils.hasText(forwardedProto) ? forwardedProto : request.getScheme();
+		if(!"https".equalsIgnoreCase(scheme)) {
+			return null;
+		}
+		String forwardedHost = getFirstHeaderValue(request, "X-Forwarded-Host");
+		if(StringUtils.hasText(forwardedHost)) {
+			return "https://" + forwardedHost + "/csp-report";
+		}
+		int port = request.getServerPort();
+		if(isDefaultPort(scheme, port)) {
+			port = -1;
+		}
+		return buildOrigin(scheme, request.getServerName(), port) + "/csp-report";
 	}
 
 	private void addRequestOrigin(Set<String> formAction, HttpServletRequest request) {

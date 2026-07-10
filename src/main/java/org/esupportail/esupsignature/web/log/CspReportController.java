@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.time.Duration;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -22,7 +23,7 @@ public class CspReportController {
     private static final int MAX_LOGGED_VALUE_LENGTH = 500;
     private static final long DUPLICATE_TTL_MILLIS = Duration.ofMinutes(10).toMillis();
     private static final int MAX_DEDUPLICATION_KEYS = 1000;
-    private static final TypeReference<Map<String, Object>> MAP_TYPE = new TypeReference<>() {};
+    private static final TypeReference<Object> OBJECT_TYPE = new TypeReference<>() {};
 
     private final ObjectMapper objectMapper;
     private final Map<String, Long> alreadyLoggedReports = new ConcurrentHashMap<>();
@@ -33,9 +34,9 @@ public class CspReportController {
 
     @PostMapping("/csp-report")
     public ResponseEntity<Void> report(@RequestBody(required = false) String body, HttpServletRequest request) {
-        Map<String, Object> payload;
+        Object payload;
         try {
-            payload = objectMapper.readValue(body == null ? "{}" : body, MAP_TYPE);
+            payload = objectMapper.readValue(body == null ? "{}" : body, OBJECT_TYPE);
         } catch (Exception e) {
             logger.warn("Invalid CSP report remoteAddr={} userAgent={} body={}", request.getRemoteAddr(), sanitize(request.getHeader("User-Agent")), sanitize(body));
             return ResponseEntity.noContent().build();
@@ -104,17 +105,47 @@ public class CspReportController {
     }
 
     @SuppressWarnings("unchecked")
-    private Map<String, Object> getReport(Map<String, Object> payload) {
-        Object legacyReport = payload.get("csp-report");
+    private Map<String, Object> getReport(Object payload) {
+        if(payload instanceof List<?> reports && !reports.isEmpty()) {
+            Object firstReport = reports.get(0);
+            if(firstReport instanceof Map<?, ?> firstReportMap) {
+                Object body = firstReportMap.get("body");
+                if(body instanceof Map<?, ?>) {
+                    return (Map<String, Object>) body;
+                }
+                return (Map<String, Object>) firstReportMap;
+            }
+        }
+        if(!(payload instanceof Map<?, ?> payloadMap)) {
+            return Map.of();
+        }
+        Object legacyReport = payloadMap.get("csp-report");
         if(legacyReport instanceof Map<?, ?>) {
             return (Map<String, Object>) legacyReport;
         }
-        return payload;
+        return (Map<String, Object>) payloadMap;
     }
 
     private String value(Map<String, Object> report, String key) {
         Object value = report.get(key);
+        if(value == null) {
+            value = report.get(modernReportKey(key));
+        }
         return sanitize(value == null ? null : String.valueOf(value));
+    }
+
+    private String modernReportKey(String key) {
+        return switch (key) {
+            case "blocked-uri" -> "blockedURL";
+            case "document-uri" -> "documentURL";
+            case "effective-directive" -> "effectiveDirective";
+            case "violated-directive" -> "effectiveDirective";
+            case "source-file" -> "sourceFile";
+            case "line-number" -> "lineNumber";
+            case "column-number" -> "columnNumber";
+            case "status-code" -> "statusCode";
+            default -> key;
+        };
     }
 
     private String sanitize(String value) {

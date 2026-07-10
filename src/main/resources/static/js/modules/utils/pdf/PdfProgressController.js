@@ -5,18 +5,34 @@ export class PdfProgressController {
     }
 
     startProgress() {
+        this.setProgressBarState("bg-dark");
         this.updateProgress(5, "Préparation du rendu…", true);
     }
 
     stopProgress(){
+        this.setProgressBarState("bg-dark");
         this.updateProgress(100, "Chargement terminé", false);
         clearInterval(this.viewer.interval);
     }
 
     resetProgress() {
         $("#pdf-progress-bar").removeClass("es-progress-visible");
+        this.setProgressBarState("bg-dark");
         this.updateProgress(0, "", false);
         clearInterval(this.viewer.interval);
+    }
+
+    failProgress(text = "Impossible d’afficher le document") {
+        $("#pdf-progress-bar").addClass("es-progress-visible");
+        this.setProgressBarState("bg-danger");
+        this.updateProgress(100, text, false);
+        clearInterval(this.viewer.interval);
+    }
+
+    setProgressBarState(stateClass) {
+        $("#pdf-progress-bar .progress-bar")
+            .removeClass("bg-dark bg-danger bg-warning bg-success")
+            .addClass(stateClass);
     }
 
     updateRenderProgress() {

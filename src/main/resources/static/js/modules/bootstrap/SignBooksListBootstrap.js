@@ -12,6 +12,10 @@ function readStoragePreference() {
 }
 
 function applyDisplayModePreference() {
+    if (window.location.pathname !== "/user/signbooks") {
+        return;
+    }
+
     const storedMode = readStoragePreference();
     const hasStoredPreference = storedMode === "infinite" || storedMode === "pagination";
     if (!hasStoredPreference) {
@@ -40,6 +44,7 @@ function nullableDataset(dataset, key) {
 
 function initSignBooksList() {
     const dataset = document.body.dataset;
+    const mode = nullableDataset(dataset, "signbooksMode") ?? "user";
     const csrf = {
         headerName: metaContent("_csrf_header"),
         parameterName: metaContent("_csrf_parameter"),
@@ -55,11 +60,11 @@ function initSignBooksList() {
         nullableDataset(dataset, "dateFilter"),
         dataset.infiniteScrolling === "true",
         csrf,
-        "user",
-        {
+        mode,
+        mode === "user" ? {
             preferenceStorageKey,
             toggleSelector: "#signbooksDisplayModeSwitch"
-        }
+        } : {}
     );
 }
 

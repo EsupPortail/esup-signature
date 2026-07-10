@@ -28,6 +28,18 @@ export class PdfLayerController {
     }
 
     async applyLinkAnnotationsVisibilityForPage(pageNum, visibleLayerNames) {
+        if (visibleLayerNames == null) {
+            const config = await Promise.resolve(this.viewer._optionalContentConfigPromise);
+            if (!config) {
+                return;
+            }
+            visibleLayerNames = new Set();
+            for (const [id, group] of config) {
+                if (group?.visible) {
+                    visibleLayerNames.add(group.name);
+                }
+            }
+        }
         const pageContainer = document.getElementById(`page_${pageNum}`);
         if (!pageContainer) {
             return;

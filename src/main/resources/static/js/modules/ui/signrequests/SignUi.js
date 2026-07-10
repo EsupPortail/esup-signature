@@ -254,7 +254,10 @@ export class SignUi {
                 throw new Error('HTTP ' + response.status);
             }
             const html = await response.text();
-            this.nexuProcessContent.html(html);
+            const fragment = document.createElement('template');
+            fragment.innerHTML = html;
+            fragment.content.querySelectorAll('script').forEach(script => script.remove());
+            this.nexuProcessContent.empty().append(fragment.content.cloneNode(true));
             this.nexuProcessLoading.addClass('d-none');
             NexuProcessUi.initWithin(modalElement);
             return true;

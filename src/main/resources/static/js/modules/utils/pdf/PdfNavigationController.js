@@ -108,7 +108,6 @@ export class PdfNavigationController {
     }
 
     checkCurrentPage(e) {
-        if(this.viewer.renderedPages < this.viewer.numPages) return;
         let numPages = this.viewer.pdfDoc.numPages;
 
         for(let i = 1; i < numPages + 1; i++) {
