@@ -1727,13 +1727,15 @@ public class SignBookService {
      */
     @Transactional
     public void pendingSignBook(String authUserEppn, Long id) {
-        SignBook signBook = getById(id);
+        SignBook signBook = signBookRepository.findByIdForUpdate(id).orElse(null);
         pendingSignBook(signBook, null, authUserEppn, authUserEppn, false, true);
     }
 
     @Transactional
     public void pendingSignBook(SignBook signBook, Data data, String userEppn, String authUserEppn, boolean forceSendEmail, boolean sendEmailAlert) throws EsupSignatureRuntimeException {
         LiveWorkflowStep liveWorkflowStep = signBook.getLiveWorkflow().getCurrentStep();
+        boolean alreadyPendingSignBook = SignRequestStatus.pending.equals(signBook.getStatus());
+        boolean pendingStartedForAtLeastOneSignRequest = false;
         boolean emailSended = false;
         for(SignRequest signRequest : signBook.getSignRequests()) {
             if(signBook.getLiveWorkflow() != null && signBook.getLiveWorkflow().getCurrentStep() != null && signBook.getLiveWorkflow().getCurrentStep().getAutoSign()) {
@@ -1742,9 +1744,12 @@ public class SignBookService {
             }
             if(!signRequest.getStatus().equals(SignRequestStatus.refused)) {
                 if (liveWorkflowStep != null) {
-                    signRequestService.pendingSignRequest(signRequest, userEppn);
-                    addToTeam(signBook, userEppn);
-                    if (!emailSended && sendEmailAlert) {
+                    boolean pendingStarted = signRequestService.pendingSignRequest(signRequest, userEppn);
+                    pendingStartedForAtLeastOneSignRequest = pendingStartedForAtLeastOneSignRequest || pendingStarted;
+                    if (pendingStarted) {
+                        addToTeam(signBook, userEppn);
+                    }
+                    if (pendingStarted && !emailSended && sendEmailAlert) {
                         try {
                             mailService.sendEmailAlerts(signBook, userEppn, data, forceSendEmail);
                             mailService.sendCCAlert(signBook, null);
@@ -1753,7 +1758,7 @@ public class SignBookService {
                             throw new EsupSignatureRuntimeException(e.getMessage());
                         }
                     }
-                    if(signBook.getLiveWorkflow().getCurrentStep().getAutoSign()) {
+                    if(pendingStarted && signBook.getLiveWorkflow().getCurrentStep().getAutoSign()) {
                         for(SignRequest signRequest1 : signBook.getSignRequests()) {
                             List<SignRequestParams> signRequestParamses = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams();
                             if(liveWorkflowStep.getWorkflowStep() != null && liveWorkflowStep.getWorkflowStep().getCertificat() != null) {
@@ -1797,7 +1802,7 @@ public class SignBookService {
                             logger.info("Circuit " + signBook.getId() + " terminé");
                             return;
                         }
-                    } else {
+                    } else if (pendingStarted) {
                         if(!signRequest.getSignRequestParams().isEmpty()) {
                             dispatchSignRequestParams(signRequest);
                         }
@@ -1808,6 +1813,10 @@ public class SignBookService {
                     return;
                 }
             }
+        }
+        if (!pendingStartedForAtLeastOneSignRequest && alreadyPendingSignBook) {
+            logger.info("Circuit " + signBook.getId() + " déjà démarré pour signature de l'étape " + signBook.getLiveWorkflow().getCurrentStepNumber());
+            return;
         }
         updateStatus(signBook, SignRequestStatus.pending, "Circuit démarré pour signature de l'étape " + signBook.getLiveWorkflow().getCurrentStepNumber(), "SUCCESS", signBook.getComment(), userEppn, authUserEppn);
         logger.info("Circuit " + signBook.getId() + " démarré pour signature de l'étape " + signBook.getLiveWorkflow().getCurrentStepNumber());

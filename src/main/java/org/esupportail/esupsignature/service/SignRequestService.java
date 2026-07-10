@@ -725,8 +725,12 @@ public class SignRequestService {
 	 * @param authUserEppn Identifiant unique de l'utilisateur authentifié exécutant l'action.
 	 */
 	@Transactional
-	public void pendingSignRequest(SignRequest signRequest, String authUserEppn) {
-		for (Recipient recipient : signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients()) {
+	public boolean pendingSignRequest(SignRequest signRequest, String authUserEppn) {
+		List<Recipient> currentStepRecipients = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients();
+		if (isAlreadyPendingForCurrentStep(signRequest, currentStepRecipients)) {
+			return false;
+		}
+		for (Recipient recipient : currentStepRecipients) {
 			if (!signRequest.getRecipientHasSigned().containsKey(recipient)) {
 				signRequest.getRecipientHasSigned().put(recipient, actionService.getEmptyAction());
 			}
@@ -741,6 +745,13 @@ public class SignRequestService {
 		for (Target target : signRequest.getParentSignBook().getLiveWorkflow().getTargets().stream().filter(t -> t != null && fsAccessFactoryService.getPathIOType(t.getTargetUri()).equals(DocumentIOType.rest)).toList()) {
 			targetService.sendRest(target.getTargetUri(), signRequest.getId().toString(), "pending", signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber().toString(), authUserEppn, "");
 		}
+		return true;
+	}
+
+	private boolean isAlreadyPendingForCurrentStep(SignRequest signRequest, List<Recipient> currentStepRecipients) {
+		return SignRequestStatus.pending.equals(signRequest.getStatus())
+				&& !currentStepRecipients.isEmpty()
+				&& currentStepRecipients.stream().allMatch(recipient -> signRequest.getRecipientHasSigned().containsKey(recipient));
 	}
 
 	private boolean isNextWorkFlowStep(SignBook signBook) {

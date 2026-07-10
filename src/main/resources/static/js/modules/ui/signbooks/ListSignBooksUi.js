@@ -3,9 +3,8 @@ import {Nexu} from "../signrequests/Nexu.js?version=@version@";
 
 export class ListSignBooksUi {
 
-    constructor(signRequests, statusFilter, recipientsFilter, workflowFilter, creatorFilter, docTitleFilter, dateFilter, infiniteScrolling, csrf, mode, options = {}) {
+    constructor(statusFilter, recipientsFilter, workflowFilter, creatorFilter, docTitleFilter, dateFilter, infiniteScrolling, csrf, mode, options = {}) {
         console.info("Starting list sign UI");
-        this.signRequests = signRequests;
         this.mode = mode;
         this.preferenceStorageKey = options.preferenceStorageKey ?? null;
         this.toggleSelector = options.toggleSelector ?? null;
