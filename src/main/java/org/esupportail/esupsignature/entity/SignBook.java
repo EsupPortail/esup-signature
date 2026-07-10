@@ -70,6 +70,9 @@ public class SignBook {
 
     @JsonIgnore
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    @JoinTable(
+            indexes = @Index(name = "idx_sign_book_sign_requests_sign_book_id_order", columnList = "sign_book_id, sign_requests_order")
+    )
     @OrderColumn
     private List<SignRequest> signRequests = new ArrayList<>();
 

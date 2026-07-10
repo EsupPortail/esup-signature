@@ -99,7 +99,10 @@ public class SignRequest {
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.REMOVE, orphanRemoval = true)
     @JsonSerialize(using = RecipientActionMapSerializer.class)
     @JoinTable(
-            indexes = @Index(name = "idx_recipient_has_signed_recipient_has_signed_key", columnList = "recipient_has_signed_key")
+            indexes = {
+                    @Index(name = "idx_recipient_has_signed_recipient_has_signed_key", columnList = "recipient_has_signed_key"),
+                    @Index(name = "idx_sign_request_recipient_has_signed_sign_request_id_key", columnList = "sign_request_id, recipient_has_signed_key")
+            }
     )
     private Map<Recipient, Action> recipientHasSigned = new HashMap<>();
 
