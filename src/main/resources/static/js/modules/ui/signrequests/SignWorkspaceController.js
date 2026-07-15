@@ -1014,6 +1014,8 @@ export class SignWorkspaceController {
             return;
         }
 
+        tabs.classList.add('es-tabs-calculating');
+        try {
         const fileTabs = Array.from(tabs.querySelectorAll(':scope > li.file-tab'));
         if (fileTabs.length === 0) {
             dropdownBefore?.classList.remove('d-none');
@@ -1128,6 +1130,9 @@ export class SignWorkspaceController {
         }
         if (dropdownAfter != null) {
             dropdownAfter.classList.toggle('d-none', visibleAfterItems === 0);
+        }
+        } finally {
+            tabs.classList.remove('es-tabs-loading', 'es-tabs-calculating');
         }
     }
 

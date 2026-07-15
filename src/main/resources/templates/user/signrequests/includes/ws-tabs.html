@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="fr">
 <!--/*@thymesVar id="showSignRequest" type="org.esupportail.esupsignature.dto.page.user.signrequest.ShowSignRequestDto"*/-->
 <!--/*@thymesVar id="signRequestLight" type="org.esupportail.esupsignature.dto.page.user.signrequest.ShowSignRequestDto.SignRequestLightDto"*/-->
-<ul th:fragment="ws-tabs" id="ws-tabs" class="nav nav-tabs es-signrequest-workspace-header"
+<ul th:fragment="ws-tabs" id="ws-tabs" class="nav nav-tabs es-signrequest-workspace-header es-tabs-loading"
     th:with="currentTabIndex=${showSignRequest.currentSignRequestTabIndex != null ? showSignRequest.currentSignRequestTabIndex : 0}, signRequestTabCount=${showSignRequest.signRequestTabCount != null ? showSignRequest.signRequestTabCount : #lists.size(showSignRequest.signRequestTabs)}"
     th:attr="data-es-current-tab-index=${currentTabIndex},data-es-tab-count=${signRequestTabCount}">
     <th:block th:if="${showSignRequest.currentSignRequestTab != null}">
