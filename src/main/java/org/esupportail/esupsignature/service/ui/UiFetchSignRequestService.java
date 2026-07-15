@@ -40,11 +40,7 @@ import org.esupportail.esupsignature.service.utils.sign.SignService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @Service
 public class UiFetchSignRequestService {
@@ -79,7 +75,7 @@ public class UiFetchSignRequestService {
         LiveWorkflow liveWorkflow = signBook.getLiveWorkflow();
         LiveWorkflowStep currentStep = liveWorkflow.getCurrentStep();
         Workflow workflow = liveWorkflow.getWorkflow();
-        boolean signable = signBookService.checkSignRequestSignable(id, userEppn, authUserEppn);
+        boolean signable = signBookService.checkSignRequestSignable(signRequest, userEppn, authUserEppn);
         boolean editable = signRequestService.isEditable(id, userEppn);
         boolean manager = signBookService.checkUserManageRights(signBook.getId(), userEppn);
         boolean updateAllowed = preAuthorizeService.signBookUpdate(signBook.getId(), authUserEppn);
@@ -177,6 +173,7 @@ public class UiFetchSignRequestService {
         List<ShowSignRequestDto.SignRequestTabDto> signRequestTabs = signRequestService
                 .getSignRequestTabProjections(signBook.getId(), userEppn).stream().map(mapper::toSignRequestTabDto).toList();
         int nbSignRequestInSignBookParent = signRequestTabs.size();
+        int currentSignRequestTabIndex = findSignRequestTabListIndex(signRequestTabs, id);
         int nbPendingSignRequestInSignBookParent = signBookService.countPendingSignRequests(signBook.getId());
         boolean lastStep = !steps.isEmpty() && currentStepNumber != null && currentStepNumber >= steps.size();
         Map<Long, ShowSignRequestDto.RecipientActionDto> recipientActions = new LinkedHashMap<>();
@@ -267,6 +264,7 @@ public class UiFetchSignRequestService {
         context.setStepRepeatable(stepRepeatable);
         context.setNbSignRequestInSignBookParent(nbSignRequestInSignBookParent);
         context.setNbPendingSignRequestInSignBookParent(nbPendingSignRequestInSignBookParent);
+        context.setCurrentSignRequestTabIndex(currentSignRequestTabIndex);
         context.setLastStep(lastStep);
         context.setSteps(steps);
         context.setTargets(targets);
@@ -317,6 +315,7 @@ public class UiFetchSignRequestService {
         context.setSignUiFront(buildSignUiFrontDtoInternal(context, common));
         return context;
     }
+
     @Transactional(readOnly = true)
     public AdminSignRequestShowViewDto buildAdminSignRequestShowView(Long id) {
         SignRequest signRequest = signRequestService.getByIdWithShowContext(id);
@@ -381,6 +380,13 @@ public class UiFetchSignRequestService {
         dto.setClonedSignRequests(context.getClonedSignRequests());
         dto.setRecipientActions(context.getRecipientActions());
         dto.setSignRequestTabs(context.getSignRequestTabs());
+        dto.setSignRequestTabCount(context.getNbSignRequestInSignBookParent());
+        int currentTabIndex = context.getCurrentSignRequestTabIndex();
+        int currentInitialTabIndex = findSignRequestTabListIndex(context.getSignRequestTabs(), context.getSignRequestId());
+        dto.setCurrentSignRequestTabIndex(currentTabIndex);
+        dto.setCurrentSignRequestTab(getSignRequestTabAt(context.getSignRequestTabs(), currentInitialTabIndex));
+        dto.setPreviousSignRequestTab(getSignRequestTabAt(context.getSignRequestTabs(), currentInitialTabIndex - 1));
+        dto.setNextSignRequestTab(getSignRequestTabAt(context.getSignRequestTabs(), currentInitialTabIndex + 1));
         dto.setLiveWorkflowStepCount(context.getSteps() != null ? context.getSteps().size() : 0);
         dto.setViewedByCurrentUser(context.isViewedByCurrentUser());
         dto.setViewRight(context.isViewRight());
@@ -389,6 +395,26 @@ public class UiFetchSignRequestService {
         dto.setAuditTrailChecked(context.isAuditTrailChecked());
         dto.setExternalsRecipients(context.getExternalsRecipients());
         return dto;
+    }
+
+    private int findSignRequestTabListIndex(List<ShowSignRequestDto.SignRequestTabDto> signRequestTabs, Long signRequestId) {
+        if (signRequestTabs == null || signRequestId == null) {
+            return -1;
+        }
+        for (int i = 0; i < signRequestTabs.size(); i++) {
+            ShowSignRequestDto.SignRequestTabDto tab = signRequestTabs.get(i);
+            if (tab != null && signRequestId.equals(tab.getId())) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private ShowSignRequestDto.SignRequestTabDto getSignRequestTabAt(List<ShowSignRequestDto.SignRequestTabDto> signRequestTabs, int index) {
+        if (signRequestTabs == null || index < 0 || index >= signRequestTabs.size()) {
+            return null;
+        }
+        return signRequestTabs.get(index);
     }
 
     private SignUiFrontDto buildSignUiFrontDtoInternal(ShowSignRequestContextDto context, SignRequestFullDto common) {

@@ -92,19 +92,23 @@ public interface SignRequestRepository extends CrudRepository<SignRequest, Long>
             """)
     List<AttachmentProjectionDto> findAttachmentProjectionsById(@Param("id") Long id);
 
-    @Query("""
+    @Query(value = """
             select sr.id as id,
                    sr.title as title,
                    sr.status as status,
                    sr.deleted as deleted,
-                   case when count(v) > 0 then true else false end as viewedByCurrentUser
-            from SignBook sb
-            join sb.signRequests sr
-            left join sr.viewedBy v on v.eppn = :userEppn
-            where sb.id = :signBookId
-            group by sr.id, sr.title, sr.status, sr.deleted, index(sr)
-            order by index(sr)
-            """)
+                   exists (
+                       select 1
+                       from sign_request_viewed_by srvb
+                       join user_account viewed_user on viewed_user.id = srvb.viewed_by_id
+                       where srvb.sign_request_id = sr.id
+                         and viewed_user.eppn = :userEppn
+                   ) as viewedByCurrentUser
+            from sign_book_sign_requests sbs
+            join sign_request sr on sr.id = sbs.sign_requests_id
+            where sbs.sign_book_id = :signBookId
+            order by sbs.sign_requests_order
+            """, nativeQuery = true)
     List<SignRequestTabProjectionDto> findTabProjectionsBySignBookId(@Param("signBookId") Long signBookId, @Param("userEppn") String userEppn);
 
     @Query(value = """

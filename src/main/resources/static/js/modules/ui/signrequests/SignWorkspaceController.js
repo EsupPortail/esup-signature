@@ -1007,6 +1007,10 @@ export class SignWorkspaceController {
     }
 
     autocollapse() {
+        const tabs = document.getElementById('ws-tabs');
+        if (tabs?.dataset?.esStaticTabs === 'true') {
+            return;
+        }
         let menu = "#ws-tabs";
         let maxWidth = $("#workspace").innerWidth() - 50;
         const calculateTotalWidth = () => {

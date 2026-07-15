@@ -14,9 +14,17 @@
                 <i th:if="${signRequest.viewedByCurrentUser}" class="fi fi-rr-circle text-transparent" title="Le document a été lu jusqu'à la dernière page"></i>
                 <i th:if="${signRequest.hasAttachments}" class="fi fi-rr-clip" title="La demande contient des pièces jointes"></i>
                 <i th:unless="${signRequest.hasAttachments}" class="fi fi-rr-clip text-transparent"></i>
-                <button th:if="${signBook.postits.isEmpty()}" type="button" class="badge bg-postit border-0 opacity-0">0</button>
-                <button onclick="event.stopPropagation();" title="Afficher les postits" th:if="${!signBook.postits.isEmpty()}"
+                <button th:if="${signBook.postits.isEmpty() && (signBook.description == null || signBook.description == '')}" type="button" class="badge bg-postit border-0 opacity-0">0</button>
+                <button onclick="event.stopPropagation();" title="Afficher les postits" th:if="${!signBook.postits.isEmpty() && (signBook.description == null || signBook.description == '')}"
                         th:text="${signBook.postits.size()}" type="button"
+                        class="badge bg-postit border-0" th:id="commentButton- + ${signBook.id}" data-bs-toggle="dropdown">
+                </button>
+                <button onclick="event.stopPropagation();" title="Afficher les postits" th:if="${signBook.postits.isEmpty() && signBook.description != null && signBook.description != ''}"
+                        type="button"
+                        class="badge bg-postit border-0" th:id="commentButton- + ${signBook.id}" data-bs-toggle="dropdown">1
+                </button>
+                <button onclick="event.stopPropagation();" title="Afficher les postits" th:if="${!signBook.postits.isEmpty() && signBook.description != null && signBook.description != ''}"
+                        th:text="${signBook.postits.size() + 1}" type="button"
                         class="badge bg-postit border-0" th:id="commentButton- + ${signBook.id}" data-bs-toggle="dropdown">
                 </button>
                 <ul class="dropdown-menu striped-list" th:aria-labelledby="'commentButton-' + ${signBook.id}" style="width: 50%;">

@@ -356,6 +356,20 @@ body.es-signrequest-page .es-signrequest-main-content > .es-workspace {
     /*overflow: hidden;*/
 }
 
+.es-signrequest-tabs-dropdown {
+    max-width: min(520px, calc(100vw - 2rem));
+    max-height: min(70vh, 720px);
+    overflow-y: auto;
+}
+
+.es-signrequest-tabs-dropdown .dropdown-item {
+    min-width: 0;
+}
+
+.es-signrequest-tabs-dropdown .text-truncate {
+    min-width: 0;
+}
+
 .breadcrumb {
     padding: 0 !important;
     padding-top: 2px !important;
@@ -494,6 +508,5 @@ body.es-signrequest-page .es-signrequest-main-content > .es-workspace {
 .global-button {
     width: 200px;
 }
-
 
 

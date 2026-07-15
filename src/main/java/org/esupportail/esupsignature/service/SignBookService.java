@@ -2781,8 +2781,14 @@ public class SignBookService {
     @Transactional
     public boolean checkSignRequestSignable(Long id, String userEppn, String authUserEppn) {
         SignRequest signRequest = signRequestService.getById(id);
+        return checkSignRequestSignable(signRequest, userEppn, authUserEppn);
+    }
+
+    @Transactional
+    public boolean checkSignRequestSignable(SignRequest signRequest, String userEppn, String authUserEppn) {
         boolean signable = false;
-        if (signRequest.getStatus().equals(SignRequestStatus.pending)
+        if (signRequest != null
+                && signRequest.getStatus().equals(SignRequestStatus.pending)
                 && !signRequest.getDeleted()
                 && checkUserSignRights(signRequest, userEppn, authUserEppn)
                 && !signRequest.getOriginalDocuments().isEmpty()

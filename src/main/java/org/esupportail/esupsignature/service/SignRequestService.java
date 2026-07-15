@@ -2161,8 +2161,8 @@ public class SignRequestService {
 		SignRequest signRequest = getById(id);
 		List<SignRequestParams> result = new ArrayList<>();
 		List<LiveWorkflowStep> steps = signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps();
+		int signOrderNumber = getOrderInSignBookOrFallback(signRequest);
 		for (int i = 0; i < steps.size(); i++) {
-			int signOrderNumber = getOrderInSignBookOrFallback(signRequest);
 			List<SignRequestParams> params = steps.get(i).getSignRequestParams().stream().filter(srp -> srp.getSignDocumentNumber().equals(signOrderNumber)).toList();
 			int finalI = i;
 			params.forEach(param -> param.setStepNumber(finalI + 1));
