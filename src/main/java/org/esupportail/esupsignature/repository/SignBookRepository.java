@@ -1,8 +1,11 @@
 package org.esupportail.esupsignature.repository;
 
+import org.esupportail.esupsignature.dto.projection.jpa.HomePostitItemProjection;
+import org.esupportail.esupsignature.dto.projection.jpa.HomeSignRequestItemProjection;
 import org.esupportail.esupsignature.dto.projection.jpa.LiveWorkflowStepProjectionDto;
 import org.esupportail.esupsignature.dto.projection.jpa.LiveWorkflowStepRecipientProjectionDto;
 import org.esupportail.esupsignature.dto.projection.jpa.LiveWorkflowTargetProjectionDto;
+import org.esupportail.esupsignature.dto.projection.jpa.SignBookListMetadataProjection;
 import org.esupportail.esupsignature.dto.projection.jpa.SignBookViewerProjectionDto;
 import org.esupportail.esupsignature.dto.projection.jpa.UserProjectionDto;
 import org.esupportail.esupsignature.entity.SignBook;
@@ -19,6 +22,7 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 
 import java.util.Date;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -100,6 +104,79 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
             order by index(lws), r.id
             """)
     List<LiveWorkflowStepRecipientProjectionDto> findStepRecipientProjectionsById(@Param("id") Long id);
+
+    @Query(value = """
+            select sbs.sign_book_id as signBookId,
+                   (array_agg(sbs.sign_requests_id order by sbs.sign_requests_order))[1] as primarySignRequestId,
+                   count(*) as signRequestCount
+            from sign_book_sign_requests sbs
+            where sbs.sign_book_id in (:ids)
+            group by sbs.sign_book_id
+            """, nativeQuery = true)
+    List<SignBookListMetadataProjection> findListMetadataBySignBookIds(@Param("ids") Collection<Long> ids);
+
+    @Query(value = """
+            select sbs.sign_book_id as signBookId,
+                   sr.id as signRequestId,
+                   sr.title as title,
+                   sr.status as status,
+                   exists (
+                       select 1
+                       from sign_request_viewed_by srvb
+                       join user_account viewed_user on viewed_user.id = srvb.viewed_by_id
+                       where srvb.sign_request_id = sr.id
+                         and viewed_user.eppn = :userEppn
+                   ) as viewedByCurrentUser,
+                   exists (
+                       select 1
+                       from sign_request_attachments sra
+                       where sra.sign_request_id = sr.id
+                   ) as hasAttachments,
+                   exists (
+                       select 1
+                       from sign_request_recipient_has_signed rhs
+                       join recipient recipient_key on recipient_key.id = rhs.recipient_has_signed_key
+                       join user_account recipient_user on recipient_user.id = recipient_key.user_id
+                       join action recipient_action on recipient_action.id = rhs.recipient_has_signed_id
+                       where rhs.sign_request_id = sr.id
+                         and recipient_user.eppn = :userEppn
+                         and recipient_action.action_type = 'none'
+                   ) as signableByCurrentUser,
+                   (
+                       select document.file_name
+                       from sign_request_original_documents srod
+                       join document document on document.id = srod.original_documents_id
+                       where srod.sign_request_id = sr.id
+                       order by srod.original_documents_order
+                       limit 1
+                   ) as firstOriginalFileName
+            from sign_book_sign_requests sbs
+            join sign_request sr on sr.id = sbs.sign_requests_id
+            where sbs.sign_book_id in (:ids)
+            order by sbs.sign_book_id, sbs.sign_requests_order
+            """, nativeQuery = true)
+    List<HomeSignRequestItemProjection> findHomeSignRequestItemsBySignBookIds(@Param("ids") Collection<Long> ids, @Param("userEppn") String userEppn);
+
+    @Query(value = """
+            select sbs.sign_book_id as signBookId,
+                   author.firstname as authorFirstname,
+                   author.name as authorName,
+                   comment.text as text
+            from sign_book_sign_requests sbs
+            join sign_request_comments src on src.sign_request_id = sbs.sign_requests_id
+            join comment comment on comment.id = src.comments_id
+            left join user_account author on author.id = comment.create_by_id
+            where sbs.sign_book_id in (:ids)
+              and comment.is_postit = true
+              and not exists (
+                  select 1
+                  from sign_book_sign_requests previous_sbs
+                  where previous_sbs.sign_book_id = sbs.sign_book_id
+                    and previous_sbs.sign_requests_order < sbs.sign_requests_order
+              )
+            order by sbs.sign_book_id, src.comments_order
+            """, nativeQuery = true)
+    List<HomePostitItemProjection> findHomePostitItemsBySignBookIds(@Param("ids") Collection<Long> ids);
 
     List<SignBook> findBySubject(String subject);
 
@@ -393,6 +470,71 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
           )
         """)
     Long countToSign(User user);
+
+    @Query(value = """
+        with active_shares as (
+            select distinct us.id,
+                   us.all_sign_requests,
+                   us.workflow_id,
+                   us.form_id,
+                   us.begin_date,
+                   us.end_date
+            from user_share us
+            join user_account share_user on share_user.id = us.user_id
+            join user_share_to_users ustu on ustu.user_share_id = us.id
+            join user_account share_to_user on share_to_user.id = ustu.to_users_id
+            join user_share_share_types usst on usst.user_share_id = us.id
+            where share_user.eppn = :userEppn
+              and share_to_user.eppn = :authUserEppn
+              and usst.share_types in (0, 1, 2)
+              and (us.begin_date is null or current_timestamp > us.begin_date)
+              and (us.end_date is null or current_timestamp < us.end_date)
+        )
+        select count(distinct sb.id)
+        from active_shares active_share
+        join sign_book sb on (active_share.begin_date is null or sb.create_date > active_share.begin_date)
+                         and (active_share.end_date is null or sb.create_date < active_share.end_date)
+        join live_workflow lw on lw.id = sb.live_workflow_id
+        join user_account target_user on target_user.eppn = :userEppn
+        left join data sb_data on sb_data.sign_book_id = sb.id
+        where sb.status = 'pending'
+          and (sb.deleted is null or sb.deleted <> true)
+          and (
+              active_share.all_sign_requests = true
+              or active_share.workflow_id = lw.workflow_id
+              or active_share.form_id = sb_data.form_id
+              or exists (
+                  select 1
+                  from form workflow_form
+                  where workflow_form.id = active_share.form_id
+                    and workflow_form.workflow_id = lw.workflow_id
+              )
+          )
+          and not exists (
+              select 1
+              from sign_book_hided_by sbhb
+              where sbhb.sign_book_id = sb.id
+                and sbhb.hided_by_id = target_user.id
+          )
+          and exists (
+              select 1
+              from sign_request sr
+              join sign_request_recipient_has_signed rhs on rhs.sign_request_id = sr.id
+              join action recipient_action on recipient_action.id = rhs.recipient_has_signed_id
+              join recipient recipient_key on recipient_key.id = rhs.recipient_has_signed_key
+              where sr.parent_sign_book_id = sb.id
+                and recipient_key.user_id = target_user.id
+                and recipient_action.action_type = 'none'
+          )
+          and exists (
+              select 1
+              from live_workflow_step_recipients lwsr
+              join recipient step_recipient on step_recipient.id = lwsr.recipients_id
+              where lwsr.live_workflow_step_id = lw.current_step_id
+                and step_recipient.user_id = target_user.id
+          )
+        """, nativeQuery = true)
+    Long countToSignShared(@Param("userEppn") String userEppn, @Param("authUserEppn") String authUserEppn);
 
     @Query("select distinct sb from SignBook sb join sb.liveWorkflow.currentStep.recipients r where size(sb.signRequests) = 0 and (r.user = :user or sb.createBy = :user)")
     Page<SignBook> findEmpty(User user, Pageable pageable);

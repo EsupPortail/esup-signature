@@ -324,7 +324,9 @@ export class HomeUi {
             return '';
         }
 
-        const multiple = signBook.signRequests.length > 1;
+        const signRequestCount = Number(signBook.signRequestCount || signBook.signRequests.length || 0);
+        const multiple = signRequestCount > 1;
+        const hasNestedRows = signBook.signRequests.length > 1;
         const rowId = 'row_' + signBook.id;
         const dropdownId = 'commentButton-' + signBook.id;
         const unreadClass = signBook.viewedByCurrentUser ? '' : 'fw-bold';
@@ -340,8 +342,8 @@ export class HomeUi {
             <tr title="${this.escapeHtml(description)}"
                 data-es-sign-book-id="${signBook.id}"
                 data-href="/user/signrequests/${encodeURIComponent(signBook.primarySignRequestId)}"
-                class="${multiple ? '' : 'clickable-row'}${highlightClass}"
-                ${multiple ? 'data-bs-toggle="collapse" data-bs-target="#' + this.escapeHtml(rowId) + '"' : ''}
+                class="${hasNestedRows ? '' : 'clickable-row'}${highlightClass}"
+                ${hasNestedRows ? 'data-bs-toggle="collapse" data-bs-target="#' + this.escapeHtml(rowId) + '"' : ''}
                 style="font-size: clamp(0.75rem, 1.2vw, 0.875rem);">
                 <td>
                     <div class="d-flex flex-row align-items-center justify-content-between gap-1">
@@ -360,13 +362,13 @@ export class HomeUi {
                 </td>
                 <td class="text-break ${unreadClass}" style="font-size: clamp(0.75rem, 1.2vw, 0.875rem); min-width: 200px; overflow: hidden; text-overflow: ellipsis;">
                     ${multiple
-                        ? '<span>' + this.escapeHtml(listTitle) + ' <i class="fi fi-rr-angle-small-down"></i></span>'
+                        ? '<span>' + this.escapeHtml(listTitle) + (hasNestedRows ? ' <i class="fi fi-rr-angle-small-down"></i>' : '') + '</span>'
                         : '<span>' + this.escapeHtml(subject) + '</span>'}
                 </td>
                 <td class="text-break d-none d-xxl-table-cell ${unreadClass}" style="font-size: clamp(0.75rem, 1.2vw, 0.875rem); max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${this.escapeHtml(workflowName)}</td>
                 <td class="text-break text-nowrap ${unreadClass}" style="font-size: clamp(0.75rem, 1.2vw, 0.875rem); min-width: 120px;">${this.escapeHtml(createDateLabel)}</td>
             </tr>
-            ${multiple ? this.renderHomeSecondaryRow(signBook, rowId, description, newItems) : ''}
+            ${hasNestedRows ? this.renderHomeSecondaryRow(signBook, rowId, description, newItems) : ''}
         `;
     }
 

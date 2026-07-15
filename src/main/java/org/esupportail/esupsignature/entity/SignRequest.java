@@ -101,7 +101,8 @@ public class SignRequest {
     @JoinTable(
             indexes = {
                     @Index(name = "idx_recipient_has_signed_recipient_has_signed_key", columnList = "recipient_has_signed_key"),
-                    @Index(name = "idx_sign_request_recipient_has_signed_sign_request_id_key", columnList = "sign_request_id, recipient_has_signed_key")
+                    @Index(name = "idx_sign_request_recipient_has_signed_sign_request_id_key", columnList = "sign_request_id, recipient_has_signed_key"),
+                    @Index(name = "idx_rhs_key_sign_request_action", columnList = "recipient_has_signed_key, sign_request_id, recipient_has_signed_id")
             }
     )
     private Map<Recipient, Action> recipientHasSigned = new HashMap<>();

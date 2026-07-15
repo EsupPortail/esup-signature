@@ -6,6 +6,11 @@ import org.esupportail.esupsignature.entity.enums.ShareType;
 import java.util.*;
 
 @Entity
+@Table(indexes = {
+        @Index(name = "idx_user_share_user_id", columnList = "user_id"),
+        @Index(name = "idx_user_share_workflow_id", columnList = "workflow_id"),
+        @Index(name = "idx_user_share_form_id", columnList = "form_id")
+})
 public class UserShare {
 
     @Id
@@ -17,6 +22,13 @@ public class UserShare {
     private User user;
 
     @ManyToMany
+    @JoinTable(name = "user_share_to_users",
+            joinColumns = @JoinColumn(name = "user_share_id"),
+            inverseJoinColumns = @JoinColumn(name = "to_users_id"),
+            indexes = {
+                    @Index(name = "idx_user_share_to_users_user_share_id", columnList = "user_share_id"),
+                    @Index(name = "idx_user_share_to_users_to_users_id", columnList = "to_users_id")
+            })
     private List<User> toUsers = new ArrayList<>();
 
     private Boolean signWithOwnSign = true;
@@ -38,6 +50,13 @@ public class UserShare {
     private Date createDate = new Date();
 
     @ElementCollection(targetClass = ShareType.class, fetch = FetchType.EAGER)
+    @CollectionTable(name = "user_share_share_types",
+            joinColumns = @JoinColumn(name = "user_share_id"),
+            indexes = {
+                    @Index(name = "idx_user_share_share_types_user_share_id", columnList = "user_share_id"),
+                    @Index(name = "idx_user_share_share_types_share_types", columnList = "share_types")
+            })
+    @Column(name = "share_types")
     private Set<ShareType> shareTypes = new HashSet<>();
 
     public Long getId() {

@@ -7,6 +7,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import java.util.Date;
 
 @Entity
+@Table(indexes = @Index(name = "idx_action_action_type", columnList = "action_type"))
 public class Action {
 
     public Action() {
