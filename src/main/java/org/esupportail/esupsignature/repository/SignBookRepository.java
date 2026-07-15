@@ -497,12 +497,6 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
               active_share.all_sign_requests = true
               or active_share.workflow_id = lw.workflow_id
               or active_share.form_id = sb_data.form_id
-              or exists (
-                  select 1
-                  from form workflow_form
-                  where workflow_form.id = active_share.form_id
-                    and workflow_form.workflow_id = lw.workflow_id
-              )
           )
           and not exists (
               select 1

@@ -287,11 +287,15 @@ public class SignBookService {
                 signBooks.getContent().stream().map(SignBook::getId).toList(),
                 userEppn
         ).stream().collect(Collectors.groupingBy(HomeSignRequestItemProjection::getSignBookId, LinkedHashMap::new, Collectors.toList()));
+        Map<Long, List<HomePostitItemProjection>> postitsBySignBookId = getHomePostitItems(
+                signBooks.getContent().stream().map(SignBook::getId).toList()
+        ).stream().collect(Collectors.groupingBy(HomePostitItemProjection::getSignBookId, LinkedHashMap::new, Collectors.toList()));
         return signBooks.map(signBook -> {
             SignBookListMetadataProjection metadata = listItemContext.metadataBySignBookId().get(signBook.getId());
             SignRequest primarySignRequest = listItemContext.primarySignRequestBySignBookId().get(signBook.getId());
             SignBookFullDto dto = uiSignBookMapper.toManageSignBookListItemDto(signBook, userEppn, metadata, primarySignRequest);
             dto.setSignRequests(uiSignBookMapper.toSignRequestDocumentDtosFromProjections(signRequestsBySignBookId.get(signBook.getId())));
+            dto.setPostits(uiSignBookMapper.toPostitDtosFromProjections(postitsBySignBookId.get(signBook.getId())));
             return dto;
         });
     }

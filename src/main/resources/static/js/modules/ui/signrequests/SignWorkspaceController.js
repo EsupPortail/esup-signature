@@ -241,16 +241,15 @@ export class SignWorkspaceController {
         this.addSignButton = $("#addSignButton");
         this.lastWidth = window.innerWidth;
         this.lastHeight = window.innerHeight;
-        if (currentSignType === "form" || (formId == null && !workflowAvailable) || currentSignRequestParamses.length === 0) {
-            if(this.wsTabs.length) {
-                this.autocollapse();
-                let self = this;
-                const THRESHOLD = 100;
-                const DEBOUNCE_DELAY = 100;
-                let resizeTimer = null;
-                $(window)
-                    .off("resize" + this.layoutNamespace)
-                    .on("resize" + this.layoutNamespace, () => {
+        if(this.wsTabs.length) {
+            this.autocollapse();
+            let self = this;
+            const THRESHOLD = 100;
+            const DEBOUNCE_DELAY = 100;
+            let resizeTimer = null;
+            $(window)
+                .off("resize" + this.layoutNamespace)
+                .on("resize" + this.layoutNamespace, () => {
                     clearTimeout(resizeTimer);
                     resizeTimer = setTimeout(() => {
                         const w = window.innerWidth;
@@ -263,7 +262,6 @@ export class SignWorkspaceController {
                         self.lastHeight = h;
                     }, DEBOUNCE_DELAY);
                 });
-            }
         }
         let root = document.querySelector(':root');
         root.setAttribute("style", "scroll-behavior: auto;");
@@ -1008,59 +1006,128 @@ export class SignWorkspaceController {
 
     autocollapse() {
         const tabs = document.getElementById('ws-tabs');
-        if (tabs?.dataset?.esStaticTabs === 'true') {
+        const dropdownBefore = tabs?.querySelector(':scope > li.es-signrequest-tabs-dropdown-before');
+        const dropdownAfter = tabs?.querySelector(':scope > li.es-signrequest-tabs-dropdown-after');
+        const beforeItems = Array.from(dropdownBefore?.querySelectorAll('.es-signrequest-tabs-dropdown > li') || []);
+        const afterItems = Array.from(dropdownAfter?.querySelectorAll('.es-signrequest-tabs-dropdown > li') || []);
+        if (tabs == null) {
             return;
         }
-        let menu = "#ws-tabs";
-        let maxWidth = $("#workspace").innerWidth() - 50;
-        const calculateTotalWidth = () => {
-            let total = 0;
-            const listItems = document.querySelectorAll('#ws-tabs > li');
-            listItems.forEach(li => {
-                const rect = li.getBoundingClientRect();
-                total += rect.width;
-                const style = window.getComputedStyle(li);
-                total += parseFloat(style.marginLeft) + parseFloat(style.marginRight);
-            });
-            return total;
+
+        const fileTabs = Array.from(tabs.querySelectorAll(':scope > li.file-tab'));
+        if (fileTabs.length === 0) {
+            dropdownBefore?.classList.remove('d-none');
+            dropdownAfter?.classList.remove('d-none');
+            return;
+        }
+
+        const maxWidth = tabs.getBoundingClientRect().width;
+        const outerWidth = element => {
+            const rect = element.getBoundingClientRect();
+            const style = window.getComputedStyle(element);
+            return rect.width + parseFloat(style.marginLeft || 0) + parseFloat(style.marginRight || 0);
         };
-        let totalWidth = calculateTotalWidth();
-        if (totalWidth >= maxWidth) {
-            $(menu + ' .dropdown').removeClass('d-none');
-            totalWidth = calculateTotalWidth();
-            while (totalWidth > maxWidth) {
-                let children = $(menu + ' > li.file-tab');
-                let count = children.length;
-                if (count === 0) break; // Sécurité
-                $(children[count - 1]).prependTo(menu + ' .dropdown-menu');
-                totalWidth = calculateTotalWidth();
-                console.warn("Nouvelle largeur : " + totalWidth);
+        const currentTabIndex = parseInt(tabs.dataset.esCurrentTabIndex || '0', 10);
+        const hasPreviousDocs = beforeItems.some(item => parseInt(item.dataset.esTabIndex || '-1', 10) < currentTabIndex);
+        const hasNextDocs = afterItems.some(item => parseInt(item.dataset.esTabIndex || '-1', 10) > currentTabIndex);
+
+        fileTabs.forEach(tab => tab.classList.remove('es-tab-overflow-hidden'));
+        dropdownBefore?.classList.toggle('d-none', !hasPreviousDocs);
+        dropdownAfter?.classList.toggle('d-none', !hasNextDocs);
+
+        if (window.getComputedStyle(fileTabs[0]).display === 'none') {
+            beforeItems.forEach(item => {
+                const tabIndex = parseInt(item.dataset.esTabIndex || '-1', 10);
+                item.classList.toggle('es-tab-overflow-hidden', tabIndex < 0 || tabIndex >= currentTabIndex);
+            });
+            afterItems.forEach(item => {
+                const tabIndex = parseInt(item.dataset.esTabIndex || '-1', 10);
+                item.classList.toggle('es-tab-overflow-hidden', tabIndex < currentTabIndex);
+            });
+            dropdownBefore?.classList.remove('d-none');
+            dropdownAfter?.classList.remove('d-none');
+            if (beforeItems.every(item => item.classList.contains('es-tab-overflow-hidden'))) {
+                dropdownBefore?.classList.add('d-none');
+            }
+            if (afterItems.every(item => item.classList.contains('es-tab-overflow-hidden'))) {
+                dropdownAfter?.classList.add('d-none');
+            }
+            return;
+        }
+
+        const fileTabWidths = fileTabs.map(outerWidth);
+        const fixedWidth = Array.from(tabs.children)
+            .filter(li => !li.classList.contains('file-tab'))
+            .reduce((total, li) => total + outerWidth(li), 0);
+        const availableWidth = maxWidth - fixedWidth;
+        const currentCandidateIndex = Math.max(0, fileTabs.findIndex(tab => {
+            return parseInt(tab.dataset.esTabIndex || '-1', 10) === currentTabIndex;
+        }));
+
+        const visibleIndexes = new Set();
+        let usedWidth = 0;
+        const currentTabWidth = fileTabWidths[currentCandidateIndex] || 0;
+        if (currentTabWidth <= availableWidth) {
+            visibleIndexes.add(currentCandidateIndex);
+            usedWidth = currentTabWidth;
+        }
+        let left = currentCandidateIndex - 1;
+        let right = currentCandidateIndex + 1;
+
+        while (visibleIndexes.size > 0 && (left >= 0 || right < fileTabs.length)) {
+            const candidateIndexes = [];
+            if (left >= 0) {
+                candidateIndexes.push(left);
+            }
+            if (right < fileTabs.length) {
+                candidateIndexes.push(right);
+            }
+            candidateIndexes.sort((a, b) => Math.abs(a - currentCandidateIndex) - Math.abs(b - currentCandidateIndex));
+
+            const candidateIndex = candidateIndexes.find(index => {
+                return usedWidth + (fileTabWidths[index] || 0) <= availableWidth;
+            });
+            if (candidateIndex == null) {
+                break;
+            }
+
+            const candidateWidth = fileTabWidths[candidateIndex] || 0;
+            visibleIndexes.add(candidateIndex);
+            usedWidth += candidateWidth;
+            if (candidateIndex === left) {
+                left--;
+            } else {
+                right++;
             }
         }
-        else {
-            let collapsed = $(menu + ' .dropdown-menu > li');
 
-            if (collapsed.length === 0) {
-                $(menu + ' .dropdown').addClass('d-none');
-                return;
-            }
-            const dropdownWidth = $(menu + ' .dropdown')[0].getBoundingClientRect().width;
-            const safeMaxWidth = maxWidth - dropdownWidth - 50; // marge de sécurité
+        fileTabs.forEach((tab, index) => {
+            tab.classList.toggle('es-tab-overflow-hidden', !visibleIndexes.has(index));
+        });
 
-            let i = 0;
-            while (i < collapsed.length && totalWidth < safeMaxWidth) {
-                const itemWidth = collapsed[i].getBoundingClientRect().width;
-                const style = window.getComputedStyle(collapsed[i]);
-                const margins = parseFloat(style.marginLeft) + parseFloat(style.marginRight);
-                const estimatedWidth = totalWidth + itemWidth + margins;
-                if (estimatedWidth >= safeMaxWidth) break;
-                $(collapsed[i]).insertBefore($(menu + ' > li.dropdown'));
-                totalWidth = calculateTotalWidth();
-                i++;
-            }
-            if ($(menu + ' .dropdown-menu > li').length === 0) {
-                $(menu + ' .dropdown').addClass('d-none');
-            }
+        const visibleTabIndexes = Array.from(visibleIndexes).map(index => {
+            return parseInt(fileTabs[index].dataset.esTabIndex || '-1', 10);
+        }).filter(index => index >= 0);
+        const firstVisibleTabIndex = visibleTabIndexes.length > 0 ? Math.min(...visibleTabIndexes) : currentTabIndex;
+        const lastVisibleTabIndex = visibleTabIndexes.length > 0 ? Math.max(...visibleTabIndexes) : currentTabIndex - 1;
+
+        beforeItems.forEach(item => {
+            const tabIndex = parseInt(item.dataset.esTabIndex || '-1', 10);
+            item.classList.toggle('es-tab-overflow-hidden', tabIndex < 0 || tabIndex >= firstVisibleTabIndex);
+        });
+        afterItems.forEach(item => {
+            const tabIndex = parseInt(item.dataset.esTabIndex || '-1', 10);
+            item.classList.toggle('es-tab-overflow-hidden', tabIndex < 0 || tabIndex <= lastVisibleTabIndex);
+        });
+
+        const visibleBeforeItems = beforeItems.filter(item => !item.classList.contains('es-tab-overflow-hidden')).length;
+        const visibleAfterItems = afterItems.filter(item => !item.classList.contains('es-tab-overflow-hidden')).length;
+
+        if (dropdownBefore != null) {
+            dropdownBefore.classList.toggle('d-none', visibleBeforeItems === 0);
+        }
+        if (dropdownAfter != null) {
+            dropdownAfter.classList.toggle('d-none', visibleAfterItems === 0);
         }
     }
 

@@ -2,7 +2,9 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="fr">
 <!--/*@thymesVar id="showSignRequest" type="org.esupportail.esupsignature.dto.page.user.signrequest.ShowSignRequestDto"*/-->
 <!--/*@thymesVar id="signRequestLight" type="org.esupportail.esupsignature.dto.page.user.signrequest.ShowSignRequestDto.SignRequestLightDto"*/-->
-<ul th:fragment="ws-tabs" id="ws-tabs" class="nav nav-tabs es-signrequest-workspace-header" data-es-static-tabs="true">
+<ul th:fragment="ws-tabs" id="ws-tabs" class="nav nav-tabs es-signrequest-workspace-header"
+    th:with="currentTabIndex=${showSignRequest.currentSignRequestTabIndex != null ? showSignRequest.currentSignRequestTabIndex : 0}, signRequestTabCount=${showSignRequest.signRequestTabCount != null ? showSignRequest.signRequestTabCount : #lists.size(showSignRequest.signRequestTabs)}"
+    th:attr="data-es-current-tab-index=${currentTabIndex},data-es-tab-count=${signRequestTabCount}">
     <th:block th:if="${showSignRequest.currentSignRequestTab != null}">
         <li class="nav-item ws-tab-nav">
             <a th:if="${showSignRequest.previousSignRequestTab != null}"
@@ -34,8 +36,30 @@
             </span>
         </li>
     </th:block>
-    <th:block th:if="${showSignRequest.currentSignRequestTab != null}" th:with="signRequestTab=${showSignRequest.currentSignRequestTab}">
-        <li class="nav-item ws-tab file-tab d-none d-lg-flex active">
+    <li class="nav-item dropdown es-signrequest-tabs-dropdown-before" th:classappend="${currentTabIndex == 0 ? 'd-none' : ''}" th:if="${signRequestTabCount > 1}">
+        <a class="nav-link dropdown-toggle" href="#" id="DropdownMenuBefore" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-bs-display="static" title="Documents précédents">
+            Précédents
+        </a>
+        <ul class="dropdown-menu p-2 es-signrequest-tabs-dropdown" aria-labelledby="DropdownMenuBefore">
+            <th:block th:each="signRequestTab, signRequestTabStat : ${showSignRequest.signRequestTabs}" th:if="${signRequestTabStat.index < currentTabIndex}">
+                <li th:attr="data-es-tab-index=${signRequestTabStat.index}">
+                    <a class="dropdown-item d-flex align-items-center gap-2"
+                       th:classappend="${(signRequestLight.id == signRequestTab.id ? 'active' : '') + ' ' + (signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).checked ? 'bg-success-subtle text-dark' : '') + (signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed || (signRequestTab.deleted || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused) ? 'bg-danger text-light' : '') + ((signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending) ? 'bg-warning-subtle text-dark' : '') + ((signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft) ? 'bg-secondary-subtle text-dark' : '')}"
+                       th:href="${showSignRequest.urlProfil} + '/signrequests/' + ${signRequestTab.id}">
+                        <i th:unless="${signRequestTab.deleted}" th:class="${signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending ? 'fi fi-rr-memo' : (signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused ? 'fi fi-rr-document-circle-wrong' : 'fi fi-rr-document')}"></i>
+                        <i th:if="${signRequestTab.deleted}" class="fi fi-rr-trash"></i>
+                        <span class="text-truncate" th:text="${signRequestTab.title}" th:title="${signRequestTab.title}"></span>
+                        <span th:unless="${signRequestTab.viewedByCurrentUser}" class="badge badge-danger ms-auto">Non lu</span>
+                    </a>
+                </li>
+            </th:block>
+        </ul>
+    </li>
+    <th:block th:each="signRequestTab, signRequestTabStat : ${showSignRequest.signRequestTabs}"
+              th:if="${signRequestTabStat.index >= currentTabIndex - 50 && signRequestTabStat.index <= currentTabIndex + 50}">
+        <li class="nav-item ws-tab file-tab d-none d-lg-flex"
+            th:classappend="${signRequestLight.id == signRequestTab.id ? 'active' : 'es-tab-overflow-hidden'}"
+            th:attr="data-es-tab-index=${signRequestTabStat.index}">
             <a tabindex="0" class="nav-link" th:classappend="${(signRequestLight.id == signRequestTab.id ? 'current alert-secondary' : '') + ' ' + (signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).checked ? 'bg-success-subtle text-dark' : '') + (signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed || (signRequestTab.deleted || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused) ? 'bg-danger text-light' : '') + ((signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending) ? 'bg-warning-subtle text-dark' : '') + ((signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft) ? 'bg-secondary-subtle text-dark' : '')}"
                th:href="${showSignRequest.urlProfil} + '/signrequests/' + ${signRequestTab.id}">
                     <th:block th:unless="${signRequestTab.deleted}">
@@ -63,17 +87,17 @@
             </a>
         </li>
     </th:block>
-    <li class="nav-item dropdown" th:if="${#lists.size(showSignRequest.signRequestTabs) > 1}">
-        <a class="nav-link dropdown-toggle" href="#" id="DropdownMenu" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-bs-display="static">
-            Tous les documents
+    <li class="nav-item dropdown es-signrequest-tabs-dropdown-after" th:classappend="${currentTabIndex + 1 >= signRequestTabCount ? 'd-none' : ''}" th:if="${signRequestTabCount > 1}">
+        <a class="nav-link dropdown-toggle" href="#" id="DropdownMenuAfter" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-bs-display="static" title="Documents suivants">
+            Suivants
         </a>
-        <ul class="dropdown-menu dropdown-menu-end p-2 es-signrequest-tabs-dropdown" aria-labelledby="DropdownMenu">
-            <th:block th:each="signRequestTab, signRequestTabStat : ${showSignRequest.signRequestTabs}">
-                <li>
+        <ul class="dropdown-menu dropdown-menu-end p-2 es-signrequest-tabs-dropdown" aria-labelledby="DropdownMenuAfter">
+            <th:block th:each="signRequestTab, signRequestTabStat : ${showSignRequest.signRequestTabs}" th:if="${signRequestTabStat.index >= currentTabIndex}">
+                <li th:classappend="${signRequestTabStat.index > currentTabIndex ? '' : 'es-tab-overflow-hidden'}"
+                    th:attr="data-es-tab-index=${signRequestTabStat.index}">
                     <a class="dropdown-item d-flex align-items-center gap-2"
                        th:classappend="${(signRequestLight.id == signRequestTab.id ? 'active' : '') + ' ' + (signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).checked ? 'bg-success-subtle text-dark' : '') + (signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed || (signRequestTab.deleted || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused) ? 'bg-danger text-light' : '') + ((signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending) ? 'bg-warning-subtle text-dark' : '') + ((signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft) ? 'bg-secondary-subtle text-dark' : '')}"
                        th:href="${showSignRequest.urlProfil} + '/signrequests/' + ${signRequestTab.id}">
-                        <span class="text-nowrap" th:text="${signRequestTabStat.index + 1}"></span>
                         <i th:unless="${signRequestTab.deleted}" th:class="${signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending ? 'fi fi-rr-memo' : (signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused ? 'fi fi-rr-document-circle-wrong' : 'fi fi-rr-document')}"></i>
                         <i th:if="${signRequestTab.deleted}" class="fi fi-rr-trash"></i>
                         <span class="text-truncate" th:text="${signRequestTab.title}" th:title="${signRequestTab.title}"></span>

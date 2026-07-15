@@ -43,7 +43,7 @@
                         <p th:id="'postit-text-' + ${signRequestLight.id}" class="postitarea" th:text="${showSignRequest.signBookLight.description}"></p>
                     </div>
                     <th:block th:each="postit, iterate : ${showSignRequest.postits}">
-                        <div th:id="'postit-' + ${postit.id}" class="postit-global d-none overflow-hidden"
+                        <div th:id="'postit-' + ${postit.id}" class="postit-global d-none overflow-hidden  es-signrequest-postit-note"
                              th:style="'width: 215px; height:215px; z-index: 1000; cursor: move;background-color: ' + ${postit.postitColor} + ';position: fixed; left: ' + ${310 + (iterate.index * 15)} + 'px; top : ' + ${310 + (iterate.index * 70)} + 'px;'">
                             <button type="button" class="postit-global-close close">
                                 <i class="fi fi-rr-eye-crossed"></i>
