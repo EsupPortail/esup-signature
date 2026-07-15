@@ -372,7 +372,10 @@ body.es-signrequest-page .es-signrequest-main-content > .es-workspace {
     content: "";
     position: absolute;
     inset: 6px 8px;
-    background: var(--bs-white);
+    border-radius: 0.375rem;
+    background: linear-gradient(90deg, var(--color-rgba-248-249-250-09) 25%, var(--color-rgba-233-236-239-09) 37%, var(--color-rgba-248-249-250-09) 63%);
+    background-size: 400% 100%;
+    animation: placeholder-shimmer 1.2s ease-in-out infinite;
     pointer-events: none;
 }
 
