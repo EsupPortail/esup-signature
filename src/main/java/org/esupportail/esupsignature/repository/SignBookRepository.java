@@ -168,13 +168,7 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
             left join user_account author on author.id = comment.create_by_id
             where sbs.sign_book_id in (:ids)
               and comment.is_postit = true
-              and not exists (
-                  select 1
-                  from sign_book_sign_requests previous_sbs
-                  where previous_sbs.sign_book_id = sbs.sign_book_id
-                    and previous_sbs.sign_requests_order < sbs.sign_requests_order
-              )
-            order by sbs.sign_book_id, src.comments_order
+            order by sbs.sign_book_id, sbs.sign_requests_order, src.comments_order
             """, nativeQuery = true)
     List<HomePostitItemProjection> findHomePostitItemsBySignBookIds(@Param("ids") Collection<Long> ids);
 

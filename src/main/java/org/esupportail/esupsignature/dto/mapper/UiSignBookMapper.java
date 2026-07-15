@@ -2,6 +2,8 @@ package org.esupportail.esupsignature.dto.mapper;
 
 import org.esupportail.esupsignature.dto.page.user.signbook.SignBookFullDto;
 import org.esupportail.esupsignature.dto.page.user.signrequest.ShowSignRequestDto;
+import org.esupportail.esupsignature.dto.projection.jpa.HomePostitItemProjection;
+import org.esupportail.esupsignature.dto.projection.jpa.HomeSignRequestItemProjection;
 import org.esupportail.esupsignature.dto.projection.jpa.LiveWorkflowStepProjectionDto;
 import org.esupportail.esupsignature.dto.projection.jpa.LiveWorkflowStepRecipientProjectionDto;
 import org.esupportail.esupsignature.dto.projection.jpa.LiveWorkflowTargetProjectionDto;
@@ -45,6 +47,34 @@ public class UiSignBookMapper {
 
     public SignBookFullDto toManageSignBookListItemDto(SignBook signBook, String userEppn, SignBookListMetadataProjection metadata, SignRequest primarySignRequest) {
         return toSignBookListItemDto(signBook, userEppn, metadata, primarySignRequest);
+    }
+
+    public List<SignBookFullDto.SignRequestDocumentDto> toSignRequestDocumentDtosFromProjections(List<HomeSignRequestItemProjection> signRequests) {
+        if (signRequests == null || signRequests.isEmpty()) {
+            return List.of();
+        }
+        return signRequests.stream().map(signRequest -> new SignBookFullDto.SignRequestDocumentDto(
+                signRequest.getSignRequestId(),
+                signRequest.getTitle(),
+                signRequest.getStatus(),
+                signRequest.getFileName(),
+                null,
+                null,
+                null
+        )).toList();
+    }
+
+    public List<SignBookFullDto.PostitDto> toPostitDtosFromProjections(List<HomePostitItemProjection> postits) {
+        if (postits == null || postits.isEmpty()) {
+            return List.of();
+        }
+        return postits.stream()
+                .filter(Objects::nonNull)
+                .map(postit -> new SignBookFullDto.PostitDto(
+                        toDisplayName(postit.getAuthorFirstname(), postit.getAuthorName()),
+                        postit.getText()
+                ))
+                .toList();
     }
 
     public SignBookFullDto toSignBookUpdateViewDto(SignBook signBook,
@@ -181,6 +211,10 @@ public class UiSignBookMapper {
                 .filter(Objects::nonNull)
                 .map(postit -> new SignBookFullDto.PostitDto(uiFetchSignRequestMapper.toDisplayName(postit.getCreateBy()), postit.getText()))
                 .toList();
+    }
+
+    private String toDisplayName(String firstname, String name) {
+        return (Objects.requireNonNullElse(firstname, "") + " " + Objects.requireNonNullElse(name, "")).trim();
     }
 
     private List<SignBookFullDto.ParticipantStepDto> toParticipantSteps(SignBook signBook, SignRequest primarySignRequest, boolean singleDocument) {

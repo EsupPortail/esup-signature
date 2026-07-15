@@ -196,6 +196,38 @@ public class SignRequestService {
 	}
 
 	@Transactional(readOnly = true)
+	public int countPendingBySignBookId(Long signBookId) {
+		if (signBookId == null) {
+			return 0;
+		}
+		return signRequestRepository.countPendingBySignBookId(signBookId);
+	}
+
+	@Transactional(readOnly = true)
+	public Long getNextPendingIdBySignBookId(Long signBookId, Long signRequestId) {
+		if (signBookId == null || signRequestId == null) {
+			return null;
+		}
+		return signRequestRepository.findNextPendingIdBySignBookId(signBookId, signRequestId);
+	}
+
+	@Transactional(readOnly = true)
+	public Long getFirstPendingIdBySignBookId(Long signBookId) {
+		if (signBookId == null) {
+			return null;
+		}
+		return signRequestRepository.findFirstPendingIdBySignBookId(signBookId);
+	}
+
+	@Transactional(readOnly = true)
+	public Integer getOrderInSignBook(Long signBookId, Long signRequestId) {
+		if (signBookId == null || signRequestId == null) {
+			return null;
+		}
+		return signRequestRepository.findOrderBySignBookIdAndSignRequestId(signBookId, signRequestId);
+	}
+
+	@Transactional(readOnly = true)
 	public List<SignRequestLightProjectionDto> getCloneSignRequestLightProjections(Long signRequestId) {
 		return signRequestRepository.findCloneLightProjectionsBySignRequestId(signRequestId);
 	}
@@ -1391,7 +1423,7 @@ public class SignRequestService {
 			signRequestParams.setSignWidth(signWidth);
 			signRequestParams.setSignHeight(signHeight);
 		}
-		int docNumber = signRequest.getParentSignBook().getSignRequests().indexOf(signRequest);
+		int docNumber = getOrderInSignBookOrFallback(signRequest);
 		signRequestParams.setSignDocumentNumber(docNumber);
 		signRequestParams.setRecipient(recipient);
 		liveWorkflowStep.getSignRequestParams().add(signRequestParams);
@@ -1459,7 +1491,7 @@ public class SignRequestService {
 		if(recipientIds.isEmpty()) {
 			return List.of();
 		}
-		int signOrderNumber = signRequest.getParentSignBook().getSignRequests().indexOf(signRequest);
+		int signOrderNumber = getOrderInSignBookOrFallback(signRequest);
 		return currentStep.getSignRequestParams().stream()
 				.filter(signRequestParams -> signRequestParams.getSignDocumentNumber().equals(signOrderNumber))
 				.filter(signRequestParams -> canUseSpot(signRequestParams, recipientIds))
@@ -2130,7 +2162,8 @@ public class SignRequestService {
 		List<SignRequestParams> result = new ArrayList<>();
 		List<LiveWorkflowStep> steps = signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps();
 		for (int i = 0; i < steps.size(); i++) {
-			List<SignRequestParams> params = steps.get(i).getSignRequestParams().stream().filter(srp -> srp.getSignDocumentNumber().equals(signRequest.getParentSignBook().getSignRequests().indexOf(signRequest))).toList();
+			int signOrderNumber = getOrderInSignBookOrFallback(signRequest);
+			List<SignRequestParams> params = steps.get(i).getSignRequestParams().stream().filter(srp -> srp.getSignDocumentNumber().equals(signOrderNumber)).toList();
 			int finalI = i;
 			params.forEach(param -> param.setStepNumber(finalI + 1));
 			result.addAll(params);
@@ -2175,6 +2208,17 @@ public class SignRequestService {
 		} else {
 			return null;
 		}
+	}
+
+	private int getOrderInSignBookOrFallback(SignRequest signRequest) {
+		if (signRequest == null || signRequest.getId() == null || signRequest.getParentSignBook() == null) {
+			return 0;
+		}
+		Integer order = getOrderInSignBook(signRequest.getParentSignBook().getId(), signRequest.getId());
+		if (order != null) {
+			return order;
+		}
+		return signRequest.getParentSignBook().getSignRequests().indexOf(signRequest);
 	}
 
 	/**

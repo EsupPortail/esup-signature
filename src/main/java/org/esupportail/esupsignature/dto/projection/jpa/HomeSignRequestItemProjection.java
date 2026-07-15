@@ -17,4 +17,8 @@ public interface HomeSignRequestItemProjection {
     Boolean getSignableByCurrentUser();
 
     String getFirstOriginalFileName();
+
+    default String getFileName() {
+        return getFirstOriginalFileName();
+    }
 }

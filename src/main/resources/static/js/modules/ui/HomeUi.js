@@ -402,9 +402,8 @@ export class HomeUi {
     }
 
     renderPostitButton(signBook, dropdownId) {
-        const description = (signBook.description || '').trim();
         const postits = Array.isArray(signBook.postits) ? signBook.postits : [];
-        const badgeCount = postits.length + (description !== '' ? 1 : 0);
+        const badgeCount = postits.length;
         if (badgeCount === 0) {
             return '<button type="button" class="badge bg-postit border-0 opacity-0">0</button>';
         }

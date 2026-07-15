@@ -177,7 +177,7 @@ public class UiFetchSignRequestService {
         List<ShowSignRequestDto.SignRequestTabDto> signRequestTabs = signRequestService
                 .getSignRequestTabProjections(signBook.getId(), userEppn).stream().map(mapper::toSignRequestTabDto).toList();
         int nbSignRequestInSignBookParent = signRequestTabs.size();
-        int nbPendingSignRequestInSignBookParent = signBookService.countPendingSignRequests(signBook);
+        int nbPendingSignRequestInSignBookParent = signBookService.countPendingSignRequests(signBook.getId());
         boolean lastStep = !steps.isEmpty() && currentStepNumber != null && currentStepNumber >= steps.size();
         Map<Long, ShowSignRequestDto.RecipientActionDto> recipientActions = new LinkedHashMap<>();
         if (signRequest.getRecipientHasSigned() != null) {
@@ -195,7 +195,7 @@ public class UiFetchSignRequestService {
         boolean displayNotif = !isOtpView && signRequestService.isDisplayNotif(signRequest, userEppn);
         boolean tempUsers = !isOtpView && signBookService.isTempUsers(signBook.getId());
         boolean currentUserAsSigned = signRequestService.isCurrentUserAsSigned(signRequest, userEppn);
-        boolean viewRight = preAuthorizeService.checkUserViewRights(id, userEppn, authUserEppn);
+        boolean viewRight = true;
         AuditTrail auditTrail = null;
         String auditTrailSize = null;
         if (!signRequest.getStatus().equals(SignRequestStatus.draft)
@@ -215,10 +215,8 @@ public class UiFetchSignRequestService {
         }
         boolean sealCertOK = signWithService.checkSealCertificat(userEppn, true);
         List<SealCertificatProperties> sealCertificatPropertieses = certificatService.getAuthorizedSealCertificatProperties(userEppn);
-        SignBook nextSignBook = signBookService.getNextSignBook(id, userEppn, authUserEppn);
-        SignRequest nextSignRequest = nextSignBook != null ? signBookService.getNextSignRequest(id, nextSignBook.getId()) : null;
-        boolean hasNextSignBook = nextSignBook != null;
-        Long nextSignRequestId = nextSignRequest != null ? nextSignRequest.getId() : null;
+        Long nextSignRequestId = signBookService.getNextSignRequestId(id, signBook.getId(), userEppn, authUserEppn);
+        boolean hasNextSignBook = nextSignRequestId != null;
         List<RecipientWsDto> externalsRecipients = auditTrailChecked ? signRequestService.getExternalRecipients(id) : new ArrayList<>();
         List<Log> logs = logService.getFullBySignRequest(id);
         List<Comment> postits = signRequestService.getPostits(id);
@@ -392,6 +390,7 @@ public class UiFetchSignRequestService {
         dto.setExternalsRecipients(context.getExternalsRecipients());
         return dto;
     }
+
     private SignUiFrontDto buildSignUiFrontDtoInternal(ShowSignRequestContextDto context, SignRequestFullDto common) {
         SignUiFrontDto dto = new SignUiFrontDto();
         dto.setSignRequestId(common.getSignRequestId());

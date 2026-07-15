@@ -283,10 +283,16 @@ public class SignBookService {
                                                                   Boolean hided) {
         Page<SignBook> signBooks = getSignBooksForManagers(statusFilter, recipientsFilter, workflowId, docTitleFilter, creatorFilter, dateFilter, pageable, userEppn, hided);
         SignBookListItemContext listItemContext = buildSignBookListItemContext(signBooks.getContent(), userEppn, false);
+        Map<Long, List<HomeSignRequestItemProjection>> signRequestsBySignBookId = getHomeSignRequestItems(
+                signBooks.getContent().stream().map(SignBook::getId).toList(),
+                userEppn
+        ).stream().collect(Collectors.groupingBy(HomeSignRequestItemProjection::getSignBookId, LinkedHashMap::new, Collectors.toList()));
         return signBooks.map(signBook -> {
             SignBookListMetadataProjection metadata = listItemContext.metadataBySignBookId().get(signBook.getId());
             SignRequest primarySignRequest = listItemContext.primarySignRequestBySignBookId().get(signBook.getId());
-            return uiSignBookMapper.toManageSignBookListItemDto(signBook, userEppn, metadata, primarySignRequest);
+            SignBookFullDto dto = uiSignBookMapper.toManageSignBookListItemDto(signBook, userEppn, metadata, primarySignRequest);
+            dto.setSignRequests(uiSignBookMapper.toSignRequestDocumentDtosFromProjections(signRequestsBySignBookId.get(signBook.getId())));
+            return dto;
         });
     }
 
@@ -441,12 +447,24 @@ public class SignBookService {
     public Page<SignBookFullDto> getSignBookListItems(String userEppn, String authUserEppn, String statusFilter, String recipientsFilter, String workflowFilter, String docTitleFilter, String creatorFilter, String dateFilter, Pageable pageable) {
         Page<SignBook> signBooks = getSignBooks(userEppn, authUserEppn, statusFilter, recipientsFilter, workflowFilter, docTitleFilter, creatorFilter, dateFilter, pageable);
         SignBookListItemContext listItemContext = buildSignBookListItemContext(signBooks.getContent(), userEppn, true);
-        return signBooks.map(signBook -> uiSignBookMapper.toSignBookListItemDto(
-                signBook,
-                userEppn,
-                listItemContext.metadataBySignBookId().get(signBook.getId()),
-                listItemContext.primarySignRequestBySignBookId().get(signBook.getId())
-        ));
+        Map<Long, List<HomeSignRequestItemProjection>> signRequestsBySignBookId = getHomeSignRequestItems(
+                signBooks.getContent().stream().map(SignBook::getId).toList(),
+                userEppn
+        ).stream().collect(Collectors.groupingBy(HomeSignRequestItemProjection::getSignBookId, LinkedHashMap::new, Collectors.toList()));
+        Map<Long, List<HomePostitItemProjection>> postitsBySignBookId = getHomePostitItems(
+                signBooks.getContent().stream().map(SignBook::getId).toList()
+        ).stream().collect(Collectors.groupingBy(HomePostitItemProjection::getSignBookId, LinkedHashMap::new, Collectors.toList()));
+        return signBooks.map(signBook -> {
+            SignBookFullDto dto = uiSignBookMapper.toSignBookListItemDto(
+                    signBook,
+                    userEppn,
+                    listItemContext.metadataBySignBookId().get(signBook.getId()),
+                    listItemContext.primarySignRequestBySignBookId().get(signBook.getId())
+            );
+            dto.setSignRequests(uiSignBookMapper.toSignRequestDocumentDtosFromProjections(signRequestsBySignBookId.get(signBook.getId())));
+            dto.setPostits(uiSignBookMapper.toPostitDtosFromProjections(postitsBySignBookId.get(signBook.getId())));
+            return dto;
+        });
     }
 
     @Transactional(readOnly = true)
@@ -502,6 +520,13 @@ public class SignBookService {
         return (int) signBook.getSignRequests().stream()
                 .filter(signRequest -> SignRequestStatus.pending.equals(signRequest.getStatus()) && !Boolean.TRUE.equals(signRequest.getDeleted()))
                 .count();
+    }
+
+    public int countPendingSignRequests(Long signBookId) {
+        if (signBookId == null) {
+            return 0;
+        }
+        return signRequestService.countPendingBySignBookId(signBookId);
     }
 
     /**
@@ -2533,6 +2558,16 @@ public class SignBookService {
         return null;
     }
 
+    @Transactional(readOnly = true)
+    public Long getNextSignRequestId(Long signRequestId, Long currentSignBookId, String userEppn, String authUserEppn) {
+        Long nextSignRequestId = signRequestService.getNextPendingIdBySignBookId(currentSignBookId, signRequestId);
+        if (nextSignRequestId != null) {
+            return nextSignRequestId;
+        }
+        SignBook nextSignBook = getNextSignBook(signRequestId, userEppn, authUserEppn);
+        return nextSignBook != null ? signRequestService.getFirstPendingIdBySignBookId(nextSignBook.getId()) : null;
+    }
+
     /**
      * Génère un fichier ZIP contenant plusieurs documents signés correspondant aux identifiants fournis.
      *
@@ -3387,7 +3422,7 @@ public class SignBookService {
         for (LiveWorkflowStep liveWorkflowStep : signBook.getLiveWorkflow().getLiveWorkflowSteps()) {
             recipients.addAll(liveWorkflowStep.getRecipients());
         }
-        if(!signBook.getSignRequests().isEmpty() && checkAllShareTypesForSignRequest(userEppn, authUserEppn, signBook.getId())
+        if(checkAllShareTypesForSignRequest(userEppn, authUserEppn, signBook.getId())
                 || signBook.getViewers().stream().anyMatch(u -> u.getEppn().equals(authUserEppn))
                 || signBook.getCreateBy().getEppn().equals(authUserEppn)
                 || recipientService.recipientsContainsUser(recipients, authUserEppn) > 0

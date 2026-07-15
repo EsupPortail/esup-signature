@@ -14,17 +14,9 @@
                 <i th:if="${signRequest.viewedByCurrentUser}" class="fi fi-rr-circle text-transparent" title="Le document a été lu jusqu'à la dernière page"></i>
                 <i th:if="${signRequest.hasAttachments}" class="fi fi-rr-clip" title="La demande contient des pièces jointes"></i>
                 <i th:unless="${signRequest.hasAttachments}" class="fi fi-rr-clip text-transparent"></i>
-                <button th:if="${signBook.postits.isEmpty() && signBook.description == null}" type="button" class="badge bg-postit border-0 opacity-0">0</button>
-                <button onclick="event.stopPropagation();" title="Afficher les postits" th:if="${!signBook.postits.isEmpty() && signBook.description == null}"
+                <button th:if="${signBook.postits.isEmpty()}" type="button" class="badge bg-postit border-0 opacity-0">0</button>
+                <button onclick="event.stopPropagation();" title="Afficher les postits" th:if="${!signBook.postits.isEmpty()}"
                         th:text="${signBook.postits.size()}" type="button"
-                        class="badge bg-postit border-0" th:id="commentButton- + ${signBook.id}" data-bs-toggle="dropdown">
-                </button>
-                <button onclick="event.stopPropagation();" title="Afficher les postits" th:if="${signBook.postits.isEmpty() && signBook.description != null && signBook.description != ''}"
-                        type="button"
-                        class="badge bg-postit border-0" th:id="commentButton- + ${signBook.id}" data-bs-toggle="dropdown">1
-                </button>
-                <button onclick="event.stopPropagation();" title="Afficher les postits" th:if="${!signBook.postits.isEmpty() && signBook.description != null && signBook.description != ''}"
-                        th:text="${signBook.postits.size() + 1}" type="button"
                         class="badge bg-postit border-0" th:id="commentButton- + ${signBook.id}" data-bs-toggle="dropdown">
                 </button>
                 <ul class="dropdown-menu striped-list" th:aria-labelledby="'commentButton-' + ${signBook.id}" style="width: 50%;">
@@ -47,16 +39,16 @@
         </td>
         <td th:classappend="${signRequest.viewedByCurrentUser} ? '' : 'fw-bold'" th:if="${signBook.signRequestCount > 1}" class="d-none d-xl-table-cell">
             <div class="dropdown">
-                <button th:classappend="${signRequest.viewedByCurrentUser} ? '' : 'fw-bold'" th:if="${signBook.signRequests.size() > 0 && signBook.signRequests.get(0).fileName != null}" th:title="${signBook.subject}" style="overflow: clip;" onclick="event.stopPropagation();" class="btn btn-sm dropdown-toggle w-100 text-start p-0 border-0 signbook-subject-label" type="button" th:id="'dropdownFilesButton-' + ${signBook.id}" data-bs-toggle="dropdown">
+                <button th:classappend="${signRequest.viewedByCurrentUser} ? '' : 'fw-bold'" th:title="${signBook.subject}" style="overflow: clip;" onclick="event.stopPropagation();" class="btn btn-sm dropdown-toggle w-100 text-start p-0 border-0 signbook-subject-label" type="button" th:id="'dropdownFilesButton-' + ${signBook.id}" data-bs-toggle="dropdown">
                     <i class="fi fi-rr-folder-open"></i>
                     <span th:text="${signRequest.rowTitle}"></span>
                 </button>
                 <ul class="dropdown-menu" th:aria-labelledby="'dropdownFilesButton-' + ${signBook.id}">
                     <th:block th:each="signRequestItem : ${signBook.signRequests}">
-                        <li class="dropdown-item d-flex justify-content-between align-items-center" th:if="${signRequestItem.fileName != null}" th:title="${signRequestItem.fileName}">
+                        <li class="dropdown-item d-flex justify-content-between align-items-center" th:title="${signRequestItem.fileName != null ? signRequestItem.fileName : signRequestItem.title}">
                             <div>
                                 <i class="fi fi-rr-file"></i>
-                                <a th:href="'/user/signrequests/' + ${signRequestItem.id}" th:text="${signRequestItem.fileName}"></a>
+                                <a th:href="'/user/signrequests/' + ${signRequestItem.id}" th:text="${signRequestItem.fileName != null ? signRequestItem.fileName : signRequestItem.title}"></a>
                             </div>
                             <span th:if="${signRequestItem.status == 'pending'}" th:title="#{signbook.status.pending}" class="fi fi-rr-clock text-warning"></span>
                             <span th:if="${signRequestItem.status == 'completed'}" th:title="#{signbook.status.completed}" class="fi fi-rr-check-circle text-success"></span>

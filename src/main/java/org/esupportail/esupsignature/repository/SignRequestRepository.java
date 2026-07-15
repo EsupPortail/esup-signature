@@ -107,6 +107,50 @@ public interface SignRequestRepository extends CrudRepository<SignRequest, Long>
             """)
     List<SignRequestTabProjectionDto> findTabProjectionsBySignBookId(@Param("signBookId") Long signBookId, @Param("userEppn") String userEppn);
 
+    @Query(value = """
+            select count(*)
+            from sign_book_sign_requests sbs
+            join sign_request sr on sr.id = sbs.sign_requests_id
+            where sbs.sign_book_id = :signBookId
+              and sr.status = 'pending'
+              and coalesce(sr.deleted, false) = false
+            """, nativeQuery = true)
+    int countPendingBySignBookId(@Param("signBookId") Long signBookId);
+
+    @Query(value = """
+            select sr.id
+            from sign_book_sign_requests sbs
+            join sign_request sr on sr.id = sbs.sign_requests_id
+            where sbs.sign_book_id = :signBookId
+              and sr.id <> :signRequestId
+              and sr.status = 'pending'
+              and coalesce(sr.deleted, false) = false
+            order by sr.create_date desc nulls last, sr.id desc
+            limit 1
+            """, nativeQuery = true)
+    Long findNextPendingIdBySignBookId(@Param("signBookId") Long signBookId, @Param("signRequestId") Long signRequestId);
+
+    @Query(value = """
+            select sr.id
+            from sign_book_sign_requests sbs
+            join sign_request sr on sr.id = sbs.sign_requests_id
+            where sbs.sign_book_id = :signBookId
+              and sr.status = 'pending'
+              and coalesce(sr.deleted, false) = false
+            order by sr.create_date desc nulls last, sr.id desc
+            limit 1
+            """, nativeQuery = true)
+    Long findFirstPendingIdBySignBookId(@Param("signBookId") Long signBookId);
+
+    @Query(value = """
+            select sbs.sign_requests_order
+            from sign_book_sign_requests sbs
+            where sbs.sign_book_id = :signBookId
+              and sbs.sign_requests_id = :signRequestId
+            limit 1
+            """, nativeQuery = true)
+    Integer findOrderBySignBookIdAndSignRequestId(@Param("signBookId") Long signBookId, @Param("signRequestId") Long signRequestId);
+
     @Query("""
             select s.id as id,
                    parent.id as clonedFromId,
