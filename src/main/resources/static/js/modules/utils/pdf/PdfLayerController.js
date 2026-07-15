@@ -2,6 +2,7 @@ export class PdfLayerController {
 
     constructor(viewer) {
         this.viewer = viewer;
+        this.observedAnnotationLayers = new WeakSet();
     }
 
     async applyLinkAnnotationsVisibility() {
@@ -28,6 +29,16 @@ export class PdfLayerController {
     }
 
     async applyLinkAnnotationsVisibilityForPage(pageNum, visibleLayerNames) {
+        const pageContainer = document.getElementById(`page_${pageNum}`);
+        if (!pageContainer) {
+            return;
+        }
+        const annotationLayer = pageContainer.querySelector('.annotationLayer');
+        if (!annotationLayer) {
+            return;
+        }
+        this.setupMetadataPopupFormatting(annotationLayer);
+
         if (visibleLayerNames == null) {
             const config = await Promise.resolve(this.viewer._optionalContentConfigPromise);
             if (!config) {
@@ -39,14 +50,6 @@ export class PdfLayerController {
                     visibleLayerNames.add(group.name);
                 }
             }
-        }
-        const pageContainer = document.getElementById(`page_${pageNum}`);
-        if (!pageContainer) {
-            return;
-        }
-        const annotationLayer = pageContainer.querySelector('.annotationLayer');
-        if (!annotationLayer) {
-            return;
         }
 
         const page = await this.viewer.pdfDoc.getPage(pageNum);
@@ -106,6 +109,85 @@ export class PdfLayerController {
         });
 
         return Array.from(layerIds);
+    }
+
+    setupMetadataPopupFormatting(annotationLayer) {
+        this.formatApplicationMetadataPopups(annotationLayer);
+        if (this.observedAnnotationLayers.has(annotationLayer)) {
+            return;
+        }
+        this.observedAnnotationLayers.add(annotationLayer);
+        const observer = new MutationObserver(() => this.formatApplicationMetadataPopups(annotationLayer));
+        observer.observe(annotationLayer, {
+            childList: true,
+            subtree: true
+        });
+    }
+
+    formatApplicationMetadataPopups(annotationLayer) {
+        annotationLayer.querySelectorAll('.popupContent').forEach(popupContent => {
+            if (popupContent.dataset.esMetadataFormatted === 'true') {
+                return;
+            }
+            const metadata = this.parseApplicationMetadata(popupContent.textContent);
+            if (!metadata) {
+                return;
+            }
+            popupContent.replaceChildren(this.createMetadataList(metadata));
+            popupContent.classList.add('es-metadata-popup-content');
+            popupContent.dataset.esMetadataFormatted = 'true';
+        });
+    }
+
+    parseApplicationMetadata(content) {
+        if (typeof content !== 'string' || !content.trim()) {
+            return null;
+        }
+        try {
+            const metadata = JSON.parse(content.replace(/\u00a0/g, ' ').trim());
+            if (metadata?.type !== 'Signature calligraphique'
+                    || typeof metadata.control !== 'string'
+                    || typeof metadata.layer_id !== 'string') {
+                return null;
+            }
+            return metadata;
+        } catch (e) {
+            return null;
+        }
+    }
+
+    createMetadataList(metadata) {
+        const labels = [
+            ['type', 'Type'],
+            ['person', 'Personne'],
+            ['date', 'Date'],
+            ['depuis', 'Depuis'],
+            ['control', 'Contrôle'],
+            ['layer_id', 'Calque']
+        ];
+        const list = document.createElement('dl');
+        list.className = 'es-metadata-popup-list';
+        labels.forEach(([key, label]) => {
+            const rawValue = metadata[key];
+            if (rawValue == null || rawValue === '') {
+                return;
+            }
+            const term = document.createElement('dt');
+            term.textContent = label;
+            const value = document.createElement('dd');
+            if (key === 'control') {
+                const link = document.createElement('a');
+                link.href = rawValue;
+                link.target = '_blank';
+                link.rel = 'noopener noreferrer';
+                link.textContent = rawValue;
+                value.append(link);
+            } else {
+                value.textContent = rawValue;
+            }
+            list.append(term, value);
+        });
+        return list;
     }
 
     isApplicationLayerName(layerName) {
