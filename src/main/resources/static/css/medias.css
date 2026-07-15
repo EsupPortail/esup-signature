@@ -284,7 +284,12 @@
 
 }
 
+
 @media (max-width: 992px) {
+
+    .es-signrequest-tabs-dropdown-after {
+        display: none !important;
+    }
 
     th.col-nom {
         min-width: 110px;
@@ -300,6 +305,8 @@
         flex-wrap: nowrap;
         gap: 0;
         width: 100%;
+        position: relative;
+        z-index: 1032;
     }
 
     body.es-signrequest-page .es-nav-tools-breadcrumb {
@@ -309,6 +316,8 @@
         background: var(--bs-white);
         border-bottom: 1px solid var(--bs-border-color);
         padding-right: 0.5rem;
+        position: relative;
+        z-index: 1032;
     }
 
     .es-nav-tools {
@@ -650,4 +659,3 @@
         content: 'Résolution trop faible !!!';
     }
 }
-

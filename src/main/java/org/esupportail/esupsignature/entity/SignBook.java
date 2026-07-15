@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
         @Index(name = "idx_sb_deleted", columnList = "deleted"),
         @Index(name = "idx_sb_workflow_name", columnList = "workflow_name"),
         @Index(name = "idx_sb_status_deleted", columnList = "status, deleted"),
+        @Index(name = "idx_sb_status_deleted_create_date", columnList = "status, deleted, create_date"),
         @Index(name = "idx_sb_create_date_status", columnList = "create_date, status, deleted")
 })
 public class SignBook {

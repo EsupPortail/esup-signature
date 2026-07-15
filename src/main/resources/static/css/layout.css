@@ -356,6 +356,64 @@ body.es-signrequest-page .es-signrequest-main-content > .es-workspace {
     /*overflow: hidden;*/
 }
 
+#ws-tabs.es-tabs-loading,
+#ws-tabs.es-tabs-calculating {
+    position: relative;
+    overflow: hidden;
+}
+
+#ws-tabs.es-tabs-loading > li,
+#ws-tabs.es-tabs-calculating > li {
+    visibility: hidden;
+}
+
+#ws-tabs.es-tabs-loading::after,
+#ws-tabs.es-tabs-calculating::after {
+    content: "";
+    position: absolute;
+    inset: 6px 8px;
+    background: var(--bs-white);
+    pointer-events: none;
+}
+
+.es-signrequest-tabs-dropdown {
+    max-width: min(520px, calc(100vw - 2rem));
+    max-height: min(70vh, 720px);
+    overflow-y: auto;
+    z-index: 1033;
+}
+
+.es-signrequest-tabs-dropdown .dropdown-item {
+    min-width: 0;
+}
+
+.es-signrequest-tabs-dropdown .text-truncate {
+    min-width: 0;
+}
+
+#ws-tabs > li.es-tab-overflow-hidden {
+    display: none !important;
+}
+
+.es-signrequest-tabs-dropdown > li.es-tab-overflow-hidden {
+    display: none !important;
+}
+
+#ws-tabs > li {
+    flex-shrink: 0;
+}
+
+#ws-tabs > li.file-tab {
+    flex: 0 0 auto;
+    min-width: 0;
+    max-width: min(260px, 24vw);
+}
+
+#ws-tabs > li.file-tab > .nav-link {
+    min-width: 0;
+    max-width: 100%;
+}
+
 .breadcrumb {
     padding: 0 !important;
     padding-top: 2px !important;
@@ -371,6 +429,10 @@ body.es-signrequest-page .es-signrequest-main-content > .es-workspace {
     z-index: 1029;
     display: flex;
     align-items: center;
+}
+
+.es-breadcrumb-sign {
+    z-index: 1030;
 }
 
 .breadcrumb {
@@ -494,6 +556,3 @@ body.es-signrequest-page .es-signrequest-main-content > .es-workspace {
 .global-button {
     width: 200px;
 }
-
-
-

@@ -286,7 +286,7 @@ public class UiFetchSignRequestMapper {
         ShowSignRequestDto.SignRequestTabDto dto = new ShowSignRequestDto.SignRequestTabDto();
         dto.setId(signRequest.getId());
         dto.setTitle(signRequest.getTitle());
-        dto.setStatus(signRequest.getStatus());
+        dto.setStatus(signRequest.getStatus() != null ? SignRequestStatus.valueOf(signRequest.getStatus()) : null);
         dto.setDeleted(signRequest.getDeleted());
         dto.setViewedByCurrentUser(Boolean.TRUE.equals(signRequest.getViewedByCurrentUser()));
         return dto;
