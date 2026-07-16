@@ -169,7 +169,7 @@
                             <select id="spotStepNumber" name="spotStepNumber" class="slim-select-simple">
                                 <option data-placeholder="true" readonly="" value="">Choisir une étape</option>
                                 <th:block th:each="step, iterator : ${showSignRequest.steps}">
-                                    <option th:if="${step.signType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}" th:text="'Etape ' + ${iterator.index + 1}" th:value="${iterator.index + 1}" th:selected="${showSignRequest.liveWorkflowStepCount == 1}" th:attr="data-es-all-sign-to-complete=${step.allSignToComplete},data-es-recipient-count=${#lists.size(step.recipients)}"></option>
+                                    <option th:if="${step.signType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa && step.autoSign == false}" th:text="'Etape ' + ${iterator.index + 1}" th:value="${iterator.index + 1}" th:selected="${showSignRequest.liveWorkflowStepCount == 1}" th:attr="data-es-all-sign-to-complete=${step.allSignToComplete},data-es-recipient-count=${#lists.size(step.recipients)}"></option>
                                 </th:block>
                             </select>
                         </div>

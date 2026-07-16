@@ -230,6 +230,8 @@ public class UiGlobalPropertiesDto {
         if (props == null) {
             return null;
         }
+        boolean sealCertificatPropertiesConfigured = props.getSealCertificatProperties() != null
+                && !props.getSealCertificatProperties().isEmpty();
         return new UiGlobalPropertiesDto(
                 props.getRootUrl(),
                 props.getDomain(),
@@ -268,8 +270,8 @@ public class UiGlobalPropertiesDto {
                 props.getNbDaysBeforeDeleting(),
                 props.newVersion,
                 props.getDisableCertStorage(),
-                props.getSealCertificatType() != null,
-                props.getSealCertificatDriver() != null
+                sealCertificatPropertiesConfigured || props.getSealCertificatType() != null,
+                sealCertificatPropertiesConfigured || props.getSealCertificatDriver() != null
         );
     }
 

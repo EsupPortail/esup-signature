@@ -31,7 +31,7 @@
         <div class="step-horizontal-v2-content"><span class="text-xs font-bold">Fin</span></div>
     </div>
 </div>
-<form id="saveWorkflowForm">
+<form id="saveWorkflowForm" th:unless="${globalProperties.hideWizardWorkflow}">
     <input type="hidden" id="close" th:value="${close}" />
     <div class="row">
         <div class="col-lg-12">
@@ -45,9 +45,10 @@
 </div>
 <div class="modal-footer">
     <button id="wiz-exit" type="button" class="btn btn-secondary float-start">
-        <i class="fi fi-rr-door-open"></i> Fermer sans enregistrer
+        <i class="fi fi-rr-door-open"></i>
+        <span th:text="${globalProperties.hideWizardWorkflow} ? 'Fermer' : 'Fermer sans enregistrer'"></span>
     </button>
-    <button id="save-workflow" type="button" class="btn btn-success float-end">
+    <button id="save-workflow" type="button" class="btn btn-success float-end" th:unless="${globalProperties.hideWizardWorkflow}">
         <i class="fi fi-rr-disk"></i> Enregistrer le circuit
     </button>
 </div>
