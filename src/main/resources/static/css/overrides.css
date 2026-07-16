@@ -1070,6 +1070,10 @@ input, textarea, select {
     will-change: auto;
 }
 
+.filepond--file {
+    align-items: center;
+}
+
 .esup-filepond .filepond--label-action {
     display: inline-block;
     margin-left: .25rem;
@@ -1095,9 +1099,38 @@ input, textarea, select {
 }
 
 .esup-filepond {
-    border: 1px solid var(--bs-border-color);
+    /*border: 1px solid var(--bs-border-color);*/
     border-radius: var(--bs-border-radius-sm);
     background-color: var(--bs-light);
+}
+
+.esup-filepond .filepond--item-panel {
+    /*border: 1px solid var(--bs-border-color);*/
+    border-radius: var(--bs-border-radius-sm);
+    background-color: var(--bs-light);
+}
+
+.esup-filepond [data-filepond-item-state='processing-complete'] .filepond--item-panel {
+    border-color: #2f8658;
+    background-color: #369763;
+}
+
+.esup-filepond [data-filepond-item-state*='invalid'] .filepond--item-panel,
+.esup-filepond [data-filepond-item-state*='error'] .filepond--item-panel {
+    border-color: #af463f;
+    background-color: #c44e47;
+}
+
+.esup-filepond {
+    color: var(--bs-body-color);
+    font-family: inherit;
+}
+
+.esup-filepond .filepond--file {
+    position: relative;
+    color: var(--bs-body-color);
+    font-family: inherit;
+    will-change: auto;
 }
 
 .esup-filepond .filepond--item,
@@ -1106,7 +1139,9 @@ input, textarea, select {
 .esup-filepond .filepond--panel,
 .esup-filepond .filepond--panel-center,
 .esup-filepond .filepond--panel-bottom,
-.esup-filepond .filepond--panel-top {
+.esup-filepond .filepond--panel-top,
+.esup-filepond .filepond--file-info,
+.esup-filepond .filepond--file-status {
     will-change: auto;
 }
 
@@ -1119,21 +1154,58 @@ input, textarea, select {
     backface-visibility: visible;
 }
 
-.esup-filepond {
-    color: var(--bs-body-color);
-    font-family: inherit;
+.esup-filepond .esup-filepond-file-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: .68rem;
+    left: 2.65rem;
+    z-index: 103;
+    width: 1.5rem;
+    min-height: 1.5rem;
+    font-size: 1.2rem;
+    line-height: 1 !important;
+    text-align: center;
+    pointer-events: none;
 }
 
-.esup-filepond .filepond--file-info,
-.esup-filepond .filepond--file-status,
-.esup-filepond .filepond--file-action-button {
-    will-change: auto;
+.esup-filepond .esup-filepond-file-icon:before {
+    display: block;
+    font-size: 1.2rem;
+    line-height: 1;
+}
+
+.esup-filepond .filepond--file-info {
+    transform: translate3d(4rem, 0, 0) !important;
 }
 
 .esup-filepond .filepond--file-info-main,
 .esup-filepond .filepond--file-status-main {
     font-size: .9rem;
     font-weight: 500;
+}
+
+.esup-filepond .filepond--file-info-sub,
+.esup-filepond .filepond--file-status-sub {
+    color: var(--bs-secondary-color);
+    font-size: .78rem;
+    opacity: 1;
+}
+
+.esup-filepond [data-filepond-item-state='processing-complete'] .filepond--file,
+.esup-filepond [data-filepond-item-state*='invalid'] .filepond--file,
+.esup-filepond [data-filepond-item-state*='error'] .filepond--file {
+    color: var(--bs-white);
+}
+
+.esup-filepond [data-filepond-item-state='processing-complete'] .filepond--file-info-sub,
+.esup-filepond [data-filepond-item-state='processing-complete'] .filepond--file-status-sub,
+.esup-filepond [data-filepond-item-state*='invalid'] .filepond--file-info-sub,
+.esup-filepond [data-filepond-item-state*='invalid'] .filepond--file-status-sub,
+.esup-filepond [data-filepond-item-state*='error'] .filepond--file-info-sub,
+.esup-filepond [data-filepond-item-state*='error'] .filepond--file-status-sub {
+    color: rgba(255, 255, 255, .72);
 }
 
 .esup-filepond .filepond--file-action-button {

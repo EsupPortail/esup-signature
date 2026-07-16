@@ -132,7 +132,7 @@ class FilePondFilesInputAdapter {
             allowDrop: !this.readOnly,
             allowPaste: !this.readOnly,
             allowMultiple: this.input.prop("multiple"),
-            allowReorder: false,
+            allowReorder: true,
             allowRemove: !this.readOnly,
             allowRevert: false,
             credits: false,
@@ -148,10 +148,13 @@ class FilePondFilesInputAdapter {
             beforeAddFile: file => this.validateFile(file),
             beforeRemoveFile: file => this.removeServerFile(file),
             onaddfile: (error, file) => {
-                if (error == null && file?.origin === FilePond.FileOrigin.INPUT) {
-                    this.input.trigger("fileselect", [file]);
-                    this.input.trigger("filebatchselected", [this.getNativeFiles()]);
-                    this.input.trigger("change");
+                if (error == null) {
+                    this.decorateFileIcon(file);
+                    if (file?.origin === FilePond.FileOrigin.INPUT) {
+                        this.input.trigger("fileselect", [file]);
+                        this.input.trigger("filebatchselected", [this.getNativeFiles()]);
+                        this.input.trigger("change");
+                    }
                 }
             },
             onremovefile: (error, file) => {
@@ -336,6 +339,68 @@ class FilePondFilesInputAdapter {
         if (downloadUrl) {
             window.open(downloadUrl, "_blank");
         }
+    }
+
+    decorateFileIcon(file, attempts = 8) {
+        window.setTimeout(() => {
+            const item = document.getElementById("filepond--item-" + file.id);
+            const fileInfo = item?.querySelector(".filepond--file-info");
+            if (item == null || fileInfo == null || item.querySelector(".esup-filepond-file-icon") != null) {
+                if (attempts > 0 && (item == null || fileInfo == null)) {
+                    this.decorateFileIcon(file, attempts - 1);
+                }
+                return;
+            }
+            const icon = document.createElement("i");
+            icon.className = "esup-filepond-file-icon " + this.getIconClass(file);
+            icon.setAttribute("aria-hidden", "true");
+            fileInfo.before(icon);
+        }, 50);
+    }
+
+    getIconClass(file) {
+        const ext = (file?.fileExtension || this.getExtension(file?.filename) || "").toLowerCase();
+        if (ext.match(/^(sce)$/i)) {
+            return "fi fi-rr-document-signed text-success";
+        }
+        if (ext.match(/^(pdf)$/i)) {
+            return "fi fi-rr-file-pdf text-danger";
+        }
+        if (ext.match(/^(doc|docx|odt|rtf)$/i)) {
+            return "fi fi-rr-file-word text-primary";
+        }
+        if (ext.match(/^(xls|xlsx|ods)$/i)) {
+            return "fi fi-rr-file-excel text-success";
+        }
+        if (ext.match(/^(odp|ppt|pptx)$/i)) {
+            return "fi fi-rr-file-powerpoint text-danger";
+        }
+        if (ext.match(/^(zip|rar|tar|gzip|gz|7z|bz2|xz|tgz)$/i)) {
+            return "fi fi-rr-file-zipper text-warning";
+        }
+        if (ext.match(/^(htm|html|xhtml)$/i)) {
+            return "fi fi-rr-file-code text-info";
+        }
+        if (ext.match(/^(txt|ini|csv|log|md|java|php|js|css|json|xml|yml|yaml)$/i)) {
+            return "fi fi-rr-document text-info";
+        }
+        if (ext.match(/^(avi|mpg|mpeg|mkv|mov|mp4|3gp|webm|wmv)$/i)) {
+            return "fi fi-rr-video-camera text-warning";
+        }
+        if (ext.match(/^(mp3|wav|ogg|oga|m4a|aac|flac)$/i)) {
+            return "fi fi-rr-file-audio text-warning";
+        }
+        if (ext.match(/^(jpg|jpeg|gif|png|svg|bmp|webp|tif|tiff)$/i)) {
+            return "fi fi-rr-file-image text-secondary";
+        }
+        return "fi fi-rr-file text-muted";
+    }
+
+    getExtension(filename) {
+        if (!filename || !filename.includes(".")) {
+            return "";
+        }
+        return filename.split(".").pop();
     }
 
     toInitialFile(document) {
