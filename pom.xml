@@ -238,6 +238,11 @@
 		</dependency>
 		<dependency>
 			<groupId>org.webjars.npm</groupId>
+			<artifactId>filepond</artifactId>
+			<version>4.32.12</version>
+		</dependency>
+		<dependency>
+			<groupId>org.webjars.npm</groupId>
 			<artifactId>bootstrap-fileinput</artifactId>
 			<version>5.5.4</version>
 			<exclusions>

@@ -53,7 +53,7 @@ export class WizUi {
         return false;
     }
 
-    focusVisibleFilePicker(selectors = ['.btn-file', '.file-drop-zone', '#fast-sign-button', '#fast-form-close'], options = {}) {
+    focusVisibleFilePicker(selectors = ['.filepond--label-action', '.filepond--drop-label', '.btn-file', '.file-drop-zone', '#fast-sign-button', '#fast-form-close'], options = {}) {
         const modalElement = this.modal?.get(0);
         if (modalElement == null) {
             return false;
