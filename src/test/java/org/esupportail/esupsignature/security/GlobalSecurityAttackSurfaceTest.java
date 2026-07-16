@@ -955,6 +955,7 @@ class GlobalSecurityAttackSurfaceTest {
             WebSecurityConfig config = webSecurityConfig();
             Set<String> scriptSrc = new LinkedHashSet<>();
             scriptSrc.add("'self'");
+            scriptSrc.add("blob:");
             Set<String> connectSrc = new LinkedHashSet<>();
             connectSrc.add("'self'");
             Set<String> formAction = new LinkedHashSet<>();
@@ -981,7 +982,7 @@ class GlobalSecurityAttackSurfaceTest {
             buildCspPolicy.setAccessible(true);
             String policy = (String) buildCspPolicy.invoke(config, scriptSrc, connectSrc, formAction, false);
 
-            assertTrue(policy.contains("script-src 'self' http://localhost:9795 http://127.0.0.1:9795"));
+            assertTrue(policy.contains("script-src 'self' blob: http://localhost:9795 http://127.0.0.1:9795"));
             assertTrue(policy.contains("connect-src 'self' http://localhost:9795 http://127.0.0.1:9795"));
             assertFalse(policy.contains("script-src 'self' 'unsafe-inline'"));
         }

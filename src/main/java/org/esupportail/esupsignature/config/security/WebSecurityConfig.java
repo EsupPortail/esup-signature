@@ -261,6 +261,7 @@ public class WebSecurityConfig {
 				addHttpSrcOrigin(connectSrc, globalProperties.getNexuUrl(), "globalProperties.nexuUrl", "connect-src");
 				Set<String> scriptSrc = new LinkedHashSet<>();
 				scriptSrc.add("'self'");
+				scriptSrc.add("blob:");
 				addHttpSrcOrigin(scriptSrc, globalProperties.getNexuUrl(), "globalProperties.nexuUrl", "script-src");
 				headers.addHeaderWriter((request, response) -> {
 					Set<String> requestFormAction = new LinkedHashSet<>(formAction);
