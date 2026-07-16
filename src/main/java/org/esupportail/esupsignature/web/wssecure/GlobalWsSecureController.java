@@ -286,7 +286,7 @@ public class GlobalWsSecureController {
     public ResponseEntity<?> addDocumentToNewSignRequest(@PathVariable("signBookId") Long signBookId,  @ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @RequestParam("multipartFiles") MultipartFile[] multipartFiles, @RequestParam(value = "unzip", defaultValue = "false") boolean unzip) throws EsupSignatureIOException {
         logger.info("start add documents");
         if(globalProperties.getPdfOnly() && Arrays.stream(multipartFiles).anyMatch(m -> !isAuthorizedPdfOnlyUpload(m, unzip))) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Seul les fichiers PDF sont autorisés");
+            return ResponseEntity.badRequest().body("Seul les fichiers PDF sont autorisés");
         }
         try {
             List<Document> documents = signBookService.addDocumentsToSignBook(signBookId, multipartFiles, authUserEppn, null, false, unzip);
@@ -301,7 +301,7 @@ public class GlobalWsSecureController {
                     })
                     .collect(Collectors.toList()));
         } catch(Exception e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 

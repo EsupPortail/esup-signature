@@ -184,7 +184,15 @@ export class SignUi {
         ["#visaLaunchButton", "#signAdvancedLaunchButton"].forEach(selector => {
             $(selector).on('click', () => this.signatureFlowController.prepareLaunchSign(true));
         });
-        this.signLaunchButton.on('click', () => this.signatureFlowController.launchQuickSign());
+        this.signLaunchButton.on('click', () => {
+            const selectableCertTypeOption = this.getSingleSelectableCertTypeOption();
+            if (selectableCertTypeOption.length && selectableCertTypeOption.val() !== "imageStamp") {
+                this.certTypeSelect.val(selectableCertTypeOption.val()).trigger("change");
+                $("#checkValidateAdvancedSignButton").trigger("click");
+                return;
+            }
+            this.signatureFlowController.launchQuickSign();
+        });
         $("#refuseLaunchButton").on('click', function () {
             window.onbeforeunload = null;
         });
@@ -300,6 +308,14 @@ export class SignUi {
 
     getSelectableCertTypeCount() {
         return this.certTypeSelect.find("option:not(:disabled):not([unavailable])").length;
+    }
+
+    getSingleSelectableCertTypeOption() {
+        if (!this.certTypeSelect.length) {
+            return $();
+        }
+        const selectableCertTypeOptions = this.certTypeSelect.find("option:not(:disabled):not([unavailable])");
+        return selectableCertTypeOptions.length === 1 ? selectableCertTypeOptions.first() : $();
     }
 
     getActiveImageStampOption() {

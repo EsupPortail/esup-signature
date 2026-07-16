@@ -127,10 +127,13 @@ class FilePondFilesInputAdapter {
         this.revertedDocumentIds = new Set();
         this.abortedUploads = new Map();
         this.activeUploads = new Map();
+        this.initialReadOnlyFileCount = 0;
     }
 
     init(documents) {
         console.info("Enable FilePond for : " + this.input.attr("name"));
+        this.input.closest(".file-loading").removeClass("file-loading").addClass("esup-filepond-container");
+        this.initialReadOnlyFileCount = documents.length;
         this.pond = FilePond.create(this.input[0], {
             ...filePondFrLocale,
             styleProgressIndicatorPosition: 'center',
@@ -138,7 +141,7 @@ class FilePondFilesInputAdapter {
             allowDrop: !this.readOnly,
             allowPaste: !this.readOnly,
             allowMultiple: this.input.prop("multiple"),
-            allowReorder: true,
+            allowReorder: !this.readOnly && this.input.prop("multiple"),
             allowRemove: !this.readOnly,
             allowRevert: !this.readOnly,
             credits: false,
@@ -160,6 +163,7 @@ class FilePondFilesInputAdapter {
             onaddfile: (error, file) => {
                 if (error == null) {
                     this.decorateFileIcon(file);
+                    this.requestReadonlyHeightUpdate();
                     if (file?.origin === FilePond.FileOrigin.INPUT) {
                         this.input.trigger("fileselect", [file]);
                         this.input.trigger("filebatchselected", [this.getNativeFiles()]);
@@ -169,6 +173,7 @@ class FilePondFilesInputAdapter {
             },
             onremovefile: (error, file) => {
                 if (error == null) {
+                    this.requestReadonlyHeightUpdate();
                     this.input.trigger("fileremoved", [file]);
                     this.input.trigger("change");
                 }
@@ -191,6 +196,7 @@ class FilePondFilesInputAdapter {
         if (this.readOnly) {
             this.pond.element.classList.add("esup-filepond-readonly");
         }
+        this.requestReadonlyHeightUpdate();
         return this.pond;
     }
 
@@ -222,6 +228,23 @@ class FilePondFilesInputAdapter {
                 console.debug("Unsupported FilePond fileinput command", command);
                 return this.input;
         }
+    }
+
+    requestReadonlyHeightUpdate() {
+        this.updateReadonlyHeight();
+        window.requestAnimationFrame(() => this.updateReadonlyHeight());
+        window.setTimeout(() => this.updateReadonlyHeight(), 100);
+    }
+
+    updateReadonlyHeight() {
+        if (!this.readOnly || this.pond == null) {
+            return;
+        }
+        const fileCount = Math.max(this.pond.getFiles().length, this.initialReadOnlyFileCount, 1);
+        const heightRem = Math.max(4.375, fileCount * 3.75 + 1);
+        this.pond.element.style.setProperty("--esup-filepond-file-count", String(fileCount));
+        this.pond.element.style.height = heightRem + "rem";
+        this.pond.element.style.minHeight = heightRem + "rem";
     }
 
     getNativeFiles() {

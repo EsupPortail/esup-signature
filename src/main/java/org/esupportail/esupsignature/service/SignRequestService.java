@@ -1097,6 +1097,7 @@ public class SignRequestService {
 			signRequestRepository.saveAll(clonedSignRequests);
 		}
 		signBook.getSignRequests().remove(signRequest);
+		signBook.getSignRequests().removeIf(Objects::isNull);
 		for(SignRequestParams signRequestParams : signRequest.getSignRequestParams()) {
 			for(LiveWorkflowStep liveWorkflowStep : signBook.getLiveWorkflow().getLiveWorkflowSteps()) {
 				liveWorkflowStep.getSignRequestParams().remove(signRequestParams);
@@ -1118,7 +1119,7 @@ public class SignRequestService {
 		} else {
 			signBookId = signBook.getId();
 		}
-		if(!signBook.getSignRequests().isEmpty() && !signBook.getDeleted() && signBook.getStatus().equals(SignRequestStatus.pending) && signBook.getSignRequests().stream().allMatch(s -> s.getStatus().equals(SignRequestStatus.signed) || s.getStatus().equals(SignRequestStatus.completed) || s.getStatus().equals(SignRequestStatus.exported) || s.getStatus().equals(SignRequestStatus.refused))) {
+		if(!signBook.getSignRequests().isEmpty() && !signBook.getDeleted() && signBook.getStatus().equals(SignRequestStatus.pending) && signBook.getSignRequests().stream().filter(Objects::nonNull).allMatch(s -> s.getStatus().equals(SignRequestStatus.signed) || s.getStatus().equals(SignRequestStatus.completed) || s.getStatus().equals(SignRequestStatus.exported) || s.getStatus().equals(SignRequestStatus.refused))) {
 			boolean isNextWorkflow = nextWorkFlowStep(signBook);
 			if(isNextWorkflow) {
 				for(SignRequest signRequest1 : signRequest.getParentSignBook().getSignRequests()) {
@@ -1127,14 +1128,14 @@ public class SignRequestService {
 					}
 				}
 			} else {
-				if(signBook.getSignRequests().stream().allMatch(s -> s.getStatus().equals(SignRequestStatus.refused))) {
+				if(signBook.getSignRequests().stream().filter(Objects::nonNull).allMatch(s -> s.getStatus().equals(SignRequestStatus.refused))) {
 					signBook.setStatus(SignRequestStatus.refused);
 				} else {
 					signBook.setStatus(SignRequestStatus.completed);
 				}
 			}
 		}
-		if(!signRequest.getParentSignBook().getSignRequests().isEmpty() && signRequest.getParentSignBook().getSignRequests().stream().allMatch(s -> s.getStatus().equals(SignRequestStatus.refused))) {
+		if(!signRequest.getParentSignBook().getSignRequests().isEmpty() && signRequest.getParentSignBook().getSignRequests().stream().filter(Objects::nonNull).allMatch(s -> s.getStatus().equals(SignRequestStatus.refused))) {
 			signRequest.getParentSignBook().setStatus(SignRequestStatus.refused);
 		}
 		return signBookId;

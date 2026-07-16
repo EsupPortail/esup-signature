@@ -1562,6 +1562,7 @@ public class SignBookService {
         if(workflow != null) {
             keepSignFields = StringUtils.hasText(workflow.getSignRequestParamsDetectionPattern());
         }
+        signBook.getSignRequests().removeIf(Objects::isNull);
         int i = signBook.getSignRequests().size();
         if(!signBook.isEditable()) {
             throw new EsupSignatureRuntimeException("Ajout impossible, la demande est déjà démarrée");
