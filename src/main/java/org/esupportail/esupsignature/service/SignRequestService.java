@@ -626,10 +626,11 @@ public class SignRequestService {
 	 * @throws EsupSignatureIOException Si une erreur survient lors de l'ajout ou de la conversion des fichiers.
 	 */
 	@Transactional
-	public void addDocsToSignRequest(SignRequest signRequest, boolean scanSignatureFields, boolean orderSignsByName, int docNumber, List<SignRequestParams> signRequestParamses, String signRequestParamsDetectionPattern, boolean keepSignFields, MultipartFile... multipartFiles) throws EsupSignatureIOException {
+	public List<Document> addDocsToSignRequest(SignRequest signRequest, boolean scanSignatureFields, boolean orderSignsByName, int docNumber, List<SignRequestParams> signRequestParamses, String signRequestParamsDetectionPattern, boolean keepSignFields, MultipartFile... multipartFiles) throws EsupSignatureIOException {
 		if(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null && StringUtils.hasText(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getSignRequestParamsDetectionPattern()) && !StringUtils.hasText(signRequestParamsDetectionPattern)) {
 			signRequestParamsDetectionPattern = signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getSignRequestParamsDetectionPattern();
 		}
+		List<Document> createdDocuments = new ArrayList<>();
 		for(MultipartFile multipartFile : multipartFiles) {
 			try {
 				byte[] bytes = multipartFile.getInputStream().readAllBytes();
@@ -666,6 +667,7 @@ public class SignRequestService {
 					document.setPdfaCheck(pdfaCheck);
 					signRequest.getOriginalDocuments().add(document);
 					document.setParentId(signRequest.getId());
+					createdDocuments.add(document);
 				} else {
 					logger.warn("file size is 0");
 					throw new EsupSignatureIOException("Erreur lors de l'ajout des fichiers");
@@ -678,6 +680,28 @@ public class SignRequestService {
 				throw new EsupSignatureIOException("Erreur lors de la conversion du document", e);
 			}
 		}
+		return createdDocuments;
+	}
+
+	@Transactional
+	public void deleteByOriginalDocument(Long documentId, String authUserEppn) {
+		Document document = documentService.getById(documentId);
+		deleteDefinitive(document.getParentId(), authUserEppn, false);
+	}
+
+	@Transactional
+	public void deleteDraftByOriginalDocument(Long signBookId, String fileName, Long size, String contentType, String authUserEppn) {
+		SignBook signBook = signBookRepository.findById(signBookId).orElseThrow();
+		Optional<SignRequest> signRequestToDelete = signBook.getSignRequests().stream()
+				.filter(signRequest -> SignRequestStatus.draft.equals(signRequest.getStatus()))
+				.filter(signRequest -> signRequest.getOriginalDocuments().stream().anyMatch(document -> originalDocumentMatches(document, fileName, size, contentType)))
+				.max(Comparator.comparing(SignRequest::getCreateDate));
+		signRequestToDelete.ifPresent(signRequest -> deleteDefinitive(signRequest.getId(), authUserEppn, false));
+	}
+
+	private boolean originalDocumentMatches(Document document, String fileName, Long size, String contentType) {
+		return Objects.equals(document.getFileName(), fileName)
+				&& (!StringUtils.hasText(contentType) || Objects.equals(document.getContentType(), contentType));
 	}
 
 

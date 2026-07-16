@@ -616,6 +616,16 @@ public class SignBookService {
     public void createSelfSignBook(Long signBookId, String userEppn) throws EsupSignatureException {
         User user = userService.getByEppn(userEppn);
         SignBook signBook = getById(signBookId);
+        if(!signBook.getLiveWorkflow().getLiveWorkflowSteps().isEmpty()) {
+            logger.info("Auto signature déjà initialisée pour le signBook {}, réutilisation du workflow existant", signBookId);
+            if(signBook.getLiveWorkflow().getCurrentStep() == null) {
+                signBook.getLiveWorkflow().setCurrentStep(signBook.getLiveWorkflow().getLiveWorkflowSteps().get(0));
+            }
+            if(SignRequestStatus.draft.equals(signBook.getStatus()) || SignRequestStatus.uploading.equals(signBook.getStatus())) {
+                pendingSignBook(signBook, null, userEppn, userEppn, false, true);
+            }
+            return;
+        }
         WorkflowStepDto workflowStepDto = new WorkflowStepDto();
         workflowStepDto.setRepeatable(false);
         workflowStepDto.setRepeatableSignType(null);
@@ -1546,7 +1556,7 @@ public class SignBookService {
      * @param signBookId L'identifiant du carnet de signatures dans lequel ajouter les documents
      * @param multipartFiles Un tableau de fichiers multipart contenant les documents à*/
     @Transactional
-    public void addDocumentsToSignBook(Long signBookId, MultipartFile[] multipartFiles, String authUserEppn, String signRequestParamsDetectionPattern, boolean keepSignFields, boolean unzip) {
+    public List<Document> addDocumentsToSignBook(Long signBookId, MultipartFile[] multipartFiles, String authUserEppn, String signRequestParamsDetectionPattern, boolean keepSignFields, boolean unzip) {
         SignBook signBook = getById(signBookId);
         Workflow workflow = signBook.getLiveWorkflow().getWorkflow();
         if(workflow != null) {
@@ -1557,11 +1567,12 @@ public class SignBookService {
             throw new EsupSignatureRuntimeException("Ajout impossible, la demande est déjà démarrée");
         }
         List<MultipartFile> filesToAdd = expandMultipartFiles(multipartFiles, unzip);
+        List<Document> createdDocuments = new ArrayList<>();
         for (MultipartFile multipartFile : filesToAdd) {
             pdfService.checkPdfPermitions(multipartFile);
             SignRequest signRequest = signRequestService.createSignRequest(fileService.getNameOnly(multipartFile.getOriginalFilename()), signBook, authUserEppn, authUserEppn);
             try {
-                signRequestService.addDocsToSignRequest(signRequest, true, false, i, new ArrayList<>(), signRequestParamsDetectionPattern, keepSignFields, multipartFile);
+                createdDocuments.addAll(signRequestService.addDocsToSignRequest(signRequest, true, false, i, new ArrayList<>(), signRequestParamsDetectionPattern, keepSignFields, multipartFile));
                 if (signBook.getStatus().equals(SignRequestStatus.pending)) {
                     signRequestService.pendingSignRequest(signRequest, authUserEppn);
                     addToTeam(signBook, authUserEppn);
@@ -1576,6 +1587,7 @@ public class SignBookService {
         if(!StringUtils.hasText(signBook.getSubject())) {
             signBook.setSubject(generateName(null, null, signBook.getCreateBy(), false, false, signBookId));
         }
+        return createdDocuments;
     }
 
     private List<MultipartFile> expandMultipartFiles(MultipartFile[] multipartFiles, boolean unzip) {

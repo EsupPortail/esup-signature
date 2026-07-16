@@ -23,6 +23,7 @@ export class WizUi {
         this.close = false;
         this.end = false;
         this.start = false;
+        this.selfSignStartSubmitted = false;
         this.modal = $('#' + this.div.attr('id').replace("div", "modal"));
         $('#save-step').hide();
         this.initListeners();
@@ -110,11 +111,19 @@ export class WizUi {
         this.input = $("#multipartFiles");
         this.fileInput = new FilesInput(this.input, this.maxSize, this.csrf, null, false, null);
         this.input.on("filebatchuploadsuccess", function(e) {
+            if(self.selfSignStartSubmitted) {
+                return;
+            }
+            self.selfSignStartSubmitted = true;
             $.ajax({
                 url: "/user/wizard/start-self-sign/" + self.newSignBookId + "?" + self.csrf.parameterName + "=" + self.csrf.token,
                 type: 'POST',
                 success: function() {
                     location.href = "/user/signbooks/" + self.newSignBookId;
+                },
+                error: function() {
+                    self.selfSignStartSubmitted = false;
+                    self.enableButtons();
                 }
             });
         });
@@ -130,29 +139,17 @@ export class WizUi {
         this.disableButtons();
         let self = this;
         $("#multiSign").on('change', e => this.toggleAnnotationOption(e.target));
+        if(this.hasSignBookId()) {
+            this.uploadSignFilesOrSubmit();
+            return;
+        }
         $.ajax({
             url: "/user/wizard/wiz-create-sign/" + type + "?"+ self.csrf.parameterName + "=" + self.csrf.token,
             type: 'POST',
             success: function(signBookId) {
                 self.newSignBookId = signBookId
                 self.fileInput.signBookId = self.newSignBookId;
-                let fileCount = self.input.fileinput('getFilesCount');
-                if(fileCount > 0) {
-                    self.files = self.input.fileinput('getFileList');
-                    self.input.fileinput('upload');
-                } else {
-                    if(self.files != null && self.files.size() > 0) {
-                        self.input.on('filebatchselected', function (event) {
-                            self.input.fileinput('upload');
-                        });
-                        self.input.fileinput('clear');
-                        self.input.fileinput('clearFileStack');
-                        self.input.fileinput('readFiles', self.files);
-                    } else {
-                        $("#fast-form-submit").click();
-                        self.enableButtons();
-                    }
-                }
+                self.uploadSignFilesOrSubmit();
             },
             error: function() {
                 $("#fast-form-submit").click();
@@ -160,6 +157,30 @@ export class WizUi {
             }
         });
     }
+
+    uploadSignFilesOrSubmit() {
+        this.fileInput.signBookId = this.newSignBookId;
+        let fileCount = this.input.fileinput('getFilesCount');
+        if(fileCount > 0) {
+            this.files = this.input.fileinput('getFileList');
+            this.input.fileinput('upload');
+        } else {
+            if(this.files != null && this.files.size() > 0) {
+                this.input.on('filebatchselected', event => this.input.fileinput('upload'));
+                this.input.fileinput('clear');
+                this.input.fileinput('clearFileStack');
+                this.input.fileinput('readFiles', this.files);
+            } else {
+                $("#fast-form-submit").click();
+                this.enableButtons();
+            }
+        }
+    }
+
+    hasSignBookId() {
+        return this.newSignBookId != null && this.newSignBookId !== "";
+    }
+
 
     disableButtons() {
         $("#send-form-button").attr("disabled", "disabled");
@@ -368,6 +389,11 @@ export class WizUi {
             self.disableButtons();
             let fileCount = self.input.fileinput('getFilesCount');
             if(fileCount > 0) {
+                if(self.hasSignBookId()) {
+                    self.fileInput.signBookId = self.newSignBookId;
+                    self.input.fileinput("upload")
+                    return;
+                }
                 let title = $("#title-wiz").val();
                 let comment = $("#comment-wiz").val();
                 $.ajax({

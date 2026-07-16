@@ -1036,8 +1036,6 @@ input, textarea, select {
     font-family: "Lexend", sans-serif;
     font-size: 1rem;
     line-height: 1.5;
-    text-rendering: geometricPrecision;
-    -webkit-font-smoothing: antialiased;
 }
 
 .esup-filepond .filepond--panel-root {
@@ -1050,7 +1048,6 @@ input, textarea, select {
 
 .esup-filepond:not(.esup-filepond-readonly):hover .filepond--panel-root,
 .esup-filepond:not(.esup-filepond-readonly).filepond--hopper[data-hopper-state="drag-over"] .filepond--panel-root {
-    /*border-color: var(--bs-secondary);*/
     background-color: var(--bs-secondary-bg);
 }
 
@@ -1212,6 +1209,10 @@ input, textarea, select {
     color: var(--bs-body-color);
 }
 
+.esup-filepond .filepond--progress-indicator svg {
+    display: block;
+}
+
 .esup-filepond [data-filepond-item-state='processing-complete'] .filepond--progress-indicator,
 .esup-filepond [data-filepond-item-state*='invalid'] .filepond--progress-indicator,
 .esup-filepond [data-filepond-item-state*='error'] .filepond--progress-indicator {
@@ -1229,8 +1230,18 @@ input, textarea, select {
     box-shadow: 0 0 0 .2rem rgba(13, 110, 253, .2);
 }
 
-.esup-filepond .filepond--action-process-item,
-.esup-filepond .filepond--action-revert-item-processing {
+.esup-filepond .filepond--action-abort-item-load:before,
+.esup-filepond .filepond--action-abort-item-processing:before {
+    content: "×";
+    display: block;
+    font-family: Arial, sans-serif;
+    font-size: 1.35rem;
+    font-weight: 700;
+    line-height: 1.625rem;
+    text-align: center;
+}
+
+.esup-filepond .filepond--action-process-item {
     display: none;
 }
 
