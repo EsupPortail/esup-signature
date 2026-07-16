@@ -128,6 +128,7 @@ class FilePondFilesInputAdapter {
         this.abortedUploads = new Map();
         this.activeUploads = new Map();
         this.initialReadOnlyFileCount = 0;
+        this.previewObjectUrl = null;
     }
 
     init(documents) {
@@ -170,7 +171,10 @@ class FilePondFilesInputAdapter {
                     this.input.trigger("change");
                 }
             },
-            onprocessfilestart: file => this.handleProcessStart(file),
+            onprocessfilestart: file => {
+                this.removeFilePreviewButton(file);
+                this.handleProcessStart(file);
+            },
             onprocessfileabort: file => this.handleUploadAbort(file),
             onprocessfilerevert: file => this.handleFileReverted(file),
             onprocessfile: (error, file) => {
@@ -182,7 +186,7 @@ class FilePondFilesInputAdapter {
                     this.handleSingleFileProcessed(file);
                 }
             },
-            onactivatefile: file => this.openInitialFile(file)
+            onactivatefile: file => this.previewFile(file)
         };
         if (!this.usesNativeMultipartSubmit()) {
             options.server = {
@@ -281,6 +285,7 @@ class FilePondFilesInputAdapter {
         this.uploadAbortNotified = false;
         this.uploadSuccessTriggered = false;
         this.activeUploads.clear();
+        this.getFilesToProcess().forEach(file => this.removeFilePreviewButton(file));
         this.uploadPromise = this.cleanupAbortedUploads()
             .then(() => {
                 if (uploadRunId !== this.uploadRunId || this.batchCancelled) {
@@ -391,6 +396,7 @@ class FilePondFilesInputAdapter {
         };
         request.onload = () => {
             if (request.status >= 200 && request.status < 300) {
+                this.rememberActiveUploadDocuments(file, request.responseText);
                 load(request.responseText);
                 return;
             }
@@ -490,6 +496,12 @@ class FilePondFilesInputAdapter {
         return [];
     }
 
+    getUploadedDocumentIds(serverId) {
+        return this.getUploadedDocuments(serverId)
+            .map(document => document.id)
+            .filter(documentId => documentId != null);
+    }
+
     handleProcessStart(file) {
         if (this.batchCancelled) {
             window.setTimeout(() => file?.abortProcessing?.(), 0);
@@ -527,12 +539,10 @@ class FilePondFilesInputAdapter {
         if (nativeFile?.name == null) {
             return;
         }
-        const uploadKey = this.getNativeFileKey(nativeFile);
-        this.abortedUploads.set(uploadKey, {
-            fileName: nativeFile.name,
-            size: nativeFile.size,
-            contentType: nativeFile.type || ""
-        });
+        const documentIds = this.getUploadedDocumentIds(fileItemOrNativeFile?.serverId);
+        if (documentIds.length > 0) {
+            this.abortedUploads.set(this.getNativeFileKey(nativeFile), documentIds);
+        }
     }
 
     rememberActiveUpload(fileItem) {
@@ -540,42 +550,41 @@ class FilePondFilesInputAdapter {
         if (nativeFile?.name == null) {
             return;
         }
-        this.activeUploads.set(this.getNativeFileKey(nativeFile), {
-            fileName: nativeFile.name,
-            size: nativeFile.size,
-            contentType: nativeFile.type || ""
-        });
+        this.activeUploads.set(this.getNativeFileKey(nativeFile), []);
+    }
+
+    rememberActiveUploadDocuments(nativeFile, serverId) {
+        if (nativeFile?.name == null) {
+            return;
+        }
+        const uploadKey = this.getNativeFileKey(nativeFile);
+        this.activeUploads.set(uploadKey, this.getUploadedDocumentIds(serverId));
     }
 
     rememberActiveUploadsAsAborted() {
-        this.activeUploads.forEach((upload, uploadKey) => {
-            this.abortedUploads.set(uploadKey, upload);
+        this.activeUploads.forEach((documentIds, uploadKey) => {
+            if (documentIds.length > 0) {
+                this.abortedUploads.set(uploadKey, documentIds);
+            }
         });
         this.activeUploads.clear();
     }
 
     cleanupAbortedUploads() {
-        const abortedUploads = Array.from(this.abortedUploads.values());
-        if (abortedUploads.length === 0 || this.filesInput.signBookId == null) {
+        const documentIds = [...new Set(Array.from(this.abortedUploads.values()).flat())];
+        if (documentIds.length === 0) {
             return Promise.resolve();
         }
-        return Promise.all(abortedUploads.map(upload => this.removeDraftUpload(upload)))
+        return Promise.all(documentIds.map(documentId => this.removeDraftDocument(documentId)))
             .then(() => {
                 this.abortedUploads.clear();
             });
     }
 
-    removeDraftUpload(upload) {
+    removeDraftDocument(documentId) {
         const params = new URLSearchParams();
         params.set(this.filesInput.csrf.parameterName, this.filesInput.csrf.token);
-        params.set("fileName", upload.fileName);
-        if (upload.size != null) {
-            params.set("size", upload.size);
-        }
-        if (upload.contentType) {
-            params.set("contentType", upload.contentType);
-        }
-        return fetch("/ws-secure/global/remove-draft-doc/" + this.filesInput.signBookId + "?" + params.toString(), {
+        return fetch("/ws-secure/global/remove-draft-doc/" + documentId + "?" + params.toString(), {
             method: "POST",
             headers: {
                 [this.filesInput.csrf.headerName]: this.filesInput.csrf.token
@@ -679,15 +688,15 @@ class FilePondFilesInputAdapter {
 
     removeAbortedUpload(fileItem) {
         const nativeFile = fileItem?.file;
-        if (nativeFile?.name == null || this.filesInput.signBookId == null) {
+        if (nativeFile?.name == null) {
             return true;
         }
         const uploadKey = this.getNativeFileKey(nativeFile);
-        const upload = this.abortedUploads.get(uploadKey);
-        if (upload == null) {
+        const documentIds = this.abortedUploads.get(uploadKey) || [];
+        if (documentIds.length === 0) {
             return true;
         }
-        return this.removeDraftUpload(upload)
+        return Promise.all(documentIds.map(documentId => this.removeDraftDocument(documentId)))
             .then(() => {
                 this.abortedUploads.delete(uploadKey);
                 return true;
@@ -709,13 +718,189 @@ class FilePondFilesInputAdapter {
                 if (attempts > 0 && (item == null || fileInfo == null)) {
                     this.decorateFileIcon(file, attempts - 1);
                 }
+                if (item != null) {
+                    this.decorateFilePreviewButton(file);
+                }
                 return;
             }
             const icon = document.createElement("i");
             icon.className = "esup-filepond-file-icon " + this.getIconClass(file);
             icon.setAttribute("aria-hidden", "true");
             fileInfo.before(icon);
+            this.decorateFilePreviewButton(file);
         }, 50);
+    }
+
+    decorateFilePreviewButton(file, attempts = 8) {
+        window.setTimeout(() => {
+            const item = document.getElementById("filepond--item-" + file.id);
+            const fileElement = item?.querySelector(".filepond--file");
+            if (item == null || fileElement == null) {
+                if (attempts > 0) {
+                    this.decorateFilePreviewButton(file, attempts - 1);
+                }
+                return;
+            }
+            if (item.querySelector(".esup-filepond-preview-button") != null) {
+                return;
+            }
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = "filepond--file-action-button esup-filepond-preview-button";
+            button.title = "Voir";
+            button.setAttribute("aria-label", "Voir " + (file.filename || file.file?.name || "le fichier"));
+            button.innerHTML = '<i class="fi fi-rr-eye" aria-hidden="true"></i>';
+            button.addEventListener("click", event => {
+                event.preventDefault();
+                event.stopPropagation();
+                this.previewFile(file);
+            });
+            fileElement.appendChild(button);
+        }, 50);
+    }
+
+    removeFilePreviewButton(file) {
+        document.getElementById("filepond--item-" + file?.id)
+            ?.querySelector(".esup-filepond-preview-button")
+            ?.remove();
+    }
+
+    previewFile(file) {
+        if (this.isFileUploading(file)) {
+            return;
+        }
+        const preview = this.getPreviewDescriptor(file);
+        if (!preview.url) {
+            this.openInitialFile(file);
+            return;
+        }
+        const modal = this.getPreviewModal();
+        modal.querySelector(".js-esup-filepond-preview-title").textContent = preview.name || "Aperçu du fichier";
+        const body = modal.querySelector(".js-esup-filepond-preview-body");
+        const downloadLink = modal.querySelector(".js-esup-filepond-preview-download");
+        body.replaceChildren();
+        const downloadUrl = preview.downloadUrl || preview.url;
+        if (downloadUrl) {
+            downloadLink.href = downloadUrl;
+            downloadLink.classList.remove("d-none");
+        } else {
+            downloadLink.removeAttribute("href");
+            downloadLink.classList.add("d-none");
+        }
+
+        if (this.isPdfPreview(preview)) {
+            const iframe = document.createElement("iframe");
+            iframe.className = "esup-filepond-preview-frame";
+            iframe.title = "Aperçu PDF - " + (preview.name || "document");
+            iframe.src = preview.url;
+            body.appendChild(iframe);
+        } else if (this.isImagePreview(preview)) {
+            const image = document.createElement("img");
+            image.className = "esup-filepond-preview-image";
+            image.alt = preview.name || "Aperçu image";
+            image.src = preview.url;
+            body.appendChild(image);
+        } else {
+            const fallback = document.createElement("div");
+            fallback.className = "esup-filepond-preview-fallback";
+            fallback.innerHTML = '<i class="fi fi-rr-file text-muted" aria-hidden="true"></i><p class="mb-3">Aucun aperçu intégré disponible pour ce type de fichier.</p>';
+            const openLink = document.createElement("a");
+            openLink.className = "btn btn-primary";
+            openLink.href = preview.downloadUrl || preview.url;
+            openLink.target = "_blank";
+            openLink.rel = "noopener";
+            openLink.textContent = "Ouvrir le fichier";
+            fallback.appendChild(openLink);
+            body.appendChild(fallback);
+        }
+
+        modal.esupFilePondPreviewOwner = this;
+        this.showPreviewModal(modal);
+    }
+
+    getPreviewDescriptor(file) {
+        const nativeFile = file?.file;
+        const name = file?.filename || nativeFile?.name || "";
+        const contentType = nativeFile?.type || file?.fileType || "";
+        const downloadUrl = file?.getMetadata?.("downloadUrl") || "";
+        const previewUrl = file?.getMetadata?.("previewUrl") || downloadUrl;
+        if (nativeFile instanceof Blob && file?.origin === FilePond.FileOrigin.INPUT) {
+            this.revokePreviewObjectUrl();
+            this.previewObjectUrl = URL.createObjectURL(nativeFile);
+            return {
+                name,
+                contentType,
+                url: this.previewObjectUrl,
+                downloadUrl: this.previewObjectUrl
+            };
+        }
+        return {
+            name,
+            contentType,
+            url: previewUrl,
+            downloadUrl
+        };
+    }
+
+    getPreviewModal() {
+        let modal = document.getElementById("esup-filepond-preview-modal");
+        if (modal != null) {
+            return modal;
+        }
+        modal = document.createElement("div");
+        modal.id = "esup-filepond-preview-modal";
+        modal.className = "modal fade esup-filepond-preview-modal";
+        modal.tabIndex = -1;
+        modal.setAttribute("aria-hidden", "true");
+        modal.innerHTML = `
+            <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title js-esup-filepond-preview-title">Aperçu du fichier</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                    </div>
+                    <div class="modal-body js-esup-filepond-preview-body"></div>
+                    <div class="modal-footer">
+                        <a class="btn btn-outline-secondary js-esup-filepond-preview-download" target="_blank" rel="noopener">Télécharger</a>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                    </div>
+                </div>
+            </div>`;
+        modal.addEventListener("hidden.bs.modal", () => {
+            modal.querySelector(".js-esup-filepond-preview-body")?.replaceChildren();
+            modal.esupFilePondPreviewOwner?.revokePreviewObjectUrl?.();
+            modal.esupFilePondPreviewOwner = null;
+        });
+        document.body.appendChild(modal);
+        return modal;
+    }
+
+    showPreviewModal(modal) {
+        if (window.bootstrap?.Modal != null) {
+            window.bootstrap.Modal.getOrCreateInstance(modal).show();
+            return;
+        }
+        $(modal).modal("show");
+    }
+
+    revokePreviewObjectUrl() {
+        if (this.previewObjectUrl != null) {
+            URL.revokeObjectURL(this.previewObjectUrl);
+            this.previewObjectUrl = null;
+        }
+    }
+
+    isPdfPreview(preview) {
+        return (preview.contentType || "").toLowerCase().includes("pdf") || (preview.name || "").toLowerCase().endsWith(".pdf");
+    }
+
+    isImagePreview(preview) {
+        return (preview.contentType || "").toLowerCase().startsWith("image/") || (preview.name || "").toLowerCase().match(/\.(jpg|jpeg|gif|png|svg|bmp|webp|tif|tiff)$/) != null;
+    }
+
+    isFileUploading(file) {
+        return file?.status === FilePond.FileStatus.PROCESSING
+            || file?.status === FilePond.FileStatus.PROCESSING_QUEUED;
     }
 
     getIconClass(file) {
@@ -765,6 +950,7 @@ class FilePondFilesInputAdapter {
 
     toInitialFile(document) {
         const downloadUrl = "/ws-secure/global/get-file/" + document.id;
+        const previewUrl = "/ws-secure/global/get-file-inline/" + document.id;
         return {
             source: String(document.id),
             options: {
@@ -777,7 +963,8 @@ class FilePondFilesInputAdapter {
                 metadata: {
                     documentId: document.id,
                     deleteUrl: this.readOnly ? "" : "/ws-secure/global/remove-doc/" + document.id + "?" + this.filesInput.csrf.parameterName + "=" + this.filesInput.csrf.token,
-                    downloadUrl
+                    downloadUrl,
+                    previewUrl
                 }
             }
         };

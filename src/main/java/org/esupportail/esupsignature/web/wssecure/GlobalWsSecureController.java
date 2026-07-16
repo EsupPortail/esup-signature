@@ -142,6 +142,18 @@ public class GlobalWsSecureController {
         return ResponseEntity.ok().build();
     }
 
+    @PreAuthorize("@preAuthorizeService.documentView(#documentId, #userEppn, #authUserEppn)")
+    @GetMapping(value = "/get-file-inline/{documentId}")
+    public ResponseEntity<Void> getFileInline(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("documentId") Long documentId, HttpServletResponse httpServletResponse) throws IOException {
+        try {
+            signRequestService.getFileInlineResponse(documentId, httpServletResponse);
+        } catch (Exception e) {
+            logger.warn(e.getMessage());
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        return ResponseEntity.ok().build();
+    }
+
     @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
     @GetMapping("/get-documents-history/{id}/documents/{version}")
     public ResponseEntity<byte[]> downloadDocumentVersion(
@@ -227,16 +239,13 @@ public class GlobalWsSecureController {
         return "{}";
     }
 
-    @PreAuthorize("@preAuthorizeService.signBookCreator(#signBookId, #userEppn)")
-    @PostMapping(value = "/remove-draft-doc/{signBookId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("@preAuthorizeService.draftDocumentCreator(#documentId, #userEppn)")
+    @PostMapping(value = "/remove-draft-doc/{documentId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public String removeDraftDocument(@ModelAttribute("userEppn") String userEppn,
                                       @ModelAttribute("authUserEppn") String authUserEppn,
-                                      @PathVariable("signBookId") Long signBookId,
-                                      @RequestParam("fileName") String fileName,
-                                      @RequestParam(value = "size", required = false) Long size,
-                                      @RequestParam(value = "contentType", required = false) String contentType) {
-        logger.info("remove draft document {} from signBook {}", fileName, signBookId);
-        signRequestService.deleteDraftByOriginalDocument(signBookId, fileName, size, contentType, authUserEppn);
+                                      @PathVariable("documentId") Long documentId) {
+        logger.info("remove draft document {}", documentId);
+        signRequestService.deleteDraftByOriginalDocument(documentId, authUserEppn);
         return "{}";
     }
 

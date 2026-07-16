@@ -690,18 +690,18 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public void deleteDraftByOriginalDocument(Long signBookId, String fileName, Long size, String contentType, String authUserEppn) {
-		SignBook signBook = signBookRepository.findById(signBookId).orElseThrow();
-		Optional<SignRequest> signRequestToDelete = signBook.getSignRequests().stream()
-				.filter(signRequest -> SignRequestStatus.draft.equals(signRequest.getStatus()))
-				.filter(signRequest -> signRequest.getOriginalDocuments().stream().anyMatch(document -> originalDocumentMatches(document, fileName, size, contentType)))
-				.max(Comparator.comparing(SignRequest::getCreateDate));
-		signRequestToDelete.ifPresent(signRequest -> deleteDefinitive(signRequest.getId(), authUserEppn, false));
-	}
-
-	private boolean originalDocumentMatches(Document document, String fileName, Long size, String contentType) {
-		return Objects.equals(document.getFileName(), fileName)
-				&& (!StringUtils.hasText(contentType) || Objects.equals(document.getContentType(), contentType));
+	public void deleteDraftByOriginalDocument(Long documentId, String authUserEppn) {
+		Document document = documentService.getById(documentId);
+		SignRequest signRequest = getById(document.getParentId());
+		if (!SignRequestStatus.draft.equals(signRequest.getStatus())) {
+			throw new EsupSignatureRuntimeException("Le document n'est pas un brouillon supprimable");
+		}
+		boolean documentBelongsToSignRequest = signRequest.getOriginalDocuments().stream()
+				.anyMatch(originalDocument -> Objects.equals(originalDocument.getId(), documentId));
+		if (!documentBelongsToSignRequest) {
+			throw new EsupSignatureRuntimeException("Le document ne correspond pas à un document original de la demande");
+		}
+		deleteDefinitive(signRequest.getId(), authUserEppn, false);
 	}
 
 
@@ -1865,6 +1865,15 @@ public class SignRequestService {
 	 */
 	@Transactional
 	public void getFileResponse(Long documentId, HttpServletResponse httpServletResponse) throws IOException {
+		getFileResponse(documentId, "attachment", httpServletResponse);
+	}
+
+	@Transactional
+	public void getFileInlineResponse(Long documentId, HttpServletResponse httpServletResponse) throws IOException {
+		getFileResponse(documentId, "inline", httpServletResponse);
+	}
+
+	private void getFileResponse(Long documentId, String disposition, HttpServletResponse httpServletResponse) throws IOException {
 		Document document = documentService.getById(documentId);
 		SignRequest signRequest = getById(document.getParentId());
 		if(SecurityContextHolder.getContext().getAuthentication().getAuthorities()
@@ -1875,7 +1884,7 @@ public class SignRequestService {
 				&& !(signRequest.getStatus().equals(SignRequestStatus.completed) || signRequest.getStatus().equals(SignRequestStatus.exported))) {
 			throw new EsupSignatureRuntimeException("Téléchargement interdit avant la fin du circuit");
 		}
-		webUtilsService.copyFileStreamToHttpResponse(document.getFileName(), document.getContentType(), "attachment", document.getInputStream(), httpServletResponse);
+		webUtilsService.copyFileStreamToHttpResponse(document.getFileName(), document.getContentType(), disposition, document.getInputStream(), httpServletResponse);
 	}
 
 	/**
