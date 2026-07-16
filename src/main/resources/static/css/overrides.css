@@ -1058,12 +1058,16 @@ input, textarea, select {
     min-height: 5.25rem;
     color: var(--bs-body-color);
     cursor: pointer;
+    transform: none !important;
+    will-change: auto;
 }
 
 .esup-filepond .filepond--drop-label label {
     cursor: pointer;
     font-size: 1rem;
     font-weight: 400;
+    transform: none !important;
+    will-change: auto;
 }
 
 .esup-filepond .filepond--label-action {
@@ -1079,6 +1083,8 @@ input, textarea, select {
     font-weight: 500;
     line-height: 1.5;
     text-decoration: none;
+    transform: none !important;
+    will-change: auto;
 }
 
 .esup-filepond .filepond--label-action:hover,
@@ -1088,28 +1094,46 @@ input, textarea, select {
     text-decoration: none;
 }
 
-.esup-filepond .filepond--item-panel {
+.esup-filepond {
     border: 1px solid var(--bs-border-color);
     border-radius: var(--bs-border-radius-sm);
     background-color: var(--bs-light);
 }
 
-.esup-filepond .filepond--file {
+.esup-filepond .filepond--item,
+.esup-filepond .filepond--list,
+.esup-filepond .filepond--list-scroller,
+.esup-filepond .filepond--panel,
+.esup-filepond .filepond--panel-center,
+.esup-filepond .filepond--panel-bottom,
+.esup-filepond .filepond--panel-top {
+    will-change: auto;
+}
+
+.esup-filepond .filepond--panel[data-scalable='true'] {
+    transform-style: flat;
+}
+
+.esup-filepond .filepond--panel-center,
+.esup-filepond .filepond--panel-bottom {
+    backface-visibility: visible;
+}
+
+.esup-filepond {
     color: var(--bs-body-color);
     font-family: inherit;
+}
+
+.esup-filepond .filepond--file-info,
+.esup-filepond .filepond--file-status,
+.esup-filepond .filepond--file-action-button {
+    will-change: auto;
 }
 
 .esup-filepond .filepond--file-info-main,
 .esup-filepond .filepond--file-status-main {
     font-size: .9rem;
     font-weight: 500;
-}
-
-.esup-filepond .filepond--file-info-sub,
-.esup-filepond .filepond--file-status-sub {
-    font-size: .78rem;
-    color: var(--bs-secondary-color);
-    opacity: 1;
 }
 
 .esup-filepond .filepond--file-action-button {
