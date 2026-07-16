@@ -165,7 +165,7 @@ export class WizUi {
             this.files = this.input.fileinput('getFileList');
             this.input.fileinput('upload');
         } else {
-            if(this.files != null && this.files.size() > 0) {
+            if(this.getStoredFilesCount() > 0) {
                 this.input.on('filebatchselected', event => this.input.fileinput('upload'));
                 this.input.fileinput('clear');
                 this.input.fileinput('clearFileStack');
@@ -179,6 +179,19 @@ export class WizUi {
 
     hasSignBookId() {
         return this.newSignBookId != null && this.newSignBookId !== "";
+    }
+
+    getStoredFilesCount() {
+        if (this.files == null) {
+            return 0;
+        }
+        if (typeof this.files.size === "function") {
+            return this.files.size();
+        }
+        if (this.files.length != null) {
+            return this.files.length;
+        }
+        return Object.keys(this.files).length;
     }
 
 

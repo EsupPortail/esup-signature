@@ -171,7 +171,10 @@ class FilePondFilesInputAdapter {
                     this.input.trigger("change");
                 }
             },
-            onprocessfilestart: file => this.handleProcessStart(file),
+            onprocessfilestart: file => {
+                this.removeFilePreviewButton(file);
+                this.handleProcessStart(file);
+            },
             onprocessfileabort: file => this.handleUploadAbort(file),
             onprocessfilerevert: file => this.handleFileReverted(file),
             onprocessfile: (error, file) => {
@@ -282,6 +285,7 @@ class FilePondFilesInputAdapter {
         this.uploadAbortNotified = false;
         this.uploadSuccessTriggered = false;
         this.activeUploads.clear();
+        this.getFilesToProcess().forEach(file => this.removeFilePreviewButton(file));
         this.uploadPromise = this.cleanupAbortedUploads()
             .then(() => {
                 if (uploadRunId !== this.uploadRunId || this.batchCancelled) {
@@ -392,6 +396,7 @@ class FilePondFilesInputAdapter {
         };
         request.onload = () => {
             if (request.status >= 200 && request.status < 300) {
+                this.rememberActiveUploadDocuments(file, request.responseText);
                 load(request.responseText);
                 return;
             }
@@ -491,6 +496,12 @@ class FilePondFilesInputAdapter {
         return [];
     }
 
+    getUploadedDocumentIds(serverId) {
+        return this.getUploadedDocuments(serverId)
+            .map(document => document.id)
+            .filter(documentId => documentId != null);
+    }
+
     handleProcessStart(file) {
         if (this.batchCancelled) {
             window.setTimeout(() => file?.abortProcessing?.(), 0);
@@ -528,12 +539,10 @@ class FilePondFilesInputAdapter {
         if (nativeFile?.name == null) {
             return;
         }
-        const uploadKey = this.getNativeFileKey(nativeFile);
-        this.abortedUploads.set(uploadKey, {
-            fileName: nativeFile.name,
-            size: nativeFile.size,
-            contentType: nativeFile.type || ""
-        });
+        const documentIds = this.getUploadedDocumentIds(fileItemOrNativeFile?.serverId);
+        if (documentIds.length > 0) {
+            this.abortedUploads.set(this.getNativeFileKey(nativeFile), documentIds);
+        }
     }
 
     rememberActiveUpload(fileItem) {
@@ -541,42 +550,41 @@ class FilePondFilesInputAdapter {
         if (nativeFile?.name == null) {
             return;
         }
-        this.activeUploads.set(this.getNativeFileKey(nativeFile), {
-            fileName: nativeFile.name,
-            size: nativeFile.size,
-            contentType: nativeFile.type || ""
-        });
+        this.activeUploads.set(this.getNativeFileKey(nativeFile), []);
+    }
+
+    rememberActiveUploadDocuments(nativeFile, serverId) {
+        if (nativeFile?.name == null) {
+            return;
+        }
+        const uploadKey = this.getNativeFileKey(nativeFile);
+        this.activeUploads.set(uploadKey, this.getUploadedDocumentIds(serverId));
     }
 
     rememberActiveUploadsAsAborted() {
-        this.activeUploads.forEach((upload, uploadKey) => {
-            this.abortedUploads.set(uploadKey, upload);
+        this.activeUploads.forEach((documentIds, uploadKey) => {
+            if (documentIds.length > 0) {
+                this.abortedUploads.set(uploadKey, documentIds);
+            }
         });
         this.activeUploads.clear();
     }
 
     cleanupAbortedUploads() {
-        const abortedUploads = Array.from(this.abortedUploads.values());
-        if (abortedUploads.length === 0 || this.filesInput.signBookId == null) {
+        const documentIds = [...new Set(Array.from(this.abortedUploads.values()).flat())];
+        if (documentIds.length === 0) {
             return Promise.resolve();
         }
-        return Promise.all(abortedUploads.map(upload => this.removeDraftUpload(upload)))
+        return Promise.all(documentIds.map(documentId => this.removeDraftDocument(documentId)))
             .then(() => {
                 this.abortedUploads.clear();
             });
     }
 
-    removeDraftUpload(upload) {
+    removeDraftDocument(documentId) {
         const params = new URLSearchParams();
         params.set(this.filesInput.csrf.parameterName, this.filesInput.csrf.token);
-        params.set("fileName", upload.fileName);
-        if (upload.size != null) {
-            params.set("size", upload.size);
-        }
-        if (upload.contentType) {
-            params.set("contentType", upload.contentType);
-        }
-        return fetch("/ws-secure/global/remove-draft-doc/" + this.filesInput.signBookId + "?" + params.toString(), {
+        return fetch("/ws-secure/global/remove-draft-doc/" + documentId + "?" + params.toString(), {
             method: "POST",
             headers: {
                 [this.filesInput.csrf.headerName]: this.filesInput.csrf.token
@@ -680,15 +688,15 @@ class FilePondFilesInputAdapter {
 
     removeAbortedUpload(fileItem) {
         const nativeFile = fileItem?.file;
-        if (nativeFile?.name == null || this.filesInput.signBookId == null) {
+        if (nativeFile?.name == null) {
             return true;
         }
         const uploadKey = this.getNativeFileKey(nativeFile);
-        const upload = this.abortedUploads.get(uploadKey);
-        if (upload == null) {
+        const documentIds = this.abortedUploads.get(uploadKey) || [];
+        if (documentIds.length === 0) {
             return true;
         }
-        return this.removeDraftUpload(upload)
+        return Promise.all(documentIds.map(documentId => this.removeDraftDocument(documentId)))
             .then(() => {
                 this.abortedUploads.delete(uploadKey);
                 return true;
@@ -751,7 +759,16 @@ class FilePondFilesInputAdapter {
         }, 50);
     }
 
+    removeFilePreviewButton(file) {
+        document.getElementById("filepond--item-" + file?.id)
+            ?.querySelector(".esup-filepond-preview-button")
+            ?.remove();
+    }
+
     previewFile(file) {
+        if (this.isFileUploading(file)) {
+            return;
+        }
         const preview = this.getPreviewDescriptor(file);
         if (!preview.url) {
             this.openInitialFile(file);
@@ -879,6 +896,11 @@ class FilePondFilesInputAdapter {
 
     isImagePreview(preview) {
         return (preview.contentType || "").toLowerCase().startsWith("image/") || (preview.name || "").toLowerCase().match(/\.(jpg|jpeg|gif|png|svg|bmp|webp|tif|tiff)$/) != null;
+    }
+
+    isFileUploading(file) {
+        return file?.status === FilePond.FileStatus.PROCESSING
+            || file?.status === FilePond.FileStatus.PROCESSING_QUEUED;
     }
 
     getIconClass(file) {

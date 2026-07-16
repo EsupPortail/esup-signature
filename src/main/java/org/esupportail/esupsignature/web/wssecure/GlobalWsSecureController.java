@@ -239,16 +239,13 @@ public class GlobalWsSecureController {
         return "{}";
     }
 
-    @PreAuthorize("@preAuthorizeService.signBookCreator(#signBookId, #userEppn)")
-    @PostMapping(value = "/remove-draft-doc/{signBookId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("@preAuthorizeService.draftDocumentCreator(#documentId, #userEppn)")
+    @PostMapping(value = "/remove-draft-doc/{documentId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public String removeDraftDocument(@ModelAttribute("userEppn") String userEppn,
                                       @ModelAttribute("authUserEppn") String authUserEppn,
-                                      @PathVariable("signBookId") Long signBookId,
-                                      @RequestParam("fileName") String fileName,
-                                      @RequestParam(value = "size", required = false) Long size,
-                                      @RequestParam(value = "contentType", required = false) String contentType) {
-        logger.info("remove draft document {} from signBook {}", fileName, signBookId);
-        signRequestService.deleteDraftByOriginalDocument(signBookId, fileName, size, contentType, authUserEppn);
+                                      @PathVariable("documentId") Long documentId) {
+        logger.info("remove draft document {}", documentId);
+        signRequestService.deleteDraftByOriginalDocument(documentId, authUserEppn);
         return "{}";
     }
 

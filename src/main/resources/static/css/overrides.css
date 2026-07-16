@@ -1253,13 +1253,19 @@ input, textarea, select {
 
 .esup-filepond .esup-filepond-preview-button {
     position: absolute;
-    top: .6rem;
+    top: 50%;
     right: 2.55rem;
     z-index: 104;
+    transform: translateY(-50%);
 }
 
 .esup-filepond-readonly .esup-filepond-preview-button {
     right: .7rem;
+}
+
+.esup-filepond [data-filepond-item-state='processing'] .esup-filepond-preview-button,
+.esup-filepond [data-filepond-item-state='processing-queued'] .esup-filepond-preview-button {
+    display: none;
 }
 
 .esup-filepond-preview-modal .modal-body {

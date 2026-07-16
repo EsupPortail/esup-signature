@@ -690,18 +690,18 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public void deleteDraftByOriginalDocument(Long signBookId, String fileName, Long size, String contentType, String authUserEppn) {
-		SignBook signBook = signBookRepository.findById(signBookId).orElseThrow();
-		Optional<SignRequest> signRequestToDelete = signBook.getSignRequests().stream()
-				.filter(signRequest -> SignRequestStatus.draft.equals(signRequest.getStatus()))
-				.filter(signRequest -> signRequest.getOriginalDocuments().stream().anyMatch(document -> originalDocumentMatches(document, fileName, size, contentType)))
-				.max(Comparator.comparing(SignRequest::getCreateDate));
-		signRequestToDelete.ifPresent(signRequest -> deleteDefinitive(signRequest.getId(), authUserEppn, false));
-	}
-
-	private boolean originalDocumentMatches(Document document, String fileName, Long size, String contentType) {
-		return Objects.equals(document.getFileName(), fileName)
-				&& (!StringUtils.hasText(contentType) || Objects.equals(document.getContentType(), contentType));
+	public void deleteDraftByOriginalDocument(Long documentId, String authUserEppn) {
+		Document document = documentService.getById(documentId);
+		SignRequest signRequest = getById(document.getParentId());
+		if (!SignRequestStatus.draft.equals(signRequest.getStatus())) {
+			throw new EsupSignatureRuntimeException("Le document n'est pas un brouillon supprimable");
+		}
+		boolean documentBelongsToSignRequest = signRequest.getOriginalDocuments().stream()
+				.anyMatch(originalDocument -> Objects.equals(originalDocument.getId(), documentId));
+		if (!documentBelongsToSignRequest) {
+			throw new EsupSignatureRuntimeException("Le document ne correspond pas à un document original de la demande");
+		}
+		deleteDefinitive(signRequest.getId(), authUserEppn, false);
 	}
 
 
