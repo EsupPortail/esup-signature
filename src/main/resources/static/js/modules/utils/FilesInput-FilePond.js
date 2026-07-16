@@ -140,6 +140,8 @@ class FilePondFilesInputAdapter {
             instantUpload: false,
             maxParallelUploads: 1,
             name: this.input.attr("name") || "multipartFiles",
+            storeAsFile: true,
+            styleProgressIndicatorPosition: "center",
             server: {
                 process: (fieldName, file, metadata, load, error, progress, abort) => {
                     return this.processFile(fieldName, file, load, error, progress, abort);
@@ -161,6 +163,12 @@ class FilePondFilesInputAdapter {
                 if (error == null) {
                     this.input.trigger("fileremoved", [file]);
                     this.input.trigger("change");
+                }
+            },
+            onprocessfileabort: file => this.handleUploadAbort(file),
+            onprocessfile: (error, file) => {
+                if (error != null) {
+                    this.notifyUploadError(this.getUploadErrorMessage(error), file);
                 }
             },
             onactivatefile: file => this.openInitialFile(file)
@@ -222,6 +230,8 @@ class FilePondFilesInputAdapter {
             return this.uploadPromise;
         }
         this.locked = true;
+        this.uploadErrorNotified = false;
+        this.uploadAbortNotified = false;
         this.uploadPromise = this.pond.processFiles()
             .then(files => {
                 this.locked = false;
@@ -230,8 +240,10 @@ class FilePondFilesInputAdapter {
             })
             .catch(error => {
                 this.locked = false;
-                this.input.trigger("fileuploaderror", [error]);
-                throw error;
+                if (error?.aborted !== true && this.uploadErrorNotified !== true) {
+                    this.notifyUploadError(this.getUploadErrorMessage(error));
+                }
+                return [];
             });
         return this.uploadPromise;
     }
@@ -302,12 +314,12 @@ class FilePondFilesInputAdapter {
                 return;
             }
             const message = request.responseText || request.statusText;
-            this.input.trigger("fileuploaderror", [message]);
+            this.lastUploadErrorMessage = message;
             error(message);
         };
         request.onerror = () => {
             const message = request.responseText || "Erreur durant le transfert";
-            this.input.trigger("fileuploaderror", [message]);
+            this.lastUploadErrorMessage = message;
             error(message);
         };
         const formData = new FormData();
@@ -316,9 +328,42 @@ class FilePondFilesInputAdapter {
         return {
             abort: () => {
                 request.abort();
+                this.handleUploadAbort();
                 abort();
             }
         };
+    }
+
+    handleUploadAbort(file = null) {
+        if (this.uploadAbortNotified === true) {
+            return;
+        }
+        this.uploadAbortNotified = true;
+        this.locked = false;
+        this.uploadPromise = null;
+        this.input.trigger("fileuploaderror", [{aborted: true, file}]);
+    }
+
+    notifyUploadError(message, file = null) {
+        if (this.uploadErrorNotified === true) {
+            return;
+        }
+        this.uploadErrorNotified = true;
+        const errorMessage = message || "Erreur durant le transfert";
+        this.locked = false;
+        this.input.trigger("fileuploaderror", [errorMessage, file]);
+    }
+
+    getUploadErrorMessage(error) {
+        if (this.lastUploadErrorMessage) {
+            const message = this.lastUploadErrorMessage;
+            this.lastUploadErrorMessage = null;
+            return message;
+        }
+        if (typeof error === "string") {
+            return error;
+        }
+        return error?.body || error?.main || error?.message || error?.error || "Erreur durant le transfert";
     }
 
     removeServerFile(file) {

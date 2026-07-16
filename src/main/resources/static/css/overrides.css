@@ -1208,10 +1208,20 @@ input, textarea, select {
     color: rgba(255, 255, 255, .72);
 }
 
+.esup-filepond .filepond--progress-indicator {
+    color: var(--bs-body-color);
+}
+
+.esup-filepond [data-filepond-item-state='processing-complete'] .filepond--progress-indicator,
+.esup-filepond [data-filepond-item-state*='invalid'] .filepond--progress-indicator,
+.esup-filepond [data-filepond-item-state*='error'] .filepond--progress-indicator {
+    color: var(--bs-white);
+}
+
 .esup-filepond .filepond--file-action-button {
     cursor: pointer;
-    color: var(--bs-body-color);
-    background-color: var(--bs-body-bg);
+    color: var(--bs-white);
+    background-color: rgba(0, 0, 0, .55);
 }
 
 .esup-filepond .filepond--file-action-button:hover,
