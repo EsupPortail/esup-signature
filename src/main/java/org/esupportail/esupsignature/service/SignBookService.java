@@ -1018,7 +1018,11 @@ public class SignBookService {
             deleteDefinitive(signBookId, userEppn);
             return true;
         }
-        List<Long> signRequestsIds = signBook.getSignRequests().stream().map(SignRequest::getId).toList();
+        List<Long> signRequestsIds = signBook.getSignRequests().stream()
+                .filter(Objects::nonNull)
+                .map(SignRequest::getId)
+                .filter(Objects::nonNull)
+                .toList();
         for(Long signRequestId : signRequestsIds) {
             signRequestService.delete(signRequestId, userEppn);
         }
@@ -1078,7 +1082,11 @@ public class SignBookService {
             for (Long liveWorkflowStepId : liveWorkflowStepIds) {
                 liveWorkflowStepService.delete(liveWorkflowStepId);
             }
-            List<Long> signRequestsIds = signBook.getSignRequests().stream().map(SignRequest::getId).toList();
+            List<Long> signRequestsIds = signBook.getSignRequests().stream()
+                    .filter(Objects::nonNull)
+                    .map(SignRequest::getId)
+                    .filter(Objects::nonNull)
+                    .toList();
             for (Long signRequestId : signRequestsIds) {
                 signRequestService.deleteDefinitive(signRequestId, userEppn, false);
             }
@@ -1557,7 +1565,7 @@ public class SignBookService {
      * @param multipartFiles Un tableau de fichiers multipart contenant les documents à*/
     @Transactional
     public List<Document> addDocumentsToSignBook(Long signBookId, MultipartFile[] multipartFiles, String authUserEppn, String signRequestParamsDetectionPattern, boolean keepSignFields, boolean unzip) {
-        SignBook signBook = getById(signBookId);
+        SignBook signBook = signBookRepository.findByIdForUpdate(signBookId).orElseThrow();
         Workflow workflow = signBook.getLiveWorkflow().getWorkflow();
         if(workflow != null) {
             keepSignFields = StringUtils.hasText(workflow.getSignRequestParamsDetectionPattern());

@@ -134,7 +134,7 @@ class FilePondFilesInputAdapter {
         console.info("Enable FilePond for : " + this.input.attr("name"));
         this.input.closest(".file-loading").removeClass("file-loading").addClass("esup-filepond-container");
         this.initialReadOnlyFileCount = documents.length;
-        this.pond = FilePond.create(this.input[0], {
+        const options = {
             ...filePondFrLocale,
             styleProgressIndicatorPosition: 'center',
             allowBrowse: !this.readOnly,
@@ -147,17 +147,9 @@ class FilePondFilesInputAdapter {
             credits: false,
             files: documents.map(document => this.toInitialFile(document)),
             instantUpload: false,
-            maxParallelUploads: 1,
+            maxParallelUploads: 4,
             name: this.input.attr("name") || "multipartFiles",
             storeAsFile: true,
-            server: {
-                process: (fieldName, file, metadata, load, error, progress, abort) => {
-                    return this.processFile(fieldName, file, load, error, progress, abort);
-                },
-                revert: (uniqueFileId, load, error) => {
-                    this.revertFile(uniqueFileId, load, error);
-                }
-            },
             beforeAddFile: file => this.validateFile(file),
             beforeRemoveFile: file => this.removeServerFile(file),
             onaddfile: (error, file) => {
@@ -191,13 +183,29 @@ class FilePondFilesInputAdapter {
                 }
             },
             onactivatefile: file => this.openInitialFile(file)
-        });
+        };
+        if (!this.usesNativeMultipartSubmit()) {
+            options.server = {
+                process: (fieldName, file, metadata, load, error, progress, abort) => {
+                    return this.processFile(fieldName, file, load, error, progress, abort);
+                },
+                revert: (uniqueFileId, load, error) => {
+                    this.revertFile(uniqueFileId, load, error);
+                }
+            };
+        }
+        this.pond = FilePond.create(this.input[0], options);
         this.pond.element.classList.add("esup-filepond");
         if (this.readOnly) {
             this.pond.element.classList.add("esup-filepond-readonly");
         }
         this.requestReadonlyHeightUpdate();
         return this.pond;
+    }
+
+    usesNativeMultipartSubmit() {
+        const formAction = this.input.closest("form").attr("action") || "";
+        return formAction.includes("/signrequests/clone/");
     }
 
     command(command, ...args) {

@@ -242,7 +242,7 @@ export class WizUi {
         $("#send-pending-button").removeAttr("disabled");
     }
 
-    fastStartSign() {
+    fastStartSign(afterDisplay = null) {
         let self = this;
         console.info("start fast signbook");
         $.ajax({
@@ -253,6 +253,9 @@ export class WizUi {
             success : function(html) {
                 self.fastSignDisplayForm(html);
                 self.manageMinMaxLevels();
+                if (typeof afterDisplay === "function") {
+                    afterDisplay(self);
+                }
             }
         });
     }

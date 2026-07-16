@@ -70,15 +70,32 @@
         <a target="_blank" th:if="${signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported}" class="d-flex justify-content-center btn btn-transparent text-dark" th:href="'/user/validation/document/' + ${signRequestLight.id}" title="Contrôler le document">
             <i class="fi fi-rr-audit"></i>
         </a>
+        <button th:if="${user.userType.name() != 'external'
+                    && userEppn == authUserEppn
+                    && !globalProperties.hideSendSignRequest
+                    && showSignRequest.signedDocuments != null
+                    && showSignRequest.signedDocuments.size() > 0
+                    && (signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed
+                        || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported
+                        || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived
+                        || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned)}"
+                type="button"
+                class="js-reuse-last-signed-file d-flex justify-content-center btn btn-transparent text-dark"
+                data-bs-toggle="modal"
+                data-bs-target="#wiz-fast-sign-modal"
+                title="Nouvelle demande depuis ce document"
+                th:attr="data-document-id=${showSignRequest.signedDocuments[showSignRequest.signedDocuments.size() - 1].id},
+                         data-filename=${showSignRequest.signedDocuments[showSignRequest.signedDocuments.size() - 1].fileName}">
+            <span class="spinner-border spinner-border-sm d-none js-reuse-last-signed-spinner" aria-hidden="true"></span>
+            <i class="fi fi-rr-paper-plane js-reuse-last-signed-icon"></i>
+        </button>
         <a th:if="${showSignRequest.workflow.authorizeClone && signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused && signRequestLight.createBy.eppn == userEppn}" tabindex="1" type="button"
            class="d-flex justify-content-center btn btn-transparent text-dark" data-bs-toggle="modal" title="Relancer cette demande"
            data-bs-target="#cloneModal">
             <i class="fi fi-rr-refresh" style="margin-top: 10px;"></i>
         </a>
         <th:block id="openButtons" class="es-fixed-action-btns active"
-                  th:if="${showSignRequest.viewRight && (signRequestLight.deleted || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned)}"
-                  onmouseover="$('#openButtons').toggleClass('active');"
-                  onmouseout="$('#openButtons').toggleClass('active');">
+                  th:if="${showSignRequest.viewRight && (signRequestLight.deleted || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned)}">
             <li>
                 <a tabindex="1" th:if="${signRequestLight.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported}"
                    class="btn btn btn-floating bg-dark d-none" th:href="'/user/validation/document/' + ${signRequestLight.id}" title="Contrôler le document">
