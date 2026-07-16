@@ -1032,14 +1032,19 @@ input, textarea, select {
 }
 
 .esup-filepond.filepond--root {
+    --esup-filepond-font-size: clamp(1rem, .94rem + .28vw, 1.25rem);
+    --esup-filepond-action-font-size: clamp(.95rem, .9rem + .22vw, 1.15rem);
+    --esup-filepond-meta-font-size: clamp(.85rem, .8rem + .18vw, 1rem);
+    --esup-filepond-sub-font-size: clamp(.76rem, .72rem + .16vw, .9rem);
+    --esup-filepond-icon-size: clamp(1.2rem, 1.05rem + .35vw, 1.45rem);
     margin-bottom: 1rem;
     font-family: "Lexend", sans-serif;
-    font-size: 1rem;
+    font-size: var(--esup-filepond-font-size);
     line-height: 1.5;
 }
 
 .esup-filepond .filepond--panel-root {
-    border: 2px dashed var(--color-dee2e6);
+    border: 1px solid var(--bs-dark-bg-subtle);
     border-radius: var(--bs-border-radius-sm);
     background-color: var(--bs-body-bg);
     box-shadow: none;
@@ -1052,7 +1057,7 @@ input, textarea, select {
 }
 
 .esup-filepond .filepond--drop-label {
-    min-height: 5.25rem;
+    min-height: clamp(5.25rem, 4.5rem + 2vw, 6.5rem);
     color: var(--bs-body-color);
     cursor: pointer;
     transform: none !important;
@@ -1061,8 +1066,9 @@ input, textarea, select {
 
 .esup-filepond .filepond--drop-label label {
     cursor: pointer;
-    font-size: 1rem;
+    font-size: var(--esup-filepond-font-size);
     font-weight: 400;
+    line-height: 1.5;
     transform: none !important;
     will-change: auto;
 }
@@ -1080,7 +1086,7 @@ input, textarea, select {
     background-color: var(--bs-light);
     color: var(--bs-body-color);
     font-family: inherit;
-    font-size: .95rem;
+    font-size: var(--esup-filepond-action-font-size);
     font-weight: 500;
     line-height: 1.5;
     text-decoration: none;
@@ -1159,9 +1165,9 @@ input, textarea, select {
     top: .68rem;
     left: 2.65rem;
     z-index: 103;
-    width: 1.5rem;
-    min-height: 1.5rem;
-    font-size: 1.2rem;
+    width: calc(var(--esup-filepond-icon-size) + .3rem);
+    min-height: calc(var(--esup-filepond-icon-size) + .3rem);
+    font-size: var(--esup-filepond-icon-size);
     line-height: 1 !important;
     text-align: center;
     pointer-events: none;
@@ -1169,7 +1175,7 @@ input, textarea, select {
 
 .esup-filepond .esup-filepond-file-icon:before {
     display: block;
-    font-size: 1.2rem;
+    font-size: var(--esup-filepond-icon-size);
     line-height: 1;
 }
 
@@ -1179,14 +1185,14 @@ input, textarea, select {
 
 .esup-filepond .filepond--file-info-main,
 .esup-filepond .filepond--file-status-main {
-    font-size: .9rem;
+    font-size: var(--esup-filepond-meta-font-size);
     font-weight: 500;
 }
 
 .esup-filepond .filepond--file-info-sub,
 .esup-filepond .filepond--file-status-sub {
     color: var(--bs-secondary-color);
-    font-size: .78rem;
+    font-size: var(--esup-filepond-sub-font-size);
     opacity: 1;
 }
 
