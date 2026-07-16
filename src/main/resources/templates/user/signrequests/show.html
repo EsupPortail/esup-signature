@@ -236,6 +236,7 @@
 </main>
 
 <div th:replace="~{user/signrequests/includes/modals/show-modals :: all-modals}"></div>
+<div th:replace="~{fragments/new-modals :: new-modals}"></div>
 
 <footer th:replace="~{fragments/footer :: footer}"></footer>
 <textarea id="favorite-signrequest-params-json" class="d-none" th:if="${showSignRequest.signBookLight.archiveStatus != T(org.esupportail.esupsignature.entity.enums.ArchiveStatus).cleaned}" th:text="${favoriteSignRequestParamsJson}" aria-hidden="true"></textarea>

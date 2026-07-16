@@ -247,25 +247,37 @@
     <div th:if="${@preAuthorizeService.signRequestManager(signRequestLight.id, authUserEppn)}" data-bs-focus="false" class="modal modal-lg modal-warning fade in" th:id="'modal-warning-' + ${signRequestLight.id}">
         <div class="modal-dialog">
             <div class="modal-content">
-                <form id="command" th:action="'/user/signrequests/'+ ${signRequestLight.id}" th:method="delete">
-                    <input th:if="${!signRequestLight.deleted && signRequestFull.nbSignRequests > 1}" type="hidden" name="definitive" value="true">
-                    <div class="modal-header">
-                        <h4 class="d-flex align-items-center"><i class="fi fi-rr-trash"></i>Attention</h4>
-                        <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close"></button>
+                <div class="modal-header">
+                    <h4 class="d-flex align-items-center"><i class="fi fi-rr-trash"></i>Attention</h4>
+                    <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div th:if="${!signRequestLight.deleted && signRequestFull.nbSignRequests > 1}" class="alert alert-danger">
+                        Choisissez si vous souhaitez supprimer uniquement le document courant ou mettre toute la demande à la corbeille.
                     </div>
-                    <div class="modal-body">
-                        <div th:if="${!signRequestLight.deleted && signRequestFull.nbSignRequests > 1}" class="alert alert-danger">Confirmez-vous la suppression définitive de ce document ? (les autres documents de la demande sont conservés)</div>
-                        <div th:if="${!signRequestLight.deleted && signRequestFull.nbSignRequests == 1}" class="alert alert-danger">Confirmez-vous la mise à la corbeille de cette demande ?</div>
-                        <div th:if="${signRequestLight.deleted}" class="alert alert-danger">Confirmez-vous la suppression définitivement de cette demande ?</div>
+                    <div th:if="${!signRequestLight.deleted && signRequestFull.nbSignRequests == 1}" class="alert alert-danger">
+                        Confirmez-vous la mise à la corbeille de cette demande ?
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary float-start" data-bs-dismiss="modal">Annuler</button>
-                        <button type="submit" class="btn btn-danger">
-                            <span th:if="${signRequestLight.deleted}">Supprimer définitivement</span>
-                            <span th:unless="${signRequestLight.deleted}">Mettre à la corbeille</span>
+                    <div th:if="${signRequestLight.deleted}" class="alert alert-danger">
+                        Choisissez si vous souhaitez supprimer définitivement uniquement le document courant ou toute la demande.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary me-auto" data-bs-dismiss="modal">Annuler</button>
+                    <form th:if="${@preAuthorizeService.signBookManage(showSignRequest.signBookLight.id, authUserEppn)}" th:action="'/user/signbooks/'+ ${showSignRequest.signBookLight.id}" th:method="delete" class="d-inline">
+                        <button type="submit" class="btn btn-outline-danger">
+                            <span th:if="${signRequestLight.deleted}">Supprimer toute la demande définitivement</span>
+                            <span th:unless="${signRequestLight.deleted}">Mettre toute la demande à la corbeille</span>
                         </button>
-                    </div>
-                </form>
+                    </form>
+                    <form th:if="${signRequestFull.nbSignRequests > 1}" th:action="'/user/signrequests/'+ ${signRequestLight.id}" th:method="delete" class="d-inline">
+                        <input th:if="${!signRequestLight.deleted}" type="hidden" name="definitive" value="true">
+                        <button type="submit" class="btn btn-danger">
+                            <span th:if="${signRequestLight.deleted}">Supprimer ce document définitivement</span>
+                            <span th:unless="${signRequestLight.deleted}">Supprimer uniquement ce document</span>
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>

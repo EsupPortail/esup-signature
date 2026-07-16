@@ -122,36 +122,40 @@ class FilePondFilesInputAdapter {
         this.pond = null;
         this.locked = false;
         this.uploadPromise = null;
+        this.uploadRunId = 0;
+        this.batchCancelled = false;
+        this.revertedDocumentIds = new Set();
+        this.abortedUploads = new Map();
+        this.activeUploads = new Map();
+        this.initialReadOnlyFileCount = 0;
     }
 
     init(documents) {
         console.info("Enable FilePond for : " + this.input.attr("name"));
-        this.pond = FilePond.create(this.input[0], {
+        this.input.closest(".file-loading").removeClass("file-loading").addClass("esup-filepond-container");
+        this.initialReadOnlyFileCount = documents.length;
+        const options = {
             ...filePondFrLocale,
+            styleProgressIndicatorPosition: 'center',
             allowBrowse: !this.readOnly,
             allowDrop: !this.readOnly,
             allowPaste: !this.readOnly,
             allowMultiple: this.input.prop("multiple"),
-            allowReorder: true,
+            allowReorder: !this.readOnly && this.input.prop("multiple"),
             allowRemove: !this.readOnly,
-            allowRevert: false,
+            allowRevert: !this.readOnly,
             credits: false,
             files: documents.map(document => this.toInitialFile(document)),
             instantUpload: false,
-            maxParallelUploads: 1,
+            maxParallelUploads: 4,
             name: this.input.attr("name") || "multipartFiles",
             storeAsFile: true,
-            styleProgressIndicatorPosition: "center",
-            server: {
-                process: (fieldName, file, metadata, load, error, progress, abort) => {
-                    return this.processFile(fieldName, file, load, error, progress, abort);
-                }
-            },
             beforeAddFile: file => this.validateFile(file),
             beforeRemoveFile: file => this.removeServerFile(file),
             onaddfile: (error, file) => {
                 if (error == null) {
                     this.decorateFileIcon(file);
+                    this.requestReadonlyHeightUpdate();
                     if (file?.origin === FilePond.FileOrigin.INPUT) {
                         this.input.trigger("fileselect", [file]);
                         this.input.trigger("filebatchselected", [this.getNativeFiles()]);
@@ -161,23 +165,47 @@ class FilePondFilesInputAdapter {
             },
             onremovefile: (error, file) => {
                 if (error == null) {
+                    this.requestReadonlyHeightUpdate();
                     this.input.trigger("fileremoved", [file]);
                     this.input.trigger("change");
                 }
             },
+            onprocessfilestart: file => this.handleProcessStart(file),
             onprocessfileabort: file => this.handleUploadAbort(file),
+            onprocessfilerevert: file => this.handleFileReverted(file),
             onprocessfile: (error, file) => {
                 if (error != null) {
                     this.notifyUploadError(this.getUploadErrorMessage(error), file);
+                } else {
+                    this.storeUploadedDocuments(file);
+                    this.activeUploads.delete(this.getNativeFileKey(file.file || {}));
+                    this.handleSingleFileProcessed(file);
                 }
             },
             onactivatefile: file => this.openInitialFile(file)
-        });
+        };
+        if (!this.usesNativeMultipartSubmit()) {
+            options.server = {
+                process: (fieldName, file, metadata, load, error, progress, abort) => {
+                    return this.processFile(fieldName, file, load, error, progress, abort);
+                },
+                revert: (uniqueFileId, load, error) => {
+                    this.revertFile(uniqueFileId, load, error);
+                }
+            };
+        }
+        this.pond = FilePond.create(this.input[0], options);
         this.pond.element.classList.add("esup-filepond");
         if (this.readOnly) {
             this.pond.element.classList.add("esup-filepond-readonly");
         }
+        this.requestReadonlyHeightUpdate();
         return this.pond;
+    }
+
+    usesNativeMultipartSubmit() {
+        const formAction = this.input.closest("form").attr("action") || "";
+        return formAction.includes("/signrequests/clone/");
     }
 
     command(command, ...args) {
@@ -210,6 +238,23 @@ class FilePondFilesInputAdapter {
         }
     }
 
+    requestReadonlyHeightUpdate() {
+        this.updateReadonlyHeight();
+        window.requestAnimationFrame(() => this.updateReadonlyHeight());
+        window.setTimeout(() => this.updateReadonlyHeight(), 100);
+    }
+
+    updateReadonlyHeight() {
+        if (!this.readOnly || this.pond == null) {
+            return;
+        }
+        const fileCount = Math.max(this.pond.getFiles().length, this.initialReadOnlyFileCount, 1);
+        const heightRem = Math.max(4.375, fileCount * 3.75 + 1);
+        this.pond.element.style.setProperty("--esup-filepond-file-count", String(fileCount));
+        this.pond.element.style.height = heightRem + "rem";
+        this.pond.element.style.minHeight = heightRem + "rem";
+    }
+
     getNativeFiles() {
         return this.pond.getFiles()
             .filter(file => file.origin === FilePond.FileOrigin.INPUT)
@@ -229,23 +274,59 @@ class FilePondFilesInputAdapter {
         if (this.locked) {
             return this.uploadPromise;
         }
+        const uploadRunId = ++this.uploadRunId;
         this.locked = true;
+        this.batchCancelled = false;
         this.uploadErrorNotified = false;
         this.uploadAbortNotified = false;
-        this.uploadPromise = this.pond.processFiles()
+        this.uploadSuccessTriggered = false;
+        this.activeUploads.clear();
+        this.uploadPromise = this.cleanupAbortedUploads()
+            .then(() => {
+                if (uploadRunId !== this.uploadRunId || this.batchCancelled) {
+                    return [];
+                }
+                const filesToProcess = this.getFilesToProcess();
+                if (filesToProcess.length === 0) {
+                    this.locked = false;
+                    this.triggerBatchUploadSuccess([]);
+                    return [];
+                }
+                return this.pond.processFiles(filesToProcess);
+            })
             .then(files => {
+                if (uploadRunId !== this.uploadRunId || this.batchCancelled || !this.locked) {
+                    return [];
+                }
                 this.locked = false;
-                this.input.trigger("filebatchuploadsuccess", [files]);
+                this.triggerBatchUploadSuccess(files);
                 return files;
             })
             .catch(error => {
+                if (uploadRunId !== this.uploadRunId) {
+                    return [];
+                }
                 this.locked = false;
-                if (error?.aborted !== true && this.uploadErrorNotified !== true) {
+                if (!this.batchCancelled && error?.aborted !== true && this.uploadErrorNotified !== true) {
                     this.notifyUploadError(this.getUploadErrorMessage(error));
                 }
                 return [];
             });
         return this.uploadPromise;
+    }
+
+    getFilesToProcess() {
+        return this.pond.getFiles()
+            .filter(file => file.origin === FilePond.FileOrigin.INPUT)
+            .filter(file => file.status !== FilePond.FileStatus.PROCESSING_COMPLETE);
+    }
+
+    triggerBatchUploadSuccess(files) {
+        if (this.uploadSuccessTriggered === true) {
+            return;
+        }
+        this.uploadSuccessTriggered = true;
+        this.input.trigger("filebatchuploadsuccess", [files]);
     }
 
     clear() {
@@ -328,20 +409,230 @@ class FilePondFilesInputAdapter {
         return {
             abort: () => {
                 request.abort();
+                this.rememberAbortedUpload(file);
                 this.handleUploadAbort();
                 abort();
             }
         };
     }
 
+    storeUploadedDocuments(file) {
+        const uploadedDocuments = this.getUploadedDocuments(file?.serverId);
+        if (uploadedDocuments.length > 0 && typeof file?.setMetadata === "function") {
+            file.setMetadata("uploadedDocuments", uploadedDocuments, true);
+        }
+    }
+
+    revertFile(uniqueFileId, load, error) {
+        const uploadedDocuments = this.getUploadedDocuments(uniqueFileId);
+        if (uploadedDocuments.length === 0) {
+            load();
+            return;
+        }
+        this.removeUploadedDocuments(uploadedDocuments)
+            .then(() => load())
+            .catch(e => error(this.getUploadErrorMessage(e)));
+    }
+
+    handleFileReverted(file) {
+        if (file?.id == null) {
+            return;
+        }
+        window.setTimeout(() => {
+            try {
+                this.pond.removeFile(file.id, {revert: false});
+            } catch (e) {
+                console.debug("FilePond reverted file removal skipped", e);
+            }
+        }, 0);
+    }
+
+    removeUploadedDocuments(uploadedDocuments) {
+        const documentIds = uploadedDocuments
+            .map(document => document?.id)
+            .filter(documentId => documentId != null)
+            .filter(documentId => !this.revertedDocumentIds.has(String(documentId)));
+        if (documentIds.length === 0) {
+            return Promise.resolve();
+        }
+        return Promise.all(documentIds.map(documentId => this.removeDocumentById(documentId)))
+            .then(() => documentIds.forEach(documentId => this.revertedDocumentIds.add(String(documentId))));
+    }
+
+    removeDocumentById(documentId) {
+        return fetch("/ws-secure/global/remove-doc/" + documentId + "?" + this.filesInput.csrf.parameterName + "=" + this.filesInput.csrf.token, {
+            method: "POST",
+            headers: {
+                [this.filesInput.csrf.headerName]: this.filesInput.csrf.token
+            }
+        }).then(response => {
+            if (!response.ok) {
+                throw new Error(response.statusText || "Erreur durant la suppression du document");
+            }
+        });
+    }
+
+    getUploadedDocuments(serverId) {
+        if (!serverId) {
+            return [];
+        }
+        try {
+            const response = JSON.parse(serverId);
+            if (Array.isArray(response)) {
+                return response.filter(document => document?.id != null);
+            }
+            if (response?.id != null) {
+                return [response];
+            }
+        } catch (e) {
+            console.debug("FilePond upload response is not a document list", e);
+        }
+        return [];
+    }
+
+    handleProcessStart(file) {
+        if (this.batchCancelled) {
+            window.setTimeout(() => file?.abortProcessing?.(), 0);
+            return;
+        }
+        this.rememberActiveUpload(file);
+        if (!this.locked) {
+            this.uploadRunId++;
+            this.uploadAbortNotified = false;
+            this.uploadErrorNotified = false;
+        }
+    }
+
     handleUploadAbort(file = null) {
         if (this.uploadAbortNotified === true) {
             return;
         }
+        this.rememberAbortedUpload(file);
+        this.rememberActiveUploadsAsAborted();
+        this.batchCancelled = true;
+        this.uploadRunId++;
         this.uploadAbortNotified = true;
         this.locked = false;
         this.uploadPromise = null;
         this.input.trigger("fileuploaderror", [{aborted: true, file}]);
+        window.setTimeout(() => {
+            this.abortQueuedFiles(file);
+            this.resetInterruptedFiles();
+            this.batchCancelled = false;
+        }, 0);
+    }
+
+    rememberAbortedUpload(fileItemOrNativeFile = null) {
+        const nativeFile = fileItemOrNativeFile?.file || fileItemOrNativeFile;
+        if (nativeFile?.name == null) {
+            return;
+        }
+        const uploadKey = this.getNativeFileKey(nativeFile);
+        this.abortedUploads.set(uploadKey, {
+            fileName: nativeFile.name,
+            size: nativeFile.size,
+            contentType: nativeFile.type || ""
+        });
+    }
+
+    rememberActiveUpload(fileItem) {
+        const nativeFile = fileItem?.file;
+        if (nativeFile?.name == null) {
+            return;
+        }
+        this.activeUploads.set(this.getNativeFileKey(nativeFile), {
+            fileName: nativeFile.name,
+            size: nativeFile.size,
+            contentType: nativeFile.type || ""
+        });
+    }
+
+    rememberActiveUploadsAsAborted() {
+        this.activeUploads.forEach((upload, uploadKey) => {
+            this.abortedUploads.set(uploadKey, upload);
+        });
+        this.activeUploads.clear();
+    }
+
+    cleanupAbortedUploads() {
+        const abortedUploads = Array.from(this.abortedUploads.values());
+        if (abortedUploads.length === 0 || this.filesInput.signBookId == null) {
+            return Promise.resolve();
+        }
+        return Promise.all(abortedUploads.map(upload => this.removeDraftUpload(upload)))
+            .then(() => {
+                this.abortedUploads.clear();
+            });
+    }
+
+    removeDraftUpload(upload) {
+        const params = new URLSearchParams();
+        params.set(this.filesInput.csrf.parameterName, this.filesInput.csrf.token);
+        params.set("fileName", upload.fileName);
+        if (upload.size != null) {
+            params.set("size", upload.size);
+        }
+        if (upload.contentType) {
+            params.set("contentType", upload.contentType);
+        }
+        return fetch("/ws-secure/global/remove-draft-doc/" + this.filesInput.signBookId + "?" + params.toString(), {
+            method: "POST",
+            headers: {
+                [this.filesInput.csrf.headerName]: this.filesInput.csrf.token
+            }
+        }).then(response => {
+            if (!response.ok) {
+                throw new Error(response.statusText || "Erreur durant le nettoyage du document annulé");
+            }
+        });
+    }
+
+    handleSingleFileProcessed(file) {
+        if (this.locked || this.batchCancelled) {
+            return;
+        }
+        if (this.getFilesToProcess().length > 0) {
+            return;
+        }
+        this.triggerBatchUploadSuccess([file]);
+    }
+
+    getNativeFileKey(file) {
+        return [file.name || "", file.size || "", file.type || ""].join("|");
+    }
+
+    abortQueuedFiles(sourceFile = null) {
+        this.pond.getFiles()
+            .filter(file => file !== sourceFile)
+            .filter(file => file.status === FilePond.FileStatus.PROCESSING || file.status === FilePond.FileStatus.PROCESSING_QUEUED)
+            .filter(file => typeof file.abortProcessing === "function")
+            .forEach(file => {
+                try {
+                    file.abortProcessing();
+                } catch (e) {
+                    console.debug("FilePond abort skipped", e);
+                }
+            });
+    }
+
+    resetInterruptedFiles() {
+        const interruptedFiles = this.pond.getFiles()
+            .filter(file => file.origin === FilePond.FileOrigin.INPUT)
+            .filter(file => file.status !== FilePond.FileStatus.PROCESSING_COMPLETE)
+            .map(file => ({
+                id: file.id,
+                file: file.file,
+                index: this.pond.getFiles().indexOf(file)
+            }))
+            .filter(item => item.file != null);
+
+        interruptedFiles.reduce((promise, item) => {
+            return promise
+                .then(() => Promise.resolve(this.pond.removeFile(item.id, {revert: false})))
+                .then(() => this.pond.addFile(item.file, {index: item.index}))
+                .then(file => this.decorateFileIcon(file))
+                .catch(e => console.debug("FilePond interrupted file reset skipped", e));
+        }, Promise.resolve());
     }
 
     notifyUploadError(message, file = null) {
@@ -369,7 +660,14 @@ class FilePondFilesInputAdapter {
     removeServerFile(file) {
         const deleteUrl = file?.getMetadata?.("deleteUrl");
         if (this.readOnly || !deleteUrl) {
-            return true;
+            const uploadedDocuments = file?.getMetadata?.("uploadedDocuments") || this.getUploadedDocuments(file?.serverId);
+            if (this.readOnly) {
+                return true;
+            }
+            if (uploadedDocuments.length > 0) {
+                return this.removeUploadedDocuments(uploadedDocuments);
+            }
+            return this.removeAbortedUpload(file);
         }
         return fetch(deleteUrl, {
             method: "POST",
@@ -377,6 +675,23 @@ class FilePondFilesInputAdapter {
                 [this.filesInput.csrf.headerName]: this.filesInput.csrf.token
             }
         }).then(response => response.ok);
+    }
+
+    removeAbortedUpload(fileItem) {
+        const nativeFile = fileItem?.file;
+        if (nativeFile?.name == null || this.filesInput.signBookId == null) {
+            return true;
+        }
+        const uploadKey = this.getNativeFileKey(nativeFile);
+        const upload = this.abortedUploads.get(uploadKey);
+        if (upload == null) {
+            return true;
+        }
+        return this.removeDraftUpload(upload)
+            .then(() => {
+                this.abortedUploads.delete(uploadKey);
+                return true;
+            });
     }
 
     openInitialFile(file) {

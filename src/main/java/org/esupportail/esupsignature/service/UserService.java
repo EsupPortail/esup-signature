@@ -457,10 +457,10 @@ public class UserService {
         }
         authUser.setFavoriteSignRequestParams(signRequestParams);
         if(multipartKeystore != null && !multipartKeystore.isEmpty() && !globalProperties.getDisableCertStorage()) {
-            if(authUser.getKeystore() != null) {
+            if(authUser.getKeystore() != null && authUser.getKeystore().getId() != null) {
                 documentService.delete(authUser.getKeystore());
             }
-            authUser.setKeystore(documentService.createDocument(multipartKeystore.getInputStream(), authUser, authUser.getEppn() + "_" + multipartKeystore.getOriginalFilename().split("\\.")[0] + ".p12", multipartKeystore.getContentType()));
+            authUser.setKeystore(documentService.createDocument(multipartKeystore.getInputStream(), authUser, buildKeystoreFileName(authUser, multipartKeystore), multipartKeystore.getContentType()));
         }
         if(signImageBase64 != null && !signImageBase64.isEmpty()) {
             authUser.getSignImages().add(documentService.createDocument(fileService.base64Transparence(signImageBase64), authUser, authUser.getEppn() + "_sign.png", "image/png"));
@@ -472,6 +472,16 @@ public class UserService {
         authUser.setEmailAlertHour(emailAlertHour);
         authUser.setEmailAlertDay(emailAlertDay);
         authUser.setReturnToHomeAfterSign(returnToHomeAfterSign);
+    }
+
+    private String buildKeystoreFileName(User user, MultipartFile multipartKeystore) {
+        String originalFilename = multipartKeystore.getOriginalFilename();
+        String baseName = StringUtils.hasText(originalFilename) ? originalFilename : "keystore";
+        int extensionIndex = baseName.lastIndexOf('.');
+        if(extensionIndex > 0) {
+            baseName = baseName.substring(0, extensionIndex);
+        }
+        return user.getEppn() + "_" + baseName + ".p12";
     }
 
     /**

@@ -3,6 +3,7 @@ import "../signrequests/SignRequestDetails.js?version=@version@";
 import "../signrequests/SignRequestPrint.js?version=@version@";
 import "../signrequests/SignRequestPostit.js?version=@version@";
 import "../signrequests/SignRequestFiles.js?version=@version@";
+import "../signrequests/SignRequestReuseSignedDocument.js?version=@version@";
 import "../signrequests/SignRequestAddDoc.js?version=@version@";
 import "../signrequests/SignRequestRefusalModal.js?version=@version@";
 import "../signrequests/SignRequestAddPostit.js?version=@version@";

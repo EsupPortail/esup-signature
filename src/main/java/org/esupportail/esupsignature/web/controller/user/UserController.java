@@ -114,13 +114,21 @@ public class UserController {
 	public String update(@ModelAttribute("authUserEppn") String authUserEppn, @RequestParam(value = "signImageBase64", required=false) String signImageBase64,
 						 @RequestParam(value = "name", required = false) String name,
 						 @RequestParam(value = "firstname", required = false) String firstname,
+						 @RequestParam(value = "saveSignRequestParams", required=false) Boolean saveSignRequestParams,
+						 @RequestParam(value = "returnToHomeAfterSign", required=false) Boolean returnToHomeAfterSign,
 						 @RequestParam(value = "emailAlertFrequency", required=false) EmailAlertFrequency emailAlertFrequency,
 						 @RequestParam(value = "emailAlertHour", required=false) Integer emailAlertHour,
 						 @RequestParam(value = "emailAlertDay", required=false) DayOfWeek emailAlertDay,
 						 @RequestParam(value = "multipartKeystore", required=false) MultipartFile multipartKeystore,
 						 @RequestParam(value = "mobileSignToken", required=false) String mobileSignToken,
+						 @RequestParam(value = "signRequestParamsJsonString", required=false) String signRequestParamsJsonString,
 						 RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) throws Exception {
-		userService.updateUser(authUserEppn, name, firstname, signImageBase64, emailAlertFrequency, emailAlertHour, emailAlertDay, multipartKeystore, null, false);
+		if(returnToHomeAfterSign == null) returnToHomeAfterSign = false;
+		if(saveSignRequestParams != null || signRequestParamsJsonString != null) {
+			userService.updateUserAndSignRequestParams(authUserEppn, signImageBase64, saveSignRequestParams, returnToHomeAfterSign, emailAlertFrequency, emailAlertHour, emailAlertDay, multipartKeystore, signRequestParamsJsonString);
+		} else {
+			userService.updateUser(authUserEppn, name, firstname, signImageBase64, emailAlertFrequency, emailAlertHour, emailAlertDay, multipartKeystore, null, returnToHomeAfterSign);
+		}
         mobileSignTokenService.consumePendingSignaturePreview(mobileSignToken, authUserEppn, signImageBase64);
 		redirectAttributes.addFlashAttribute("message", new UiMessageDto("success", "Vos paramètres ont été enregistrés"));
 		String referer = httpServletRequest.getHeader(HttpHeaders.REFERER);

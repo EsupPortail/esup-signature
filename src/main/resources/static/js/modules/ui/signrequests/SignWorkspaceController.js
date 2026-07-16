@@ -7,6 +7,7 @@ import {SpotManager} from "./SpotManager.js?version=@version@";
 import {SignSpaceManager} from "./SignSpaceManager.js?version=@version@";
 import {PostitManager} from "./PostitManager.js?version=@version@";
 import {WorkspaceState} from "./WorkspaceState.js?version=@version@";
+import {SignatureImageResolver} from "./SignatureImageResolver.js?version=@version@";
 
 export class SignWorkspaceController {
 
@@ -507,14 +508,57 @@ export class SignWorkspaceController {
         }
         for (let i = 0; i < candidates.length; i++) {
             const parsedSignImageNumber = Number.parseInt(candidates[i], 10);
-            if (Number.isFinite(parsedSignImageNumber)) {
-                return parsedSignImageNumber;
+            const resolvedSignImageNumber = this.resolveSelectableSignImageNumber(parsedSignImageNumber);
+            if (resolvedSignImageNumber != null) {
+                return resolvedSignImageNumber;
             }
         }
-        if (this.restore && Number.isFinite(storedSignNumber)) {
-            return storedSignNumber;
+        const resolvedStoredSignNumber = this.resolveSelectableSignImageNumber(storedSignNumber);
+        if (this.restore && resolvedStoredSignNumber != null) {
+            return resolvedStoredSignNumber;
         }
-        return null;
+        return this.getFirstSelectableSignImageNumber();
+    }
+
+    getSelectableSignImageNumbers() {
+        return SignatureImageResolver.getSelectableSignImageNumbers(
+            this.signPlacementController?.signImages,
+            {
+                generatedSignImageNumber: this.signPlacementController?.generatedSignImageNumber,
+                parapheSignImageNumber: this.signPlacementController?.parapheSignImageNumber
+            }
+        );
+    }
+
+    isSelectableSignImageNumber(signImageNumber) {
+        return this.getSelectableSignImageNumbers().includes(signImageNumber);
+    }
+
+    resolveSelectableSignImageNumber(signImageNumber) {
+        const normalizedSignImageNumber = Number.parseInt(signImageNumber, 10);
+        if (!Number.isFinite(normalizedSignImageNumber)) {
+            return null;
+        }
+        const specialSignImageNumbers = {
+            generatedSignImageNumber: this.signPlacementController?.generatedSignImageNumber,
+            parapheSignImageNumber: this.signPlacementController?.parapheSignImageNumber
+        };
+        const {
+            requestedSignImageNumber,
+            resolvedImageNumber
+        } = SignatureImageResolver.resolveImageRequest(
+            normalizedSignImageNumber,
+            this.signPlacementController?.signImages,
+            specialSignImageNumbers
+        );
+        return this.isSelectableSignImageNumber(requestedSignImageNumber)
+            && this.signPlacementController?.signImages?.[resolvedImageNumber] != null
+            ? requestedSignImageNumber
+            : null;
+    }
+
+    getFirstSelectableSignImageNumber() {
+        return this.getSelectableSignImageNumbers()[0] ?? null;
     }
 
     async addSign(forceSignNumber) {

@@ -20,7 +20,7 @@
                 </div>
                 <div class="flex-grow-1 overflow-scroll">
                     <div class="m-2">
-            <form id="userParamsForm" th:object="${authUser}" th:action="'/' + ${user.userType.name() == 'external' ? 'otp' : 'user'} + '/users?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" enctype="multipart/form-data" th:method="'put'">
+            <form id="userParamsForm" th:object="${authUser}" th:action="@{/{userType}/users(userType=${user.userType.name() == 'external' ? 'otp' : 'user'})}" enctype="multipart/form-data" th:method="'post'">
                 <input type="hidden" name="id" th:value="${authUser.id}"/>
                 <input type="hidden" id="sign-request-params" name="signRequestParamsJsonString" />
                 <div class="alert rounded-3 border-secondary-subtle mb-1 col-lg-12">
@@ -219,11 +219,11 @@
                             Ne pas oublier d’enregistrer vos paramètres en bas à droite !
                         </p>
                         <div id="workspace" tabindex="0" class="alert rounded-bottom-0 light border-0 justify-content-center es-workspace-pdf workspace-margin-top " style="overflow-x: auto; min-height: 500px;">
-                            <form id="signForm" action="">
+                            <div id="signForm">
                                 <div tabindex="0" id="pdf" style="opacity: 1; cursor: default; display: flex; flex-direction: column; align-items: center; position: relative; width: 800px; height: 600px; background-color: white; border: 1px solid #ccc;">
                                     <div id="page_1" page-num="1" class="drop-shadows pdf-page ui-droppable" style="width: 100%; height: 100%; position: relative;"></div>
                                 </div>
-                            </form>
+                            </div>
                         </div>
                     </div>
                 </div>

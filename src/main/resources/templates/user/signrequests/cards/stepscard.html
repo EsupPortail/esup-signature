@@ -416,11 +416,41 @@
                         <div class="step-vertical-icon">
                             <i class="fi fi-rr-flag"></i>
                         </div>
-                        <div class="step-vertical-content bg-light">
-                            <b>Procédure terminée</b>
-                            <p th:if="${showSignRequest.workflow.sendAlertToAllRecipients}">
-                                Les intervenants ont été informés par mail
-                            </p>
+                        <div class="step-vertical-content bg-light d-flex align-items-center justify-content-between">
+                            <div>
+                                <b>Procédure terminée</b>
+                                <p th:if="${showSignRequest.workflow.sendAlertToAllRecipients}">
+                                    Les intervenants ont été informés par mail
+                                </p>
+                            </div>
+                            <div class="wv-100 dropdown float-end"
+                                 th:if="${user.userType.name() != 'external'
+                                     && userEppn == authUserEppn
+                                     && !globalProperties.hideSendSignRequest
+                                     && showSignRequest.signedDocuments != null
+                                     && showSignRequest.signedDocuments.size() > 0}">
+                                <button class="btn btn-sm btn-transparent text-dark border-secondary-subtle me-1"
+                                        type="button"
+                                        data-bs-toggle="dropdown"
+                                        data-bs-popper="static"
+                                        aria-haspopup="true"
+                                        aria-expanded="false">
+                                    <i class="fi fi-rr-menu-dots"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end p-1" style="width:292px; text-wrap: auto; overflow: clip;">
+                                    <li>
+                                        <button class="js-reuse-last-signed-file d-flex align-items-center btn btn-transparent text-dark w-100 text-left"
+                                                type="button"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#wiz-fast-sign-modal"
+                                                th:attr="data-document-id=${showSignRequest.signedDocuments[showSignRequest.signedDocuments.size() - 1].id},
+                                                         data-filename=${showSignRequest.signedDocuments[showSignRequest.signedDocuments.size() - 1].fileName}">
+                                            <span class="spinner-border spinner-border-sm d-none me-1 js-reuse-last-signed-spinner" aria-hidden="true"></span>
+                                            <i class="fi fi-rr-paper-plane js-reuse-last-signed-icon"></i> Nouvelle demande depuis ce document
+                                        </button>
+                                    </li>
+                                </ul>
+                            </div>
                         </div>
                     </div>
                 </th:block>

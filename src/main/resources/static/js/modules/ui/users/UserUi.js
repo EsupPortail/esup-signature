@@ -2,6 +2,7 @@ import {UserSignaturePad} from "./UserSignaturePad.js?version=@version@";
 import {UserSignatureCrop} from "./UserSignatureCrop.js?version=@version@";
 import {SignRequestParams} from "../../../prototypes/SignRequestParams.js?version=@version@";
 import {attachDirtyIndicator} from "../DirtyIndicator.js?version=@version@";
+import {SignatureImageResolver} from "../signrequests/SignatureImageResolver.js?version=@version@";
 
 export class UserUi {
 
@@ -22,6 +23,18 @@ export class UserUi {
         this.dirtyIndicator = null;
         this.checkAlertFrequency();
         this.signRequestParamsDefault = signRequestParams;
+        this.signRequestParamsStorageKeys = [
+            "addWatermark",
+            "addExtra",
+            "extraOnTop",
+            "extraType",
+            "extraName",
+            "extraDate",
+            "extraText",
+            "addImage",
+            "zoom",
+            "signNumber"
+        ];
         if(signRequestParams != null) {
             this.saveSignRequestParams = true;
         } else {
@@ -284,6 +297,38 @@ export class UserUi {
         };
     }
 
+    getSelectableSignImageNumbers() {
+        return SignatureImageResolver.getSelectableSignImageNumbers(
+            this.signImages,
+            this.resolveSpecialSignImageNumbers()
+        );
+    }
+
+    resolveSelectableSignImageNumber(signImageNumber) {
+        const selectableSignImageNumbers = this.getSelectableSignImageNumbers();
+        const normalizedSignImageNumber = Number.parseInt(signImageNumber, 10);
+        if (Number.isFinite(normalizedSignImageNumber)) {
+            const {
+                requestedSignImageNumber,
+                resolvedImageNumber
+            } = SignatureImageResolver.resolveImageRequest(
+                normalizedSignImageNumber,
+                this.signImages,
+                this.resolveSpecialSignImageNumbers()
+            );
+            if (selectableSignImageNumbers.includes(requestedSignImageNumber)
+                && Array.isArray(this.signImages)
+                && this.signImages[resolvedImageNumber] != null) {
+                return requestedSignImageNumber;
+            }
+        }
+        return selectableSignImageNumbers[0] ?? null;
+    }
+
+    clearSignRequestParamsLocalStorage() {
+        this.signRequestParamsStorageKeys.forEach(key => localStorage.removeItem(key));
+    }
+
     teardownSignRequestParamsPreview() {
         if (this.signRequestParams?.resizeNamespace) {
             $(window).off("resize" + this.signRequestParams.resizeNamespace);
@@ -321,9 +366,11 @@ export class UserUi {
         });
         localStorage.setItem('zoom', String(previewSignScale));
 
-        const normalizedSignImageNumber = Number.parseInt(signImageNumber, 10);
-        if (Number.isFinite(normalizedSignImageNumber)) {
-            localStorage.setItem('signNumber', String(normalizedSignImageNumber));
+        const resolvedSignImageNumber = this.resolveSelectableSignImageNumber(signImageNumber);
+        if (resolvedSignImageNumber != null) {
+            localStorage.setItem('signNumber', String(resolvedSignImageNumber));
+        } else {
+            localStorage.removeItem('signNumber');
         }
     }
 
@@ -460,9 +507,10 @@ export class UserUi {
             signScale: this.computePreviewSignScale(previewParams)
         };
         const initialSignImageNumber = Number.parseInt(normalizedPreviewParams?.signImageNumber, 10);
-        const fallbackSignImageNumber = Number.isFinite(initialSignImageNumber)
+        const requestedSignImageNumber = Number.isFinite(initialSignImageNumber)
             ? initialSignImageNumber
             : this.defaultSignImageNumber;
+        const fallbackSignImageNumber = this.resolveSelectableSignImageNumber(requestedSignImageNumber);
         this.initializeSignRequestParamsPreviewStorage(normalizedPreviewParams, fallbackSignImageNumber);
 
         this.signRequestParams = new SignRequestParams(
@@ -510,9 +558,9 @@ export class UserUi {
     }
 
     clearLocalStorage() {
-        bootbox.confirm("Vous allez remettre à zéro les paramètres par défaut de votre signature", function(result){
+        bootbox.confirm("Vous allez remettre à zéro les paramètres par défaut de votre signature", result => {
             if(result) {
-                localStorage.clear();
+                this.clearSignRequestParamsLocalStorage();
                 bootbox.alert("Vous paramètres ont été réinitialisés", null);
 
             }
@@ -521,7 +569,7 @@ export class UserUi {
 
     toggleSaveSignRequest() {
         if(this.saveSignRequestParams) {
-            localStorage.clear();
+            this.clearSignRequestParamsLocalStorage();
             this.saveSignRequestParams = false;
             $("#signRequestParamsFormDiv").removeClass("d-none");
             $("#signRequestParamsCleanDiv").addClass("d-none");
