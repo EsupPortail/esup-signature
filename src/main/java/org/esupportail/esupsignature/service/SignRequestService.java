@@ -1865,6 +1865,15 @@ public class SignRequestService {
 	 */
 	@Transactional
 	public void getFileResponse(Long documentId, HttpServletResponse httpServletResponse) throws IOException {
+		getFileResponse(documentId, "attachment", httpServletResponse);
+	}
+
+	@Transactional
+	public void getFileInlineResponse(Long documentId, HttpServletResponse httpServletResponse) throws IOException {
+		getFileResponse(documentId, "inline", httpServletResponse);
+	}
+
+	private void getFileResponse(Long documentId, String disposition, HttpServletResponse httpServletResponse) throws IOException {
 		Document document = documentService.getById(documentId);
 		SignRequest signRequest = getById(document.getParentId());
 		if(SecurityContextHolder.getContext().getAuthentication().getAuthorities()
@@ -1875,7 +1884,7 @@ public class SignRequestService {
 				&& !(signRequest.getStatus().equals(SignRequestStatus.completed) || signRequest.getStatus().equals(SignRequestStatus.exported))) {
 			throw new EsupSignatureRuntimeException("Téléchargement interdit avant la fin du circuit");
 		}
-		webUtilsService.copyFileStreamToHttpResponse(document.getFileName(), document.getContentType(), "attachment", document.getInputStream(), httpServletResponse);
+		webUtilsService.copyFileStreamToHttpResponse(document.getFileName(), document.getContentType(), disposition, document.getInputStream(), httpServletResponse);
 	}
 
 	/**

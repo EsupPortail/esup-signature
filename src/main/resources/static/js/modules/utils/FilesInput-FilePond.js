@@ -128,6 +128,7 @@ class FilePondFilesInputAdapter {
         this.abortedUploads = new Map();
         this.activeUploads = new Map();
         this.initialReadOnlyFileCount = 0;
+        this.previewObjectUrl = null;
     }
 
     init(documents) {
@@ -182,7 +183,7 @@ class FilePondFilesInputAdapter {
                     this.handleSingleFileProcessed(file);
                 }
             },
-            onactivatefile: file => this.openInitialFile(file)
+            onactivatefile: file => this.previewFile(file)
         };
         if (!this.usesNativeMultipartSubmit()) {
             options.server = {
@@ -709,13 +710,175 @@ class FilePondFilesInputAdapter {
                 if (attempts > 0 && (item == null || fileInfo == null)) {
                     this.decorateFileIcon(file, attempts - 1);
                 }
+                if (item != null) {
+                    this.decorateFilePreviewButton(file);
+                }
                 return;
             }
             const icon = document.createElement("i");
             icon.className = "esup-filepond-file-icon " + this.getIconClass(file);
             icon.setAttribute("aria-hidden", "true");
             fileInfo.before(icon);
+            this.decorateFilePreviewButton(file);
         }, 50);
+    }
+
+    decorateFilePreviewButton(file, attempts = 8) {
+        window.setTimeout(() => {
+            const item = document.getElementById("filepond--item-" + file.id);
+            const fileElement = item?.querySelector(".filepond--file");
+            if (item == null || fileElement == null) {
+                if (attempts > 0) {
+                    this.decorateFilePreviewButton(file, attempts - 1);
+                }
+                return;
+            }
+            if (item.querySelector(".esup-filepond-preview-button") != null) {
+                return;
+            }
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = "filepond--file-action-button esup-filepond-preview-button";
+            button.title = "Voir";
+            button.setAttribute("aria-label", "Voir " + (file.filename || file.file?.name || "le fichier"));
+            button.innerHTML = '<i class="fi fi-rr-eye" aria-hidden="true"></i>';
+            button.addEventListener("click", event => {
+                event.preventDefault();
+                event.stopPropagation();
+                this.previewFile(file);
+            });
+            fileElement.appendChild(button);
+        }, 50);
+    }
+
+    previewFile(file) {
+        const preview = this.getPreviewDescriptor(file);
+        if (!preview.url) {
+            this.openInitialFile(file);
+            return;
+        }
+        const modal = this.getPreviewModal();
+        modal.querySelector(".js-esup-filepond-preview-title").textContent = preview.name || "Aperçu du fichier";
+        const body = modal.querySelector(".js-esup-filepond-preview-body");
+        const downloadLink = modal.querySelector(".js-esup-filepond-preview-download");
+        body.replaceChildren();
+        const downloadUrl = preview.downloadUrl || preview.url;
+        if (downloadUrl) {
+            downloadLink.href = downloadUrl;
+            downloadLink.classList.remove("d-none");
+        } else {
+            downloadLink.removeAttribute("href");
+            downloadLink.classList.add("d-none");
+        }
+
+        if (this.isPdfPreview(preview)) {
+            const iframe = document.createElement("iframe");
+            iframe.className = "esup-filepond-preview-frame";
+            iframe.title = "Aperçu PDF - " + (preview.name || "document");
+            iframe.src = preview.url;
+            body.appendChild(iframe);
+        } else if (this.isImagePreview(preview)) {
+            const image = document.createElement("img");
+            image.className = "esup-filepond-preview-image";
+            image.alt = preview.name || "Aperçu image";
+            image.src = preview.url;
+            body.appendChild(image);
+        } else {
+            const fallback = document.createElement("div");
+            fallback.className = "esup-filepond-preview-fallback";
+            fallback.innerHTML = '<i class="fi fi-rr-file text-muted" aria-hidden="true"></i><p class="mb-3">Aucun aperçu intégré disponible pour ce type de fichier.</p>';
+            const openLink = document.createElement("a");
+            openLink.className = "btn btn-primary";
+            openLink.href = preview.downloadUrl || preview.url;
+            openLink.target = "_blank";
+            openLink.rel = "noopener";
+            openLink.textContent = "Ouvrir le fichier";
+            fallback.appendChild(openLink);
+            body.appendChild(fallback);
+        }
+
+        modal.esupFilePondPreviewOwner = this;
+        this.showPreviewModal(modal);
+    }
+
+    getPreviewDescriptor(file) {
+        const nativeFile = file?.file;
+        const name = file?.filename || nativeFile?.name || "";
+        const contentType = nativeFile?.type || file?.fileType || "";
+        const downloadUrl = file?.getMetadata?.("downloadUrl") || "";
+        const previewUrl = file?.getMetadata?.("previewUrl") || downloadUrl;
+        if (nativeFile instanceof Blob && file?.origin === FilePond.FileOrigin.INPUT) {
+            this.revokePreviewObjectUrl();
+            this.previewObjectUrl = URL.createObjectURL(nativeFile);
+            return {
+                name,
+                contentType,
+                url: this.previewObjectUrl,
+                downloadUrl: this.previewObjectUrl
+            };
+        }
+        return {
+            name,
+            contentType,
+            url: previewUrl,
+            downloadUrl
+        };
+    }
+
+    getPreviewModal() {
+        let modal = document.getElementById("esup-filepond-preview-modal");
+        if (modal != null) {
+            return modal;
+        }
+        modal = document.createElement("div");
+        modal.id = "esup-filepond-preview-modal";
+        modal.className = "modal fade esup-filepond-preview-modal";
+        modal.tabIndex = -1;
+        modal.setAttribute("aria-hidden", "true");
+        modal.innerHTML = `
+            <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title js-esup-filepond-preview-title">Aperçu du fichier</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                    </div>
+                    <div class="modal-body js-esup-filepond-preview-body"></div>
+                    <div class="modal-footer">
+                        <a class="btn btn-outline-secondary js-esup-filepond-preview-download" target="_blank" rel="noopener">Télécharger</a>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                    </div>
+                </div>
+            </div>`;
+        modal.addEventListener("hidden.bs.modal", () => {
+            modal.querySelector(".js-esup-filepond-preview-body")?.replaceChildren();
+            modal.esupFilePondPreviewOwner?.revokePreviewObjectUrl?.();
+            modal.esupFilePondPreviewOwner = null;
+        });
+        document.body.appendChild(modal);
+        return modal;
+    }
+
+    showPreviewModal(modal) {
+        if (window.bootstrap?.Modal != null) {
+            window.bootstrap.Modal.getOrCreateInstance(modal).show();
+            return;
+        }
+        $(modal).modal("show");
+    }
+
+    revokePreviewObjectUrl() {
+        if (this.previewObjectUrl != null) {
+            URL.revokeObjectURL(this.previewObjectUrl);
+            this.previewObjectUrl = null;
+        }
+    }
+
+    isPdfPreview(preview) {
+        return (preview.contentType || "").toLowerCase().includes("pdf") || (preview.name || "").toLowerCase().endsWith(".pdf");
+    }
+
+    isImagePreview(preview) {
+        return (preview.contentType || "").toLowerCase().startsWith("image/") || (preview.name || "").toLowerCase().match(/\.(jpg|jpeg|gif|png|svg|bmp|webp|tif|tiff)$/) != null;
     }
 
     getIconClass(file) {
@@ -765,6 +928,7 @@ class FilePondFilesInputAdapter {
 
     toInitialFile(document) {
         const downloadUrl = "/ws-secure/global/get-file/" + document.id;
+        const previewUrl = "/ws-secure/global/get-file-inline/" + document.id;
         return {
             source: String(document.id),
             options: {
@@ -777,7 +941,8 @@ class FilePondFilesInputAdapter {
                 metadata: {
                     documentId: document.id,
                     deleteUrl: this.readOnly ? "" : "/ws-secure/global/remove-doc/" + document.id + "?" + this.filesInput.csrf.parameterName + "=" + this.filesInput.csrf.token,
-                    downloadUrl
+                    downloadUrl,
+                    previewUrl
                 }
             }
         };

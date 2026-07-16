@@ -1251,6 +1251,54 @@ input, textarea, select {
     display: none;
 }
 
+.esup-filepond .esup-filepond-preview-button {
+    position: absolute;
+    top: .6rem;
+    right: 2.55rem;
+    z-index: 104;
+}
+
+.esup-filepond-readonly .esup-filepond-preview-button {
+    right: .7rem;
+}
+
+.esup-filepond-preview-modal .modal-body {
+    min-height: min(75vh, 52rem);
+    padding: 0;
+    background-color: var(--bs-secondary-bg);
+}
+
+.esup-filepond-preview-frame {
+    display: block;
+    width: 100%;
+    height: min(75vh, 52rem);
+    border: 0;
+    background-color: var(--bs-body-bg);
+}
+
+.esup-filepond-preview-image {
+    display: block;
+    max-width: 100%;
+    max-height: min(75vh, 52rem);
+    margin: auto;
+    object-fit: contain;
+}
+
+.esup-filepond-preview-fallback {
+    display: flex;
+    min-height: min(75vh, 52rem);
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: .75rem;
+    padding: 2rem;
+    text-align: center;
+}
+
+.esup-filepond-preview-fallback > i {
+    font-size: 3rem;
+}
+
 .esup-filepond-readonly .filepond--drop-label {
     display: none;
 }

@@ -142,6 +142,18 @@ public class GlobalWsSecureController {
         return ResponseEntity.ok().build();
     }
 
+    @PreAuthorize("@preAuthorizeService.documentView(#documentId, #userEppn, #authUserEppn)")
+    @GetMapping(value = "/get-file-inline/{documentId}")
+    public ResponseEntity<Void> getFileInline(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("documentId") Long documentId, HttpServletResponse httpServletResponse) throws IOException {
+        try {
+            signRequestService.getFileInlineResponse(documentId, httpServletResponse);
+        } catch (Exception e) {
+            logger.warn(e.getMessage());
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        return ResponseEntity.ok().build();
+    }
+
     @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
     @GetMapping("/get-documents-history/{id}/documents/{version}")
     public ResponseEntity<byte[]> downloadDocumentVersion(
