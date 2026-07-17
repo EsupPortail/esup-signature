@@ -654,7 +654,7 @@ export class GlobalUi {
             items: tooltipItems,
             disabled: false,
             show: { effect: "fade", duration: 500 },
-            hide: { effect: "fade", duration: 500 }
+            hide: { effect: "fade", duration: 100 }
         };
 
         const documentElement = $(document);
