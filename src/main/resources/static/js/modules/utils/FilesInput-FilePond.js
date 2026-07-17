@@ -1,9 +1,17 @@
 import * as FilePond from "/webjars/filepond/4.32.12/dist/filepond.esm.js";
 import filePondFrLocale from "/webjars/filepond/4.32.12/locale/fr-fr.js";
+import {getDocument, GlobalWorkerOptions} from "/webjars/pdfjs-dist/legacy/build/pdf.mjs";
 import {CsrfToken} from "../../prototypes/CsrfToken.js?version=@version@";
 import {EventFactory} from "./EventFactory.js?version=@version@";
 
 const FILES_INPUT_ADAPTER_KEY = "esup-files-input-adapter";
+const DEFAULT_PDF_PREVIEW_SCALE = 1.5;
+const MIN_PDF_PREVIEW_SCALE = 0.5;
+const MAX_PDF_PREVIEW_SCALE = 2.5;
+const PDF_PREVIEW_SCALE_STEP = 0.25;
+const MIN_PDF_PREVIEW_LOADING_MS = 300;
+
+GlobalWorkerOptions.workerSrc = "/webjars/pdfjs-dist/legacy/build/pdf.worker.min.mjs";
 
 export default class FilesInputFilePond extends EventFactory {
 
@@ -778,6 +786,8 @@ class FilePondFilesInputAdapter {
         modal.querySelector(".js-esup-filepond-preview-title").textContent = preview.name || "Aperçu du fichier";
         const body = modal.querySelector(".js-esup-filepond-preview-body");
         const downloadLink = modal.querySelector(".js-esup-filepond-preview-download");
+        this.destroyPdfPreview(modal);
+        this.setPdfPreviewZoomControlsVisible(modal, this.isPdfPreview(preview));
         body.replaceChildren();
         const downloadUrl = preview.downloadUrl || preview.url;
         if (downloadUrl) {
@@ -789,11 +799,19 @@ class FilePondFilesInputAdapter {
         }
 
         if (this.isPdfPreview(preview)) {
-            const iframe = document.createElement("iframe");
-            iframe.className = "esup-filepond-preview-frame";
-            iframe.title = "Aperçu PDF - " + (preview.name || "document");
-            iframe.src = preview.url;
-            body.appendChild(iframe);
+            const pdfPreview = document.createElement("div");
+            pdfPreview.className = "esup-filepond-preview-pdf";
+            pdfPreview.setAttribute("aria-busy", "true");
+            pdfPreview.innerHTML = this.createPdfPreviewLoadingMarkup();
+            body.appendChild(pdfPreview);
+            const previewToken = Symbol("pdf-preview");
+            modal.esupFilePondPreviewToken = previewToken;
+            modal.esupFilePondPdfScale = DEFAULT_PDF_PREVIEW_SCALE;
+            modal.esupFilePondPdfLoadingStartedAt = performance.now();
+            modal.esupFilePondPreviewShown = modal.classList.contains("show");
+            this.applyPdfPreviewZoom(modal);
+            this.updatePdfPreviewZoomLabel(modal);
+            this.renderPdfPreview(preview.url, pdfPreview, modal, previewToken);
         } else if (this.isImagePreview(preview)) {
             const image = document.createElement("img");
             image.className = "esup-filepond-preview-image";
@@ -816,6 +834,179 @@ class FilePondFilesInputAdapter {
 
         modal.esupFilePondPreviewOwner = this;
         this.showPreviewModal(modal);
+    }
+
+    async renderPdfPreview(url, container, modal, previewToken) {
+        if (modal.esupFilePondPdfRendering && modal.esupFilePondPdfRenderingToken === previewToken) {
+            return;
+        }
+        modal.esupFilePondPdfRendering = true;
+        modal.esupFilePondPdfRenderingToken = previewToken;
+        try {
+            let pdf = modal.esupFilePondPdfDocument;
+            if (pdf == null) {
+                const loadingTask = getDocument({
+                    verbosity: 0,
+                    url,
+                    useWasm: true,
+                    wasmUrl: "/webjars/pdfjs-dist/wasm/"
+                });
+                modal.esupFilePondPdfLoadingTask = loadingTask;
+                pdf = await loadingTask.promise;
+                if (modal.esupFilePondPdfLoadingTask === loadingTask) {
+                    modal.esupFilePondPdfLoadingTask = null;
+                }
+            }
+            if (modal.esupFilePondPreviewToken !== previewToken) {
+                await pdf.destroy();
+                return;
+            }
+            modal.esupFilePondPdfDocument = pdf;
+
+            const pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
+            const scaleFrame = document.createElement("div");
+            scaleFrame.className = "esup-pdf-preview-scale-frame";
+            const documentPreview = document.createElement("div");
+            documentPreview.className = "esup-pdf-preview-document";
+            scaleFrame.appendChild(documentPreview);
+            const pages = [];
+            for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
+                const page = await pdf.getPage(pageNumber);
+                const viewport = page.getViewport({scale: DEFAULT_PDF_PREVIEW_SCALE});
+                const pagePreview = document.createElement("div");
+                pagePreview.className = "esup-pdf-preview-page";
+                const canvas = document.createElement("canvas");
+                canvas.width = Math.ceil(viewport.width * pixelRatio);
+                canvas.height = Math.ceil(viewport.height * pixelRatio);
+                canvas.style.width = Math.ceil(viewport.width) + "px";
+                canvas.style.height = Math.ceil(viewport.height) + "px";
+                canvas.setAttribute("aria-label", "Page " + pageNumber + " du PDF");
+                pagePreview.appendChild(canvas);
+                documentPreview.appendChild(pagePreview);
+                pages.push({page, viewport, canvas});
+            }
+
+            if (modal.esupFilePondPreviewToken !== previewToken) {
+                pages.forEach(({page}) => page.cleanup());
+                await pdf.destroy();
+                return;
+            }
+
+            for (const {page, viewport, canvas} of pages) {
+                if (modal.esupFilePondPreviewToken !== previewToken) {
+                    page.cleanup();
+                    continue;
+                }
+                await page.render({
+                    canvasContext: canvas.getContext("2d"),
+                    transform: [pixelRatio, 0, 0, pixelRatio, 0, 0],
+                    viewport
+                }).promise;
+                page.cleanup();
+            }
+
+            if (modal.esupFilePondPreviewToken === previewToken) {
+                await this.waitForPdfPreviewReveal(modal);
+            }
+
+            if (modal.esupFilePondPreviewToken === previewToken) {
+                container.replaceChildren(scaleFrame);
+                this.applyPdfPreviewZoom(modal);
+                container.removeAttribute("aria-busy");
+                this.updatePdfPreviewZoomLabel(modal);
+            }
+        } catch (error) {
+            if (modal.esupFilePondPreviewToken === previewToken) {
+                this.showPdfPreviewError(container, "Impossible de générer l’aperçu PDF.");
+            }
+        } finally {
+            if (modal.esupFilePondPdfRenderingToken === previewToken) {
+                modal.esupFilePondPdfRendering = false;
+                modal.esupFilePondPdfRenderingToken = null;
+            }
+        }
+    }
+
+    createPdfPreviewLoadingMarkup() {
+        return `
+            <div class="esup-pdf-preview-loading" role="status">
+                <span class="spinner-border text-dark" aria-hidden="true"></span>
+                <span>Chargement du document...</span>
+            </div>`;
+    }
+
+    waitForPdfPreviewReveal(modal) {
+        const waits = [];
+        const startedAt = modal.esupFilePondPdfLoadingStartedAt || performance.now();
+        const remainingDelay = MIN_PDF_PREVIEW_LOADING_MS - (performance.now() - startedAt);
+        if (remainingDelay > 0) {
+            waits.push(new Promise(resolve => window.setTimeout(resolve, remainingDelay)));
+        }
+        if (!modal.esupFilePondPreviewShown) {
+            waits.push(new Promise(resolve => modal.addEventListener("shown.bs.modal", resolve, {once: true})));
+        }
+        return Promise.all(waits).then(() => new Promise(resolve => {
+            window.requestAnimationFrame(() => window.requestAnimationFrame(resolve));
+        }));
+    }
+
+    async changePdfPreviewZoom(modal, delta) {
+        const container = modal.querySelector(".esup-filepond-preview-pdf");
+        const previewToken = modal.esupFilePondPreviewToken;
+        if (container == null || previewToken == null || modal.esupFilePondPdfDocument == null || modal.esupFilePondPdfRendering) {
+            return;
+        }
+        const nextScale = Math.min(MAX_PDF_PREVIEW_SCALE, Math.max(MIN_PDF_PREVIEW_SCALE,
+            Number((modal.esupFilePondPdfScale + delta).toFixed(2))));
+        if (nextScale === modal.esupFilePondPdfScale) {
+            return;
+        }
+        modal.esupFilePondPdfScale = nextScale;
+        this.applyPdfPreviewZoom(modal);
+        this.updatePdfPreviewZoomLabel(modal);
+    }
+
+    applyPdfPreviewZoom(modal) {
+        const container = modal.querySelector(".esup-filepond-preview-pdf");
+        const documentPreview = container?.querySelector(".esup-pdf-preview-document");
+        const scaleFrame = container?.querySelector(".esup-pdf-preview-scale-frame");
+        if (documentPreview == null || scaleFrame == null) {
+            return;
+        }
+        const zoom = modal.esupFilePondPdfScale / DEFAULT_PDF_PREVIEW_SCALE;
+        scaleFrame.style.width = Math.ceil(documentPreview.offsetWidth * zoom) + "px";
+        scaleFrame.style.height = Math.ceil(documentPreview.offsetHeight * zoom) + "px";
+        documentPreview.style.transform = "scale(" + zoom + ")";
+    }
+
+    updatePdfPreviewZoomLabel(modal) {
+        const label = modal.querySelector(".js-esup-filepond-pdf-zoom-value");
+        if (label != null) {
+            label.textContent = Math.round(modal.esupFilePondPdfScale * 100) + "%";
+        }
+    }
+
+    setPdfPreviewZoomControlsVisible(modal, visible) {
+        modal.querySelector(".js-esup-filepond-pdf-zoom-controls")?.classList.toggle("d-none", !visible);
+    }
+
+    showPdfPreviewError(container, message) {
+        container.classList.add("esup-filepond-preview-fallback");
+        container.removeAttribute("aria-busy");
+        container.textContent = message;
+    }
+
+    destroyPdfPreview(modal) {
+        modal.esupFilePondPreviewToken = null;
+        const loadingTask = modal.esupFilePondPdfLoadingTask;
+        const pdf = modal.esupFilePondPdfDocument;
+        modal.esupFilePondPdfLoadingTask = null;
+        modal.esupFilePondPdfDocument = null;
+        modal.esupFilePondPdfRendering = false;
+        modal.esupFilePondPdfRenderingToken = null;
+        modal.esupFilePondPdfScale = DEFAULT_PDF_PREVIEW_SCALE;
+        loadingTask?.destroy?.();
+        pdf?.destroy?.();
     }
 
     getPreviewDescriptor(file) {
@@ -855,9 +1046,16 @@ class FilePondFilesInputAdapter {
         modal.innerHTML = `
             <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
                 <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title js-esup-filepond-preview-title">Aperçu du fichier</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                    <div class="modal-header esup-filepond-preview-header">
+                        <div class="esup-filepond-preview-title-row">
+                            <h5 class="modal-title js-esup-filepond-preview-title">Aperçu du fichier</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                        </div>
+                        <div class="d-none align-items-center justify-content-center gap-2 js-esup-filepond-pdf-zoom-controls">
+                            <button type="button" data-ui-tooltip="false" class="btn btn-outline-secondary btn-sm js-esup-filepond-pdf-zoom-out" title="Zoom arrière" aria-label="Zoom arrière">-</button>
+                            <span class="badge text-bg-light js-esup-filepond-pdf-zoom-value">150%</span>
+                            <button type="button" data-ui-tooltip="false" class="btn btn-outline-secondary btn-sm js-esup-filepond-pdf-zoom-in" title="Zoom avant" aria-label="Zoom avant">+</button>
+                        </div>
                     </div>
                     <div class="modal-body js-esup-filepond-preview-body"></div>
                     <div class="modal-footer">
@@ -866,7 +1064,21 @@ class FilePondFilesInputAdapter {
                     </div>
                 </div>
             </div>`;
+        modal.addEventListener("click", event => {
+            if (event.target.closest(".js-esup-filepond-pdf-zoom-in") != null) {
+                this.changePdfPreviewZoom(modal, PDF_PREVIEW_SCALE_STEP);
+            } else if (event.target.closest(".js-esup-filepond-pdf-zoom-out") != null) {
+                this.changePdfPreviewZoom(modal, -PDF_PREVIEW_SCALE_STEP);
+            }
+        });
+        modal.addEventListener("shown.bs.modal", () => {
+            modal.esupFilePondPreviewShown = true;
+            this.applyPdfPreviewZoom(modal);
+        });
         modal.addEventListener("hidden.bs.modal", () => {
+            modal.esupFilePondPreviewShown = false;
+            this.destroyPdfPreview(modal);
+            this.setPdfPreviewZoomControlsVisible(modal, false);
             modal.querySelector(".js-esup-filepond-preview-body")?.replaceChildren();
             modal.esupFilePondPreviewOwner?.revokePreviewObjectUrl?.();
             modal.esupFilePondPreviewOwner = null;

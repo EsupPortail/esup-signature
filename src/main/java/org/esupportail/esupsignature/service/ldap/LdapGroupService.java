@@ -10,6 +10,7 @@ import org.esupportail.esupsignature.service.security.GroupService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.ldap.InvalidSearchFilterException;
 import org.springframework.ldap.core.ContextMapper;
 import org.springframework.ldap.core.DirContextAdapter;
 import org.springframework.ldap.core.LdapTemplate;
@@ -105,13 +106,24 @@ public class LdapGroupService implements GroupService {
     public List<String> getGroupsOfUser(String username) {
         String formattedFilter = MessageFormat.format(ldapProperties.getEppnLeftPartSearchFilter(), (Object[]) new String[] { username });
         logger.debug("search GroupLdap with : " + formattedFilter);
-        List<String> dns = ldapTemplate.search((LdapQueryBuilder.query().base(ldapProperties.getSearchBase()))
-                .attributes("dn")
-                .filter(formattedFilter),
-        (ContextMapper<String>) ctx -> {
-            DirContextAdapter searchResultContext = (DirContextAdapter) ctx;
-            return searchResultContext.getNameInNamespace();
-        });
+        List<String> dns;
+        try {
+            dns = ldapTemplate.search((LdapQueryBuilder.query().base(ldapProperties.getSearchBase()))
+                    .attributes("dn")
+                    .filter(formattedFilter),
+            (ContextMapper<String>) ctx -> {
+                DirContextAdapter searchResultContext = (DirContextAdapter) ctx;
+                return searchResultContext.getNameInNamespace();
+            });
+        } catch (InvalidSearchFilterException e) {
+            throw invalidLdapFilterException(
+                    "ldap.eppn-left-part-search-filter",
+                    ldapProperties.getEppnLeftPartSearchFilter(),
+                    formattedFilter,
+                    username,
+                    "Ce filtre sert a retrouver le DN de l'utilisateur avant la recherche de ses groupes.",
+                    e);
+        }
         List<String> groups = new ArrayList<>();
         if(!dns.isEmpty()) {
             LdapQuery groupSearchQuery;
@@ -124,6 +136,16 @@ public class LdapGroupService implements GroupService {
                     DirContextAdapter searchResultContext = (DirContextAdapter) ctx;
                     return searchResultContext.getStringAttribute("cn");
                 });
+            } catch (InvalidSearchFilterException e) {
+                String userDn = dns.get(0);
+                String formattedGroupSearchFilter = MessageFormat.format(ldapProperties.getGroupSearchFilter(), userDn, username);
+                throw invalidLdapFilterException(
+                        "ldap.group-search-filter",
+                        ldapProperties.getGroupSearchFilter(),
+                        formattedGroupSearchFilter,
+                        username,
+                        "Ce filtre sert a rechercher les groupes de l'utilisateur. Le parametre {0} vaut le DN utilisateur [" + userDn + "] et {1} vaut le login.",
+                        e);
             } catch (Exception e) {
                 logger.warn(e.getMessage(), e);
             }
@@ -143,6 +165,17 @@ public class LdapGroupService implements GroupService {
                 if (!filterDns.isEmpty()) {
                     groups.add(ldapFiltersGroups.get(ldapFilter));
                 }
+            } catch (InvalidSearchFilterException e) {
+                String hardcodedFilter = MessageFormat.format(ldapProperties.getMemberSearchFilter(), username, ldapFilter);
+                throw invalidLdapFilterException(
+                        "ldap.member-search-filter / ldap.mapping-filters-groups",
+                        ldapProperties.getMemberSearchFilter(),
+                        hardcodedFilter,
+                        username,
+                        "Le mapping concerne le groupe [" + ldapFiltersGroups.get(ldapFilter) + "] avec le filtre LDAP [" + ldapFilter + "]. "
+                                + "Verifier que la valeur du mapping est bien un filtre LDAP entre parentheses, par exemple (eduPersonAffiliation=staff), "
+                                + "et non un nom de groupe ou un role.",
+                        e);
             } catch (Exception e) {
                 logger.warn(e.getMessage(), e);
             }
@@ -205,5 +238,21 @@ public class LdapGroupService implements GroupService {
                 "Filtre: " + ldapQuery.filter().encode() + ", " +
                 "Attributs: " + Arrays.toString(ldapQuery.attributes()) + ", ";
         logger.debug("group : " + queryStringBuilder);
+    }
+
+    private EsupSignatureRuntimeException invalidLdapFilterException(String configurationKey,
+                                                                     String filterTemplate,
+                                                                     String formattedFilter,
+                                                                     String username,
+                                                                     String context,
+                                                                     InvalidSearchFilterException e) {
+        return new EsupSignatureRuntimeException(
+                "Configuration LDAP invalide pour [" + configurationKey + "]. "
+                        + "Filtre genere [" + formattedFilter + "]. "
+                        + "Template configure [" + filterTemplate + "]. "
+                        + "Utilisateur [" + username + "]. "
+                        + context + " "
+                        + "Cause LDAP: " + e.getMessage(),
+                e);
     }
 }

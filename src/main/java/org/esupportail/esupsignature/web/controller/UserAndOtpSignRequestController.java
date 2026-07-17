@@ -368,7 +368,7 @@ public class UserAndOtpSignRequestController {
     public void getAttachmentInline(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @PathVariable("attachementId") Long attachementId, HttpServletResponse httpServletResponse, RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) {
         synchronized (getLock(authUserEppn)) {
             try {
-                logger.info("get file attachment");
+                logger.debug("get file attachment");
                 if (!signRequestService.getAttachmentInlineResponse(id, attachementId, httpServletResponse)) {
                     redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", "Pièce jointe non trouvée ..."));
                     httpServletResponse.sendRedirect("/user/signsignrequests/" + id);

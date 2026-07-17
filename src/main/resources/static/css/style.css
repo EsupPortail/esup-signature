@@ -5,15 +5,15 @@ html {
 @-moz-document url-prefix() {
     * {
         scrollbar-color: var(--color-red-ish) var(--color-transparent);
-        scrollbar-track-color: var(--color-transparent);
+        scrollbar-track-color: var(--color-rgba-0-0-0-01);
         scrollbar-width: unset;
     }
 }
 
 ::-webkit-scrollbar {
     background-color: var(--color-transparent);
-    width: 4px;
-    height: 4px;
+    width: 6px;
+    height: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -23,7 +23,19 @@ html {
 
 ::-webkit-scrollbar-thumb {
     border-radius: 6px;
+    background-color: var(--color-rgba-0-0-0-06);
+}
+
+::-webkit-scrollbar-thumb:hover {
     background-color: var(--color-red-ish);
+}
+
+::-webkit-scrollbar:hover {
+    background-color: var(--color-rgba-0-0-0-02);
+}
+
+::-webkit-scrollbar {
+    background-color: var(--color-rgba-0-0-0-01);
 }
 
 body {
@@ -472,6 +484,7 @@ td {
 }
 
 .nav-item.ws-tab.active a {
+    pointer-events: none;
     opacity: 1;
     border-bottom: 1px solid var(--bs-light);
 }
@@ -527,6 +540,17 @@ option[unavailable="unavailable"] {
     pointer-events: painted;
     color: var(--bs-black);
     font-weight: bold;
+}
+
+#addDocTab a {
+    border: 0 !important;
+    margin-top: 2px;
+    height: 38px;
+}
+
+#addDocTab a:hover {
+    background-color: var(--bs-secondary-bg-subtle) !important;
+    border: 0 !important;
 }
 
 .breadcrumb-nav,
@@ -1825,11 +1849,6 @@ tr[aria-expanded="true"] .caret-toggle-expanded {
 .hide-handles .cross .ui-resizable-ne,
 .hide-handles .cross .ui-resizable-nw {
     display: none !important;
-}
-
-.modal-pdf .modal-dialog {
-    width: 80% !important;
-    max-width: 80vw !important;
 }
 
 :root {

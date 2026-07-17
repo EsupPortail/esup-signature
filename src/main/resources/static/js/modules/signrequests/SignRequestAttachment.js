@@ -1,3 +1,7 @@
+import {getDocument, GlobalWorkerOptions} from "/webjars/pdfjs-dist/legacy/build/pdf.mjs";
+
+GlobalWorkerOptions.workerSrc = "/webjars/pdfjs-dist/legacy/build/pdf.worker.min.mjs";
+
 (() => {
             const urlProfil = document.body.dataset.esupSignrequestProfilePath || 'user';
             const signRequestId = document.body.dataset.esupSignrequestId || '0';
@@ -20,6 +24,7 @@
             const MIN_PDF_SCALE = 0.5;
             const MAX_PDF_SCALE = 2.5;
             const PDF_SCALE_STEP = 0.25;
+            const MIN_PDF_PREVIEW_LOADING_MS = 300;
             const pdfPreviewState = new Map();
 
             function escapeHtml(value) {
@@ -89,7 +94,7 @@
                 const style = document.createElement('style');
                 style.id = 'pdf-preview-link-style';
                 style.textContent = `
-                    .pdf-preview-page {
+                    .esup-pdf-preview-page {
                         position: relative;
                     }
                     .pdf-preview-links-layer {
@@ -126,18 +131,55 @@
                         pdf: null,
                         scale: DEFAULT_PDF_SCALE,
                         loadingPromise: null,
-                        renderPromise: null
+                        renderPromise: null,
+                        loadingStartedAt: 0,
+                        modalShown: false
                     });
                 }
                 return pdfPreviewState.get(attachmentId);
             }
 
             function updatePdfZoomLabel(modalElement, scale) {
-                const zoomLabel = modalElement?.querySelector('.js-pdf-zoom-value');
+                const zoomLabel = modalElement?.querySelector('.js-esup-filepond-pdf-zoom-value');
                 if (!zoomLabel || typeof scale !== 'number' || Number.isNaN(scale)) {
                     return;
                 }
                 zoomLabel.textContent = `${Math.round(scale * 100)}%`;
+            }
+
+            function getPdfPreviewContainer(modalElement) {
+                return modalElement?.querySelector('.esup-filepond-preview-pdf');
+            }
+
+            function setPdfZoomControlsVisible(modalElement, visible) {
+                modalElement?.querySelector('.js-esup-filepond-pdf-zoom-controls')?.classList.toggle('d-none', !visible);
+            }
+
+            function showPdfPreviewLoading(container) {
+                if (!container) {
+                    return;
+                }
+                container.setAttribute('aria-busy', 'true');
+                container.innerHTML = `
+                    <div class="esup-pdf-preview-loading" role="status">
+                        <span class="spinner-border text-dark" aria-hidden="true"></span>
+                        <span>Chargement du document...</span>
+                    </div>`;
+            }
+
+            function waitForPdfPreviewReveal(modalElement, state) {
+                const waits = [];
+                const startedAt = state?.loadingStartedAt || performance.now();
+                const remainingDelay = MIN_PDF_PREVIEW_LOADING_MS - (performance.now() - startedAt);
+                if (remainingDelay > 0) {
+                    waits.push(new Promise(resolve => window.setTimeout(resolve, remainingDelay)));
+                }
+                if (!state?.modalShown) {
+                    waits.push(new Promise(resolve => modalElement.addEventListener('shown.bs.modal', resolve, { once: true })));
+                }
+                return Promise.all(waits).then(() => new Promise(resolve => {
+                    window.requestAnimationFrame(() => window.requestAnimationFrame(resolve));
+                }));
             }
 
             async function loadPdfDocument(modalElement) {
@@ -150,7 +192,7 @@
                 }
                 if (!state.loadingPromise) {
                     const attachmentId = modalElement.dataset.attachmentId;
-                    state.loadingPromise = pdfjsLib.getDocument({
+                    state.loadingPromise = getDocument({
                             verbosity: 0,
                             url: getAttachmentInlineUrl(attachmentId),
                             useWasm: true,
@@ -168,7 +210,7 @@
             }
 
             async function renderPdfPages(modalElement) {
-                const container = modalElement?.querySelector('.js-pdf-container');
+                const container = getPdfPreviewContainer(modalElement);
                 const state = getPdfPreviewState(modalElement);
                 if (!container || !state) {
                     return;
@@ -179,16 +221,28 @@
                 }
 
                 updatePdfZoomLabel(modalElement, state.scale);
-                container.innerHTML = '';
+                const scaleFrame = document.createElement('div');
+                scaleFrame.className = 'esup-pdf-preview-scale-frame';
+                const documentPreview = document.createElement('div');
+                documentPreview.className = 'esup-pdf-preview-document';
+                scaleFrame.appendChild(documentPreview);
+                const pages = [];
                 for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
                     const page = await pdf.getPage(pageNumber);
-                    const viewport = page.getViewport({ scale: state.scale });
+                    const viewport = page.getViewport({ scale: DEFAULT_PDF_SCALE });
                     const { pageWrapper, canvas, linksLayer } = createPdfPreviewPage(pageNumber, viewport);
-                    const context = canvas.getContext('2d');
-                    await page.render({ canvasContext: context, viewport }).promise;
-                    await renderPdfLinkAnnotations(page, pdf, viewport, linksLayer, container);
-                    container.appendChild(pageWrapper);
+                    documentPreview.appendChild(pageWrapper);
+                    pages.push({ page, viewport, canvas, linksLayer });
                 }
+                for (const { page, viewport, canvas, linksLayer } of pages) {
+                    await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+                    await renderPdfLinkAnnotations(page, pdf, viewport, linksLayer, container);
+                    page.cleanup();
+                }
+                await waitForPdfPreviewReveal(modalElement, state);
+                container.replaceChildren(scaleFrame);
+                container.removeAttribute('aria-busy');
+                applyPdfZoom(modalElement, state.scale);
             }
 
             async function changePdfZoom(modalElement, delta) {
@@ -201,15 +255,26 @@
                     return;
                 }
                 state.scale = nextScale;
-                if (state.renderPromise) {
-                    await state.renderPromise;
+                applyPdfZoom(modalElement, state.scale);
+                updatePdfZoomLabel(modalElement, state.scale);
+            }
+
+            function applyPdfZoom(modalElement, scale) {
+                const container = getPdfPreviewContainer(modalElement);
+                const documentPreview = container?.querySelector('.esup-pdf-preview-document');
+                const scaleFrame = container?.querySelector('.esup-pdf-preview-scale-frame');
+                if (!documentPreview || !scaleFrame) {
+                    return;
                 }
-                await renderPdfPreview(modalElement, { force: true });
+                const zoom = scale / DEFAULT_PDF_SCALE;
+                scaleFrame.style.width = `${Math.ceil(documentPreview.offsetWidth * zoom)}px`;
+                scaleFrame.style.height = `${Math.ceil(documentPreview.offsetHeight * zoom)}px`;
+                documentPreview.style.transform = `scale(${zoom})`;
             }
 
             function createPdfPreviewPage(pageNumber, viewport) {
                 const pageWrapper = document.createElement('div');
-                pageWrapper.className = 'pdf-preview-page';
+                pageWrapper.className = 'esup-pdf-preview-page';
                 pageWrapper.dataset.pageNumber = String(pageNumber);
                 pageWrapper.style.width = `${viewport.width}px`;
                 pageWrapper.style.height = `${viewport.height}px`;
@@ -376,12 +441,12 @@
                     <td>${escapeHtml(attachment.fileName)}</td>
                     <td>${escapeHtml(creatorDisplayName(attachment.createBy))}</td>
                     <td>
-                        <button type="button" class="btn btn-info float-end js-open-attachment-preview" title="Voir" data-attachment-id="${attachment.id}">
+                        <button type="button" class="btn btn-info float-end js-open-attachment-preview" data-ui-tooltip="false" title="Voir" data-attachment-id="${attachment.id}" data-file-name="${escapeHtml(attachment.fileName)}">
                             <i class="fi fi-rr-eye"></i>
                         </button>
                     </td>
                     <td>
-                        <a href="${getAttachmentDownloadUrl(attachment.id)}" target="_blank" class="btn btn-primary float-end" title="Télécharger">
+                        <a href="${getAttachmentDownloadUrl(attachment.id)}" target="_blank" data-ui-tooltip="false" class="btn btn-primary float-end" title="Télécharger">
                             <i class="fi fi-rr-download"></i>
                         </a>
                     </td>
@@ -404,7 +469,7 @@
                               data-link-index="${index}">
                             <input type="hidden" name="_method" value="delete">
                             <input type="hidden" name="${escapeHtml(csrfParameterName)}" value="${escapeHtml(csrfToken)}">
-                            <button type="submit" class="btn btn-danger float-end" title="Supprimer" style="bottom: 10px;">
+                            <button type="submit" class="btn btn-danger float-end" title="Supprimer" data-ui-tooltip="false" style="bottom: 10px;">
                                 <i class="fi fi-rr-trash"></i>
                             </button>
                         </form>
@@ -423,44 +488,44 @@
                 updateEmptyState();
             }
 
-            function createAttachmentModalElement(attachment) {
-                const wrapper = document.createElement('div');
-                wrapper.innerHTML = `
-                    <div class="modal fade modal-pdf js-attachment-preview-modal"
-                         id="pdfModal${attachment.id}"
-                         tabindex="-1"
-                         role="dialog"
-                         data-attachment-id="${attachment.id}"
-                         data-file-name="${escapeHtml(attachment.fileName)}">
-                        <div class="modal-dialog modal-xl modal-pdf" role="document">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title">${escapeHtml(attachment.fileName)}</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            function getAttachmentPreviewModal() {
+                let modalElement = document.getElementById('esup-attachment-preview-modal');
+                if (modalElement) {
+                    return modalElement;
+                }
+                modalElement = document.createElement('div');
+                modalElement.id = 'esup-attachment-preview-modal';
+                modalElement.className = 'modal fade esup-filepond-preview-modal js-attachment-preview-modal';
+                modalElement.tabIndex = -1;
+                modalElement.setAttribute('aria-hidden', 'true');
+                modalElement.innerHTML = `
+                    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+                        <div class="modal-content">
+                            <div class="modal-header esup-filepond-preview-header">
+                                <div class="esup-filepond-preview-title-row">
+                                    <h5 class="modal-title js-esup-filepond-preview-title">Aperçu du fichier</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
                                 </div>
-                                <div class="modal-body modal-pdf bg-dark-subtle" style="width:100%; height: 90vh;">
-                                    ${isPdfFile(attachment.fileName)
-                                        ? `<div class="d-flex justify-content-center align-items-center gap-2 mb-3">
-                                                <button type="button" class="btn btn-outline-secondary btn-sm js-pdf-zoom-out" title="Zoom arrière" data-attachment-id="${attachment.id}">-</button>
-                                                <span class="badge text-bg-light js-pdf-zoom-value" data-attachment-id="${attachment.id}">${Math.round(DEFAULT_PDF_SCALE * 100)}%</span>
-                                                <button type="button" class="btn btn-outline-secondary btn-sm js-pdf-zoom-in" title="Zoom avant" data-attachment-id="${attachment.id}">+</button>
-                                           </div>
-                                           <div id="pdfContainer_${attachment.id}" class="js-pdf-container d-flex flex-column align-items-center" style="height: calc(100% - 48px); overflow: auto;"></div>`
-                                        : `<div class="alert alert-info">Aperçu indisponible pour ce format. <a href="${getAttachmentInlineUrl(attachment.id)}" target="_blank">Télécharger le document</a></div>`}
+                                <div class="d-none align-items-center justify-content-center gap-2 js-esup-filepond-pdf-zoom-controls">
+                                    <button type="button" class="btn btn-outline-secondary btn-sm js-esup-filepond-pdf-zoom-out" title="Zoom arrière" aria-label="Zoom arrière" data-ui-tooltip="false">-</button>
+                                    <span class="badge text-bg-light js-esup-filepond-pdf-zoom-value">150%</span>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm js-esup-filepond-pdf-zoom-in" title="Zoom avant" aria-label="Zoom avant" data-ui-tooltip="false">+</button>
                                 </div>
+                            </div>
+                            <div class="modal-body js-esup-filepond-preview-body"></div>
+                            <div class="modal-footer">
+                                <a class="btn btn-outline-secondary js-esup-filepond-preview-download" target="_blank" rel="noopener">Télécharger</a>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-ui-tooltip="false">Fermer</button>
                             </div>
                         </div>
                     </div>`;
-                return wrapper.firstElementChild;
+                setupPreviewModal(modalElement);
+                document.body.appendChild(modalElement);
+                return modalElement;
             }
 
             function ensureAttachmentModal(attachment) {
-                if (!previewModalsContainer || document.getElementById(`pdfModal${attachment.id}`)) {
-                    return;
-                }
-                const modalElement = createAttachmentModalElement(attachment);
-                previewModalsContainer.appendChild(modalElement);
-                setupPreviewModal(modalElement);
+                return getAttachmentPreviewModal();
             }
 
             async function fetchJson(url, options = {}) {
@@ -510,12 +575,14 @@
                 }
                 try {
                     ensurePdfPreviewLinkStyles();
+                    state.loadingStartedAt = performance.now();
+                    showPdfPreviewLoading(getPdfPreviewContainer(modalElement));
                     state.renderPromise = renderPdfPages(modalElement);
                     await state.renderPromise;
                     modalElement.dataset.pdfLoaded = 'true';
                 } catch (error) {
                     alert(error.message);
-                    const container = modalElement.querySelector('.js-pdf-container');
+                    const container = getPdfPreviewContainer(modalElement);
                     if (container) {
                         container.innerHTML = '<div class="alert alert-danger m-3">Impossible de charger l’aperçu du document.</div>';
                     }
@@ -530,38 +597,127 @@
                 }
                 modalElement.dataset.previewReady = 'true';
                 modalElement.addEventListener('shown.bs.modal', () => {
-                    renderPdfPreview(modalElement);
+                    const previewState = getPdfPreviewState(modalElement);
+                    if (previewState) {
+                        previewState.modalShown = true;
+                    }
+                    renderPdfPreview(modalElement).then(() => {
+                        const state = getPdfPreviewState(modalElement);
+                        if (state) {
+                            applyPdfZoom(modalElement, state.scale);
+                        }
+                    });
+                });
+                modalElement.addEventListener('hidden.bs.modal', () => {
+                    const previewState = getPdfPreviewState(modalElement);
+                    if (previewState) {
+                        previewState.modalShown = false;
+                    }
+                    if (modalElement.dataset.returnToAttachmentModal === 'true') {
+                        delete modalElement.dataset.returnToAttachmentModal;
+                        const attachmentModal = document.getElementById('attachment');
+                        if (attachmentModal && window.bootstrap?.Modal) {
+                            window.bootstrap.Modal.getOrCreateInstance(attachmentModal).show();
+                        }
+                    }
                 });
             }
 
             document.querySelectorAll('.js-attachment-preview-modal').forEach(setupPreviewModal);
 
             document.addEventListener('click', async (event) => {
-                const zoomInButton = event.target.closest('.js-pdf-zoom-in');
+                const zoomInButton = event.target.closest('.js-esup-filepond-pdf-zoom-in');
                 if (zoomInButton) {
                     const modalElement = zoomInButton.closest('.js-attachment-preview-modal');
                     await changePdfZoom(modalElement, PDF_SCALE_STEP);
                     return;
                 }
 
-                const zoomOutButton = event.target.closest('.js-pdf-zoom-out');
+                const zoomOutButton = event.target.closest('.js-esup-filepond-pdf-zoom-out');
                 if (zoomOutButton) {
                     const modalElement = zoomOutButton.closest('.js-attachment-preview-modal');
                     await changePdfZoom(modalElement, -PDF_SCALE_STEP);
                 }
             });
 
-            window.openPdfModal = function (attachmentId) {
-                const modalElement = document.getElementById(`pdfModal${attachmentId}`);
-                if (!modalElement) {
+            function getAttachmentFileName(attachmentId, fallback = '') {
+                if (fallback) {
+                    return fallback;
+                }
+                const button = document.querySelector(`.js-open-attachment-preview[data-attachment-id="${attachmentId}"]`);
+                if (button?.dataset.fileName) {
+                    return button.dataset.fileName;
+                }
+                return document.getElementById(`attachment-row-${attachmentId}`)?.querySelector('td')?.textContent?.trim() || '';
+            }
+
+            function prepareAttachmentPreview(modalElement, attachmentId, fileName) {
+                const isPdf = isPdfFile(fileName);
+                const body = modalElement.querySelector('.js-esup-filepond-preview-body');
+                const downloadLink = modalElement.querySelector('.js-esup-filepond-preview-download');
+                modalElement.dataset.attachmentId = String(attachmentId);
+                modalElement.dataset.fileName = fileName;
+                delete modalElement.dataset.pdfLoaded;
+                modalElement.querySelector('.js-esup-filepond-preview-title').textContent = fileName || 'Aperçu du fichier';
+                downloadLink.href = getAttachmentDownloadUrl(attachmentId);
+                setPdfZoomControlsVisible(modalElement, isPdf);
+                body.replaceChildren();
+                if (isPdf) {
+                    const pdfPreview = document.createElement('div');
+                    pdfPreview.className = 'esup-filepond-preview-pdf';
+                    pdfPreview.setAttribute('aria-busy', 'true');
+                    showPdfPreviewLoading(pdfPreview);
+                    body.appendChild(pdfPreview);
+                    const state = getPdfPreviewState(modalElement);
+                    if (state) {
+                        state.scale = DEFAULT_PDF_SCALE;
+                        state.loadingStartedAt = performance.now();
+                        state.modalShown = modalElement.classList.contains('show');
+                    }
+                    updatePdfZoomLabel(modalElement, DEFAULT_PDF_SCALE);
                     return;
                 }
-                setupPreviewModal(modalElement);
-                const modal = new bootstrap.Modal(modalElement, {
+                const fallback = document.createElement('div');
+                fallback.className = 'esup-filepond-preview-fallback';
+                fallback.innerHTML = '<i class="fi fi-rr-file text-muted" aria-hidden="true"></i><p class="mb-3">Aucun aperçu intégré disponible pour ce type de fichier.</p>';
+                const openLink = document.createElement('a');
+                openLink.className = 'btn btn-primary';
+                openLink.href = getAttachmentInlineUrl(attachmentId);
+                openLink.target = '_blank';
+                openLink.rel = 'noopener';
+                openLink.textContent = 'Ouvrir le fichier';
+                fallback.appendChild(openLink);
+                body.appendChild(fallback);
+            }
+
+            function showPreparedAttachmentPreview(modalElement) {
+                if (window.bootstrap?.Modal) {
+                    window.bootstrap.Modal.getOrCreateInstance(modalElement, {
+                        backdrop: 'static',
+                        keyboard: false
+                    }).show();
+                    return;
+                }
+                $(modalElement).modal({
                     backdrop: 'static',
                     keyboard: false
                 });
-                modal.show();
+            }
+
+            window.openPdfModal = function (attachmentId, fileName = '') {
+                const modalElement = getAttachmentPreviewModal();
+                if (!modalElement || !attachmentId) {
+                    return;
+                }
+                prepareAttachmentPreview(modalElement, attachmentId, getAttachmentFileName(attachmentId, fileName));
+                const attachmentModal = document.getElementById('attachment');
+                if (attachmentModal?.classList.contains('show') && window.bootstrap?.Modal) {
+                    modalElement.dataset.returnToAttachmentModal = 'true';
+                    attachmentModal.addEventListener('hidden.bs.modal', () => showPreparedAttachmentPreview(modalElement), { once: true });
+                    window.bootstrap.Modal.getOrCreateInstance(attachmentModal).hide();
+                    return;
+                }
+                showPreparedAttachmentPreview(modalElement);
             };
 
             if (addAttachmentForm) {
@@ -601,7 +757,6 @@
                         const payload = await submitDeleteForm(removeAttachmentForm);
                         const attachmentId = payload.attachmentId || removeAttachmentForm.dataset.attachmentId;
                         document.getElementById(`attachment-row-${attachmentId}`)?.remove();
-                        document.getElementById(`pdfModal${attachmentId}`)?.remove();
                         updateEmptyState();
                         showMessage('success', payload.message || 'La pièce jointe a été supprimée');
                     } catch (error) {
@@ -632,7 +787,7 @@
         document.addEventListener("click", event => {
             const previewButton = event.target.closest(".js-open-attachment-preview");
             if (previewButton) {
-                window.openPdfModal(previewButton.dataset.attachmentId);
+                window.openPdfModal(previewButton.dataset.attachmentId, previewButton.dataset.fileName);
             }
         });
     })();

@@ -107,8 +107,8 @@
             </th:block>
         </ul>
     </li>
-    <li class="nav-item ws-tab-nav d-none d-lg-block" style="border-bottom: 1px solid var(--bs-secondary-bg-subtle);">
-        <a th:if="${showSignRequest.signBookLight.editable && showSignRequest.signRequestLight.createBy.eppn == userEppn}" title="Ajouter un document à signer" role="button" data-bs-toggle="modal" data-bs-target="#addDoc"  class="nav-link bg-secondary-subtle text-dark ">
+    <li id="addDocTab" class="nav-item ws-tab-nav d-none d-lg-block">
+        <a th:if="${showSignRequest.signBookLight.editable && showSignRequest.signRequestLight.createBy.eppn == userEppn}" title="Ajouter un document à signer" role="button" data-bs-toggle="modal" data-bs-target="#addDoc"  class="nav-link bg-light text-dark">
             <div class="d-flex justify-content-start align-items-center gap-1">
                 <i class="fi fi-rr-add-document"></i>
             </div>
