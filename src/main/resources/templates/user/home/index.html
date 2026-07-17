@@ -12,7 +12,7 @@
         <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full home-breadcrumb-loading-shell">
             <div class="col-12 col-xxl-10 mx-auto position-relative" data-es-stop-propagation="true">
                 <div class="input-group">
-                    <label title="Rechercher" class="btn btn-light border-secondary-subtle" style="pointer-events: none;"><i class="fi fi-rr-search"></i></label>
+                    <label for="mega-search" title="Rechercher" class="btn btn-light border-secondary-subtle d-flex" style="pointer-events: none;"><i class="fi fi-rr-search"></i></label>
                     <select id="mega-search" class="form-control rounded-end-2"  name="megaSearch" es-search-addable="true" es-search-text="Rechercher documents, circuits ou formulaires..." multiple style="z-index: 2;">
                         <option title="Filter sur mes documents" data-html='<i class="fi fi-rr-filter text-secondary"></i> <i class="fi fi-rr-file"></i> Document' value="type:signBook" th:selected="${typeDocument}">type:Document</option>
                         <option title="Filter sur mes circuits" data-html='<i class="fi fi-rr-filter text-secondary"></i> <i class="fi fi-rr-diagram-project project-diagram-color"></i> Circuit' value="type:workflow" th:selected="${typeWorkflow}">type:Circuit</option>
@@ -21,8 +21,6 @@
                             <option th:title="'Filter sur le tag ' + tag" th:style="'color:' + ${tag.color}" th:data-html="'<i class=\'fi fi-rr-filter text-secondary\'> </i><span class=\'badge\' style=\'background-color:' + ${tag.color} + '\'>' + ${tag.name} + '</span>'" th:value="'tag:' + ${tag.id}" th:text="'tag:' + ${tag.name}" th:selected="${selectedTags.contains(tag)}"></option>
                         </th:block>
                     </select>
-<!--                    <button title="Rechercher" id="submit-mega-search" class="btn btn-light border-secondary-subtle"><i class="fi fi-rr-search"></i></button>-->
-<!--                    <button title="Réinitialiser la recherche" id="reset-mega-search" class="btn btn-light border-secondary-subtle rounded-end-2"><i class="fi fi-rr-cross-circle"></i></button>-->
                 </div>
             </div>
         </nav>
