@@ -33,15 +33,15 @@
         <button id="infos-btn" tabindex="0" class="d-flex justify-content-center btn btn-transparent text-dark d-none d-lg-flex" title="Informations" data-bs-toggle="modal" data-bs-target="#detailsModal">
             <i class="fi fi-rr-info"></i>
         </button>
+        <button th:if="${signRequestFull.updateAllowed && (signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft)}" type="button" class="d-flex justify-content-center btn btn-transparent text-dark d-none d-md-flex" title="Paramètres généraux" data-bs-toggle="modal" data-bs-target="#updateSignbookModal">
+            <i class="fi fi-rr-settings-sliders"></i>
+        </button>
         <form th:if="${showSignRequest.displayNotif}"
               th:action="'/user/signrequests/replay-notif/' + ${signRequestLight.id}" method="post">
             <button title="Relancer le destinataire" type="submit" class="d-flex justify-content-center btn btn-transparent text-dark">
                 <i class="fi fi-rr-bullhorn"></i> <span class="d-none"> Relancer</span>
             </button>
         </form>
-        <button th:if="${signRequestFull.signable && globalProperties.enableTransfertForUsers}" tabindex="1" id="forward-btn" class="d-flex justify-content-center btn btn-transparent text-dark d-none" title="Réaffecter la demande" data-bs-toggle="modal" data-bs-target="#forwardModal">
-            <i class="fi fi-rr-refer-arrow"></i>
-        </button>
         <button id="attachment-trigger-button" class="d-flex flex-column align-items-center btn btn-transparent text-dark" data-bs-toggle="modal" title="Pièces jointes"
                 data-bs-target="#attachment"
                 th:if="${user.userType.name() != 'external' || showSignRequest.workflow.externalCanReaderAttachments}">
@@ -64,12 +64,12 @@
         <button th:if="${user.userType.name() != 'external' && showSignRequest.externalsRecipients != null && showSignRequest.externalsRecipients.size() > 0}" class="d-flex justify-content-center btn btn-transparent text-dark" title="Transmettre un lien d'accès" data-bs-toggle="modal" data-bs-target="#sendLinkModal">
             <i class="fi fi-rr-share"></i>
         </button>
-        <button th:if="${signRequestFull.updateAllowed && (signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft)}" type="button" class="d-flex justify-content-center btn btn-transparent text-dark d-none d-md-flex" title="Paramètres généraux" data-bs-toggle="modal" data-bs-target="#updateSignbookModal">
-            <i class="fi fi-rr-settings-sliders"></i>
-        </button>
         <a target="_blank" th:if="${signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported}" class="d-flex justify-content-center btn btn-transparent text-dark" th:href="'/user/validation/document/' + ${signRequestLight.id}" title="Contrôler le document">
             <i class="fi fi-rr-audit"></i>
         </a>
+        <button th:if="${signRequestFull.signable && globalProperties.enableTransfertForUsers}" tabindex="1" id="forward-btn" class="d-flex justify-content-center btn btn-transparent text-dark d-none" title="Réaffecter la demande" data-bs-toggle="modal" data-bs-target="#forwardModal">
+            <i class="fi fi-rr-refer-arrow"></i>
+        </button>
         <button th:if="${user.userType.name() != 'external'
                     && userEppn == authUserEppn
                     && !globalProperties.hideSendSignRequest

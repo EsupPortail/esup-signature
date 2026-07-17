@@ -1162,12 +1162,11 @@ input, textarea, select {
     align-items: center;
     justify-content: center;
     position: absolute;
-    top: .68rem;
-    left: 2.65rem;
+    left: 3.25rem;
     z-index: 103;
-    width: calc(var(--esup-filepond-icon-size) + .3rem);
-    min-height: calc(var(--esup-filepond-icon-size) + .3rem);
-    font-size: var(--esup-filepond-icon-size);
+    width: calc(var(--esup-filepond-icon-size) * 1.5);
+    min-height: calc(var(--esup-filepond-icon-size) * 1.5);
+    font-size: calc(var(--esup-filepond-icon-size) * 1.5);
     line-height: 1 !important;
     text-align: center;
     pointer-events: none;
@@ -1175,12 +1174,12 @@ input, textarea, select {
 
 .esup-filepond .esup-filepond-file-icon:before {
     display: block;
-    font-size: var(--esup-filepond-icon-size);
+    font-size: calc(var(--esup-filepond-icon-size) * 1.5);
     line-height: 1;
 }
 
 .esup-filepond .filepond--file-info {
-    transform: translate3d(4rem, 0, 0) !important;
+    transform: translate3d(5rem, 0, 0) !important;
 }
 
 .esup-filepond .filepond--file-info-main,
@@ -1257,6 +1256,9 @@ input, textarea, select {
     right: 2.55rem;
     z-index: 104;
     transform: translateY(-50%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .esup-filepond-readonly .esup-filepond-preview-button {
@@ -1274,12 +1276,74 @@ input, textarea, select {
     background-color: var(--bs-secondary-bg);
 }
 
-.esup-filepond-preview-frame {
-    display: block;
+.esup-filepond-preview-modal .esup-filepond-preview-header {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: .75rem;
+}
+
+.esup-filepond-preview-modal .esup-filepond-preview-title-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    min-width: 0;
+}
+
+.esup-filepond-preview-modal .js-esup-filepond-preview-title {
+    min-width: 0;
+    flex: 1 1 auto;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.js-esup-filepond-pdf-zoom-controls {
+    display: flex;
     width: 100%;
-    height: min(75vh, 52rem);
-    border: 0;
+}
+
+.esup-filepond-preview-modal .esup-filepond-preview-pdf {
+    display: block;
+    min-height: min(75vh, 52rem);
+    align-items: center;
+    justify-content: center;
+    overflow: auto;
+    padding: 1rem;
+    color: var(--bs-secondary-color);
+}
+
+.esup-pdf-preview-loading {
+    display: flex;
+    min-height: calc(min(75vh, 52rem) - 2rem);
+    align-items: center;
+    justify-content: center;
+    gap: .75rem;
+    color: var(--bs-secondary-color);
+    font-weight: 500;
+}
+
+.esup-pdf-preview-document {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start;
+    width: max-content;
+    transform-origin: top left;
+}
+
+.esup-pdf-preview-scale-frame {
+    margin: 0 auto;
+    flex: none;
+}
+
+.esup-pdf-preview-page {
     background-color: var(--bs-body-bg);
+    box-shadow: 0 .125rem .5rem rgb(0 0 0 / 20%);
+}
+
+.esup-pdf-preview-page canvas {
+    display: block;
 }
 
 .esup-filepond-preview-image {

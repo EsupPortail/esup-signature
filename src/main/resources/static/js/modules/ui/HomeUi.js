@@ -296,7 +296,7 @@ export class HomeUi {
         }
 
         const highlightItems = containerId === 'to-sign-list' ? newItems : null;
-        const rows = signBooks.map(signBook => this.renderHomeSignBookRows(signBook, highlightItems)).join('');
+        const rows = signBooks.map(signBook => this.renderHomeSignBookRows(containerId, signBook, highlightItems)).join('');
         container.innerHTML = `
             <div class="div-scrollable scrollbar-style rounded-3" style="max-height: 400px; overflow-x: hidden;">
                 <div class="d-flex col-12 mb-2">
@@ -319,7 +319,7 @@ export class HomeUi {
         this.bindRenderedHomeRows(container);
     }
 
-    renderHomeSignBookRows(signBook, newItems = null) {
+    renderHomeSignBookRows(containerId, signBook, newItems = null) {
         if (signBook == null || !Array.isArray(signBook.signRequests) || signBook.signRequests.length === 0) {
             return '';
         }
@@ -327,7 +327,7 @@ export class HomeUi {
         const signRequestCount = Number(signBook.signRequestCount || signBook.signRequests.length || 0);
         const multiple = signRequestCount > 1;
         const hasNestedRows = signBook.signRequests.length > 1;
-        const rowId = 'row_' + signBook.id;
+        const rowId = containerId + '-row_' + signBook.id;
         const dropdownId = 'commentButton-' + signBook.id;
         const unreadClass = signBook.viewedByCurrentUser ? '' : 'fw-bold';
         const description = signBook.description || '';

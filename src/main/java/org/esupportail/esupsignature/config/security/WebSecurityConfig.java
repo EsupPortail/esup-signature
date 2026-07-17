@@ -258,6 +258,7 @@ public class WebSecurityConfig {
 			if(webSecurityProperties.isContentSecurityPolicyEnabled()) {
 				Set<String> connectSrc = new LinkedHashSet<>();
 				connectSrc.add("'self'");
+				connectSrc.add("blob:");
 				addHttpSrcOrigin(connectSrc, globalProperties.getNexuUrl(), "globalProperties.nexuUrl", "connect-src");
 				Set<String> scriptSrc = new LinkedHashSet<>();
 				scriptSrc.add("'self'");

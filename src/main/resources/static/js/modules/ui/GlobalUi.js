@@ -649,7 +649,7 @@ export class GlobalUi {
     }
 
     initTooltips() {
-        const tooltipItems = ".rounded-circle[title], .btn[title], #new-scroll[title], [data-ui-tooltip='true'][title]";
+        const tooltipItems = ".rounded-circle[title]:not([data-ui-tooltip='false']), .btn[title]:not([data-ui-tooltip='false']), #new-scroll[title]:not([data-ui-tooltip='false']), [data-ui-tooltip='true'][title]";
         const tooltipOptions = {
             items: tooltipItems,
             disabled: false,
