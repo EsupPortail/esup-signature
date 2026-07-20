@@ -500,7 +500,7 @@ td {
     border-top-right-radius: 0 !important;
     margin-top: 1px;
     max-height: 40px;
-    border-bottom: 1px solid var(--bs-secondary-bg-subtle);
+    /*border-bottom: 1px solid var(--bs-secondary-bg-subtle);*/
 }
 
 .es-form-select-xl {
@@ -556,7 +556,7 @@ option[unavailable="unavailable"] {
 .breadcrumb-nav,
 .es-breadcrumb-nav {
     background-color: var(--bs-white);
-    border-bottom: 1px solid var(--bs-secondary-bg-subtle);
+    border-bottom: 1px solid var(--color-dee2e6);
 }
 
 .breadcrumb-nav.breadcrumb-sign,

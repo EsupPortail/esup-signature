@@ -419,7 +419,6 @@ body.es-signrequest-page .es-signrequest-main-content > .es-workspace {
 
 .breadcrumb {
     padding: 0 !important;
-    padding-top: 2px !important;
     padding-left: 15px !important;
 }
 
@@ -434,12 +433,61 @@ body.es-signrequest-page .es-signrequest-main-content > .es-workspace {
     align-items: center;
 }
 
+.es-breadcrumb-nav .breadcrumb {
+    display: flex;
+    align-items: center;
+    align-self: stretch;
+    min-width: 0;
+    line-height: 1.2;
+}
+
+.es-breadcrumb-nav .breadcrumb-item {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+}
+
+.es-breadcrumb-nav .breadcrumb-item > a,
+.es-breadcrumb-nav .breadcrumb-item > span {
+    display: inline-flex;
+    align-items: center;
+    min-width: 0;
+}
+
+.es-breadcrumb-nav button,
+.es-nav-tools-breadcrumb button {
+    align-self: center;
+}
+
+.es-breadcrumb-nav i,
+.es-nav-tools-breadcrumb i {
+    display: inline-flex;
+    align-items: center;
+    line-height: 1;
+}
+
 .es-breadcrumb-sign {
     z-index: 1030;
 }
 
+.js-display-side-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
 .js-display-side-btn i::before {
     font-size: 20px;
+}
+
+.es-signrequest-workspace-header {
+    align-items: stretch;
+}
+
+.es-signrequest-workspace-header > li,
+.es-signrequest-workspace-header > li > .nav-link {
+    display: flex;
+    align-items: center;
 }
 
 .breadcrumb {
