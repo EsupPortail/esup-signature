@@ -238,7 +238,7 @@ export class SignWorkspaceController {
         });
         this.initChangeModeSelector();
         this.initDataFields(fields);
-        this.wsTabs = $("#ws-tabs");
+        this.wsTabs = $(".es-signrequest-workspace-header");
         this.addSignButton = $("#addSignButton");
         this.lastWidth = window.innerWidth;
         this.lastHeight = window.innerHeight;
@@ -1049,7 +1049,10 @@ export class SignWorkspaceController {
     }
 
     autocollapse() {
-        const tabs = document.getElementById('ws-tabs');
+        document.querySelectorAll('.es-signrequest-workspace-header').forEach(tabs => this.autocollapseTabs(tabs));
+    }
+
+    autocollapseTabs(tabs) {
         const dropdownBefore = tabs?.querySelector(':scope > li.es-signrequest-tabs-dropdown-before');
         const dropdownAfter = tabs?.querySelector(':scope > li.es-signrequest-tabs-dropdown-after');
         const beforeItems = Array.from(dropdownBefore?.querySelectorAll('.es-signrequest-tabs-dropdown > li') || []);

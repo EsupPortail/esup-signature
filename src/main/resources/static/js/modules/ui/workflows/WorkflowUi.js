@@ -18,6 +18,7 @@ export class WorkflowUi {
 
     initListeners() {
         this.initDirtyIndicator();
+        this.initGenerateTokenListener();
         $(document).ready(() => this.initDeleteListener());
         $(document).ready(() => this.initMultiSignListener());
         $('#delete-button').on('click', () => this.confirmDelete());
@@ -75,9 +76,27 @@ export class WorkflowUi {
 
         this.isInitialized = true;
 
+        saveButton.addEventListener('click', () => this.submitForm());
+
         attachDirtyIndicator({
             form: this.form,
             saveButton
+        });
+    }
+
+    initGenerateTokenListener() {
+        const generateTokenButton = document.getElementById('generateTokenButton');
+        const tokenInput = document.getElementById('token');
+
+        if (!generateTokenButton || !tokenInput) {
+            return;
+        }
+
+        generateTokenButton.addEventListener('click', () => {
+            tokenInput.value = ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, character =>
+                (character ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> character / 4).toString(16)
+            );
+            tokenInput.dispatchEvent(new Event('input', {bubbles: true}));
         });
     }
 

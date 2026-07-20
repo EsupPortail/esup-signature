@@ -5,12 +5,22 @@
 <!--/*@thymesVar id="signRequestLight" type="org.esupportail.esupsignature.dto.page.user.signrequest.ShowSignRequestDto.SignRequestLightDto"*/-->
 <!--/*@thymesVar id="globalProperties" type="org.esupportail.esupsignature.config.GlobalProperties"*/-->
 
-<div th:fragment="breadcrumb-content" class="d-flex align-items-center w-100 border-0" style="min-width: 0;">
+<div th:fragment="breadcrumb-content(tabsId)" class="d-flex align-items-center w-100 border-0" style="min-width: 0;">
+    <button type="button"
+            class="js-display-side-btn btn btn-sm btn-light d-xxl-none ms-2 flex-shrink-0"
+            th:id="${tabsId + '-display-side-btn'}"
+            data-bs-toggle="offcanvas"
+            data-bs-target="#sidebar"
+            aria-controls="sidebar"
+            title="Afficher l'état du circuit"
+            aria-label="Afficher l'état du circuit">
+        <i class="fi fi-rr-sidebar"></i>
+    </button>
     <div id="workflowName" class="ps-2 d-none d-xl-flex border-end" style="flex: 0 0 300px;">
         <i class="fi fi-rr-folder"></i> <p th:title="${showSignRequest.signBookLight.workflowName}" class="text-uppercase m-0" th:text="${showSignRequest.signBookLight.workflowName}" style="width: 264px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></p>
     </div>
 
-    <div style="flex: 1 1 auto; min-width: 0;" th:replace="~{user/signrequests/includes/ws-tabs :: ws-tabs}"></div>
+    <div style="flex: 1 1 auto; min-width: 0;" th:replace="~{user/signrequests/includes/ws-tabs :: ws-tabs(${tabsId})}"></div>
     <div class="btn-group me-2 ms-auto d-none d-md-block" role="group" aria-label="Ouverture automatique de la demande suivante" th:if="${showSignRequest.nextSignRequestId != null}">
         <button type="button"
                 class="btn btn-sm text-uppercase d-flex align-items-center gap-2 text-dark js-sign-goto-next-switch"
@@ -22,14 +32,11 @@
 </div>
 
 <nav th:fragment="breadcrumb" id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full es-breadcrumb-sign">
-    <th:block th:replace="~{user/signrequests/includes/show-sections :: breadcrumb-content}"></th:block>
+    <th:block th:replace="~{user/signrequests/includes/show-sections :: breadcrumb-content('ws-tabs')}"></th:block>
 </nav>
 
 <div th:fragment="sign-buttons" id="signButtons" class="es-sign-buttons d-flex flex-column justify-content-between bg-white es-fixed-action-btns active">
     <div class="d-flex flex-column gap-4">
-        <button id="display-side-btn" type="button" class="d-flex justify-content-center btn btn-transparent text-dark d-flex d-xxl-none" title="Afficher l'état du circuit">
-            <i class="fi fi-rr-sidebar"></i>
-        </button>
         <button id="infos-btn" tabindex="0" class="d-flex justify-content-center btn btn-transparent text-dark d-none d-lg-flex" title="Informations" data-bs-toggle="modal" data-bs-target="#detailsModal">
             <i class="fi fi-rr-info"></i>
         </button>
