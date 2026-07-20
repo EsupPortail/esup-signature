@@ -474,6 +474,17 @@ body.es-signrequest-page .es-signrequest-main-content > .es-workspace {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    position: relative;
+    margin-right: 0.5rem;
+}
+
+.js-display-side-btn::after {
+    content: "";
+    position: absolute;
+    right: -0.3rem;
+    width: 2px;
+    height: 20px;
+    background-color: var(--bs-secondary);
 }
 
 .js-display-side-btn i::before {

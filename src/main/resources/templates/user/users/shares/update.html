@@ -17,11 +17,11 @@
             </button>
             <ol id="breadcrumb-ol" class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/user/users/shares">Délégations</a></li>
-                <li class="breadcrumb-item active" th:if="${userShare.workflow}"
+                <li class="breadcrumb-item es-breadcrumb-title active" th:if="${userShare.workflow}"
                     th:text="${userShare.workflow.description}"></li>
-                <li class="breadcrumb-item active" th:if="${userShare.form}" th:text="${userShare.form.title}"></li>
-                <li class="breadcrumb-item active" th:if="${userShare.workflow}" th:text="${userShare.workflow.title}"></li>
-                <li class="breadcrumb-item active" th:if="${userShare.allSignRequests}">Toutes les demandes</li>
+                <li class="breadcrumb-item es-breadcrumb-title active" th:if="${userShare.form}" th:text="${userShare.form.title}"></li>
+                <li class="breadcrumb-item es-breadcrumb-title active" th:if="${userShare.workflow}" th:text="${userShare.workflow.title}"></li>
+                <li class="breadcrumb-item es-breadcrumb-title active" th:if="${userShare.allSignRequests}">Toutes les demandes</li>
             </ol>
         </nav>
         <div id="content" class="es-content-full">

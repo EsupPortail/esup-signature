@@ -553,6 +553,12 @@ option[unavailable="unavailable"] {
     border: 0 !important;
 }
 
+
+.es-breadcrumb-title {
+    color: var(--bs-secondary-color);
+}
+
+
 .breadcrumb-nav,
 .es-breadcrumb-nav {
     background-color: var(--bs-white);

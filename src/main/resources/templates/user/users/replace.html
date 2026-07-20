@@ -15,7 +15,7 @@
             </button>
             <ol id="breadcrumb-ol" class="breadcrumb">
                 <li class="breadcrumb-item"><i class="fi fi-rr-user"></i> <span th:text="${authUser.firstname} + ' ' + ${authUser.name}"></span></li>
-                <li class="breadcrumb-item active">Remplacements</li>
+                <li class="breadcrumb-item es-breadcrumb-title active">Remplacements</li>
             </ol>
             <button th:if="${user.replaceByUser == null}" type="button" title="Mettre en place une redirection" aria-label="Mettre en place une redirection" data-bs-toggle="modal" data-bs-target="#newReplaceModal" class="btn btn-sm btn-light d-xl-none ms-auto me-2">
                 <i class="fi fi-rr-plus"></i>
