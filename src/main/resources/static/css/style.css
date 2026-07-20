@@ -60,9 +60,14 @@ main {
 }
 
  #sidebar {
-     background-color: var(--bs-secondary-bg);
+     background-color: var(--bs-secondary-bg, #e9ecef) !important;
      font-size: clamp(0.8rem, 1vw, 0.95rem);
  }
+
+#sidebar > .offcanvas-header,
+#sidebar > .offcanvas-body {
+    background-color: var(--bs-secondary-bg, #e9ecef) !important;
+}
 
  #sidebar a {
      font-size: clamp(0.8rem, 1vw, 0.95rem);

@@ -186,6 +186,7 @@
 
 
     body.es-signrequest-page #sidebar.offcanvas-xxl {
+        --bs-offcanvas-bg: var(--bs-secondary-bg);
         display: flex;
         position: fixed !important;
         left: 0;
@@ -195,6 +196,12 @@
         width: min(85vw, 300px) !important;
         height: 100vh !important;
         z-index: 1045 !important;
+        background-color: var(--bs-secondary-bg);
+    }
+
+    body.es-signrequest-page #sidebar.offcanvas-xxl .offcanvas-header,
+    body.es-signrequest-page #sidebar.offcanvas-xxl .offcanvas-body {
+        background-color: inherit;
     }
 
     body.es-signrequest-page #sidebar.offcanvas-xxl .offcanvas-body {
