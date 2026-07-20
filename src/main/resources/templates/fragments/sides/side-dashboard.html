@@ -1,8 +1,12 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="fr">
 <!--/*@thymesVar id="statusFilter" type="org.esupportail.esupsignature.entity.enums.SignRequestStatus"*/-->
-<nav th:fragment="side-dashboard" id="sidebar" class="scrollbar-lite scrollbar-style">
-    <div class="d-flex flex-column ms-1 mt-2 gap-1">
+<nav th:fragment="side-dashboard" id="sidebar" class="scrollbar-lite scrollbar-style offcanvas-xl offcanvas-start" tabindex="-1" aria-labelledby="signbooks-sidebar-title">
+    <div class="offcanvas-header d-xl-none border-bottom">
+        <h2 class="offcanvas-title fs-6" id="signbooks-sidebar-title">Filtres du tableau de bord</h2>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#sidebar" aria-label="Fermer"></button>
+    </div>
+    <div class="offcanvas-body d-flex flex-column ms-1 mt-2 gap-1">
         <a th:classappend="${statusFilter == ''} ? 'bg-dark-subtle' : 'text-dark btn-transparent'" class="btn text-left rounded-2 d-flex align-items-center gap-2" href="/user/signbooks?statusFilter=all">
             <i class="fi fi-rr-search"></i><span class="sidebar-label">Tout voir</span>
         </a>

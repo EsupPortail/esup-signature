@@ -5,22 +5,28 @@
 <head th:replace="~{fragments/head :: head}"></head>
 <script type="module" th:src="'/js/modules/bootstrap/ShareBootstrap.js?version=' + ${versionApp}"></script>
 <script type="module" th:src="'/js/modules/bootstrap/UserReplaceBootstrap.js?version=' + ${versionApp}"></script>
-<body>
+<body class="user-settings-page user-replace-page">
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
     <div class="es-wrapper">
         <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full text-uppercase">
+            <button type="button" th:unless="${user.userType.name() == 'external'}" class="user-settings-sidebar-toggle btn btn-sm btn-light d-xl-none ms-2" data-bs-toggle="offcanvas" data-bs-target="#sidebar" aria-controls="sidebar" aria-label="Ouvrir le menu des paramètres">
+                <i class="fi fi-rr-sidebar"></i>
+            </button>
             <ol id="breadcrumb-ol" class="breadcrumb">
                 <li class="breadcrumb-item"><i class="fi fi-rr-user"></i> <span th:text="${authUser.firstname} + ' ' + ${authUser.name}"></span></li>
-                <li class="breadcrumb-item active">Remplacements</li>
+                <li class="breadcrumb-item es-breadcrumb-title active">Remplacements</li>
             </ol>
+            <button th:if="${user.replaceByUser == null}" type="button" title="Mettre en place une redirection" aria-label="Mettre en place une redirection" data-bs-toggle="modal" data-bs-target="#newReplaceModal" class="btn btn-sm btn-light d-xl-none ms-auto me-2">
+                <i class="fi fi-rr-plus"></i>
+            </button>
         </nav>
         <div id="content" class="es-content-full">
             <div class="es-main-content es-main-content-user-settings d-flex">
                 <div class="es-sidebar d-flex">
                     <nav th:replace="~{fragments/sides/side-user :: side-user}"></nav>
                 </div>
-                <div class="flex-grow-1 overflow-scroll">
+                <div class="flex-grow-1 user-replace-panel">
                     <div class="m-2">
                         <div class="alert border-secondary-subtle" th:if="${user.replaceByUser != null}">
                             Vos demandes seront redirigées vers <b th:text="${user.replaceByUser.name + ' ' + user.replaceByUser.firstname}"></b>

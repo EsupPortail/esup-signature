@@ -45,7 +45,7 @@
                 <span th:text="${signBook.subject}"></span>
             </div>
         </td>
-        <td th:classappend="${signRequest.viewedByCurrentUser} ? '' : 'fw-bold'" th:if="${signBook.signRequestCount > 1}" class="d-none d-xl-table-cell">
+        <td th:classappend="${signRequest.viewedByCurrentUser} ? '' : 'fw-bold'" th:if="${signBook.signRequestCount > 1}" class="clickable-td signbook-subject-cell">
             <div class="dropdown">
                 <button th:classappend="${signRequest.viewedByCurrentUser} ? '' : 'fw-bold'" th:title="${signBook.subject}" style="overflow: clip;" onclick="event.stopPropagation();" class="btn btn-sm dropdown-toggle w-100 text-start p-0 border-0 signbook-subject-label" type="button" th:id="'dropdownFilesButton-' + ${signBook.id}" data-bs-toggle="dropdown">
                     <i class="fi fi-rr-folder-open"></i>
@@ -96,7 +96,9 @@
         <td class="clickable-td d-none d-xxxl-table-cell">
             <span th:if="${signBook.endDateLabel != null}" th:text="${signBook.endDateLabel}"></span>
         </td>
-        <td class="clickable-td d-table-cell" th:with="refusedCommentTitle=${signBook.refusedCommentTitle}">
+        <td class="clickable-td d-table-cell signbooks-status-column"
+            th:with="refusedCommentTitle=${signBook.refusedCommentTitle}"
+            th:aria-label="${signBook.deleted ? 'Supprimé' : 'Statut ' + signBook.status}">
             <div th:replace="~{user/signbooks/includes/status :: status(signBookLight=${signBook})}"></div>
         </td>
         <td class="clickable-td d-none d-xxl-table-cell align-middle" th:title="#{'signbook.archivestatus.' + ${signBook.archiveStatus}}">
@@ -104,7 +106,7 @@
                 <i class="fi fi-rr-box" th:classappend="${signBook.archiveStatus == 'archived'} ? 'text-dark' : 'text-secondary'"></i>
             </span>
         </td>
-        <td>
+        <td class="signbooks-actions-column">
             <div class="dropdown position-relative">
                 <button type="button" th:id="'menu-toggle_' + ${signBook.id}" class="btn text-dark"
                         th:data-bs-target="'#menu-' + ${signBook.id}" th:aria-controls="'menu-' + ${signBook.id}" data-bs-toggle="dropdown">

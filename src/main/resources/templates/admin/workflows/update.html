@@ -5,10 +5,7 @@
 <head th:replace="~{fragments/head :: head}"></head>
 <link rel="stylesheet" th:href="@{/webjars/summernote/dist/summernote-lite.css}" />
 <script th:src="@{/webjars/summernote/dist/summernote-lite.js}"></script>
-<script th:inline="javascript" type="module">
-    import {WorkflowUi} from '/js/modules/ui/workflows/WorkflowUi.js?version=@[(${versionApp})]@';
-    new WorkflowUi();
-</script>
+<script type="module" th:src="'/js/modules/bootstrap/WorkflowBootstrap.js?version=' + ${versionApp}"></script>
 <body>
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
@@ -17,7 +14,7 @@
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/admin" class="d-flex align-items-center"><i class="fi fi-rr-chess-queen"></i> Administration</a></li>
                 <li class="breadcrumb-item"><a href="/admin/workflows"><i class="fi fi-rr-diagram-project project-diagram-color"></i> Liste des circuits</a></li>
-                <li aria-current="page" class="breadcrumb-item active">Modifier le circuit : <span th:text="${workflow.description}"></span></li>
+                <li aria-current="page" class="breadcrumb-item es-breadcrumb-title active">Modifier le circuit : <span th:text="${workflow.description}"></span></li>
             </ol>
         </nav>
         <div id="content" class="es-content-full">
@@ -30,7 +27,7 @@
                     <div class="p-0 m-2">
                         <ul class="nav nav-tabs">
                             <li class="nav-item">
-                                <a class="nav-link active" href="#" onclick="return false;"><i class="fi fi-rr-settings-sliders"></i> Paramètres</a>
+                                <a class="nav-link active" aria-current="page"><i class="fi fi-rr-settings-sliders"></i> Paramètres</a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" th:href="'/' + ${workflowRole} + '/workflows/targets/' + ${workflow.id}"><i class="fi fi-rr-location-crosshairs"></i> Destinations</a>
@@ -65,8 +62,7 @@
                                                     <label for="token"><strong>Référence unique à passer dans {id} pour les appels web service</strong> (à saisir manuellement ou générer)</label>
                                                     <div class="input-group">
                                                         <input id="token" class="form-control" type="text" th:field="*{token}" autocomplete="on">
-                                                        <button class="btn btn-outline-secondary" type="button"
-                                                                onclick="document.getElementById('token').value = ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c=> (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16));">
+                                                        <button id="generateTokenButton" class="btn btn-outline-secondary" type="button">
                                                             Générer
                                                         </button>
                                                     </div>
@@ -478,8 +474,7 @@
                 <div class="es-sign-buttons es-fixed-action-btns active">
                     <ul class="list-unstyled">
                         <li>
-                            <button id="saveButton" role="button" title="Enregistrer" class="btn btn-transparent text-dark"
-                                    onclick="return window.workflowUi ? window.workflowUi.submitForm() : document.getElementById('updateSignBook').submit();">
+                            <button id="saveButton" type="button" title="Enregistrer" class="btn btn-transparent text-dark">
                                 <i class="fi fi-rr-disk"></i>
                             </button>
                         </li>

@@ -521,10 +521,6 @@ export class GlobalUi {
             window.history.back();
         });
 
-        $("#display-side-btn").on('click', function(e) {
-           $("#sidebar").toggleClass("es-sidebar-mobile").toggleClass("sidebar-mobile");
-        });
-
         $(window).on("resize", (e) => {
             const w = window.innerWidth;
             const h = window.innerHeight;
@@ -755,9 +751,6 @@ export class GlobalUi {
         $("#mega-result").modal('hide');
         $("#second-tools").collapse('hide');
         var clickover = $(event.target);
-        if(clickover.attr("id") !== "display-side-btn" && clickover.parent().attr("id") !== "display-side-btn" && clickover.parent().parent().attr("id") !== "display-side-btn") {
-            $("#sidebar").removeClass("es-sidebar-mobile").removeClass("sidebar-mobile");
-        }
         $("div[id^='menu-']").each(function() {
             var _opened = $(this).hasClass("collapse show");
             if (_opened === true && !clickover.hasClass("toggle-mini-menu")) {

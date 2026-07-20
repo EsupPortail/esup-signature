@@ -347,7 +347,7 @@ body.es-signrequest-page .es-signrequest-main-content > .es-workspace {
     z-index: 1;
 }
 
-#ws-tabs {
+.es-signrequest-workspace-header {
     width: auto !important;
     flex: 1 1 auto;
     min-width: 0;
@@ -356,19 +356,19 @@ body.es-signrequest-page .es-signrequest-main-content > .es-workspace {
     /*overflow: hidden;*/
 }
 
-#ws-tabs.es-tabs-loading,
-#ws-tabs.es-tabs-calculating {
+.es-signrequest-workspace-header.es-tabs-loading,
+.es-signrequest-workspace-header.es-tabs-calculating {
     position: relative;
     overflow: hidden;
 }
 
-#ws-tabs.es-tabs-loading > li,
-#ws-tabs.es-tabs-calculating > li {
+.es-signrequest-workspace-header.es-tabs-loading > li,
+.es-signrequest-workspace-header.es-tabs-calculating > li {
     visibility: hidden;
 }
 
-#ws-tabs.es-tabs-loading::after,
-#ws-tabs.es-tabs-calculating::after {
+.es-signrequest-workspace-header.es-tabs-loading::after,
+.es-signrequest-workspace-header.es-tabs-calculating::after {
     content: "";
     position: absolute;
     inset: 6px 8px;
@@ -394,7 +394,7 @@ body.es-signrequest-page .es-signrequest-main-content > .es-workspace {
     min-width: 0;
 }
 
-#ws-tabs > li.es-tab-overflow-hidden {
+.es-signrequest-workspace-header > li.es-tab-overflow-hidden {
     display: none !important;
 }
 
@@ -402,24 +402,23 @@ body.es-signrequest-page .es-signrequest-main-content > .es-workspace {
     display: none !important;
 }
 
-#ws-tabs > li {
+.es-signrequest-workspace-header > li {
     flex-shrink: 0;
 }
 
-#ws-tabs > li.file-tab {
+.es-signrequest-workspace-header > li.file-tab {
     flex: 0 0 auto;
     min-width: 0;
     max-width: min(260px, 24vw);
 }
 
-#ws-tabs > li.file-tab > .nav-link {
+.es-signrequest-workspace-header > li.file-tab > .nav-link {
     min-width: 0;
     max-width: 100%;
 }
 
 .breadcrumb {
     padding: 0 !important;
-    padding-top: 2px !important;
     padding-left: 15px !important;
 }
 
@@ -434,8 +433,72 @@ body.es-signrequest-page .es-signrequest-main-content > .es-workspace {
     align-items: center;
 }
 
+.es-breadcrumb-nav .breadcrumb {
+    display: flex;
+    align-items: center;
+    align-self: stretch;
+    min-width: 0;
+    line-height: 1.2;
+}
+
+.es-breadcrumb-nav .breadcrumb-item {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+}
+
+.es-breadcrumb-nav .breadcrumb-item > a,
+.es-breadcrumb-nav .breadcrumb-item > span {
+    display: inline-flex;
+    align-items: center;
+    min-width: 0;
+}
+
+.es-breadcrumb-nav button,
+.es-nav-tools-breadcrumb button {
+    align-self: center;
+}
+
+.es-breadcrumb-nav i,
+.es-nav-tools-breadcrumb i {
+    display: inline-flex;
+    align-items: center;
+    line-height: 1;
+}
+
 .es-breadcrumb-sign {
     z-index: 1030;
+}
+
+.js-display-side-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    margin-right: 0.5rem;
+}
+
+.js-display-side-btn::after {
+    content: "";
+    position: absolute;
+    right: -0.3rem;
+    width: 2px;
+    height: 20px;
+    background-color: var(--bs-secondary);
+}
+
+.js-display-side-btn i::before {
+    font-size: 20px;
+}
+
+.es-signrequest-workspace-header {
+    align-items: stretch;
+}
+
+.es-signrequest-workspace-header > li,
+.es-signrequest-workspace-header > li > .nav-link {
+    display: flex;
+    align-items: center;
 }
 
 .breadcrumb {

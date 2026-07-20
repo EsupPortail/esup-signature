@@ -3,14 +3,17 @@
 <!--/*@thymesVar id="user" type="org.esupportail.esupsignature.entity.User"*/-->
 <head th:replace="~{fragments/head-full :: head}"></head>
 <script type="module" th:src="'/js/modules/bootstrap/UserSettingsBootstrap.js?version=' + ${versionApp}"></script>
-<body>
+<body class="user-settings-page">
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
     <div class="es-wrapper">
         <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full text-uppercase">
+            <button type="button" th:unless="${user.userType.name() == 'external'}" class="user-settings-sidebar-toggle btn btn-sm btn-light d-xl-none ms-2" data-bs-toggle="offcanvas" data-bs-target="#sidebar" aria-controls="sidebar" aria-label="Ouvrir le menu des paramètres">
+                <i class="fi fi-rr-sidebar"></i>
+            </button>
             <ol id="breadcrumb-ol" class="breadcrumb">
                 <li class="breadcrumb-item"><i class="fi fi-rr-user"></i> <span th:text="${authUser.firstname} + ' ' + ${authUser.name}"></span></li>
-                <li class="breadcrumb-item active">Paramètres</li>
+                <li class="breadcrumb-item es-breadcrumb-title active">Paramètres</li>
             </ol>
         </nav>
         <div id="content" class="es-content-full">

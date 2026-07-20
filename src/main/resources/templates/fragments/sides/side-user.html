@@ -1,8 +1,12 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="fr">
 <!--/*@thymesVar id="SignRequestStatus" type="org.esupportail.esupsignature.entity.enums.SignRequestStatus"*/-->
-<nav th:fragment="side-user" id="sidebar">
-    <div th:unless="${user.userType.name() == 'external'}" class="d-flex flex-column gap-1 ms-1 mt-2">
+<nav th:fragment="side-user" id="sidebar" class="offcanvas-xl offcanvas-start" tabindex="-1" aria-labelledby="user-settings-sidebar-title">
+    <div class="offcanvas-header d-xl-none border-bottom">
+        <h2 class="offcanvas-title fs-6" id="user-settings-sidebar-title">Paramètres utilisateur</h2>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#sidebar" aria-label="Fermer"></button>
+    </div>
+    <div th:unless="${user.userType.name() == 'external'}" class="offcanvas-body d-flex flex-column gap-1 ms-1 mt-2">
         <a class="btn text-left rounded-2 d-flex align-items-center gap-2"
            th:classappend="${paramMenu == 'settings'} ? 'bg-dark-subtle' : 'text-dark btn-transparent'"
            href="/user/users?form">
