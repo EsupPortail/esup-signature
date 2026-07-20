@@ -455,19 +455,26 @@
         flex-wrap: nowrap;
         gap: 0;
         width: 100%;
+        flex: 0 0 42px;
+        height: 42px;
+        box-sizing: border-box;
         position: relative;
         z-index: 1032;
+        background-color: var(--bs-white);
+        border-bottom: 1px solid var(--color-dee2e6);
     }
 
     body.es-signrequest-page .es-nav-tools-breadcrumb {
         display: flex !important;
-        flex: 1 1 auto;
+        flex: 0 1 auto;
+        width: auto;
         min-width: 0;
         overflow: hidden;
         align-items: center;
-        min-height: 42px;
+        height: 100%;
+        min-height: 0;
         background: var(--bs-white);
-        border-bottom: 1px solid var(--color-dee2e6);
+        border-bottom: 0;
         padding-right: 0.5rem;
         position: relative;
         z-index: 1032;
@@ -475,8 +482,18 @@
 
     body.es-signrequest-page .es-nav-tools-breadcrumb > .d-flex,
     body.es-signrequest-page #ws-tabs-mobile {
+        width: auto !important;
         min-width: 0;
         max-width: 100%;
+    }
+
+    body.es-signrequest-page .es-document-navigation-tools {
+        flex: 0 0 auto;
+    }
+
+    body.es-signrequest-page #ws-tabs-mobile > li,
+    body.es-signrequest-page #ws-tabs-mobile > li > .nav-link {
+        border-bottom: 0 !important;
     }
 
     .es-nav-tools {
@@ -485,7 +502,7 @@
 
     .workspace,
     .es-workspace {
-        margin-top: -40px;
+        margin-top: -42px;
     }
 
     .pdf-alerts-btn {
@@ -495,6 +512,13 @@
     body.es-signrequest-page .modal.es-signrequest-sidepanel .modal-dialog {
         width: min(100vw, 28rem);
         max-width: min(100vw, 28rem);
+    }
+}
+
+@media (min-width: 577px) and (max-width: 992px) {
+    body.es-signrequest-page .es-nav-tools {
+        width: calc(100% + 68px);
+        max-width: none;
     }
 }
 
@@ -689,8 +713,13 @@
     }
 
     body.es-signrequest-page .es-nav-tools-breadcrumb {
-        background-color: var(--bs-light);
+        background-color: var(--bs-white);
 
+    }
+
+    body.es-signrequest-page .es-nav-tools .nav-tabs li,
+    body.es-signrequest-page .es-nav-tools .nav-tabs .nav-link {
+        background-color: var(--bs-white);
     }
 
     .wizard-steps-preview--horizontal .step-vertical {

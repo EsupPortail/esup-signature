@@ -74,7 +74,9 @@
                 <div class="es-workspace d-flex flex-column" th:classappend="${signRequestFull.signable && showSignRequest.toSignDocumentContentType == 'application/pdf'} ? ' es-pdf-render-scope' : ''">
                     <div class="es-nav-tools d-flex justify-content-start" role="toolbar" aria-label="Outils du document" th:if="${showSignRequest.toSignDocumentContentType == 'application/pdf'}">
                         <div class="es-nav-tools-breadcrumb d-none" th:insert="~{user/signrequests/includes/show-sections :: breadcrumb-content('ws-tabs-mobile')}"></div>
-                        <div class="d-flex justify-content-center align-items-center" th:if="${showSignRequest.toSignDocumentContentType == 'application/pdf'}">
+                        <div id="document-navigation-tools"
+                             class="es-document-navigation-tools d-flex justify-content-center align-items-center"
+                             th:if="${showSignRequest.toSignDocumentContentType == 'application/pdf'}">
                             <div id="commentsTools" th:if="${(signRequestFull.editable || signRequestFull.manager) && showSignRequest.toSignDocumentContentType == 'application/pdf'}" class="d-flex text-start gap-1">
                                 <button type="button" disabled th:if="${signRequestFull.manager && signRequestFull.formId == null && (signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}" id="addSpotButton"
                                         class="d-none d-lg-flex align-items-center btn btn-transparent text-warning-emphasis" style="max-height: 33px;">
