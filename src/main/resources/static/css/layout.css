@@ -155,7 +155,7 @@ body.es-signrequest-page .es-signrequest-main-content > .es-workspace {
 
 .table-fix-head {
     overflow-y: auto;
-    height: calc(100vh - 190px);
+    height: calc(100vh - 138px);
 }
 
 .table-fix-head thead th {

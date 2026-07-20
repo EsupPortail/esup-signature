@@ -493,10 +493,6 @@ body.home-page.home-loading .home-list-loading-placeholder {
     color: var(--bs-secondary);
 }
 
-body.signbooks-list-page #listSignRequestTable.signbooks-table-loading-shell {
-    min-height: calc(100vh - 190px);
-}
-
 body.signbooks-list-page .signbook-subject-cell {
     min-width: 0;
     max-width: clamp(14rem, 28vw, 28rem);
