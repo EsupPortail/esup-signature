@@ -17,7 +17,7 @@
                 <i class="fi fi-rr-angle-small-left" style="font-size: 20px;"></i>
             </span>
         </li>
-        <li class="nav-item ws-tab-nav">
+        <li class="nav-item ws-tab-nav" style="border-bottom: 1px solid #ddd;">
             <span class="d-flex p-1 flex-column nav-link current align-items-center">
                 <span class="text-uppercase text-dark d-none d-sm-flex" style="font-size: 10px">Document</span>
                 <span class="text-uppercase" style="font-size: 13px"
@@ -37,7 +37,7 @@
         </li>
     </th:block>
     <li class="nav-item dropdown es-signrequest-tabs-dropdown-before" th:classappend="${currentTabIndex == 0 ? 'd-none' : ''}" th:if="${signRequestTabCount > 1}">
-        <a class="nav-link dropdown-toggle" href="#" th:id="${tabsId + '-dropdown-before'}" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-bs-display="static" title="Documents précédents">
+        <a class="nav-link dropdown-toggle" href="#" th:id="${tabsId + '-dropdown-before'}" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Documents précédents">
             <span class="d-none d-sm-inline">Précédents</span>
             <i class="fi fi-rr-menu-dots d-sm-none" aria-hidden="true"></i>
         </a>
@@ -89,7 +89,7 @@
         </li>
     </th:block>
     <li class="nav-item dropdown es-signrequest-tabs-dropdown-after" th:classappend="${currentTabIndex + 1 >= signRequestTabCount ? 'd-none' : ''}" th:if="${signRequestTabCount > 1}">
-        <a class="nav-link dropdown-toggle" href="#" th:id="${tabsId + '-dropdown-after'}" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-bs-display="static" title="Documents suivants">
+        <a class="nav-link dropdown-toggle" href="#" th:id="${tabsId + '-dropdown-after'}" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Documents suivants">
             <span class="d-none d-sm-inline">Suivants</span>
             <i class="fi fi-rr-menu-dots d-sm-none" aria-hidden="true"></i>
         </a>

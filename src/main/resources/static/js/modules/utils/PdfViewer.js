@@ -19,7 +19,6 @@ export class PdfViewer extends EventFactory {
         this.timer = null;
         this.viewed = false;
         this.url = url;
-        this.interval = null;
         this.pages = [];
         this.signable = signable;
         this.editable = editable;
@@ -28,7 +27,6 @@ export class PdfViewer extends EventFactory {
         this.pageNum = 1;
         this.eventBus = new EventBus({dispatchToDOM: false});
         this._optionalContentConfigPromise = null;
-        const testUrl = new URL(window.location.href);
         if(forcePageNum != null) {
             this.pageNum = forcePageNum;
         }
@@ -44,14 +42,12 @@ export class PdfViewer extends EventFactory {
         this.pdfDiv = $("#pdf");
         this.pdfDoc = null;
         this.numPages = 1;
-        this.page = null;
         this.dataFields = jsFields;
         this.savedFields = new Map();
         this.linkValidationStates = new Map();
         this.linkValidationTimers = new Map();
         this.linkValidationControllers = new Map();
         this.linkValidationSeq = new Map();
-        this.events = {};
         this.rotationOverride = null;
         this.renderedPages = 0;
         this.renderQueue = [];
@@ -60,7 +56,6 @@ export class PdfViewer extends EventFactory {
             ? Math.max(1, Math.floor(options.maxConcurrentRenders))
             : 2;
         this.maxRenderScale = Number.isFinite(options.maxRenderScale) ? options.maxRenderScale : 2;
-        this.renderScaleBuffer = Number.isFinite(options.renderScaleBuffer) ? options.renderScaleBuffer : 0.25;
         this.renderBufferPages = Number.isFinite(options.renderBufferPages) ? Math.max(0, Math.floor(options.renderBufferPages)) : 2;
         this.maxRenderedPages = Number.isFinite(options.maxRenderedPages) ? Math.max(1, Math.floor(options.maxRenderedPages)) : 12;
         this.renderCycleId = 0;
@@ -83,11 +78,8 @@ export class PdfViewer extends EventFactory {
         this.pageViewports = new Map();
         this.handPanState = null;
         this.handPanEnabled = options.handPanEnabled === true;
-        this.renderedPagesMap = new Map();
-        this.displayedPagesMap = new Map();
         this.lastWidth = window.innerWidth;
         this.lastHeight = window.innerHeight;
-        this.currentOptionalContentConfig = null;
         this._activeLayerView = null; // { stepNumber: number, solo: boolean } | null
         this.navigationController = new PdfNavigationController(this);
         this.handPanController = new PdfHandPanController(this);
@@ -284,22 +276,6 @@ export class PdfViewer extends EventFactory {
         }
     }
 
-    ensureHandPanStyles() {
-        return this.handPanController.ensureHandPanStyles();
-    }
-
-    ensureHandPanOverlay() {
-        return this.handPanController.ensureHandPanOverlay();
-    }
-
-    canStartHandPan(event) {
-        return this.handPanController.canStartHandPan(event);
-    }
-
-    getPageRelativeTop(pageNum) {
-        return this.navigationController.getPageRelativeTop(pageNum);
-    }
-
     getPageTopInPdf(pageNum) {
         return this.navigationController.getPageTopInPdf(pageNum);
     }
@@ -406,14 +382,6 @@ export class PdfViewer extends EventFactory {
         return this.layerController.applyLinkAnnotationsVisibilityForPage(pageNum, visibleLayerNames);
     }
 
-    extractAnnotationLayerIds(annotation) {
-        return this.layerController.extractAnnotationLayerIds(annotation);
-    }
-
-    isApplicationLayerName(layerName) {
-        return this.layerController.isApplicationLayerName(layerName);
-    }
-
     checkCurrentPage(e) {
         return this.navigationController.checkCurrentPage(e);
     }
@@ -445,10 +413,6 @@ export class PdfViewer extends EventFactory {
 
     processRenderQueue(renderCycleId = this.renderCycleId) {
         return this.rendererController.processRenderQueue(renderCycleId);
-    }
-
-    fireRenderCompleteAfterProgressHidden(progressBar) {
-        return this.rendererController.fireRenderCompleteAfterProgressHidden(progressBar);
     }
 
     scrollToPage(num) {
@@ -486,36 +450,12 @@ export class PdfViewer extends EventFactory {
         return this.rotationOverride;
     }
 
-    async renderTask(page, i, configPromise, renderCycleId = this.renderCycleId) {
-        return this.rendererController.renderTask(page, i, configPromise, renderCycleId);
-    }
-
-    insertPageAtCorrectPosition(container, pageNum) {
-        return this.rendererController.insertPageAtCorrectPosition(container, pageNum);
-    }
-
-    async postRenderAll() {
-        return this.rendererController.postRenderAll();
-    }
-
     updateHorizontalOverflowState() {
         return this.rendererController.updateHorizontalOverflowState();
     }
 
-    async postRender(page) {
-        return this.rendererController.postRender(page);
-    }
-
     promiseRenderForm(isField, page) {
         return this.formManager.promiseRenderForm(isField, page);
-    }
-
-    promiseToggleFields(enable) {
-        return this.formManager.promiseToggleFields(enable);
-    }
-
-    toggleItems(items, enable) {
-        return this.formManager.toggleItems(items, enable);
     }
 
     async promiseSaveValues() {
@@ -584,14 +524,6 @@ export class PdfViewer extends EventFactory {
 
     nextPage() {
         return this.navigationController.nextPage();
-    }
-
-    isFirstPage() {
-        return this.navigationController.isFirstPage();
-    }
-
-    isLastPage() {
-        return this.navigationController.isLastPage();
     }
 
     zoomInit(e) {
@@ -676,10 +608,6 @@ export class PdfViewer extends EventFactory {
         return this.navigationController.focusField(field);
     }
 
-    highlightRadio(field) {
-        return this.navigationController.highlightRadio(field);
-    }
-
     startProgress() {
         return this.progressController.startProgress();
     }
@@ -694,38 +622,6 @@ export class PdfViewer extends EventFactory {
 
     updateRenderProgress() {
         return this.progressController.updateRenderProgress();
-    }
-
-    updateProgress(progress, text, animated) {
-        return this.progressController.updateProgress(progress, text, animated);
-    }
-
-    getBrowserZoom() {
-        return window.devicePixelRatio || 1;
-    }
-
-    getApplicationLayers(config) {
-        return this.layerController.getApplicationLayers(config);
-    }
-
-    resolveLayerName(stepNumber, requestedLayerName, layers) {
-        return this.layerController.resolveLayerName(stepNumber, requestedLayerName, layers);
-    }
-
-    extractStableLayerStepId(layerName) {
-        return this.layerController.extractStableLayerStepId(layerName);
-    }
-
-    async showLayerByStep(stepNumber, solo, layerName = null) {
-        return this.layerController.showLayerByStep(stepNumber, solo, layerName);
-    }
-
-    updateLayerButtonsState() {
-        return this.layerController.updateLayerButtonsState();
-    }
-
-    async showAllLayers() {
-        return this.layerController.showAllLayers();
     }
 
     async toggleLayerByStep(stepNumber, solo, layerId = null) {

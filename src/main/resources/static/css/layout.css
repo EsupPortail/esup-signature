@@ -413,8 +413,23 @@ body.es-signrequest-page .es-signrequest-main-content > .es-workspace {
 }
 
 .es-signrequest-workspace-header > li.file-tab > .nav-link {
+    width: 100%;
     min-width: 0;
     max-width: 100%;
+}
+
+.es-signrequest-workspace-header > li.file-tab > .nav-link > .d-flex {
+    min-width: 0;
+    max-width: 100%;
+}
+
+.es-signrequest-workspace-header > li.file-tab .truncate {
+    flex: 1 1 auto;
+    max-width: none;
+}
+
+.es-signrequest-workspace-header > li.file-tab .badge {
+    flex: 0 0 auto;
 }
 
 .breadcrumb {

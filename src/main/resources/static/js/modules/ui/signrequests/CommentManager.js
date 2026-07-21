@@ -535,14 +535,6 @@ export class CommentManager {
         });
     }
 
-    disableAddComment() {
-        return this.deactivateAddCommentMode();
-    }
-
-    enableAddComment() {
-        return this.activateAddCommentMode();
-    }
-
     enableCommentAdd() {
         this.positionLocked = false;
         if (this.options.isAddCommentEnabled()) {

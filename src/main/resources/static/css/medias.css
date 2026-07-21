@@ -388,11 +388,6 @@
         margin-left: 0;
     }
 
-        .workspace-sign,
-    .es-workspace-sign {
-        margin-top: 142px;
-    }
-
     .workspace,
     .es-workspace {
         margin-top: 0;
@@ -442,7 +437,16 @@
 }
 
 
-@media (max-width: 992px) {
+@media (max-width: 991.98px) {
+
+    body {
+        margin-bottom: 0;
+    }
+
+    .footer {
+        position: static !important;
+        height: auto !important;
+    }
 
     body.signbooks-list-page #signButtons {
         display: none !important;
@@ -487,6 +491,10 @@
         z-index: 1032;
     }
 
+    body.es-signrequest-page .es-nav-tools-breadcrumb:has(.es-signrequest-tabs-dropdown.show) {
+        overflow: visible;
+    }
+
     body.es-signrequest-page .es-nav-tools-breadcrumb > .d-flex,
     body.es-signrequest-page #ws-tabs-mobile {
         width: auto !important;
@@ -522,14 +530,14 @@
     }
 }
 
-@media (min-width: 577px) and (max-width: 992px) {
+@media (min-width: 576px) and (max-width: 991.98px) {
     body.es-signrequest-page .es-nav-tools {
         width: calc(100% + 68px);
         max-width: none;
     }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 767.98px) {
     body.user-shares-list-page .user-shares-list-container {
         width: calc(100% - 1rem);
         height: auto;
@@ -757,6 +765,10 @@
 
 @media (max-width: 640px) {
 
+    body.es-signrequest-page #workspace {
+        margin-bottom: 0;
+    }
+
     body.manage-signbooks-page .main-content,
     body.manage-signbooks-page .es-main-content,
     body.manage-list-page .main-content,
@@ -800,7 +812,7 @@
     }
 }
 
-@media (max-width: 576px) {
+@media (max-width: 575.98px) {
 
     body.signbooks-list-page .signbooks-status-column {
         width: 3.25rem !important;
@@ -943,6 +955,18 @@
     .oidc-connect a[href]:hover {
         background-color: var(--color-transparent);
         --underline-hover-width: var(--underline-max-width);
+    }
+}
+
+@media (max-width: 432px) {
+    #prev{
+        display: none !important;
+    }
+    #next{
+        display: none !important;
+    }
+    #page-indicator {
+        display: none !important;
     }
 }
 
