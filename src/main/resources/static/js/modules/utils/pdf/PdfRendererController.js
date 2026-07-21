@@ -410,14 +410,9 @@ export class PdfRendererController {
     }
 
     getTargetRenderScale() {
-        const scale = Number.isFinite(this.viewer.scale) && this.viewer.scale > 0 ? this.viewer.scale : 1;
-        const maxRenderScale = Number.isFinite(this.viewer.maxRenderScale) && this.viewer.maxRenderScale > 0
+        return Number.isFinite(this.viewer.maxRenderScale) && this.viewer.maxRenderScale > 0
             ? this.viewer.maxRenderScale
-            : scale;
-        const renderScaleBuffer = Number.isFinite(this.viewer.renderScaleBuffer) && this.viewer.renderScaleBuffer > 0
-            ? this.viewer.renderScaleBuffer
-            : 0;
-        return Math.max(scale, Math.min(maxRenderScale, scale + renderScaleBuffer));
+            : 2.5;
     }
 
     async renderTask(page, i, configPromise, renderCycleId = this.viewer.renderCycleId) {

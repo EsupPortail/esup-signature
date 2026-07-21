@@ -60,7 +60,6 @@ export class PdfViewer extends EventFactory {
             ? Math.max(1, Math.floor(options.maxConcurrentRenders))
             : 2;
         this.maxRenderScale = Number.isFinite(options.maxRenderScale) ? options.maxRenderScale : 2;
-        this.renderScaleBuffer = Number.isFinite(options.renderScaleBuffer) ? options.renderScaleBuffer : 0.25;
         this.renderBufferPages = Number.isFinite(options.renderBufferPages) ? Math.max(0, Math.floor(options.renderBufferPages)) : 2;
         this.maxRenderedPages = Number.isFinite(options.maxRenderedPages) ? Math.max(1, Math.floor(options.maxRenderedPages)) : 12;
         this.renderCycleId = 0;
