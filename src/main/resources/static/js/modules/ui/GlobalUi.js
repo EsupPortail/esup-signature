@@ -714,10 +714,6 @@ export class GlobalUi {
         return os;
     }
 
-    disableSendButton(e) {
-        $("#send-pending-button").unbind();
-    }
-
     checkCurrentPage() {
         let url = window.location.pathname;
         if(!url.match("/user/signrequests/+[\\w\\W]+")) {
@@ -828,21 +824,6 @@ export class GlobalUi {
         let label = $('label[for='+  inputFile.id  +']');
         label[0].innerHTML = fileName;
         console.info("change name to " + fileName);
-    }
-
-    scrollToHash() {
-        if(window.location.hash) {
-            var element_to_scroll_to = document.getElementById(window.location.hash.substring(1));
-            element_to_scroll_to.scrollIntoView();
-        }
-    }
-
-    closeUserMenu(event) {
-        let clickover = $(event.target);
-        let _opened = $("#user-infos").hasClass("show");
-        if (_opened === true && !clickover.hasClass("user-toggle")) {
-            $("#user-toggle").click();
-        }
     }
 
     initSideBar() {

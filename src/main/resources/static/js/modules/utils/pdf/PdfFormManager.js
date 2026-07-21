@@ -102,24 +102,6 @@ export class PdfFormManager {
         });
     }
 
-    promiseToggleFields(enable) {
-        if(this.pdfDoc != null) {
-            for (let i = 1; i < this.pdfDoc.numPages + 1; i++) {
-                this.pdfDoc.getPage(i).then(page => page.getAnnotations().then(items => this.toggleItems(items, enable)));
-            }
-        }
-    }
-
-    toggleItems(items, enable) {
-        console.info("toggle fields " + items.length);
-        for (let i = 0; i < items.length; i++) {
-            if(items[i].fieldName != null) {
-                let inputField = $('input[name=\'' + items[i].fieldName.split(/\$|#|!/)[0] + '\'], textarea[name=\'' + items[i].fieldName.split(/\$|#|!/)[0] + '\']');
-                inputField.prop("disabled", !enable);
-            }
-        }
-    }
-
     async promiseSaveValues() {
         console.log("save");
         console.info("launch save values");

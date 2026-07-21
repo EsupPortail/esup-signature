@@ -350,10 +350,6 @@ export class SignWorkspaceController {
         ].forEach(([event, handler]) => this.wheelDetector.addEventListener(event, handler));
     }
 
-    resetRequestedSignatureStep() {
-        this.signPlacementController?.clearRequestedSignatureStep?.();
-    }
-
     hasCertifiedVisualSignature() {
         return !this.notSigned && this.signPlacementController.signsList.length > 0;
     }

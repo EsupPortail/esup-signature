@@ -382,18 +382,6 @@ export class PdfRendererController {
         window.setTimeout(complete, 1000);
     }
 
-    applyInitialRenderTransform() {
-        const scaleRatio = this.viewer.scale / this.viewer.renderScale;
-        if (!Number.isFinite(scaleRatio) || scaleRatio <= 0 || scaleRatio === 1) {
-            this.clearInitialRenderTransform();
-            return;
-        }
-        this.viewer.pdfDiv.css({
-            transform: `scale(${scaleRatio})`,
-            transformOrigin: 'top center',
-        });
-    }
-
     clearInitialRenderTransform() {
         this.viewer.pdfDiv.css({
             transform: '',
