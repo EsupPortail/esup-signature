@@ -439,6 +439,15 @@
 
 @media (max-width: 991.98px) {
 
+    body {
+        margin-bottom: 0;
+    }
+
+    .footer {
+        position: static !important;
+        height: auto !important;
+    }
+
     body.signbooks-list-page #signButtons {
         display: none !important;
     }
