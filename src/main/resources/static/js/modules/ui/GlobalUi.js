@@ -769,15 +769,9 @@ export class GlobalUi {
     adjustUi() {
         if (window.innerWidth < 992) {
             console.info("auto adjust : hide");
-            this.hideSideBar();
         } else {
             console.debug("debug - " + "auto adjust : display");
             let url = window.location.pathname;
-            if(this.sideBarStatus === 'on') {
-                this.showSideBar();
-            } else {
-                this.hideSideBar();
-            }
             if(!url.match("/user/users+[\\w\\W]+")
                 && !url.match("/user/users")
                 && !url.match("/admin")
@@ -792,7 +786,6 @@ export class GlobalUi {
                 && !url.match("^/user/signbooks$")
                 && !url.match("/user/signbooks/+[\\w\\W]+")) {
                 console.info("auto display side bar : show");
-                this.hideSideBar();
                 this.disableSideBarButton();
             }
             if(url.match("^/user/workflows/+[\\w\\W]+")
@@ -806,7 +799,6 @@ export class GlobalUi {
                 || url.match("^/otp/signrequests/$")
                 || url.match("/otp/signrequests/+[\\w\\W]+")) {
                 console.info("auto display side bar : hide");
-                this.showSideBar();
                 this.disableSideBarButton();
             }
         }
@@ -832,13 +824,6 @@ export class GlobalUi {
             localStorage.setItem('sideBarStatus', 'on');
             this.sideBarStatus = localStorage.getItem('sideBarStatus');
         }
-        if(this.sideBarStatus === 'off' && !this.sideBar.hasClass('active')) {
-            this.hideSideBar();
-        }
-
-        if(this.sideBarStatus === 'on' && this.sideBar.hasClass('active')) {
-            this.showSideBar();
-        }
     }
 
     toggleSideBarAction() {
@@ -846,34 +831,12 @@ export class GlobalUi {
         this.sideBarStatus = localStorage.getItem('sideBarStatus');
 
         if(this.sideBarStatus === 'on') {
-            this.hideSideBar();
             localStorage.setItem('sideBarStatus', 'off');
             this.sideBarStatus = 'off';
         } else {
-            this.showSideBar()
             localStorage.setItem('sideBarStatus', 'on');
             this.sideBarStatus = 'on';
         }
-    }
-
-    showSideBar() {
-        // console.debug("debug - " + "show side");
-        // this.sideBar.removeClass('active');
-        // this.sideBar2.removeClass('d-none');
-        // this.sideBarLabels.removeClass('d-none');
-        // this.content.removeClass('content-full');
-        // this.newDiv.removeClass('new-width-full');
-        // this.breadcrumb.removeClass('breadcrumb-nav-full');
-    }
-
-    hideSideBar() {
-        // console.debug("debug - " + "hide side");
-        // this.sideBar.addClass('active');
-        // this.sideBar2.addClass('d-none');
-        // this.sideBarLabels.addClass('d-none');
-        // this.content.addClass('content-full');
-        // this.newDiv.addClass('new-width-full');
-        // this.breadcrumb.addClass('breadcrumb-nav-full');
     }
 
     checkSelectUser() {
