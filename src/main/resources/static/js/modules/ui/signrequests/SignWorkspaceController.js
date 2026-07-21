@@ -7,7 +7,7 @@ import {SpotManager} from "./SpotManager.js?version=@version@";
 import {SignSpaceManager} from "./SignSpaceManager.js?version=@version@";
 import {PostitManager} from "./PostitManager.js?version=@version@";
 import {WorkspaceState} from "./WorkspaceState.js?version=@version@";
-import {SignatureImageResolver} from "./SignatureImageResolver.js?version=@version@";
+import {SignatureImageResolver, SPECIAL_SIGN_IMAGE_NUMBERS} from "./SignatureImageResolver.js?version=@version@";
 
 export class SignWorkspaceController {
 
@@ -557,6 +557,52 @@ export class SignWorkspaceController {
         return this.getSelectableSignImageNumbers()[0] ?? null;
     }
 
+    async loadGeneratedSignImageFallback() {
+        try {
+            const response = await fetch('/ws-secure/ui/signatures/default-image', {
+                method: 'GET',
+                credentials: 'same-origin',
+                cache: 'no-store'
+            });
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+            const blob = await response.blob();
+            if (!blob.type.startsWith('image/')) {
+                throw new Error(`Type de contenu inattendu : ${blob.type || 'inconnu'}`);
+            }
+            const dataUrl = await new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = () => reject(reader.error ?? new Error("Lecture de l'image impossible"));
+                reader.readAsDataURL(blob);
+            });
+            const base64 = typeof dataUrl === 'string' ? dataUrl.split(',', 2)[1] : null;
+            if (!base64) {
+                throw new Error("L'image générée est vide");
+            }
+
+            // With a single image the resolver deterministically identifies index 0
+            // as the generated signature, independently of stale uiMe metadata.
+            this.signPlacementController.applyUserSignatureState({
+                signImages: [base64],
+                signImageIds: []
+            });
+            return SPECIAL_SIGN_IMAGE_NUMBERS.GENERATED;
+        } catch (error) {
+            console.error("Impossible de recharger l'image de signature générée", error);
+            return null;
+        }
+    }
+
+    async resolveSignImageNumberForInsertion() {
+        const resolvedSignImageNumber = this.resolvePreferredSignImageNumber();
+        if (Number.isFinite(resolvedSignImageNumber)) {
+            return resolvedSignImageNumber;
+        }
+        return this.loadGeneratedSignImageFallback();
+    }
+
     async addSign(forceSignNumber) {
         if (this.hasCertifiedVisualSignature()) {
             this.signPlacementController?.clearRequestedSignatureStep?.();
@@ -582,11 +628,20 @@ export class SignWorkspaceController {
         const persistedSignImageNumber = await this.signPlacementController?.persistMobileSignaturePreviews?.();
         const resolvedSignImageNumber = Number.isFinite(persistedSignImageNumber)
             ? persistedSignImageNumber
-            : this.resolvePreferredSignImageNumber();
-        if (Number.isFinite(resolvedSignImageNumber)) {
-            this.signImageNumber = resolvedSignImageNumber;
+            : await this.resolveSignImageNumberForInsertion();
+        if (!Number.isFinite(resolvedSignImageNumber)) {
+            bootbox.alert("Impossible de charger une image de signature. Veuillez réessayer ou vérifier votre profil de signature.");
+            this.signPlacementController?.clearRequestedSignatureStep?.();
+            return;
         }
-        const signRequestParams = await this.signPlacementController.addSign(targetPageNumber, this.restore, this.signImageNumber, signNum);
+        this.signImageNumber = resolvedSignImageNumber;
+        const signRequestParams = await this.signPlacementController.addSign(
+            targetPageNumber,
+            this.restore,
+            resolvedSignImageNumber,
+            signNum,
+            'signature'
+        );
         this.activateSignPlacement(signRequestParams, signNum);
     }
 

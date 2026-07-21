@@ -393,7 +393,7 @@ export class SignPlacementController extends EventFactory {
         $("#add-sign-image").modal("show");
     }
 
-    async addSign(page, restore, signImageNumber, forceSignNumber) {
+    async addSign(page, restore, signImageNumber, forceSignNumber, placementKind = null) {
         signImageNumber = this.normalizeSignImageNumber(signImageNumber);
         if (this.isOtp || this.signatureStepRequested) {
             const selection = await this.waitForOtpSelection();
@@ -407,6 +407,13 @@ export class SignPlacementController extends EventFactory {
             }
             this.applyUserSignatureState(selection);
             signImageNumber = selectedSignImageNumber;
+        }
+        if (placementKind === 'signature' && (!Number.isFinite(signImageNumber) || signImageNumber < 0)) {
+            console.error("Insertion de signature annulée : aucune image de signature valide", {
+                signImageNumber,
+                availableImages: this.signImages?.length ?? 0
+            });
+            return null;
         }
         const isSpot = signImageNumber === SPECIAL_SIGN_IMAGE_NUMBERS.SPOT;
         const isParaph = signImageNumber === SPECIAL_SIGN_IMAGE_NUMBERS.PARAPHE;

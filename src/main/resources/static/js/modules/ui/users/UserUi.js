@@ -19,7 +19,7 @@ export class UserUi {
         this.emailAlertHour = $("#emailAlertHourDiv");
         this.userSignaturePad = new UserSignaturePad("canvas", 1, 4);
         this.userSignatureCrop = new UserSignatureCrop();
-        this.saveSignRequestParams = false;
+        this.saveSignRequestParams = signRequestParams == null;
         this.dirtyIndicator = null;
         this.checkAlertFrequency();
         this.signRequestParamsDefault = signRequestParams;
@@ -35,9 +35,7 @@ export class UserUi {
             "zoom",
             "signNumber"
         ];
-        if(signRequestParams != null) {
-            this.saveSignRequestParams = true;
-        } else {
+        if(signRequestParams == null) {
             this.signRequestParamsDefault = {
                 "addWatermark": null,
                 "extraText": "",
@@ -568,14 +566,17 @@ export class UserUi {
     }
 
     toggleSaveSignRequest() {
-        if(this.saveSignRequestParams) {
+        const selectedValue = $("input[name='saveSignRequestParams']:checked").val();
+        if (selectedValue != null) {
+            this.saveSignRequestParams = selectedValue === "true";
+        }
+
+        if(!this.saveSignRequestParams) {
             this.clearSignRequestParamsLocalStorage();
-            this.saveSignRequestParams = false;
             $("#signRequestParamsFormDiv").removeClass("d-none");
             $("#signRequestParamsCleanDiv").addClass("d-none");
             this.enableSignRequestParams();
         } else {
-            this.saveSignRequestParams = true;
             this.teardownSignRequestParamsPreview();
             $("#signRequestParamsFormDiv").addClass("d-none");
             $("#signRequestParamsCleanDiv").removeClass("d-none");
