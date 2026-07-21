@@ -3301,9 +3301,10 @@ public class SignBookService {
         if(replacedByUser != null) {
             List<SignBook> signBooks = getSignBookForUsers(authUserEppn).stream().filter(signBook -> signBook.getStatus().equals(SignRequestStatus.pending)).collect(Collectors.toList());
             for(SignBook signBook : signBooks) {
-                transfertSignRequest(signBook.getId(), true, user, replacedByUser, false);
-                logTransfer(signBook, user, replacedByUser);
-                i++;
+                if(tryTransfertSignRequest(signBook.getId(), true, user, replacedByUser, false)) {
+                    logTransfer(signBook, user, replacedByUser);
+                    i++;
+                }
             }
         }
         return i;
@@ -3365,44 +3366,63 @@ public class SignBookService {
      */
     @Transactional
     public void transfertSignRequest(Long signBookId, boolean transfertAll, User user, User replacedByUser, boolean keepFollow) {
+        if(!tryTransfertSignRequest(signBookId, transfertAll, user, replacedByUser, keepFollow)) {
+            throw new EsupSignatureRuntimeException("Les conditions de transfert ne sont pas remplies.");
+        }
+    }
+
+    private boolean tryTransfertSignRequest(Long signBookId, boolean transfertAll, User user, User replacedByUser, boolean keepFollow) {
         SignBook signBook = getById(signBookId);
-        signBook.getTeam().remove(user);
-        addToTeam(signBook, user.getEppn());
         List<LiveWorkflowStep> liveWorkflowSteps = new ArrayList<>();
         if(transfertAll || signBook.getSignRequests().size() > 1) {
             liveWorkflowSteps.addAll(signBook.getLiveWorkflow().getLiveWorkflowSteps());
         } else {
             liveWorkflowSteps.add(signBook.getLiveWorkflow().getCurrentStep());
         }
-        int nbTransfert = 0;
+
+        LiveWorkflowStep currentStep = signBook.getLiveWorkflow().getCurrentStep();
+        int currentStepIndex = signBook.getLiveWorkflow().getLiveWorkflowSteps().indexOf(currentStep);
+        boolean currentStepTransferAllowed = signBook.getSignRequests().stream()
+                .noneMatch(signRequest -> signRequest.getStatus().equals(SignRequestStatus.completed));
+        List<Recipient> recipientsToTransfer = new ArrayList<>();
+        boolean currentStepTransferred = false;
+
         for(LiveWorkflowStep liveWorkflowStep : liveWorkflowSteps) {
+            int stepIndex = signBook.getLiveWorkflow().getLiveWorkflowSteps().indexOf(liveWorkflowStep);
+            boolean stepTransferAllowed = (stepIndex == currentStepIndex && currentStepTransferAllowed)
+                    || (stepIndex > currentStepIndex && transfertAll);
+            if(!stepTransferAllowed) {
+                continue;
+            }
             for(Recipient recipient : liveWorkflowStep.getRecipients()) {
-                if(recipient.getUser().equals(user) &&
-                        (
-                                (signBook.getLiveWorkflow().getLiveWorkflowSteps().indexOf(liveWorkflowStep) == signBook.getLiveWorkflow().getLiveWorkflowSteps().indexOf(signBook.getLiveWorkflow().getCurrentStep())
-                                        && signBook.getSignRequests().stream().noneMatch(signRequest -> signRequest.getStatus().equals(SignRequestStatus.completed)))
-                                        ||
-                                        (signBook.getLiveWorkflow().getLiveWorkflowSteps().indexOf(liveWorkflowStep) > signBook.getLiveWorkflow().getLiveWorkflowSteps().indexOf(signBook.getLiveWorkflow().getCurrentStep()) && transfertAll))
-                ) {
-                    recipient.setUser(replacedByUser);
-                    if(liveWorkflowStep.equals(signBook.getLiveWorkflow().getCurrentStep())) {
-                        if (replacedByUser.getUserType().equals(UserType.external)) {
-                            otpService.generateOtpForSignRequest(signBook.getId(), replacedByUser.getId(), replacedByUser.getPhone(), true);
-                        } else {
-                            mailService.sendSignRequestAlert(replacedByUser, signBook);
-                        }
-                        nbTransfert++;
-                    }
+                if(recipient.getUser().equals(user)) {
+                    recipientsToTransfer.add(recipient);
+                    currentStepTransferred = currentStepTransferred || liveWorkflowStep.equals(currentStep);
                 }
             }
         }
-        if(nbTransfert > 0) {
-            if (keepFollow) {
-                addViewers(signBook.getId(), Collections.singletonList(user.getEmail()));
-            }
-        } else {
-            throw new EsupSignatureRuntimeException("Les conditions de transfert ne sont pas remplies.");
+
+        if(recipientsToTransfer.isEmpty()) {
+            return false;
         }
+
+        recipientsToTransfer.forEach(recipient -> recipient.setUser(replacedByUser));
+        signBook.getTeam().remove(user);
+        if(signBook.getTeam().stream().noneMatch(teamUser -> teamUser.getId().equals(replacedByUser.getId()))) {
+            signBook.getTeam().add(replacedByUser);
+        }
+
+        if(currentStepTransferred) {
+            if (replacedByUser.getUserType().equals(UserType.external)) {
+                otpService.generateOtpForSignRequest(signBook.getId(), replacedByUser.getId(), replacedByUser.getPhone(), true);
+            } else {
+                mailService.sendSignRequestAlert(replacedByUser, signBook);
+            }
+        }
+        if (keepFollow) {
+            addViewers(signBook.getId(), Collections.singletonList(user.getEmail()));
+        }
+        return true;
     }
 
     @Transactional
