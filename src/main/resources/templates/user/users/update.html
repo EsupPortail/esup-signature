@@ -21,7 +21,7 @@
                 <div class="es-sidebar d-flex">
                     <nav th:replace="~{fragments/sides/side-user :: side-user}"></nav>
                 </div>
-                <div class="flex-grow-1 overflow-scroll">
+                <div class="flex-grow-1 overflow-auto">
                     <div class="m-2">
             <form id="userParamsForm" th:object="${authUser}" th:action="@{/{userType}/users(userType=${user.userType.name() == 'external' ? 'otp' : 'user'})}" enctype="multipart/form-data" th:method="'post'">
                 <input type="hidden" name="id" th:value="${authUser.id}"/>
