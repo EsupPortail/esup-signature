@@ -33,10 +33,10 @@
                 </ol>
                 <div class="d-flex align-items-center gap-1 me-2 ms-auto">
                     <form th:if="${statusFilter == 'deleted'}"
-                          class="d-lg-none"
+                          class="d-lg-none es-confirm-submit"
+                          data-confirm-message="Voulez-vous vraiment vider la corbeille ?"
                           th:action="'/user/signbooks/empty-trash'"
-                          th:method="'delete'"
-                          onsubmit="return confirm('Voulez-vous vraiment vider la corbeille ?');">
+                          th:method="'delete'">
                         <button type="submit" class="btn btn-sm btn-light text-danger" title="Vider la corbeille" aria-label="Vider la corbeille">
                             <i class="fi fi-rr-dumpster-fire"></i>
                         </button>
@@ -229,8 +229,9 @@
                             </a>
                         </li>
                         <li th:if="${statusFilter == 'deleted'}">
-                            <form th:action="'/user/signbooks/empty-trash'" th:method="'delete'"
-                                  onsubmit="return confirm('Voulez-vous vraiment vider la corbeille ?');">
+                            <form class="es-confirm-submit"
+                                  data-confirm-message="Voulez-vous vraiment vider la corbeille ?"
+                                  th:action="'/user/signbooks/empty-trash'" th:method="'delete'">
                                 <button type="submit" tabindex="1" id="trashLaunchButton" class="btn btn-transparent text-danger"
                                         title="Vider la corbeille" style="border: 0;">
                                     <i class="fi fi-rr-dumpster-fire" style="margin-top: 0;"></i>

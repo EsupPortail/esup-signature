@@ -179,10 +179,11 @@
                                             <span th:unless="${user.firstname != '' || user.name != ''}" th:text="${user.email}"></span>
                                         </td>
                                         <td>
-                                            <form class="float-end" th:action="'/' + ${workflowRole} + '/workflows/remove-step-recipent/' + ${workflow.id} + '/' + ${workflowStep.id}" th:method="'delete'">
+                                            <form class="float-end es-confirm-submit"
+                                                  data-confirm-message="Voulez-vous vraiment supprimer cet élément ?"
+                                                  th:action="'/' + ${workflowRole} + '/workflows/remove-step-recipent/' + ${workflow.id} + '/' + ${workflowStep.id}" th:method="'delete'">
                                                 <input type="hidden" name="userToRemoveEppn" th:value="${user.eppn}"/>
                                                 <button title="Supprimer le destinataire"
-                                                    onclick="return confirm('Voulez-vous vraiment supprimer cet element ?');"
                                                     type="submit" class="btn btn-danger btn-sm"><i
                                                     class="fi fi-rr-trash"></i></button>
                                             </form>
