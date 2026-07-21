@@ -41,8 +41,8 @@
                             <li th:each="mappingFilterGroup : ${config.mappingFiltersGroups.entrySet()}" class="list-group-item d-flex justify-content-around gap-5">
                                 <input th:value="${mappingFilterGroup.key}" class="form-control w-50" disabled/>
                                 <input th:value="${mappingFilterGroup.value}" class="form-control w-50" disabled/>
-                                <form th:action="'/admin/configs/mapping-filter-group'" th:method="'delete'" class="w-25"
-                                    onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce mapping ? Cette action est irréversible.');">
+                                <form th:action="'/admin/configs/mapping-filter-group'" th:method="'delete'" class="w-25 es-confirm-submit"
+                                      data-confirm-message="Êtes-vous sûr de vouloir supprimer ce mapping ? Cette action est irréversible.">
                                     <input type="hidden" name="group" th:value="${mappingFilterGroup.key}">
                                     <button type="submit" class="btn btn-danger"><i class="fi fi-rr-trash"></i></button>
                                 </form>
@@ -70,8 +70,8 @@
                             <li th:each="mappingGroupRole : ${config.mappingGroupsRoles.entrySet()}" class="list-group-item d-flex gap-5">
                                 <input th:value="${mappingGroupRole.key}" class="form-control w-50" disabled/>
                                 <input th:value="${mappingGroupRole.value}" class="form-control w-50" disabled/>
-                                <form th:action="'/admin/configs/mapping-group-role'" th:method="'delete'" class=" w-25"
-                                    onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce mapping ? Cette action est irréversible.');">
+                                <form th:action="'/admin/configs/mapping-group-role'" th:method="'delete'" class="w-25 es-confirm-submit"
+                                      data-confirm-message="Êtes-vous sûr de vouloir supprimer ce mapping ? Cette action est irréversible.">
                                     <input type="hidden" name="group" th:value="${mappingGroupRole.key}">
                                     <button type="submit" class="btn btn-danger"><i class="fi fi-rr-trash"></i></button>
                                 </form>
@@ -101,8 +101,8 @@
                             <li th:each="groupMappingSpel : ${config.groupMappingSpel.entrySet()}" class="list-group-item d-flex gap-5">
                                 <input th:value="${groupMappingSpel.key}" class="form-control w-50" disabled />
                                 <input th:value="${groupMappingSpel.value}" class="form-control w-50" disabled />
-                                <form th:action="'/admin/configs/group-mapping-spel'" th:method="'delete'" class=" w-25"
-                                    onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce mapping ? Cette action est irréversible.');">
+                                <form th:action="'/admin/configs/group-mapping-spel'" th:method="'delete'" class="w-25 es-confirm-submit"
+                                      data-confirm-message="Êtes-vous sûr de vouloir supprimer ce mapping ? Cette action est irréversible.">
                                     <input type="hidden" name="group" th:value="${groupMappingSpel.key}">
                                     <button type="submit" class="btn btn-danger"><i class="fi fi-rr-trash"></i></button>
                                 </form>
