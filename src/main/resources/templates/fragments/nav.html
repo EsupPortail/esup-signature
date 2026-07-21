@@ -130,7 +130,8 @@
                     <form th:if="${#authorization.expression('hasRole(''ROLE_OTP'')')}"
                         th:action="@{/logout}"
                         method="post"
-                        onsubmit="return confirm('Confirmez-vous la déconnexion ?');"
+                        class="es-confirm-submit"
+                        data-confirm-message="Confirmez-vous la déconnexion ?"
                         style="display:inline;">
                         <button id="link-disconnect2"
                                 class="btn btn-light btn-outline-dark ms-1 me-1"
@@ -239,5 +240,6 @@
             </form>
         </div>
     </div>
+    <script type="module" th:src="'/js/modules/bootstrap/NavBootstrap.js?version=' + ${versionApp}"></script>
 </header>
 </html>

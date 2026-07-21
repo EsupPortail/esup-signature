@@ -7,6 +7,7 @@ import {SpotManager} from "./SpotManager.js?version=@version@";
 import {SignSpaceManager} from "./SignSpaceManager.js?version=@version@";
 import {PostitManager} from "./PostitManager.js?version=@version@";
 import {WorkspaceState} from "./WorkspaceState.js?version=@version@";
+import {SignatureImageResolver, SPECIAL_SIGN_IMAGE_NUMBERS} from "./SignatureImageResolver.js?version=@version@";
 
 export class SignWorkspaceController {
 
@@ -15,14 +16,30 @@ export class SignWorkspaceController {
             ? workspaceStateInput
             : WorkspaceState.from(workspaceStateInput, null);
         const {showDataFlow, signUiDto} = workspaceState.toWorkspaceContext();
-        const isPdf = signUiDto.pdf;
-        const id = signUiDto.signRequestId;
+        const domSignRequestId = document.body?.dataset?.esupSignrequestId ?? null;
+        const id = signUiDto.signRequestId ?? (domSignRequestId && domSignRequestId !== "0" ? domSignRequestId : null);
+        const hasResolvedSignRequestId = id != null && id !== "";
+        const hasPdfWorkspace = document.getElementById("workspace") != null && document.getElementById("pdf") != null;
+        const isPdf = (Boolean(signUiDto.pdf) || hasPdfWorkspace) && hasResolvedSignRequestId;
+        if (domSignRequestId != null && domSignRequestId !== "0" && signUiDto.signRequestId == null) {
+            console.warn("Le DTO front ne fournit pas signRequestId. L'id de la page est utilisé pour initialiser le workspace.", domSignRequestId);
+        }
+        if (hasPdfWorkspace && !signUiDto.pdf && hasResolvedSignRequestId) {
+            console.warn("Le DTO front indique pdf=false alors que le DOM contient un workspace PDF. Le viewer PDF est forcé côté client.");
+        }
+        if ((Boolean(signUiDto.pdf) || hasPdfWorkspace) && !hasResolvedSignRequestId) {
+            console.error("Impossible d'initialiser le viewer PDF : aucun signRequestId disponible dans le DTO ni dans le DOM.");
+        }
+        const hasSignableActions = document.getElementById("signLaunchButton") != null;
+        const signable = Boolean(signUiDto.signable) || hasSignableActions;
+        if (hasSignableActions && !signUiDto.signable) {
+            console.warn("Le DTO front indique signable=false alors que le DOM contient les actions de signature. Le mode signable est forcé côté client.");
+        }
         const dataId = signUiDto.dataId;
         const formId = signUiDto.formId;
         const currentSignRequestParamses = signUiDto.currentSignRequestParamses;
         const signImageNumber = signUiDto.signImageNumber;
         const currentSignType = signUiDto.currentSignType;
-        const signable = signUiDto.signable;
         const editable = signUiDto.editable;
         const comments = signUiDto.comments;
         const spots = signUiDto.spots;
@@ -106,9 +123,9 @@ export class SignWorkspaceController {
         }
         if (this.isPdf) {
             if(currentSignType === "form") {
-                this.pdfViewer = new PdfViewer('/' + userName + '/forms/get-file/' + id, signable, editable, currentStepNumber, this.forcePageNum, fields, true);
+                this.pdfViewer = new PdfViewer('/' + userName + '/forms/get-file/' + id, signable, editable, currentStepNumber, this.forcePageNum, fields, true, {autoStart: false});
             } else {
-                this.pdfViewer = new PdfViewer('/ws-secure/global/get-last-file-pdf/' + id, signable, editable, currentStepNumber, this.forcePageNum, fields, false);
+                this.pdfViewer = new PdfViewer('/ws-secure/global/get-last-file-pdf/' + id, signable, editable, currentStepNumber, this.forcePageNum, fields, false, {autoStart: false});
             }
         }
         this.signPlacementController = new SignPlacementController(
@@ -221,20 +238,19 @@ export class SignWorkspaceController {
         });
         this.initChangeModeSelector();
         this.initDataFields(fields);
-        this.wsTabs = $("#ws-tabs");
+        this.wsTabs = $(".es-signrequest-workspace-header");
         this.addSignButton = $("#addSignButton");
         this.lastWidth = window.innerWidth;
         this.lastHeight = window.innerHeight;
-        if (currentSignType === "form" || (formId == null && !workflowAvailable) || currentSignRequestParamses.length === 0) {
-            if(this.wsTabs.length) {
-                this.autocollapse();
-                let self = this;
-                const THRESHOLD = 100;
-                const DEBOUNCE_DELAY = 100;
-                let resizeTimer = null;
-                $(window)
-                    .off("resize" + this.layoutNamespace)
-                    .on("resize" + this.layoutNamespace, () => {
+        if(this.wsTabs.length) {
+            this.autocollapse();
+            let self = this;
+            const THRESHOLD = 100;
+            const DEBOUNCE_DELAY = 100;
+            let resizeTimer = null;
+            $(window)
+                .off("resize" + this.layoutNamespace)
+                .on("resize" + this.layoutNamespace, () => {
                     clearTimeout(resizeTimer);
                     resizeTimer = setTimeout(() => {
                         const w = window.innerWidth;
@@ -247,7 +263,6 @@ export class SignWorkspaceController {
                         self.lastHeight = h;
                     }, DEBOUNCE_DELAY);
                 });
-            }
         }
         let root = document.querySelector(':root');
         root.setAttribute("style", "scroll-behavior: auto;");
@@ -255,6 +270,7 @@ export class SignWorkspaceController {
         this.postitManager.applyVisibility(this.displayComments);
         if (this.isPdf) {
             this.signPlacementController.updateScales(this.pdfViewer.scale);
+            this.pdfViewer.loadDocumentWhenReady();
         } else {
             this.initWorkspace();
         }
@@ -286,6 +302,7 @@ export class SignWorkspaceController {
                     this.releaseToolsLoadingState();
                 }],
                 ['renderComplete', () => this.completePdfRender()],
+                ['renderFailed', error => this.handlePdfRenderFailure(error)],
                 ['scaleChange', () => this.refreshWorkspace()],
                 ['change', () => this.saveData(localStorage.getItem('disableFormAlert') === "true")]
             ].forEach(([event, handler]) => this.pdfViewer.addEventListener(event, handler));
@@ -331,10 +348,6 @@ export class SignWorkspaceController {
             ["zoomout", e => this.pdfViewer.zoomIn(e)],
             ["zoominit", e => this.pdfViewer.zoomInit(e)]
         ].forEach(([event, handler]) => this.wheelDetector.addEventListener(event, handler));
-    }
-
-    resetRequestedSignatureStep() {
-        this.signPlacementController?.clearRequestedSignatureStep?.();
     }
 
     hasCertifiedVisualSignature() {
@@ -491,14 +504,103 @@ export class SignWorkspaceController {
         }
         for (let i = 0; i < candidates.length; i++) {
             const parsedSignImageNumber = Number.parseInt(candidates[i], 10);
-            if (Number.isFinite(parsedSignImageNumber)) {
-                return parsedSignImageNumber;
+            const resolvedSignImageNumber = this.resolveSelectableSignImageNumber(parsedSignImageNumber);
+            if (resolvedSignImageNumber != null) {
+                return resolvedSignImageNumber;
             }
         }
-        if (this.restore && Number.isFinite(storedSignNumber)) {
-            return storedSignNumber;
+        const resolvedStoredSignNumber = this.resolveSelectableSignImageNumber(storedSignNumber);
+        if (this.restore && resolvedStoredSignNumber != null) {
+            return resolvedStoredSignNumber;
         }
-        return null;
+        return this.getFirstSelectableSignImageNumber();
+    }
+
+    getSelectableSignImageNumbers() {
+        return SignatureImageResolver.getSelectableSignImageNumbers(
+            this.signPlacementController?.signImages,
+            {
+                generatedSignImageNumber: this.signPlacementController?.generatedSignImageNumber,
+                parapheSignImageNumber: this.signPlacementController?.parapheSignImageNumber
+            }
+        );
+    }
+
+    isSelectableSignImageNumber(signImageNumber) {
+        return this.getSelectableSignImageNumbers().includes(signImageNumber);
+    }
+
+    resolveSelectableSignImageNumber(signImageNumber) {
+        const normalizedSignImageNumber = Number.parseInt(signImageNumber, 10);
+        if (!Number.isFinite(normalizedSignImageNumber)) {
+            return null;
+        }
+        const specialSignImageNumbers = {
+            generatedSignImageNumber: this.signPlacementController?.generatedSignImageNumber,
+            parapheSignImageNumber: this.signPlacementController?.parapheSignImageNumber
+        };
+        const {
+            requestedSignImageNumber,
+            resolvedImageNumber
+        } = SignatureImageResolver.resolveImageRequest(
+            normalizedSignImageNumber,
+            this.signPlacementController?.signImages,
+            specialSignImageNumbers
+        );
+        return this.isSelectableSignImageNumber(requestedSignImageNumber)
+            && this.signPlacementController?.signImages?.[resolvedImageNumber] != null
+            ? requestedSignImageNumber
+            : null;
+    }
+
+    getFirstSelectableSignImageNumber() {
+        return this.getSelectableSignImageNumbers()[0] ?? null;
+    }
+
+    async loadGeneratedSignImageFallback() {
+        try {
+            const response = await fetch('/ws-secure/ui/signatures/default-image', {
+                method: 'GET',
+                credentials: 'same-origin',
+                cache: 'no-store'
+            });
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+            const blob = await response.blob();
+            if (!blob.type.startsWith('image/')) {
+                throw new Error(`Type de contenu inattendu : ${blob.type || 'inconnu'}`);
+            }
+            const dataUrl = await new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = () => reject(reader.error ?? new Error("Lecture de l'image impossible"));
+                reader.readAsDataURL(blob);
+            });
+            const base64 = typeof dataUrl === 'string' ? dataUrl.split(',', 2)[1] : null;
+            if (!base64) {
+                throw new Error("L'image générée est vide");
+            }
+
+            // With a single image the resolver deterministically identifies index 0
+            // as the generated signature, independently of stale uiMe metadata.
+            this.signPlacementController.applyUserSignatureState({
+                signImages: [base64],
+                signImageIds: []
+            });
+            return SPECIAL_SIGN_IMAGE_NUMBERS.GENERATED;
+        } catch (error) {
+            console.error("Impossible de recharger l'image de signature générée", error);
+            return null;
+        }
+    }
+
+    async resolveSignImageNumberForInsertion() {
+        const resolvedSignImageNumber = this.resolvePreferredSignImageNumber();
+        if (Number.isFinite(resolvedSignImageNumber)) {
+            return resolvedSignImageNumber;
+        }
+        return this.loadGeneratedSignImageFallback();
     }
 
     async addSign(forceSignNumber) {
@@ -526,11 +628,20 @@ export class SignWorkspaceController {
         const persistedSignImageNumber = await this.signPlacementController?.persistMobileSignaturePreviews?.();
         const resolvedSignImageNumber = Number.isFinite(persistedSignImageNumber)
             ? persistedSignImageNumber
-            : this.resolvePreferredSignImageNumber();
-        if (Number.isFinite(resolvedSignImageNumber)) {
-            this.signImageNumber = resolvedSignImageNumber;
+            : await this.resolveSignImageNumberForInsertion();
+        if (!Number.isFinite(resolvedSignImageNumber)) {
+            bootbox.alert("Impossible de charger une image de signature. Veuillez réessayer ou vérifier votre profil de signature.");
+            this.signPlacementController?.clearRequestedSignatureStep?.();
+            return;
         }
-        const signRequestParams = await this.signPlacementController.addSign(targetPageNumber, this.restore, this.signImageNumber, signNum);
+        this.signImageNumber = resolvedSignImageNumber;
+        const signRequestParams = await this.signPlacementController.addSign(
+            targetPageNumber,
+            this.restore,
+            resolvedSignImageNumber,
+            signNum,
+            'signature'
+        );
         this.activateSignPlacement(signRequestParams, signNum);
     }
 
@@ -564,6 +675,9 @@ export class SignWorkspaceController {
     }
 
     releaseToolsLoadingState() {
+        if (this.isPdf && this.pdfViewer?.renderFailed) {
+            return;
+        }
         if (this.toolsLoadingStateReleased) {
             return;
         }
@@ -594,6 +708,7 @@ export class SignWorkspaceController {
     }
 
     beginPdfRender() {
+        $("#pdf-render-error").remove();
         this.toolsLoadingStateReleased = false;
         this.setPdfRenderMode(true);
         this.setToolsBarDisabled(true);
@@ -618,8 +733,39 @@ export class SignWorkspaceController {
     }
 
     completePdfRender() {
+        if (this.pdfViewer?.renderFailed) {
+            return;
+        }
         this.setPdfRenderComplete(true);
         this.releaseToolsLoadingState();
+    }
+
+    handlePdfRenderFailure(error) {
+        console.error("Echec du rendu PDF dans le workspace", error);
+        this.toolsLoadingStateReleased = false;
+        this.setPdfRenderComplete(false);
+        this.setPdfRenderMode(true);
+        this.setToolsBarDisabled(true);
+        this.refreshToolbarAccessibility();
+        this.showPdfRenderError();
+        this.updateAnnotationActionButtonsAvailability();
+    }
+
+    showPdfRenderError() {
+        if (document.getElementById("pdf-render-error") != null) {
+            return;
+        }
+        const pdfElement = document.getElementById("pdf");
+        if (pdfElement == null) {
+            return;
+        }
+        const alert = document.createElement("div");
+        alert.id = "pdf-render-error";
+        alert.className = "alert alert-danger m-3";
+        alert.setAttribute("role", "alert");
+        alert.textContent = "Impossible d’afficher le document PDF. Rechargez la page après vérification du document ou du cache navigateur.";
+        pdfElement.prepend(alert);
+        this.pdfViewer?.pdfDiv?.css('opacity', 1);
     }
 
     canUseAnnotationActions() {
@@ -925,64 +1071,166 @@ export class SignWorkspaceController {
     }
 
     initFormAction() {
-        if(!this.actionInitialyzed) {
-            console.debug("debug - " + "eval : " + this.action);
-            jQuery.globalEval(this.action);
-            this.actionInitialyzed = true;
+        if(this.actionInitialyzed) {
+            console.debug("Form action script already initialized", {signRequestId: this.signRequestId});
+            return;
         }
+        if(!this.action) {
+            console.debug("No form action script declared for this sign request", {signRequestId: this.signRequestId});
+            return;
+        }
+        if(!this.signRequestId) {
+            console.warn("Unable to load form action script: missing signRequestId");
+            return;
+        }
+        this.actionInitialyzed = true;
+        const script = document.createElement("script");
+        const profilePath = this.isOtp ? "otp" : "user";
+        script.src = `/${profilePath}/signrequests/${encodeURIComponent(this.signRequestId)}/form-action.js`;
+        script.async = false;
+        console.debug("Loading form action script", {src: script.src, profilePath, signRequestId: this.signRequestId});
+        script.onload = () => {
+            console.debug("Form action script loaded", {src: script.src, signRequestId: this.signRequestId});
+        };
+        script.onerror = () => {
+            this.actionInitialyzed = false;
+            console.error("Impossible de charger l'action javascript du formulaire", script.src);
+        };
+        document.head.appendChild(script);
     }
 
     autocollapse() {
-        let menu = "#ws-tabs";
-        let maxWidth = $("#workspace").innerWidth() - 50;
-        const calculateTotalWidth = () => {
-            let total = 0;
-            const listItems = document.querySelectorAll('#ws-tabs > li');
-            listItems.forEach(li => {
-                const rect = li.getBoundingClientRect();
-                total += rect.width;
-                const style = window.getComputedStyle(li);
-                total += parseFloat(style.marginLeft) + parseFloat(style.marginRight);
-            });
-            return total;
+        document.querySelectorAll('.es-signrequest-workspace-header').forEach(tabs => this.autocollapseTabs(tabs));
+    }
+
+    autocollapseTabs(tabs) {
+        const dropdownBefore = tabs?.querySelector(':scope > li.es-signrequest-tabs-dropdown-before');
+        const dropdownAfter = tabs?.querySelector(':scope > li.es-signrequest-tabs-dropdown-after');
+        const beforeItems = Array.from(dropdownBefore?.querySelectorAll('.es-signrequest-tabs-dropdown > li') || []);
+        const afterItems = Array.from(dropdownAfter?.querySelectorAll('.es-signrequest-tabs-dropdown > li') || []);
+        if (tabs == null) {
+            return;
+        }
+
+        tabs.classList.add('es-tabs-calculating');
+        try {
+        const fileTabs = Array.from(tabs.querySelectorAll(':scope > li.file-tab'));
+        if (fileTabs.length === 0) {
+            dropdownBefore?.classList.remove('d-none');
+            dropdownAfter?.classList.remove('d-none');
+            return;
+        }
+
+        const maxWidth = tabs.getBoundingClientRect().width;
+        const outerWidth = element => {
+            const rect = element.getBoundingClientRect();
+            const style = window.getComputedStyle(element);
+            return rect.width + parseFloat(style.marginLeft || 0) + parseFloat(style.marginRight || 0);
         };
-        let totalWidth = calculateTotalWidth();
-        if (totalWidth >= maxWidth) {
-            $(menu + ' .dropdown').removeClass('d-none');
-            totalWidth = calculateTotalWidth();
-            while (totalWidth > maxWidth) {
-                let children = $(menu + ' > li.file-tab');
-                let count = children.length;
-                if (count === 0) break; // Sécurité
-                $(children[count - 1]).prependTo(menu + ' .dropdown-menu');
-                totalWidth = calculateTotalWidth();
-                console.warn("Nouvelle largeur : " + totalWidth);
+        const currentTabIndex = parseInt(tabs.dataset.esCurrentTabIndex || '0', 10);
+        const hasPreviousDocs = beforeItems.some(item => parseInt(item.dataset.esTabIndex || '-1', 10) < currentTabIndex);
+        const hasNextDocs = afterItems.some(item => parseInt(item.dataset.esTabIndex || '-1', 10) > currentTabIndex);
+
+        fileTabs.forEach(tab => tab.classList.remove('es-tab-overflow-hidden'));
+        dropdownBefore?.classList.toggle('d-none', !hasPreviousDocs);
+        dropdownAfter?.classList.toggle('d-none', !hasNextDocs);
+
+        if (window.getComputedStyle(fileTabs[0]).display === 'none') {
+            beforeItems.forEach(item => {
+                const tabIndex = parseInt(item.dataset.esTabIndex || '-1', 10);
+                item.classList.toggle('es-tab-overflow-hidden', tabIndex < 0 || tabIndex >= currentTabIndex);
+            });
+            afterItems.forEach(item => {
+                const tabIndex = parseInt(item.dataset.esTabIndex || '-1', 10);
+                item.classList.toggle('es-tab-overflow-hidden', tabIndex < currentTabIndex);
+            });
+            dropdownBefore?.classList.remove('d-none');
+            dropdownAfter?.classList.remove('d-none');
+            if (beforeItems.every(item => item.classList.contains('es-tab-overflow-hidden'))) {
+                dropdownBefore?.classList.add('d-none');
+            }
+            if (afterItems.every(item => item.classList.contains('es-tab-overflow-hidden'))) {
+                dropdownAfter?.classList.add('d-none');
+            }
+            return;
+        }
+
+        const fileTabWidths = fileTabs.map(outerWidth);
+        const fixedWidth = Array.from(tabs.children)
+            .filter(li => !li.classList.contains('file-tab'))
+            .reduce((total, li) => total + outerWidth(li), 0);
+        const availableWidth = maxWidth - fixedWidth;
+        const currentCandidateIndex = Math.max(0, fileTabs.findIndex(tab => {
+            return parseInt(tab.dataset.esTabIndex || '-1', 10) === currentTabIndex;
+        }));
+
+        const visibleIndexes = new Set();
+        let usedWidth = 0;
+        const currentTabWidth = fileTabWidths[currentCandidateIndex] || 0;
+        if (currentTabWidth <= availableWidth) {
+            visibleIndexes.add(currentCandidateIndex);
+            usedWidth = currentTabWidth;
+        }
+        let left = currentCandidateIndex - 1;
+        let right = currentCandidateIndex + 1;
+
+        while (visibleIndexes.size > 0 && (left >= 0 || right < fileTabs.length)) {
+            const candidateIndexes = [];
+            if (left >= 0) {
+                candidateIndexes.push(left);
+            }
+            if (right < fileTabs.length) {
+                candidateIndexes.push(right);
+            }
+            candidateIndexes.sort((a, b) => Math.abs(a - currentCandidateIndex) - Math.abs(b - currentCandidateIndex));
+
+            const candidateIndex = candidateIndexes.find(index => {
+                return usedWidth + (fileTabWidths[index] || 0) <= availableWidth;
+            });
+            if (candidateIndex == null) {
+                break;
+            }
+
+            const candidateWidth = fileTabWidths[candidateIndex] || 0;
+            visibleIndexes.add(candidateIndex);
+            usedWidth += candidateWidth;
+            if (candidateIndex === left) {
+                left--;
+            } else {
+                right++;
             }
         }
-        else {
-            let collapsed = $(menu + ' .dropdown-menu > li');
 
-            if (collapsed.length === 0) {
-                $(menu + ' .dropdown').addClass('d-none');
-                return;
-            }
-            const dropdownWidth = $(menu + ' .dropdown')[0].getBoundingClientRect().width;
-            const safeMaxWidth = maxWidth - dropdownWidth - 50; // marge de sécurité
+        fileTabs.forEach((tab, index) => {
+            tab.classList.toggle('es-tab-overflow-hidden', !visibleIndexes.has(index));
+        });
 
-            let i = 0;
-            while (i < collapsed.length && totalWidth < safeMaxWidth) {
-                const itemWidth = collapsed[i].getBoundingClientRect().width;
-                const style = window.getComputedStyle(collapsed[i]);
-                const margins = parseFloat(style.marginLeft) + parseFloat(style.marginRight);
-                const estimatedWidth = totalWidth + itemWidth + margins;
-                if (estimatedWidth >= safeMaxWidth) break;
-                $(collapsed[i]).insertBefore($(menu + ' > li.dropdown'));
-                totalWidth = calculateTotalWidth();
-                i++;
-            }
-            if ($(menu + ' .dropdown-menu > li').length === 0) {
-                $(menu + ' .dropdown').addClass('d-none');
-            }
+        const visibleTabIndexes = Array.from(visibleIndexes).map(index => {
+            return parseInt(fileTabs[index].dataset.esTabIndex || '-1', 10);
+        }).filter(index => index >= 0);
+        const firstVisibleTabIndex = visibleTabIndexes.length > 0 ? Math.min(...visibleTabIndexes) : currentTabIndex;
+        const lastVisibleTabIndex = visibleTabIndexes.length > 0 ? Math.max(...visibleTabIndexes) : currentTabIndex - 1;
+
+        beforeItems.forEach(item => {
+            const tabIndex = parseInt(item.dataset.esTabIndex || '-1', 10);
+            item.classList.toggle('es-tab-overflow-hidden', tabIndex < 0 || tabIndex >= firstVisibleTabIndex);
+        });
+        afterItems.forEach(item => {
+            const tabIndex = parseInt(item.dataset.esTabIndex || '-1', 10);
+            item.classList.toggle('es-tab-overflow-hidden', tabIndex < 0 || tabIndex <= lastVisibleTabIndex);
+        });
+
+        const visibleBeforeItems = beforeItems.filter(item => !item.classList.contains('es-tab-overflow-hidden')).length;
+        const visibleAfterItems = afterItems.filter(item => !item.classList.contains('es-tab-overflow-hidden')).length;
+
+        if (dropdownBefore != null) {
+            dropdownBefore.classList.toggle('d-none', visibleBeforeItems === 0);
+        }
+        if (dropdownAfter != null) {
+            dropdownAfter.classList.toggle('d-none', visibleAfterItems === 0);
+        }
+        } finally {
+            tabs.classList.remove('es-tabs-loading', 'es-tabs-calculating');
         }
     }
 

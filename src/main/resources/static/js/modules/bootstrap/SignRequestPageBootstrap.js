@@ -1,0 +1,16 @@
+import "../signrequests/SignRequest.js?version=@version@";
+import "../signrequests/SignRequestDetails.js?version=@version@";
+import "../signrequests/SignRequestPrint.js?version=@version@";
+import "../signrequests/SignRequestPostit.js?version=@version@";
+import "../signrequests/SignRequestFiles.js?version=@version@";
+import "../signrequests/SignRequestReuseSignedDocument.js?version=@version@";
+import "../signrequests/SignRequestAddDoc.js?version=@version@";
+import "../signrequests/SignRequestRefusalModal.js?version=@version@";
+import "../signrequests/SignRequestAddPostit.js?version=@version@";
+import "../signrequests/SignRequestPhone.js?version=@version@";
+import "../signrequests/SignRequestModals.js?version=@version@";
+import "../signrequests/SignRequestAttachment.js?version=@version@";
+import "../signrequests/SignRequestSignImage.js?version=@version@";
+import "../signrequests/SignRequestSteps.js?version=@version@";
+import "../signrequests/SideSignAddStep.js?version=@version@";
+import "../signrequests/SignRequestUi.js?version=@version@";

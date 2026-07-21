@@ -117,12 +117,13 @@ public class SignBookController {
         }
         model.addAttribute("statusFilter", statusFilter);
         model.addAttribute("infiniteScrolling", effectiveInfiniteScrolling);
+        Page<SignBookFullDto> signBooks;
         if(effectiveInfiniteScrolling) {
-            model.addAttribute("signBooks", new PageImpl<SignBookFullDto>(new ArrayList<>(), pageable, 1));
+            signBooks = new PageImpl<>(new ArrayList<>(), pageable, 1);
         } else {
-            Page<SignBookFullDto> signBooks = signBookService.getSignBookListItems(userEppn, authUserEppn, statusFilter, recipientsFilter, workflowFilter, docTitleFilter, creatorFilter, dateFilter, pageable);
-            model.addAttribute("signBooks", signBooks);
+            signBooks = signBookService.getSignBookListItems(userEppn, authUserEppn, statusFilter, recipientsFilter, workflowFilter, docTitleFilter, creatorFilter, dateFilter, pageable);
         }
+        model.addAttribute("signBooks", signBooks);
         model.addAttribute("nbEmpty", signBookService.countEmpty(userEppn));
         model.addAttribute("statuses", SignRequestStatus.activeValues());
         model.addAttribute("forms", formService.getFormsByUser(userEppn, authUserEppn));
@@ -351,7 +352,7 @@ public class SignBookController {
     @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
     @DeleteMapping(value = "/remove-live-step/{id}/{step}")
     public String removeStep(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @PathVariable("step") Integer step, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) {
-        String result = signBookService.removeStep(id, step);
+        String result = signBookService.removeStep(id, step, authUserEppn);
         if (result == null) {
             redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "L'étape a été supprimés"));
         } else {
@@ -541,7 +542,7 @@ public class SignBookController {
             recipientWsDtos.add(recipientWsDto);
         }
         try {
-            liveWorkflowStepService.replaceRecipientsToWorkflowStep(id, stepNumber, recipientWsDtos);
+            liveWorkflowStepService.replaceRecipientsToWorkflowStep(id, stepNumber, recipientWsDtos, authUserEppn);
         } catch (EsupSignatureException e) {
             redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", e.getMessage()));
         }

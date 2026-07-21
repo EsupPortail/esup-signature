@@ -314,7 +314,6 @@
                                     <button th:if="${securityConfig.title != 'FranceConnect'}"
                                             type="button"
                                             th:data-url="${securityConfig.loginUrl} + '?redirect=' + ${redirect}"
-                                            onclick="location.href=this.getAttribute('data-url')"
                                             class="es-auth-button"
                                             th:text="${securityConfig.title}">
                                     </button>
@@ -333,54 +332,6 @@
 </main>
 <div th:replace="~{fragments/message :: message}"></div>
 <footer th:replace="~{fragments/footer-light :: footer}"></footer>
-<script th:if="${globalProperties.enableCaptcha}">
-    $(function() {
-        const captchaFillStyle = getComputedStyle(document.documentElement).getPropertyValue('--bs-dark').trim();
-        let myCaptcha = new jCaptcha({
-            el: '.jCaptcha',
-            canvasClass: 'jCaptchaCanvas',
-            canvasStyle: {
-                // required properties for captcha stylings:
-                width: 150,
-                height: 15,
-                textBaseline: 'top',
-                font: '15px Arial',
-                textAlign: 'left',
-                fillStyle: captchaFillStyle
-            },
-            // set callback function for success  && error messages:
-            callback: ( response, $captchaInputElement, numberOfTries ) => {
-                if ( response == 'success' ) {
-                    $("#loginBlock").removeClass('d-none');
-                    $("#captchaForm").addClass('d-none');
-                }
-                if ( response == 'error' ) {
-                    $("#captchaInput").removeClass('success');
-                    $("#captchaInput").addClass('error');
-                    $("#captchaInput").attr('placeholder',  "Please try again!");
-
-                    if (numberOfTries === 3) {
-                        // maximum attempts reached, so do something
-                        // e.g. disable the form:
-                        $("#captchaForm").off("submit", formSubmit);
-                        $("#captchaInput").attr('placeholder',  "Maximum attempts reached!");
-                        $("#captchaInput").attr("disabled", "true");
-                        $("#captchaButton").attr("disabled", "true");
-                    }
-                }
-            }
-        });
-
-        function formSubmit(e) {
-            e.preventDefault();
-
-            // myCaptcha validate
-            myCaptcha.validate();
-        }
-
-        $('#captchaForm').on('submit', formSubmit)
-
-    });
-</script>
+<script type="module" th:src="'/js/modules/bootstrap/SigninBootstrap.js?version=' + ${versionApp}"></script>
 </body>
 </html>

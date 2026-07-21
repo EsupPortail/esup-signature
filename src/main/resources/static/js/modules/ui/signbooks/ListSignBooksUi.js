@@ -3,9 +3,8 @@ import {Nexu} from "../signrequests/Nexu.js?version=@version@";
 
 export class ListSignBooksUi {
 
-    constructor(signRequests, statusFilter, recipientsFilter, workflowFilter, creatorFilter, docTitleFilter, dateFilter, infiniteScrolling, csrf, mode, options = {}) {
+    constructor(statusFilter, recipientsFilter, workflowFilter, creatorFilter, docTitleFilter, dateFilter, infiniteScrolling, csrf, mode, options = {}) {
         console.info("Starting list sign UI");
-        this.signRequests = signRequests;
         this.mode = mode;
         this.preferenceStorageKey = options.preferenceStorageKey ?? null;
         this.toggleSelector = options.toggleSelector ?? null;
@@ -168,18 +167,23 @@ export class ListSignBooksUi {
         $('#downloadMultipleButtonWithReport').on("click", e => this.downloadMultipleWithReport());
         $('#menuDownloadMultipleButton').on("click", e => this.downloadMultiple());
         $('#menuDownloadMultipleButtonWithReport').on("click", e => this.downloadMultipleWithReport());
-        this.listSignRequestTable.on('scroll', e => this.detectEndDiv(e));
-        $(document).on('wheel', e => {
-            let delta = e.originalEvent.deltaY;
-            let scrollAmount = delta > 0 ? 50 : -50;
-            this.listSignRequestTable.scrollTop(this.listSignRequestTable.scrollTop() + scrollAmount);
-        });
+        this.bindInfiniteScrollListener();
         $('#selectAllButton').on("click", e => this.selectAllCheckboxes());
         $('#unSelectAllButton').on("click", e => this.unSelectAllCheckboxes());
         this.refreshListeners();
         document.addEventListener("massSign", e => this.updateWaitModal(e));
         document.addEventListener("sign", e => this.updateErrorWaitModal(e));
         $("#more-sign-request").on("click", e => this.addToPage());
+    }
+
+    bindInfiniteScrollListener() {
+        this.listSignRequestTable
+            .off('scroll.listSignBooksUi')
+            .on('scroll.listSignBooksUi', e => this.detectEndDiv(e));
+    }
+
+    unbindInfiniteScrollListener() {
+        this.listSignRequestTable.off('scroll.listSignBooksUi');
     }
 
     resolveInfiniteScrollingPreference() {
@@ -698,7 +702,7 @@ export class ListSignBooksUi {
         $.get("/" + this.mode + "/signbooks/list-ws?statusFilter=" + this.statusFilter + sortParam + "&recipientsFilter=" + this.recipientsFilter + "&workflowFilter=" + this.workflowFilter + "&docTitleFilter=" + this.docTitleFilter + "&creatorFilter=" + this.creatorFilter + "&dateFilter=" + this.dateFilter + "&" + this.csrf.parameterName + "=" + this.csrf.token + "&page=" + this.page + "&size=15")
             .done(function (data) {
                 if(typeof data === 'string' && data.trim().length > 0) {
-                    self.listSignRequestTable.unbind('scroll');
+                    self.unbindInfiniteScrollListener();
                     self.listSignRequestTable.addClass("wait");
                     self.page++;
                     self.signRequestTable.append(data);
@@ -717,9 +721,9 @@ export class ListSignBooksUi {
                     $(document).trigger("refreshClickableTd");
                     self.listSignRequestTable.removeClass("wait");
                     self.refreshListeners();
-                    self.listSignRequestTable.on('scroll', e => self.detectEndDiv(e));
+                    self.bindInfiniteScrollListener();
                 } else {
-                    self.listSignRequestTable.unbind('scroll');
+                    self.unbindInfiniteScrollListener();
                     self.signRequestTable.parent().children('tfoot').remove();
                 }
             })

@@ -1,8 +1,13 @@
 package org.esupportail.esupsignature.web;
 
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.MultiFormatWriter;
+import com.google.zxing.client.j2se.MatrixToImageWriter;
+import com.google.zxing.common.BitMatrix;
 import eu.europa.esig.dss.validation.reports.Reports;
 import jakarta.servlet.http.HttpSession;
 import org.apache.commons.io.FileUtils;
+import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.dss.service.XSLTService;
 import org.esupportail.esupsignature.entity.AuditTrail;
 import org.esupportail.esupsignature.entity.Log;
@@ -19,6 +24,8 @@ import org.esupportail.esupsignature.service.utils.sign.SignService;
 import org.esupportail.esupsignature.service.utils.sign.ValidationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.info.BuildProperties;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -27,6 +34,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
@@ -40,6 +48,7 @@ import java.util.Optional;
 public class PublicController {
 
     private final BuildProperties buildProperties;
+    private final GlobalProperties globalProperties;
     private final LogService logService;
     private final SignRequestService signRequestService;
     private final AuditTrailService auditTrailService;
@@ -51,8 +60,9 @@ public class PublicController {
     private final SignService signService;
     private final MobileSignTokenService mobileSignTokenService;
 
-    public PublicController(@Autowired(required = false) BuildProperties buildProperties, LogService logService, SignRequestService signRequestService, AuditTrailService auditTrailService, FileService fileService, UserService userService, XSLTService xsltService, PreAuthorizeService preAuthorizeService, ValidationService validationService, SignService signService, MobileSignTokenService mobileSignTokenService) {
+    public PublicController(@Autowired(required = false) BuildProperties buildProperties, GlobalProperties globalProperties, LogService logService, SignRequestService signRequestService, AuditTrailService auditTrailService, FileService fileService, UserService userService, XSLTService xsltService, PreAuthorizeService preAuthorizeService, ValidationService validationService, SignService signService, MobileSignTokenService mobileSignTokenService) {
         this.buildProperties = buildProperties;
+        this.globalProperties = globalProperties;
         this.logService = logService;
         this.signRequestService = signRequestService;
         this.auditTrailService = auditTrailService;
@@ -181,6 +191,24 @@ public class PublicController {
         return "public/mobile-sign";
     }
 
+    @GetMapping(value = "/mobile-sign/{token}/qrcode.png", produces = MediaType.IMAGE_PNG_VALUE)
+    @ResponseBody
+    public ResponseEntity<byte[]> showMobileSignQrCode(@PathVariable String token) throws Exception {
+        if (!mobileSignTokenService.tokenExists(token)) {
+            return ResponseEntity.notFound().build();
+        }
+
+        String mobileSignUrl = buildMobileSignUrl(token);
+        BitMatrix qrCode = new MultiFormatWriter().encode(mobileSignUrl, BarcodeFormat.QR_CODE, 200, 200);
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        MatrixToImageWriter.writeToStream(qrCode, "PNG", outputStream);
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.IMAGE_PNG)
+                .header(HttpHeaders.CACHE_CONTROL, "no-store")
+                .body(outputStream.toByteArray());
+    }
+
     @PostMapping("/mobile-sign/{token}/preview")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> saveSignaturePreview(
@@ -271,5 +299,16 @@ public class PublicController {
         }
 
         return ResponseEntity.ok(response);
+    }
+
+    private String buildMobileSignUrl(String token) {
+        String baseUrl = globalProperties.getRootUrl();
+        if (baseUrl == null || baseUrl.isEmpty()) {
+            baseUrl = "http://" + globalProperties.getDomain();
+        }
+        if (baseUrl.endsWith("/")) {
+            baseUrl = baseUrl.substring(0, baseUrl.length() - 1);
+        }
+        return baseUrl + "/public/mobile-sign/" + token;
     }
 }

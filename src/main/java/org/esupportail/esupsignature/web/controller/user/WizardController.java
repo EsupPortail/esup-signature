@@ -3,6 +3,7 @@ package org.esupportail.esupsignature.web.controller.user;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.dto.ui.global.UiMessageDto;
 import org.esupportail.esupsignature.dto.ws.RecipientWsDto;
 import org.esupportail.esupsignature.dto.ws.WorkflowStepDto;
@@ -53,8 +54,9 @@ public class WizardController {
     private final TemplateEngine templateEngine;
     private final WorkflowStepService workflowStepService;
     private final LiveWorkflowStepService liveWorkflowStepService;
+    private final GlobalProperties globalProperties;
 
-    public WizardController(WorkflowService workflowService, UiFetchService uiFetchService, FormService formService, SignBookService signBookService, SignRequestService signRequestService, TemplateEngine templateEngine, WorkflowStepService workflowStepService, LiveWorkflowStepService liveWorkflowStepService) {
+    public WizardController(WorkflowService workflowService, UiFetchService uiFetchService, FormService formService, SignBookService signBookService, SignRequestService signRequestService, TemplateEngine templateEngine, WorkflowStepService workflowStepService, LiveWorkflowStepService liveWorkflowStepService, GlobalProperties globalProperties) {
         this.workflowService = workflowService;
         this.uiFetchService = uiFetchService;
         this.formService = formService;
@@ -63,6 +65,7 @@ public class WizardController {
         this.templateEngine = templateEngine;
         this.workflowStepService = workflowStepService;
         this.liveWorkflowStepService = liveWorkflowStepService;
+        this.globalProperties = globalProperties;
     }
 
     @PreAuthorize("@preAuthorizeService.notInShare(#userEppn, #authUserEppn) && hasRole('ROLE_USER')")
@@ -286,6 +289,9 @@ public class WizardController {
                                Model model) {
         SignBook signBook = signBookService.getById(id);
         model.addAttribute("signBook", signBook);
+        if(Boolean.TRUE.equals(globalProperties.getHideWizardWorkflow())) {
+            return "user/wizard/wiz-end";
+        }
         try {
             signBookService.saveSignBookAsWorkflow(id, name, name, userEppn);
             signBookService.addViewers(id, viewers);

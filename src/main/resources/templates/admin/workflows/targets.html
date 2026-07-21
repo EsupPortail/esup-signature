@@ -14,7 +14,7 @@
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/admin" class="d-flex align-items-center"><i class="fi fi-rr-chess-queen"></i> Administration</a></li>
                 <li class="breadcrumb-item"><a href="/admin/workflows"><i class="fi fi-rr-diagram-project project-diagram-color"></i> Liste des circuits</a></li>
-                <li aria-current="page" class="breadcrumb-item active">Destinations du circuit : <span th:text="${workflow.description}"></span></li>
+                <li aria-current="page" class="breadcrumb-item es-breadcrumb-title active">Destinations du circuit : <span th:text="${workflow.description}"></span></li>
             </ol>
         </nav>
         <div id="content" class="es-content-full">
@@ -82,8 +82,8 @@
                                     </td>
                                     <td>
                                         <form th:action="'/' + ${workflowRole} + '/workflows/delete-target/' + ${workflow.id} + '/' + ${target.id}"
-                                              method="post" class="d-inline-flex align-items-center"
-                                              onsubmit="return confirm('Confirmer la suppression ?');">
+                                              method="post" class="d-inline-flex align-items-center es-confirm-submit"
+                                              data-confirm-message="Confirmer la suppression ?">
                                             <button type="submit" class="btn btn-sm btn-danger text-white">
                                                 <i class="fi fi-rr-trash"></i>
                                             </button>
@@ -96,8 +96,8 @@
                                     </td>
                                     <td>
                                         <form th:action="'/' + ${workflowRole} + '/workflows/restart-targets/' + ${workflow.id}" method="post"
-                                              class="d-inline-flex align-items-center"
-                                              onsubmit="return confirm('Confirmer le redémarrage des exports pour les demandes de ce circuit ?');">
+                                              class="d-inline-flex align-items-center es-confirm-submit"
+                                              data-confirm-message="Confirmer le redémarrage des exports pour les demandes de ce circuit ?">
                                             <button type="submit" class="btn btn-sm btn-secondary">
                                                 <i class="fi fi-rr-refresh"></i>
                                             </button>

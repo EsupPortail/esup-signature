@@ -28,11 +28,13 @@ import org.apache.pdfbox.pdmodel.font.PDType0Font;
 import org.apache.pdfbox.pdmodel.graphics.PDXObject;
 import org.apache.pdfbox.pdmodel.graphics.color.PDColor;
 import org.apache.pdfbox.pdmodel.graphics.color.PDDeviceRGB;
+import org.apache.pdfbox.pdmodel.graphics.form.PDFormXObject;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.apache.pdfbox.pdmodel.graphics.optionalcontent.PDOptionalContentGroup;
 import org.apache.pdfbox.pdmodel.graphics.optionalcontent.PDOptionalContentProperties;
 import org.apache.pdfbox.pdmodel.interactive.action.PDActionURI;
 import org.apache.pdfbox.pdmodel.interactive.annotation.*;
+import org.apache.pdfbox.pdmodel.interactive.digitalsignature.PDSignature;
 import org.apache.pdfbox.pdmodel.interactive.documentnavigation.outline.PDDocumentOutline;
 import org.apache.pdfbox.pdmodel.interactive.documentnavigation.outline.PDOutlineItem;
 import org.apache.pdfbox.pdmodel.interactive.form.*;
@@ -191,8 +193,8 @@ public class PdfService {
         DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.FRENCH);
         InputStream signImage = null;
         Float fixFactor = globalProperties.getFixFactor();
-        float requestedRenderedSignWidth = signRequestParams.getSignWidth() * signRequestParams.getSignScale() * fixFactor;
-        float requestedRenderedSignHeight = signRequestParams.getSignHeight() * signRequestParams.getSignScale() * fixFactor;
+        float maxRenderedSignWidth = signRequestParams.getSignWidth() * signRequestParams.getSignScale() * fixFactor;
+        float maxRenderedSignHeight = signRequestParams.getSignHeight() * signRequestParams.getSignScale() * fixFactor;
         if (signRequestParams.getSignImageNumber() < 0) {
             signImage = fileService.getFaImageByIndex(signRequestParams.getSignImageNumber());
         } else {
@@ -228,31 +230,33 @@ public class PdfService {
             }
         }
 
+        BufferedImage bufferedSignImage = signImage != null ? ImageIO.read(signImage) : null;
         float tx = 0;
         float ty = 0;
         PDRectangle pageBox = pdPage.getCropBox();
-        float renderedSignWidth = signRequestParams.getSignWidth() * signRequestParams.getSignScale() * fixFactor;
-        float renderedSignHeight = signRequestParams.getSignHeight() * signRequestParams.getSignScale() * fixFactor;
         if(BooleanUtils.isTrue(signRequestParams.getConstrainToSignatureField()) && StringUtils.hasText(signRequestParams.getPdSignatureFieldName())) {
             PDRectangle signatureFieldRectangle = getSignatureFieldRectangle(pdDocument, signRequestParams.getPdSignatureFieldName());
-            float maxRenderedSignWidth = signatureFieldRectangle != null ? signatureFieldRectangle.getWidth() : signRequestParams.getSignWidth() * fixFactor;
-            float maxRenderedSignHeight = signatureFieldRectangle != null ? signatureFieldRectangle.getHeight() : signRequestParams.getSignHeight() * fixFactor;
-            if(renderedSignWidth > 0 && renderedSignHeight > 0
-                    && maxRenderedSignWidth > 0 && maxRenderedSignHeight > 0
-                    && (renderedSignWidth > maxRenderedSignWidth || renderedSignHeight > maxRenderedSignHeight)) {
-                float ratio = renderedSignWidth / renderedSignHeight;
-                renderedSignWidth = maxRenderedSignWidth;
-                renderedSignHeight = renderedSignWidth / ratio;
-                if(renderedSignHeight > maxRenderedSignHeight) {
-                    renderedSignHeight = maxRenderedSignHeight;
-                    renderedSignWidth = renderedSignHeight * ratio;
-                }
+            if (signatureFieldRectangle != null) {
+                maxRenderedSignWidth = signatureFieldRectangle.getWidth();
+                maxRenderedSignHeight = signatureFieldRectangle.getHeight();
+            }
+        }
+        float renderedSignWidth = maxRenderedSignWidth;
+        float renderedSignHeight = maxRenderedSignHeight;
+        if (bufferedSignImage != null && maxRenderedSignWidth > 0 && maxRenderedSignHeight > 0
+                && bufferedSignImage.getWidth() > 0 && bufferedSignImage.getHeight() > 0) {
+            float imageRatio = (float) bufferedSignImage.getWidth() / bufferedSignImage.getHeight();
+            renderedSignWidth = maxRenderedSignWidth;
+            renderedSignHeight = renderedSignWidth / imageRatio;
+            if (renderedSignHeight > maxRenderedSignHeight) {
+                renderedSignHeight = maxRenderedSignHeight;
+                renderedSignWidth = renderedSignHeight * imageRatio;
             }
         }
         float xAdjusted = signRequestParams.getxPos() * fixFactor;
         if ((pdfParameters.getRotation() == 0 || pdfParameters.getRotation() == 180)
                 && !fitsTopLeftBounds(pageBox, xAdjusted, signRequestParams.getyPos() * fixFactor, renderedSignWidth, renderedSignHeight)
-                && fitsTopLeftBounds(pageBox, xAdjusted, signRequestParams.getyPos() * fixFactor, requestedRenderedSignWidth, requestedRenderedSignHeight)) {
+                && fitsTopLeftBounds(pageBox, xAdjusted, signRequestParams.getyPos() * fixFactor, maxRenderedSignWidth, maxRenderedSignHeight)) {
             float availableWidth = pageBox.getUpperRightX() - xAdjusted;
             float availableHeight = pageBox.getHeight() - signRequestParams.getyPos() * fixFactor;
             float ratio = Math.min(availableWidth / renderedSignWidth, availableHeight / renderedSignHeight);
@@ -297,8 +301,7 @@ public class PdfService {
 
         contentStream.beginMarkedContent(COSName.OC, ocg);
 
-        if (signImage != null) {
-            BufferedImage bufferedSignImage = ImageIO.read(signImage);
+        if (bufferedSignImage != null) {
             validateSignatureBounds(pageBox, xAdjusted, yAdjusted, renderedSignWidth, renderedSignHeight, pageNumber);
             logger.info("stamp image to " + Math.round(xAdjusted) + ", " + Math.round(yAdjusted) + " on page : " + pageNumber);
             ByteArrayOutputStream signImageByteArrayOutputStream = new ByteArrayOutputStream();
@@ -987,6 +990,10 @@ public class PdfService {
      * @throws EsupSignatureRuntimeException Si la normalisation échoue
      */
     public byte[] normalizePDF(byte[] originalBytes, boolean rotate, boolean force) throws IOException, EsupSignatureRuntimeException {
+        if (Boolean.TRUE.equals(globalProperties.getDisableNormalizePdf())) {
+            return originalBytes;
+        }
+        boolean containsJpxDecodeImage;
         try (PDDocument pdDocument = Loader.loadPDF(originalBytes)) {
             boolean hasWidgets = false;
             for (PDPage page : pdDocument.getPages()) {
@@ -998,14 +1005,20 @@ public class PdfService {
             if(hasWidgets && !force) {
                 return originalBytes;
             }
+            containsJpxDecodeImage = containsJpxDecodeImage(pdDocument);
         }
         Reports reports = validationService.validatePdf(new ByteArrayInputStream(originalBytes));
-        if (reports != null && reports.getSimpleReport() != null && reports.getSimpleReport().getSignatureIdList().isEmpty()) {
+        if (shouldNormalizePdf(originalBytes, reports)) {
             String params = "";
             if(!rotate) {
                 params += " -dAutoRotatePages=/None";
             }
-            String cmd = pdfConfig.getPdfProperties().getPathToGS() + " -dPDFSTOPONERROR -sstdout=%stderr -dBATCH -dNOPAUSE -dPassThroughJPEGImages=true -dNOSAFER -sDEVICE=pdfwrite" + params + " -d -sOutputFile=- - 2>/dev/null";
+            String cmd;
+            if (containsJpxDecodeImage) {
+                cmd = pdfConfig.getPdfProperties().getPathToGS() + " -dPDFSTOPONERROR -sstdout=%stderr -dBATCH -dNOPAUSE -dNOSAFER -sDEVICE=pdfwrite" + params + " -dPassThroughJPXImages=false -dAutoFilterColorImages=false -dAutoFilterGrayImages=false -dColorImageFilter=/FlateEncode -dGrayImageFilter=/FlateEncode -dDownsampleColorImages=false -dDownsampleGrayImages=false -dDownsampleMonoImages=false -sOutputFile=- - 2>/dev/null";
+            } else {
+                cmd = pdfConfig.getPdfProperties().getPathToGS() + " -dPDFSTOPONERROR -sstdout=%stderr -dBATCH -dNOPAUSE -dPassThroughJPEGImages=true -dNOSAFER -sDEVICE=pdfwrite" + params + " -d -sOutputFile=- - 2>/dev/null";
+            }
             logger.info("GhostScript normalize : " + cmd);
             ProcessBuilder processBuilder = new ProcessBuilder();
             if (SystemUtils.IS_OS_WINDOWS) {
@@ -1041,6 +1054,83 @@ public class PdfService {
         } else {
             return originalBytes;
         }
+    }
+
+    private boolean shouldNormalizePdf(byte[] originalBytes, Reports reports) throws IOException {
+        if (reports != null && reports.getSimpleReport() != null) {
+            return reports.getSimpleReport().getSignatureIdList().isEmpty();
+        }
+        if (hasPdfSignature(originalBytes)) {
+            logger.warn("PDF validation failed before normalization; keep original PDF because a signature is present");
+            return false;
+        }
+        logger.warn("PDF validation failed before normalization; trying GhostScript normalization anyway");
+        return true;
+    }
+
+    private boolean hasPdfSignature(byte[] pdfBytes) throws IOException {
+        try (PDDocument pdDocument = Loader.loadPDF(pdfBytes)) {
+            if (!pdDocument.getSignatureDictionaries().isEmpty()) {
+                return true;
+            }
+            PDAcroForm pdAcroForm = pdDocument.getDocumentCatalog().getAcroForm();
+            if (pdAcroForm == null) {
+                return false;
+            }
+            for (PDField pdField : pdAcroForm.getFieldTree()) {
+                if (pdField instanceof PDSignatureField pdSignatureField) {
+                    PDSignature pdSignature = pdSignatureField.getSignature();
+                    if (pdSignature != null) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+    }
+
+    private boolean containsJpxDecodeImage(PDDocument pdDocument) throws IOException {
+        Set<COSBase> visitedXObjects = Collections.newSetFromMap(new IdentityHashMap<>());
+        for (PDPage page : pdDocument.getPages()) {
+            if (containsJpxDecodeImage(page.getResources(), visitedXObjects)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean containsJpxDecodeImage(PDResources resources, Set<COSBase> visitedXObjects) throws IOException {
+        if (resources == null) {
+            return false;
+        }
+        for (COSName xObjectName : resources.getXObjectNames()) {
+            PDXObject xObject = resources.getXObject(xObjectName);
+            if (xObject == null || !visitedXObjects.add(xObject.getCOSObject())) {
+                continue;
+            }
+            if (xObject instanceof PDImageXObject && hasJpxDecodeFilter(xObject.getCOSObject())) {
+                return true;
+            }
+            if (xObject instanceof PDFormXObject formXObject && containsJpxDecodeImage(formXObject.getResources(), visitedXObjects)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean hasJpxDecodeFilter(COSDictionary xObjectDictionary) {
+        COSBase filter = xObjectDictionary.getDictionaryObject(COSName.FILTER);
+        if (COSName.JPX_DECODE.equals(filter)) {
+            return true;
+        }
+        if (filter instanceof COSArray filters) {
+            for (COSBase filterItem : filters) {
+                if (COSName.JPX_DECODE.equals(filterItem)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private boolean isPdfEmpty(byte[] pdfBytes) {

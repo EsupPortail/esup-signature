@@ -10,6 +10,9 @@ import org.esupportail.esupsignature.dto.page.admin.*;
 import org.esupportail.esupsignature.dto.page.user.signrequest.SignRequestParamsFrontDto;
 import org.esupportail.esupsignature.dto.page.user.wiz.StartFormViewDto;
 import org.esupportail.esupsignature.dto.page.user.wiz.WorkflowViewDto;
+import org.esupportail.esupsignature.dto.projection.jpa.HomePostitItemProjection;
+import org.esupportail.esupsignature.dto.projection.jpa.HomeSignRequestItemProjection;
+import org.esupportail.esupsignature.dto.projection.jpa.SignBookListMetadataProjection;
 import org.esupportail.esupsignature.dto.ui.global.*;
 import org.esupportail.esupsignature.dto.ws.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.*;
@@ -371,43 +374,67 @@ public class UiFetchService {
             return List.of();
         }
         Pageable pageable = PageRequest.of(0, 100, Sort.by(Sort.Direction.DESC, "createDate"));
-        return signBookService.getSignBooks(userEppn, authUserEppn, statusFilter, null, null, null, null, null, pageable)
-                .getContent()
-                .stream()
-                .map(signBook -> toHomeSignBookItem(signBook, userEppn))
+        List<SignBook> signBooks = signBookService.getSignBooks(userEppn, authUserEppn, statusFilter, null, null, null, null, null, pageable).getContent();
+        List<Long> signBookIds = signBooks.stream().map(SignBook::getId).toList();
+        Map<Long, SignBookListMetadataProjection> metadataBySignBookId = signBookIds.isEmpty()
+                ? Map.of()
+                : signBookService.getSignBookListMetadata(signBookIds).stream()
+                .collect(java.util.stream.Collectors.toMap(SignBookListMetadataProjection::getSignBookId, metadata -> metadata));
+        Map<Long, List<HomeSignRequestItemProjection>> signRequestsBySignBookId = signBookIds.isEmpty()
+                ? Map.of()
+                : signBookService.getHomeSignRequestItems(signBookIds, userEppn).stream()
+                .collect(java.util.stream.Collectors.groupingBy(HomeSignRequestItemProjection::getSignBookId, LinkedHashMap::new, java.util.stream.Collectors.toList()));
+        Map<Long, List<HomePostitItemProjection>> postitsBySignBookId = signBookIds.isEmpty()
+                ? Map.of()
+                : signBookService.getHomePostitItems(signBookIds).stream()
+                .collect(java.util.stream.Collectors.groupingBy(HomePostitItemProjection::getSignBookId, LinkedHashMap::new, java.util.stream.Collectors.toList()));
+        return signBooks.stream()
+                .map(signBook -> toHomeSignBookItem(
+                        signBook,
+                        statusFilter,
+                        metadataBySignBookId.get(signBook.getId()),
+                        signRequestsBySignBookId.getOrDefault(signBook.getId(), List.of()),
+                        postitsBySignBookId.getOrDefault(signBook.getId(), List.of())
+                ))
                 .filter(Objects::nonNull)
                 .toList();
     }
 
-    private UiHomeDto.SignBookItem toHomeSignBookItem(SignBook signBook, String userEppn) {
-        if (signBook == null || signBook.getSignRequests() == null || signBook.getSignRequests().isEmpty()) {
+    private UiHomeDto.SignBookItem toHomeSignBookItem(SignBook signBook,
+                                                      String statusFilter,
+                                                      SignBookListMetadataProjection metadata,
+                                                      List<HomeSignRequestItemProjection> signRequests,
+                                                      List<HomePostitItemProjection> postits) {
+        if (signBook == null || signRequests == null || signRequests.isEmpty()) {
             return null;
         }
 
-        SignRequest primarySignRequest = signBook.getSignRequests().get(0);
+        HomeSignRequestItemProjection primarySignRequest = "toSign".equals(statusFilter)
+                ? signRequests.stream().filter(signRequest -> Boolean.TRUE.equals(signRequest.getSignableByCurrentUser())).findFirst().orElse(signRequests.get(0))
+                : signRequests.get(0);
+        int signRequestCount = metadata != null && metadata.getSignRequestCount() != null ? metadata.getSignRequestCount().intValue() : signRequests.size();
         String listTitle = signBook.getSubject();
-        if (signBook.getSignRequests().size() > 1
-                && primarySignRequest.getOriginalDocuments() != null
-                && !primarySignRequest.getOriginalDocuments().isEmpty()) {
-            listTitle = primarySignRequest.getOriginalDocuments().get(0).getFileName() + ", ...";
+        if (signRequestCount > 1 && StringUtils.hasText(primarySignRequest.getFirstOriginalFileName())) {
+            listTitle = primarySignRequest.getFirstOriginalFileName() + ", ...";
         }
 
         UiHomeDto.SignBookItem dto = new UiHomeDto.SignBookItem();
         dto.setId(signBook.getId());
-        dto.setPrimarySignRequestId(primarySignRequest.getId());
+        dto.setPrimarySignRequestId(primarySignRequest.getSignRequestId());
         dto.setDescription(signBook.getDescription());
         dto.setSubject(signBook.getSubject());
         dto.setWorkflowName(signBook.getWorkflowName());
         dto.setCreateDateLabel(formatHomeDate(signBook.getCreateDate()));
         dto.setListTitle(listTitle);
-        dto.setViewedByCurrentUser(isViewedByUser(primarySignRequest, userEppn));
-        dto.setHasAttachments(primarySignRequest.getAttachments() != null && !primarySignRequest.getAttachments().isEmpty());
-        dto.setPostits(toHomePostitItems(signBook.getPostits()));
-        dto.setSignRequests(toHomeSignRequestItems(signBook.getSignRequests()));
+        dto.setSignRequestCount(signRequestCount);
+        dto.setViewedByCurrentUser(Boolean.TRUE.equals(primarySignRequest.getViewedByCurrentUser()));
+        dto.setHasAttachments(Boolean.TRUE.equals(primarySignRequest.getHasAttachments()));
+        dto.setPostits(toHomePostitItems(postits));
+        dto.setSignRequests(toHomeSignRequestItems(signRequests));
         return dto;
     }
 
-    private List<UiHomeDto.PostitItem> toHomePostitItems(List<Comment> postits) {
+    private List<UiHomeDto.PostitItem> toHomePostitItems(List<HomePostitItemProjection> postits) {
         if (postits == null || postits.isEmpty()) {
             return List.of();
         }
@@ -415,14 +442,14 @@ public class UiFetchService {
                 .filter(Objects::nonNull)
                 .map(postit -> {
                     UiHomeDto.PostitItem dto = new UiHomeDto.PostitItem();
-                    dto.setAuthor(toDisplayName(postit.getCreateBy()));
+                    dto.setAuthor(toDisplayName(postit.getAuthorFirstname(), postit.getAuthorName()));
                     dto.setText(postit.getText());
                     return dto;
                 })
                 .toList();
     }
 
-    private List<UiHomeDto.SignRequestItem> toHomeSignRequestItems(List<SignRequest> signRequests) {
+    private List<UiHomeDto.SignRequestItem> toHomeSignRequestItems(List<HomeSignRequestItemProjection> signRequests) {
         if (signRequests == null || signRequests.isEmpty()) {
             return List.of();
         }
@@ -430,12 +457,16 @@ public class UiFetchService {
                 .filter(Objects::nonNull)
                 .map(signRequest -> {
                     UiHomeDto.SignRequestItem dto = new UiHomeDto.SignRequestItem();
-                    dto.setId(signRequest.getId());
+                    dto.setId(signRequest.getSignRequestId());
                     dto.setTitle(signRequest.getTitle());
-                    dto.setStatus(signRequest.getStatus() != null ? signRequest.getStatus().name() : null);
+                    dto.setStatus(signRequest.getStatus());
                     return dto;
                 })
                 .toList();
+    }
+
+    private String toDisplayName(String firstname, String name) {
+        return (Objects.requireNonNullElse(firstname, "") + " " + Objects.requireNonNullElse(name, "")).trim();
     }
 
     private boolean isViewedByUser(SignRequest signRequest, String userEppn) {
@@ -773,4 +804,3 @@ public class UiFetchService {
     }
 
 }
-

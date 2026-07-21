@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 @Table(indexes =  {
         @Index(name = "sign_request_create_by_create_date", columnList = "create_by_id, createDate"),
         @Index(name = "sign_request_parent_sign_book", columnList = "parent_sign_book_id"),
+        @Index(name = "sign_request_status_idx", columnList = "status")
 
 })
 public class SignRequest {
@@ -98,7 +99,11 @@ public class SignRequest {
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.REMOVE, orphanRemoval = true)
     @JsonSerialize(using = RecipientActionMapSerializer.class)
     @JoinTable(
-            indexes = @Index(name = "idx_recipient_has_signed_recipient_has_signed_key", columnList = "recipient_has_signed_key")
+            indexes = {
+                    @Index(name = "idx_recipient_has_signed_recipient_has_signed_key", columnList = "recipient_has_signed_key"),
+                    @Index(name = "idx_sign_request_recipient_has_signed_sign_request_id_key", columnList = "sign_request_id, recipient_has_signed_key"),
+                    @Index(name = "idx_rhs_key_sign_request_action", columnList = "recipient_has_signed_key, sign_request_id, recipient_has_signed_id")
+            }
     )
     private Map<Recipient, Action> recipientHasSigned = new HashMap<>();
 

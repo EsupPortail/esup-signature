@@ -7,18 +7,21 @@
     import {default as ShareUi} from '/js/modules/ui/users/ShareUi.js?version=@[(${versionApp})]@';
     new ShareUi();
 </script>
-<body>
+<body class="user-settings-page">
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
     <div class="es-wrapper">
         <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full text-uppercase">
+            <button type="button" th:unless="${user.userType.name() == 'external'}" class="user-settings-sidebar-toggle btn btn-sm btn-light d-xl-none ms-2" data-bs-toggle="offcanvas" data-bs-target="#sidebar" aria-controls="sidebar" aria-label="Ouvrir le menu des paramètres">
+                <i class="fi fi-rr-sidebar"></i>
+            </button>
             <ol id="breadcrumb-ol" class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/user/users/shares">Délégations</a></li>
-                <li class="breadcrumb-item active" th:if="${userShare.workflow}"
+                <li class="breadcrumb-item es-breadcrumb-title active" th:if="${userShare.workflow}"
                     th:text="${userShare.workflow.description}"></li>
-                <li class="breadcrumb-item active" th:if="${userShare.form}" th:text="${userShare.form.title}"></li>
-                <li class="breadcrumb-item active" th:if="${userShare.workflow}" th:text="${userShare.workflow.title}"></li>
-                <li class="breadcrumb-item active" th:if="${userShare.allSignRequests}">Toutes les demandes</li>
+                <li class="breadcrumb-item es-breadcrumb-title active" th:if="${userShare.form}" th:text="${userShare.form.title}"></li>
+                <li class="breadcrumb-item es-breadcrumb-title active" th:if="${userShare.workflow}" th:text="${userShare.workflow.title}"></li>
+                <li class="breadcrumb-item es-breadcrumb-title active" th:if="${userShare.allSignRequests}">Toutes les demandes</li>
             </ol>
         </nav>
         <div id="content" class="es-content-full">
@@ -26,7 +29,7 @@
                 <div class="es-sidebar d-flex">
                     <nav th:replace="~{fragments/sides/side-user :: side-user}"></nav>
                 </div>
-                <div class="flex-grow-1 overflow-scroll">
+                <div class="flex-grow-1 overflow-auto">
                     <div class="m-2">
                         <div class="alert border-secondary-subtle col-lg-12">
                             <h5>Modifier la délégation sur :

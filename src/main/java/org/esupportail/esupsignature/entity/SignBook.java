@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
         @Index(name = "idx_sb_deleted", columnList = "deleted"),
         @Index(name = "idx_sb_workflow_name", columnList = "workflow_name"),
         @Index(name = "idx_sb_status_deleted", columnList = "status, deleted"),
+        @Index(name = "idx_sb_status_deleted_create_date", columnList = "status, deleted, create_date"),
         @Index(name = "idx_sb_create_date_status", columnList = "create_date, status, deleted")
 })
 public class SignBook {
@@ -70,6 +71,9 @@ public class SignBook {
 
     @JsonIgnore
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    @JoinTable(
+            indexes = @Index(name = "idx_sign_book_sign_requests_sign_book_id_order", columnList = "sign_book_id, sign_requests_order")
+    )
     @OrderColumn
     private List<SignRequest> signRequests = new ArrayList<>();
 
@@ -316,7 +320,9 @@ public class SignBook {
     }
 
     public boolean isEditable() {
-        return this.getLiveWorkflow().getCurrentStepNumber() < 2 && getSignRequests().stream().noneMatch(s -> !s.getStatus().equals(SignRequestStatus.pending) && !s.getDeleted() && !s.getStatus().equals(SignRequestStatus.draft) && !s.getStatus().equals(SignRequestStatus.uploading));
+        return this.getLiveWorkflow().getCurrentStepNumber() < 2 && getSignRequests().stream()
+                .filter(Objects::nonNull)
+                .noneMatch(s -> !s.getStatus().equals(SignRequestStatus.pending) && !s.getDeleted() && !s.getStatus().equals(SignRequestStatus.draft) && !s.getStatus().equals(SignRequestStatus.uploading));
     }
 
 }

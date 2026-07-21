@@ -6,15 +6,12 @@
 <head th:replace="~{fragments/head :: head}"></head>
 <body>
 <header th:replace="~{fragments/nav :: nav}"></header>
-<script>
-    const workflowRole = '[[${workflowRole}]]';
-</script>
 <main role="main">
     <div class="es-wrapper">
         <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full text-uppercase">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/admin" class="d-flex align-items-center"><i class="fi fi-rr-chess-queen"></i> Administration</a></li>
-                <li class="breadcrumb-item active"><i class="fi fi-rr-poll-h file-alt-color"></i> Liste des formulaires</li>
+                <li class="breadcrumb-item es-breadcrumb-title active"><i class="fi fi-rr-poll-h file-alt-color"></i> Liste des formulaires</li>
             </ol>
         </nav>
         <div id="content" class="es-content-full">
@@ -27,13 +24,13 @@
                     <div class="p-0 m-2">
                     <div class="input-group mb-3 admin-list-filters admin-list-filters-loading">
                         <span class="input-group-text">Filtrer</span>
-                        <select id="tags" name="tags" class="form-control slim-select-simple" data-placeholder="Choisir un ou plusieurs tags" multiple onclick="event.stopPropagation();">
+                        <select id="tags" name="tags" class="form-control slim-select-simple js-admin-list-filter js-stop-propagation" data-filter-name="selectedTags" data-placeholder="Choisir un ou plusieurs tags" multiple>
                             <th:block th:each="tag : ${allTags}">
                                 <option th:style="'color:' + ${tag.color}" th:data-html="'<span class=\'badge\' style=\'background-color:' + ${tag.color} + '\'>' + ${tag.name} + '</span>'" th:value="${tag.id}" th:text="${tag.name}" th:selected="${selectedTagIds.contains(tag.id)}"></option>
                             </th:block>
                         </select>
                         <span class="input-group-text">Actifs</span>
-                        <select id="activeVersion" name="activeVersion" class="form-select" data-placeholder="Tous" onclick="event.stopPropagation();">
+                        <select id="activeVersion" name="activeVersion" class="form-select js-admin-list-filter js-stop-propagation" data-filter-name="activeVersion" data-placeholder="Tous">
                             <option data-placeholder="true" readonly="" value="">Tous</option>
                             <option value="true" th:selected="${activeVersion != null && activeVersion}">Oui</option>
                             <option value="false" th:selected="${activeVersion != null && !activeVersion}">Non</option>
@@ -207,55 +204,7 @@
         </div>
     </div>
 </main>
-<script th:inline="javascript" type="module">
-    import {FormManualAdd} from '/js/modules/ui/forms/FormManualAdd.js?version=@[(${versionApp})]@';
-    new FormManualAdd();
-</script>
-<script>
-    (() => {
-        const navigateWithFilters = (updates) => {
-            const currentUrl = new URL(window.location.href);
-            const targetUrl = new URL(window.location.href);
-
-            Object.entries(updates).forEach(([key, value]) => {
-                if (Array.isArray(value)) {
-                    if (value.length > 0) {
-                        targetUrl.searchParams.set(key, value.join(','));
-                    } else {
-                        targetUrl.searchParams.delete(key);
-                    }
-                    return;
-                }
-
-                if (value == null || value === '') {
-                    targetUrl.searchParams.delete(key);
-                } else {
-                    targetUrl.searchParams.set(key, value);
-                }
-            });
-
-            if (targetUrl.pathname === currentUrl.pathname && targetUrl.search === currentUrl.search) {
-                return;
-            }
-
-            window.location.assign(targetUrl.pathname + targetUrl.search + targetUrl.hash);
-        };
-
-        const tagsSelect = document.getElementById('tags');
-        if (tagsSelect) {
-            tagsSelect.addEventListener('change', function () {
-                navigateWithFilters({ selectedTags: Array.from(this.selectedOptions).map(option => option.value) });
-            });
-        }
-
-        const activeVersionSelect = document.getElementById('activeVersion');
-        if (activeVersionSelect) {
-            activeVersionSelect.addEventListener('change', function () {
-                navigateWithFilters({ activeVersion: this.value });
-            });
-        }
-    })();
-</script>
+<script type="module" th:src="'/js/modules/bootstrap/FormListBootstrap.js?version=' + ${versionApp}"></script>
 <style>
     .admin-list-table-wrap {
         overflow-x: auto;
@@ -302,68 +251,6 @@
         }
     }
 </style>
-<script>
-    (() => {
-        const showFiltersWhenReady = () => {
-            document.querySelectorAll('.admin-list-filters-loading').forEach(filters => {
-                const selects = filters.querySelectorAll('select.slim-select-simple');
-                let attempts = 0;
-                const reveal = () => {
-                    const ready = Array.from(selects).every(select => select.nextElementSibling?.classList.contains('ss-main'));
-                    if (ready || attempts >= 60) {
-                        filters.classList.remove('admin-list-filters-loading');
-                        return;
-                    }
-                    attempts++;
-                    requestAnimationFrame(reveal);
-                };
-                reveal();
-            });
-        };
-
-        showFiltersWhenReady();
-
-        const normalize = value => value.trim().toLocaleLowerCase();
-
-        document.querySelectorAll('.js-search-name').forEach(input => {
-            const table = document.getElementById(input.dataset.tableId);
-            const columnIndex = Number(input.dataset.colIndex);
-            if (!table || Number.isNaN(columnIndex)) {
-                return;
-            }
-
-            input.addEventListener('input', () => {
-                const search = normalize(input.value);
-                table.querySelectorAll('tbody tr').forEach(row => {
-                    const cell = row.cells[columnIndex];
-                    row.classList.toggle('d-none', search !== '' && !normalize(cell ? cell.textContent : '').includes(search));
-                });
-            });
-        });
-
-        document.querySelectorAll('.js-sort-name').forEach(button => {
-            const table = document.getElementById(button.dataset.tableId);
-            const columnIndex = Number(button.dataset.colIndex);
-            if (!table || !table.tBodies.length || Number.isNaN(columnIndex)) {
-                return;
-            }
-
-            button.addEventListener('click', () => {
-                const tbody = table.tBodies[0];
-                const direction = button.dataset.direction === 'asc' ? -1 : 1;
-                button.dataset.direction = direction === 1 ? 'asc' : 'desc';
-                const icon = button.querySelector('i');
-                if (icon) {
-                    icon.className = direction === 1 ? 'fi fi-rr-sort-amount-down' : 'fi fi-rr-sort-amount-up';
-                }
-
-                Array.from(tbody.rows)
-                    .sort((a, b) => direction * normalize(a.cells[columnIndex]?.textContent || '').localeCompare(normalize(b.cells[columnIndex]?.textContent || ''), 'fr'))
-                    .forEach(row => tbody.appendChild(row));
-            });
-        });
-    })();
-</script>
 <div data-bs-focus="false" class="modal fade" id="newManualForm"  role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
@@ -433,7 +320,7 @@
                 <div class="modal-body">
                     <div class="form-group mb-3">
                         <label for="title" class="form-label">Titre (affiché aux utilisateurs)</label>
-                        <input type="text" id="title" name="title" class="form-control" onchange="" required>
+                        <input type="text" id="title" name="title" class="form-control" required>
                     </div>
                     <div class="form-group mb-3">
                         <label for="name" class="form-label">Nom (nom technique sans espace ni accents)</label>

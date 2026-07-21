@@ -31,8 +31,11 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @CrossOrigin(origins = "*")
 @RestController
@@ -139,6 +142,18 @@ public class GlobalWsSecureController {
         return ResponseEntity.ok().build();
     }
 
+    @PreAuthorize("@preAuthorizeService.documentView(#documentId, #userEppn, #authUserEppn)")
+    @GetMapping(value = "/get-file-inline/{documentId}")
+    public ResponseEntity<Void> getFileInline(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("documentId") Long documentId, HttpServletResponse httpServletResponse) throws IOException {
+        try {
+            signRequestService.getFileInlineResponse(documentId, httpServletResponse);
+        } catch (Exception e) {
+            logger.warn(e.getMessage());
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        return ResponseEntity.ok().build();
+    }
+
     @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
     @GetMapping("/get-documents-history/{id}/documents/{version}")
     public ResponseEntity<byte[]> downloadDocumentVersion(
@@ -220,9 +235,17 @@ public class GlobalWsSecureController {
     @PostMapping(value = "/remove-doc/{documentId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public String removeDocument(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("documentId") Long documentId) {
         logger.info("remove document " + documentId);
-        Document document = documentService.getById(documentId);
-        SignRequest signRequest = signRequestService.getById(document.getParentId());
-        signRequest.getOriginalDocuments().remove(document);
+        signRequestService.deleteByOriginalDocument(documentId, authUserEppn);
+        return "{}";
+    }
+
+    @PreAuthorize("@preAuthorizeService.draftDocumentCreator(#documentId, #userEppn)")
+    @PostMapping(value = "/remove-draft-doc/{documentId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public String removeDraftDocument(@ModelAttribute("userEppn") String userEppn,
+                                      @ModelAttribute("authUserEppn") String authUserEppn,
+                                      @PathVariable("documentId") Long documentId) {
+        logger.info("remove draft document {}", documentId);
+        signRequestService.deleteDraftByOriginalDocument(documentId, authUserEppn);
         return "{}";
     }
 
@@ -269,17 +292,26 @@ public class GlobalWsSecureController {
 
     @PreAuthorize("@preAuthorizeService.signBookCreator(#signBookId, #userEppn)")
     @PostMapping(value = "/add-docs/{signBookId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> addDocumentToNewSignRequest(@PathVariable("signBookId") Long signBookId,  @ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @RequestParam("multipartFiles") MultipartFile[] multipartFiles, @RequestParam(value = "unzip", defaultValue = "false") boolean unzip) throws EsupSignatureIOException {
+    public ResponseEntity<?> addDocumentToNewSignRequest(@PathVariable("signBookId") Long signBookId,  @ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @RequestParam("multipartFiles") MultipartFile[] multipartFiles, @RequestParam(value = "unzip", defaultValue = "false") boolean unzip) throws EsupSignatureIOException {
         logger.info("start add documents");
         if(globalProperties.getPdfOnly() && Arrays.stream(multipartFiles).anyMatch(m -> !isAuthorizedPdfOnlyUpload(m, unzip))) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Seul les fichiers PDF sont autorisés");
+            return ResponseEntity.badRequest().body("Seul les fichiers PDF sont autorisés");
         }
         try {
-            signBookService.addDocumentsToSignBook(signBookId, multipartFiles, authUserEppn, null, false, unzip);
+            List<Document> documents = signBookService.addDocumentsToSignBook(signBookId, multipartFiles, authUserEppn, null, false, unzip);
+            return ResponseEntity.ok().body(documents.stream()
+                    .map(document -> {
+                        Map<String, Object> uploadedDocument = new LinkedHashMap<>();
+                        uploadedDocument.put("id", document.getId());
+                        uploadedDocument.put("fileName", document.getFileName());
+                        uploadedDocument.put("size", document.getSize());
+                        uploadedDocument.put("contentType", document.getContentType());
+                        return uploadedDocument;
+                    })
+                    .collect(Collectors.toList()));
         } catch(Exception e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
-        return ResponseEntity.ok().body(signBookId.toString());
     }
 
     private boolean isAuthorizedPdfOnlyUpload(MultipartFile multipartFile, boolean unzip) {

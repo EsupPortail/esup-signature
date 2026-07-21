@@ -31,6 +31,17 @@ public interface DataRepository extends CrudRepository<Data, Long>, PagingAndSor
         where d.id = :id
         """)
     Data findByIdWithWorkflowFull(Long id);
+
+    @Query("""
+        select coalesce(f.action, '')
+        from SignRequest sr
+         join sr.parentSignBook sb
+         join Data d on d.signBook = sb
+         join d.form f
+        where sr.id = :signRequestId
+        """)
+    String findFormActionBySignRequestId(Long signRequestId);
+
     List<Data> findByFormId(Long formId);
     List<Data> findByCreateByAndStatus(User createBy, SignRequestStatus status);
     List<Data> findByCreateBy(User createBy);

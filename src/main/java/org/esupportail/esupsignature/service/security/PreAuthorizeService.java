@@ -72,6 +72,22 @@ public class PreAuthorizeService {
         return signRequest.getCreateBy().getEppn().equals(authUserEppn);
     }
 
+    public boolean draftDocumentCreator(Long documentId, String userEppn) {
+        if (documentId == null || userEppn == null) {
+            return false;
+        }
+        Document document = documentService.getById(documentId);
+        if (document == null || document.getParentId() == null) {
+            return false;
+        }
+        SignRequest signRequest = signRequestService.getById(document.getParentId());
+        return signRequest != null
+                && SignRequestStatus.draft.equals(signRequest.getStatus())
+                && signRequest.getParentSignBook() != null
+                && signRequest.getParentSignBook().getCreateBy() != null
+                && userEppn.equals(signRequest.getParentSignBook().getCreateBy().getEppn());
+    }
+
     public boolean documentView(Long documentId, String userEppn, String authUserEppn) {
         Document document = documentService.getById(documentId);
         if(signRequestService.getById(document.getParentId()) != null) {

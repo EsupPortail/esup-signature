@@ -35,7 +35,7 @@ public class WsAccessTokenController {
     public String list(@ModelAttribute("authUserEppn") String authUserEppn, Model model) {
         model.addAttribute("wsAccessTokens", wsAccessTokenService.getAll());
         model.addAttribute("globalWsAccessToken", wsAccessTokenService.getGlobalToken());
-        model.addAttribute("workflows", workflowService.getAllWorkflows(null));
+        model.addAttribute("workflows", workflowService.getSystemWorkflows());
         return "admin/ws-access-token/list";
     }
 

@@ -40,6 +40,7 @@ export class HomeUi {
             this.initFavoriteToggles();
             this.initPendingListToggle();
             this.initToSignToggle();
+            this.initStopPropagation();
             this.initWarningModals();
             this.initMegaSearch();
             this.handleRequestedStart();
@@ -295,7 +296,7 @@ export class HomeUi {
         }
 
         const highlightItems = containerId === 'to-sign-list' ? newItems : null;
-        const rows = signBooks.map(signBook => this.renderHomeSignBookRows(signBook, highlightItems)).join('');
+        const rows = signBooks.map(signBook => this.renderHomeSignBookRows(containerId, signBook, highlightItems)).join('');
         container.innerHTML = `
             <div class="div-scrollable scrollbar-style rounded-3" style="max-height: 400px; overflow-x: hidden;">
                 <div class="d-flex col-12 mb-2">
@@ -318,13 +319,15 @@ export class HomeUi {
         this.bindRenderedHomeRows(container);
     }
 
-    renderHomeSignBookRows(signBook, newItems = null) {
+    renderHomeSignBookRows(containerId, signBook, newItems = null) {
         if (signBook == null || !Array.isArray(signBook.signRequests) || signBook.signRequests.length === 0) {
             return '';
         }
 
-        const multiple = signBook.signRequests.length > 1;
-        const rowId = 'row_' + signBook.id;
+        const signRequestCount = Number(signBook.signRequestCount || signBook.signRequests.length || 0);
+        const multiple = signRequestCount > 1;
+        const hasNestedRows = signBook.signRequests.length > 1;
+        const rowId = containerId + '-row_' + signBook.id;
         const dropdownId = 'commentButton-' + signBook.id;
         const unreadClass = signBook.viewedByCurrentUser ? '' : 'fw-bold';
         const description = signBook.description || '';
@@ -339,8 +342,8 @@ export class HomeUi {
             <tr title="${this.escapeHtml(description)}"
                 data-es-sign-book-id="${signBook.id}"
                 data-href="/user/signrequests/${encodeURIComponent(signBook.primarySignRequestId)}"
-                class="${multiple ? '' : 'clickable-row'}${highlightClass}"
-                ${multiple ? 'data-bs-toggle="collapse" data-bs-target="#' + this.escapeHtml(rowId) + '"' : ''}
+                class="${hasNestedRows ? '' : 'clickable-row'}${highlightClass}"
+                ${hasNestedRows ? 'data-bs-toggle="collapse" data-bs-target="#' + this.escapeHtml(rowId) + '"' : ''}
                 style="font-size: clamp(0.75rem, 1.2vw, 0.875rem);">
                 <td>
                     <div class="d-flex flex-row align-items-center justify-content-between gap-1">
@@ -359,13 +362,13 @@ export class HomeUi {
                 </td>
                 <td class="text-break ${unreadClass}" style="font-size: clamp(0.75rem, 1.2vw, 0.875rem); min-width: 200px; overflow: hidden; text-overflow: ellipsis;">
                     ${multiple
-                        ? '<span>' + this.escapeHtml(listTitle) + ' <i class="fi fi-rr-angle-small-down"></i></span>'
+                        ? '<span>' + this.escapeHtml(listTitle) + (hasNestedRows ? ' <i class="fi fi-rr-angle-small-down"></i>' : '') + '</span>'
                         : '<span>' + this.escapeHtml(subject) + '</span>'}
                 </td>
                 <td class="text-break d-none d-xxl-table-cell ${unreadClass}" style="font-size: clamp(0.75rem, 1.2vw, 0.875rem); max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${this.escapeHtml(workflowName)}</td>
                 <td class="text-break text-nowrap ${unreadClass}" style="font-size: clamp(0.75rem, 1.2vw, 0.875rem); min-width: 120px;">${this.escapeHtml(createDateLabel)}</td>
             </tr>
-            ${multiple ? this.renderHomeSecondaryRow(signBook, rowId, description, newItems) : ''}
+            ${hasNestedRows ? this.renderHomeSecondaryRow(signBook, rowId, description, newItems) : ''}
         `;
     }
 
@@ -399,9 +402,8 @@ export class HomeUi {
     }
 
     renderPostitButton(signBook, dropdownId) {
-        const description = (signBook.description || '').trim();
         const postits = Array.isArray(signBook.postits) ? signBook.postits : [];
-        const badgeCount = postits.length + (description !== '' ? 1 : 0);
+        const badgeCount = postits.length;
         if (badgeCount === 0) {
             return '<button type="button" class="badge bg-postit border-0 opacity-0">0</button>';
         }
@@ -456,6 +458,12 @@ export class HomeUi {
             row.addEventListener('click', event => this.handleClickableRow(event));
         });
         container.querySelectorAll('[data-es-stop-propagation="true"]').forEach(element => {
+            element.addEventListener('click', event => event.stopPropagation());
+        });
+    }
+
+    initStopPropagation() {
+        document.querySelectorAll('[data-es-stop-propagation="true"]').forEach(element => {
             element.addEventListener('click', event => event.stopPropagation());
         });
     }

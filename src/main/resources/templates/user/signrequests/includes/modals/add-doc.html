@@ -27,36 +27,6 @@
                                 Décompresser le zip pour générer une demande par fichier
                             </label>
                         </div>
-                        <script th:inline="javascript">
-                            (() => {
-                                const fileInput = document.getElementById('send-sign-file-input');
-                                const unzipOptionContainer = document.getElementById('unzip-option-container');
-                                const unzipOption = document.getElementById('unzip-option');
-                                const addDocModal = document.getElementById('addDoc');
-
-                                const isZipFile = file => {
-                                    if (!file) {
-                                        return false;
-                                    }
-                                    const fileName = (file.name || '').toLowerCase();
-                                    const contentType = (file.type || '').toLowerCase();
-                                    return fileName.endsWith('.zip') || contentType.includes('zip');
-                                };
-
-                                const updateUnzipOptionVisibility = () => {
-                                    const hasZip = Array.from(fileInput.files || []).some(isZipFile);
-                                    unzipOptionContainer.classList.toggle('d-none', !hasZip);
-                                    unzipOption.checked = hasZip;
-                                };
-
-                                fileInput.addEventListener('change', updateUnzipOptionVisibility);
-                                addDocModal.addEventListener('hidden.bs.modal', () => {
-                                    unzipOptionContainer.classList.add('d-none');
-                                    unzipOption.checked = false;
-                                    fileInput.value = '';
-                                });
-                            })();
-                        </script>
                     </div>
                 </div>
                 <div class="modal-footer">

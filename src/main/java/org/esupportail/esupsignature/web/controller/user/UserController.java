@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.web.controller.user;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.dto.ui.global.SignatureUiConfigDto;
@@ -49,10 +50,11 @@ public class UserController {
     private final UserListService userListService;
     private final ExtValueService extValueService;
     private final RecipientService recipientService;
-	private final GlobalProperties globalProperties;
+    private final GlobalProperties globalProperties;
     private final MobileSignTokenService mobileSignTokenService;
+    private final ObjectMapper objectMapper;
 
-	public UserController(@Autowired(required=false) UserKeystoreService userKeystoreService, FormService formService, UserService userService, SignBookService signBookService, UserPropertieService userPropertieService, FieldPropertieService fieldPropertieService, MessageService messageService, UserListService userListService, ExtValueService extValueService, RecipientService recipientService, GlobalProperties globalProperties, MobileSignTokenService mobileSignTokenService) {
+	public UserController(@Autowired(required=false) UserKeystoreService userKeystoreService, FormService formService, UserService userService, SignBookService signBookService, UserPropertieService userPropertieService, FieldPropertieService fieldPropertieService, MessageService messageService, UserListService userListService, ExtValueService extValueService, RecipientService recipientService, GlobalProperties globalProperties, MobileSignTokenService mobileSignTokenService, ObjectMapper objectMapper) {
 		this.userKeystoreService = userKeystoreService;
         this.formService = formService;
         this.userService = userService;
@@ -65,6 +67,7 @@ public class UserController {
         this.recipientService = recipientService;
 		this.globalProperties = globalProperties;
         this.mobileSignTokenService = mobileSignTokenService;
+        this.objectMapper = objectMapper;
     }
 
     @GetMapping
@@ -74,10 +77,16 @@ public class UserController {
 		if(referer != null && !"".equals(referer) && !"null".equals(referer)) {
 			model.addAttribute("referer", request.getHeader(HttpHeaders.REFERER));
 		}
-        model.addAttribute("activeMenu", "user");
+		model.addAttribute("activeMenu", "user");
 		model.addAttribute("paramMenu", "settings");
-		model.addAttribute("signImages", Collections.singletonList(userService.getFavoriteImage64(authUserEppn)));
-		model.addAttribute("signatureUiConfig", SignatureUiConfigDto.fromGlobalProperties(globalProperties));
+        User user = userService.getByEppn(authUserEppn);
+        List<String> signImages = Collections.singletonList(userService.getFavoriteImage64(authUserEppn));
+        SignatureUiConfigDto signatureUiConfig = SignatureUiConfigDto.fromGlobalProperties(globalProperties);
+		model.addAttribute("signImages", signImages);
+		model.addAttribute("signatureUiConfig", signatureUiConfig);
+        model.addAttribute("favoriteSignRequestParamsJson", objectMapper.writeValueAsString(user.getFavoriteSignRequestParams()));
+        model.addAttribute("signImagesJson", objectMapper.writeValueAsString(signImages));
+        model.addAttribute("signatureUiConfigJson", objectMapper.writeValueAsString(signatureUiConfig));
 		return "user/users/update";
     }
 
@@ -105,13 +114,21 @@ public class UserController {
 	public String update(@ModelAttribute("authUserEppn") String authUserEppn, @RequestParam(value = "signImageBase64", required=false) String signImageBase64,
 						 @RequestParam(value = "name", required = false) String name,
 						 @RequestParam(value = "firstname", required = false) String firstname,
+						 @RequestParam(value = "saveSignRequestParams", required=false) Boolean saveSignRequestParams,
+						 @RequestParam(value = "returnToHomeAfterSign", required=false) Boolean returnToHomeAfterSign,
 						 @RequestParam(value = "emailAlertFrequency", required=false) EmailAlertFrequency emailAlertFrequency,
 						 @RequestParam(value = "emailAlertHour", required=false) Integer emailAlertHour,
 						 @RequestParam(value = "emailAlertDay", required=false) DayOfWeek emailAlertDay,
 						 @RequestParam(value = "multipartKeystore", required=false) MultipartFile multipartKeystore,
 						 @RequestParam(value = "mobileSignToken", required=false) String mobileSignToken,
+						 @RequestParam(value = "signRequestParamsJsonString", required=false) String signRequestParamsJsonString,
 						 RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) throws Exception {
-		userService.updateUser(authUserEppn, name, firstname, signImageBase64, emailAlertFrequency, emailAlertHour, emailAlertDay, multipartKeystore, null, false);
+		if(returnToHomeAfterSign == null) returnToHomeAfterSign = false;
+		if(saveSignRequestParams != null || signRequestParamsJsonString != null) {
+			userService.updateUserAndSignRequestParams(authUserEppn, signImageBase64, saveSignRequestParams, returnToHomeAfterSign, emailAlertFrequency, emailAlertHour, emailAlertDay, multipartKeystore, signRequestParamsJsonString);
+		} else {
+			userService.updateUser(authUserEppn, name, firstname, signImageBase64, emailAlertFrequency, emailAlertHour, emailAlertDay, multipartKeystore, null, returnToHomeAfterSign);
+		}
         mobileSignTokenService.consumePendingSignaturePreview(mobileSignToken, authUserEppn, signImageBase64);
 		redirectAttributes.addFlashAttribute("message", new UiMessageDto("success", "Vos paramètres ont été enregistrés"));
 		String referer = httpServletRequest.getHeader(HttpHeaders.REFERER);

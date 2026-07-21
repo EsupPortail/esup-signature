@@ -7,7 +7,7 @@
 <main role="main">
     <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full text-uppercase">
         <ol id="breadcrumb-ol" class="breadcrumb">
-            <li class="breadcrumb-item active"><i class="fi fi-rr-file-signature"></i>&nbsp;Signature eIDAS</li>
+            <li class="breadcrumb-item es-breadcrumb-title active"><i class="fi fi-rr-file-signature"></i>&nbsp;Signature eIDAS</li>
         </ol>
     </nav>
     <div id="content" class="es-content-full-fixed d-flex flex-column align-content-center gap-1 gap-xxl-3">
@@ -16,13 +16,7 @@
         </div>
     </div>
 </main>
-<script th:inline="javascript" type="module">
-    import {NexuProcessUi} from '/js/modules/ui/signrequests/NexuProcessUi.js?version=@[(${versionApp})]@';
-
-    $(document).ready(function() {
-        NexuProcessUi.initWithin(document);
-    });
-</script>
+<script type="module" th:src="'/js/modules/bootstrap/NexuSignatureProcessBootstrap.js?version=' + ${versionApp}"></script>
 <footer th:replace="~{fragments/footer :: footer}"></footer>
 </body>
 </html>

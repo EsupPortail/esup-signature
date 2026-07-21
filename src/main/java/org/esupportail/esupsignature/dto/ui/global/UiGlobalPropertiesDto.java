@@ -30,6 +30,7 @@ public class UiGlobalPropertiesDto {
     private Boolean hideHiddenVisa;
     private Boolean disablePdfFontAlert;
     private Integer defaultFontSize;
+    private Float signatureExtraLineHeightFactor;
     private Boolean enableHelp;
     private Integer otpValidity;
     private Boolean smsRequired;
@@ -57,6 +58,7 @@ public class UiGlobalPropertiesDto {
                                  Boolean exportAttachements, String nexuUrl, List<SignWith> authorizedSignTypes,
                                  Integer signatureImageDpi, Float fixFactor, Boolean externalCanEdit,
                                  Boolean hideHiddenVisa, Boolean disablePdfFontAlert, Integer defaultFontSize,
+                                 Float signatureExtraLineHeightFactor,
                                  Boolean enableHelp, Integer otpValidity, Boolean smsRequired,
                                  Integer nbSignOtpTries, Integer nbViewOtpTries,
                                  Boolean enableTransfertForUsers, Boolean enableCaptcha, Boolean enableSu,
@@ -86,6 +88,7 @@ public class UiGlobalPropertiesDto {
         this.hideHiddenVisa = hideHiddenVisa;
         this.disablePdfFontAlert = disablePdfFontAlert;
         this.defaultFontSize = defaultFontSize;
+        this.signatureExtraLineHeightFactor = signatureExtraLineHeightFactor;
         this.enableHelp = enableHelp;
         this.otpValidity = otpValidity;
         this.smsRequired = smsRequired;
@@ -148,6 +151,8 @@ public class UiGlobalPropertiesDto {
     public void setDisablePdfFontAlert(Boolean disablePdfFontAlert) { this.disablePdfFontAlert = disablePdfFontAlert; }
     public Integer getDefaultFontSize() { return defaultFontSize; }
     public void setDefaultFontSize(Integer defaultFontSize) { this.defaultFontSize = defaultFontSize; }
+    public Float getSignatureExtraLineHeightFactor() { return signatureExtraLineHeightFactor; }
+    public void setSignatureExtraLineHeightFactor(Float signatureExtraLineHeightFactor) { this.signatureExtraLineHeightFactor = signatureExtraLineHeightFactor; }
     public Boolean getEnableHelp() { return enableHelp; }
     public void setEnableHelp(Boolean enableHelp) { this.enableHelp = enableHelp; }
     public Integer getOtpValidity() { return otpValidity; }
@@ -203,6 +208,7 @@ public class UiGlobalPropertiesDto {
     public Boolean hideHiddenVisa() { return hideHiddenVisa; }
     public Boolean disablePdfFontAlert() { return disablePdfFontAlert; }
     public Integer defaultFontSize() { return defaultFontSize; }
+    public Float signatureExtraLineHeightFactor() { return signatureExtraLineHeightFactor; }
     public Boolean enableHelp() { return enableHelp; }
     public Integer otpValidity() { return otpValidity; }
     public Boolean smsRequired() { return smsRequired; }
@@ -224,6 +230,8 @@ public class UiGlobalPropertiesDto {
         if (props == null) {
             return null;
         }
+        boolean sealCertificatPropertiesConfigured = props.getSealCertificatProperties() != null
+                && !props.getSealCertificatProperties().isEmpty();
         return new UiGlobalPropertiesDto(
                 props.getRootUrl(),
                 props.getDomain(),
@@ -247,6 +255,7 @@ public class UiGlobalPropertiesDto {
                 props.getHideHiddenVisa(),
                 props.getDisablePdfFontAlert(),
                 props.getDefaultFontSize(),
+                props.getSignatureExtraLineHeightFactor(),
                 props.getEnableHelp(),
                 props.getOtpValidity(),
                 props.getSmsRequired(),
@@ -261,8 +270,8 @@ public class UiGlobalPropertiesDto {
                 props.getNbDaysBeforeDeleting(),
                 props.newVersion,
                 props.getDisableCertStorage(),
-                props.getSealCertificatType() != null,
-                props.getSealCertificatDriver() != null
+                sealCertificatPropertiesConfigured || props.getSealCertificatType() != null,
+                sealCertificatPropertiesConfigured || props.getSealCertificatDriver() != null
         );
     }
 

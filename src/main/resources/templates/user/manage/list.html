@@ -3,13 +3,14 @@
 <!--/*@thymesVar id="formManage" type="java.util.List<org.esupportail.esupsignature.entity.Form>"*/-->
 <head th:replace="~{fragments/head :: head}"></head>
 <script th:src="@{/webjars/chart.js/dist/chart.umd.js}"></script>
-<body>
+<script type="module" th:src="'/js/modules/bootstrap/ManageListBootstrap.js?version=' + ${versionApp}"></script>
+<body class="manage-list-page">
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
     <div class="es-wrapper">
         <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full text-uppercase">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item text-uppercase d-flex align-items-center active"><i class="fi fi-rr-list-check"></i> Espace superviseurs</li>
+                <li class="breadcrumb-item es-breadcrumb-title text-uppercase d-flex align-items-center active"><i class="fi fi-rr-list-check"></i> Espace superviseurs</li>
             </ol>
         </nav>
         <div id="content" class="es-content-full">
@@ -130,21 +131,10 @@
                                 </td>
                                 <td>
                                     <div th:if="${chartWorkflowSignBooksStatus.get(iterator.index) != null}" style="width: 40px">
-                                        <canvas th:onclick="'$(\'#big-chart-' + ${iterator.index} + '\').toggle();'" th:id="'chart-workflow-sign-books-status-' + ${iterator.index}" style="cursor: pointer;" title="Cliquer pour voir le détail"></canvas>
-                                        <script th:inline="javascript">
-                                            let ctx[[${iterator.index}]] = document.getElementById('chart-workflow-sign-books-status-[[${iterator.index}]]');
-                                            let chart[[${iterator.index}]] = new Chart(ctx[[${iterator.index}]], JSON.parse([[${chartWorkflowSignBooksStatus.get(iterator.index)}]]));
-                                            chart[[${iterator.index}]].options.plugins.tooltip = false;
-                                            chart[[${iterator.index}]].options.plugins.legend = false;
-                                            chart[[${iterator.index}]].update();
-                                        </script>
+                                        <canvas class="js-manage-chart js-toggle-chart" th:data-chart-target="'#big-chart-' + ${iterator.index}" th:data-chart-config="${chartWorkflowSignBooksStatus.get(iterator.index)}" th:id="'chart-workflow-sign-books-status-' + ${iterator.index}" style="cursor: pointer;" title="Cliquer pour voir le détail"></canvas>
                                     </div>
-                                    <div class="border border-secondary-subtle rounded-1 p-2 floating-chart" th:onclick="'$(\'#big-chart-' + ${iterator.index} + '\').toggle();'" th:id="'big-chart-' + ${iterator.index}" style="display: none; cursor: pointer;">
-                                        <canvas th:id="'chart-workflow-sign-books-status-big-' + ${iterator.index}"></canvas>
-                                        <script th:inline="javascript">
-                                            let ctxB[[${iterator.index}]] = document.getElementById('chart-workflow-sign-books-status-big-[[${iterator.index}]]');
-                                            let chartB[[${iterator.index}]] = new Chart(ctxB[[${iterator.index}]], JSON.parse([[${chartWorkflowSignBooksStatus.get(iterator.index)}]]));
-                                        </script>
+                                    <div class="border border-secondary-subtle rounded-1 p-2 floating-chart d-none js-toggle-chart" th:data-chart-target="'#big-chart-' + ${iterator.index}" th:id="'big-chart-' + ${iterator.index}" style="cursor: pointer;">
+                                        <canvas class="js-manage-chart-big" th:data-chart-config="${chartWorkflowSignBooksStatus.get(iterator.index)}" th:id="'chart-workflow-sign-books-status-big-' + ${iterator.index}"></canvas>
                                     </div>
                                 </td>
                             </tr>

@@ -223,81 +223,23 @@
                                                                         <input type="tel"
                                                                             th:id="'phone_' + ${liveWorkflowStep.id}"
                                                                             name="phone"
-                                                                            class="form-control"
+                                                                            class="form-control js-resend-otp-phone"
+                                                                            th:attr="data-signbook-id=${showSignRequest.signBookLight.id},data-recipient-id=${recipient.user.id}"
                                                                             th:value="${recipient.user.hidedPhone}">
                                                                         <br><br>
                                                                     </div>
                                                                     <button type="button"
                                                                             th:id="'confirmBtn_' + ${liveWorkflowStep.id}"
-                                                                            class="btn btn-success float-end mb-2"
+                                                                            class="btn btn-success float-end mb-2 js-resend-otp-confirm"
+                                                                            th:attr="data-phone-target='phone_' + ${liveWorkflowStep.id}"
                                                                             title="Envoyer un nouveau lien d'accès"
                                                                             style="right: 17px; bottom: 7px !important; position: absolute;">
                                                                         Confirmer
                                                                     </button>
-                                                                    <script th:inline="javascript">
-                                                                        $(document).ready(function() {
-                                                                            const phoneInputSelector = '#phone_' + /*[[${liveWorkflowStep.id}]]*/ 0;
-                                                                            const confirmButtonSelector = '#confirmBtn_' + /*[[${liveWorkflowStep.id}]]*/ 0;
-                                                                            const signBookId = /*[[${showSignRequest.signBookLight.id}]]*/ 0;
-                                                                            const recipientId = /*[[${recipient.user.id}]]*/ 0;
-                                                                            const phoneInput = document.querySelector(phoneInputSelector);
-                                                                            let iti = null;
-                                                                            if(phoneInput) {
-                                                                                iti = intlTelInput(phoneInput, {
-                                                                                    validationNumberTypes: "FIXED_LINE_OR_MOBILE",
-                                                                                    strictMode: true,
-                                                                                    separateDialCode: false,
-                                                                                    nationalMode: true,
-                                                                                    countryOrder: ["fr"],
-                                                                                    initialCountry: "auto",
-                                                                                    geoIpLookup: callback => {
-                                                                                        callback(navigator.language.split('-')[0]);
-                                                                                    },
-                                                                                    customPlaceholder: (selectedCountryPlaceholder, selectedCountryData) => "Saisir un numéro",
-                                                                                    searchPlaceholder: "Rechercher",
-                                                                                });
-                                                                            }
-                                                                            const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
-                                                                            const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
-
-                                                                            $(document.querySelector(confirmButtonSelector)).on("click", async function () {
-                                                                                let fullNumber = "";
-                                                                                if(iti != null) fullNumber = iti.getNumber();
-
-                                                                                $(this).prop('disabled', true).text('Envoi en cours...');
-
-                                                                                try {
-                                                                                    const url = '/user/signrequests/send-otp/' + signBookId + '/' + recipientId;
-                                                                                    const response = await fetch(url, {
-                                                                                        method: 'POST',
-                                                                                        headers: {
-                                                                                            'Content-Type': 'application/x-www-form-urlencoded',
-                                                                                            [csrfHeader]: csrfToken
-                                                                                        },
-                                                                                        body: new URLSearchParams({
-                                                                                            'phone': fullNumber
-                                                                                        })
-                                                                                    });
-
-                                                                                    if (response.ok) {
-                                                                                        alert('Nouvelle demande OTP envoyée');
-                                                                                        window.location.reload();
-                                                                                    } else {
-                                                                                        alert('Une erreur est survenue lors de l\'envoi du SMS');
-                                                                                        $(this).prop('disabled', false).text('Confirmer');
-                                                                                    }
-                                                                                } catch (error) {
-                                                                                    console.error('Erreur:', error);
-                                                                                    alert('Erreur de connexion au serveur');
-                                                                                    $(this).prop('disabled', false).text('Confirmer');
-                                                                                }
-                                                                            });
-                                                                        });
-                                                                    </script>
                                                                     <br><br>
-                                                                    <button class="btn btn-secondary float-start"
+                                                                    <button class="btn btn-secondary float-start js-step-menu-hide"
                                                                             title="Fermer"
-                                                                            th:onclick="'$(\'#menu-' + ${recipient.id} + '\').hide();'">
+                                                                            th:attr="data-menu-target='menu-' + ${recipient.id}">
                                                                         Annuler
                                                                     </button>
                                                                 </div>
@@ -329,9 +271,9 @@
                                     <ul th:if="${hasStepMenu}" class="dropdown-menu dropdown-menu-end p-1" style="width:292px; text-wrap: auto; overflow: clip;">
                                         <th:block th:each="recipient : ${liveWorkflowStep.recipients}" th:with="recipientAction=${showSignRequest.recipientActions.get(recipient.id)}">
                                             <li th:if="${isCurrent  && signRequestFull.manager  && recipient.user.userType.name() == 'external'  && isPending}">
-                                                <button class="d-flex align-items-center btn btn-transparent text-dark w-100 text-left"
+                                                <button class="d-flex align-items-center btn btn-transparent text-dark w-100 text-left js-step-menu-toggle"
                                                         title="Envoyer un nouveau lien d'accès"
-                                                        th:onclick="'$(\'#menu-' + ${recipient.id} + '\').toggle();'">
+                                                        th:attr="data-menu-target='menu-' + ${recipient.id}">
                                                     <i class="fi fi-rr-link"></i> Renvoyer un lien d’accès à <span th:text="${recipient.user.email}"></span>
                                                 </button>
                                             </li>
@@ -394,8 +336,8 @@
                                                    th:action="'/user/signbooks/remove-live-step/' + ${showSignRequest.signBookLight.id} + '/' + ${iterator.index}"
                                                    th:method="delete">
                                                  <button type="submit"
-                                                         onclick="return confirm('Voulez-vous vraiment supprimer cette étape ?');"
-                                                         class="d-flex align-items-center btn btn-transparent text-danger w-100 text-left"
+                                                         data-confirm-message="Voulez-vous vraiment supprimer cette étape ?"
+                                                         class="d-flex align-items-center btn btn-transparent text-danger w-100 text-left js-confirm-submit"
                                                          >
                                                      <i class="fi fi-rr-trash"></i> Supprimer l'étape
                                                  </button>
@@ -474,11 +416,41 @@
                         <div class="step-vertical-icon">
                             <i class="fi fi-rr-flag"></i>
                         </div>
-                        <div class="step-vertical-content bg-light">
-                            <b>Procédure terminée</b>
-                            <p th:if="${showSignRequest.workflow.sendAlertToAllRecipients}">
-                                Les intervenants ont été informés par mail
-                            </p>
+                        <div class="step-vertical-content bg-light d-flex align-items-center justify-content-between">
+                            <div>
+                                <b>Procédure terminée</b>
+                                <p th:if="${showSignRequest.workflow.sendAlertToAllRecipients}">
+                                    Les intervenants ont été informés par mail
+                                </p>
+                            </div>
+                            <div class="wv-100 dropdown float-end"
+                                 th:if="${user.userType.name() != 'external'
+                                     && userEppn == authUserEppn
+                                     && !globalProperties.hideSendSignRequest
+                                     && showSignRequest.signedDocuments != null
+                                     && showSignRequest.signedDocuments.size() > 0}">
+                                <button class="btn btn-sm btn-transparent text-dark border-secondary-subtle me-1"
+                                        type="button"
+                                        data-bs-toggle="dropdown"
+                                        data-bs-popper="static"
+                                        aria-haspopup="true"
+                                        aria-expanded="false">
+                                    <i class="fi fi-rr-menu-dots"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end p-1" style="width:292px; text-wrap: auto; overflow: clip;">
+                                    <li>
+                                        <button class="js-reuse-last-signed-file d-flex align-items-center btn btn-transparent text-dark w-100 text-left"
+                                                type="button"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#wiz-fast-sign-modal"
+                                                th:attr="data-document-id=${showSignRequest.signedDocuments[showSignRequest.signedDocuments.size() - 1].id},
+                                                         data-filename=${showSignRequest.signedDocuments[showSignRequest.signedDocuments.size() - 1].fileName}">
+                                            <span class="spinner-border spinner-border-sm d-none me-1 js-reuse-last-signed-spinner" aria-hidden="true"></span>
+                                            <i class="fi fi-rr-paper-plane js-reuse-last-signed-icon"></i> Nouvelle demande depuis ce document
+                                        </button>
+                                    </li>
+                                </ul>
+                            </div>
                         </div>
                     </div>
                 </th:block>

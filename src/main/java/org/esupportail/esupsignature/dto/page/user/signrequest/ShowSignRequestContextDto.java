@@ -75,6 +75,8 @@ public class ShowSignRequestContextDto {
     private SignType currentStepRepeatableSignType;
     private Boolean stepRepeatable;
     private int nbSignRequestInSignBookParent;
+    private int nbPendingSignRequestInSignBookParent;
+    private int currentSignRequestTabIndex;
     private boolean lastStep;
 
     // ---- Collections DTO pré-mappées ----
@@ -221,6 +223,10 @@ public class ShowSignRequestContextDto {
     public void setStepRepeatable(Boolean stepRepeatable) { this.stepRepeatable = stepRepeatable; }
     public int getNbSignRequestInSignBookParent() { return nbSignRequestInSignBookParent; }
     public void setNbSignRequestInSignBookParent(int n) { this.nbSignRequestInSignBookParent = n; }
+    public int getNbPendingSignRequestInSignBookParent() { return nbPendingSignRequestInSignBookParent; }
+    public void setNbPendingSignRequestInSignBookParent(int n) { this.nbPendingSignRequestInSignBookParent = n; }
+    public int getCurrentSignRequestTabIndex() { return currentSignRequestTabIndex; }
+    public void setCurrentSignRequestTabIndex(int currentSignRequestTabIndex) { this.currentSignRequestTabIndex = currentSignRequestTabIndex; }
     public boolean isLastStep() { return lastStep; }
     public void setLastStep(boolean lastStep) { this.lastStep = lastStep; }
     public List<ShowSignRequestDto.StepDto> getSteps() { return steps; }

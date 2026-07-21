@@ -255,13 +255,16 @@ export class SignatureFlowController {
             signPlacementController.refreshSteps?.();
             return;
         }
-        this.setContextualSignAll(signUi.nbSignRequests > 1 ? null : false);
+        this.setContextualSignAll(signUi.nbPendingSignRequests > 1 ? null : false);
         console.info("launch sign modal");
         window.onbeforeunload = null;
         signUi.workspace.signPlacementController.lockSigns();
         if (signUi.isPdf && signUi.currentSignType !== 'hiddenVisa') {
             signUi.workspace.saveData(true);
-            signUi.workspace.pdfViewer.checkForm().then(result => {
+            const formCheck = signUi.workspace.workflow
+                ? signUi.workspace.pdfViewer.checkForm()
+                : Promise.resolve("ok");
+            formCheck.then(result => {
                 if (result === "ok") {
                     let signId = signUi.workspace.checkSignsPositions();
                     if (signId != null) {
@@ -495,7 +498,7 @@ export class SignatureFlowController {
     requestContextualInfo() {
         const signUi = this.signUi;
         const needsPassword = signUi.certTypeSelect.val() === "userCert" && this.getContextualPassword().trim() === "";
-        const needsSignAll = signUi.nbSignRequests > 1 && this.contextualSignAll == null;
+        const needsSignAll = signUi.nbPendingSignRequests > 1 && this.contextualSignAll == null;
 
         if (signUi.certTypeSelect.val() !== "userCert") {
             this.setContextualPassword("");
@@ -611,7 +614,7 @@ export class SignatureFlowController {
         this.state.percent = 0;
         signUi.percent = 0;
         let good = true;
-        if(signUi.signForm) {
+        if(signUi.signForm && signUi.workspace.workflow) {
             let inputs = signUi.signForm.getElementsByTagName("input");
             for (let i = 0, len = inputs.length; i < len; i++) {
                 let input = inputs[i];

@@ -4,6 +4,7 @@ import jakarta.annotation.Resource;
 import org.esupportail.esupsignature.entity.Message;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.repository.MessageRepository;
+import org.esupportail.esupsignature.service.security.HtmlSanitizerService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -23,11 +24,14 @@ public class MessageService {
     @Resource
     private UserService userService;
 
+    @Resource
+    private HtmlSanitizerService htmlSanitizerService;
+
     public void createMessage(String endDate, String text) throws ParseException {
         Message message = new Message();
         Date date = new SimpleDateFormat("yyyy-MM-dd").parse(endDate);
         message.setEndDate(date);
-        message.setText(text);
+        message.setText(htmlSanitizerService.sanitize(text));
         messageRepository.save(message);
     }
 
@@ -37,15 +41,17 @@ public class MessageService {
     }
 
     public Page<Message> getAll(Pageable pageable) {
-        return messageRepository.findAll(pageable);
+        Page<Message> messages = messageRepository.findAll(pageable);
+        messages.forEach(this::sanitizeMessage);
+        return messages;
     }
 
     public List<Message> getByUserNeverRead(User user) {
-        return messageRepository.findByUsersNotContainsAndEndDateAfter(user, new Date());
+        return sanitizeMessages(messageRepository.findByUsersNotContainsAndEndDateAfter(user, new Date()));
     }
 
     public List<Message> getByUserAlreadyRead(User user) {
-        return messageRepository.findByUsersContains(user);
+        return sanitizeMessages(messageRepository.findByUsersContains(user));
     }
 
     @Transactional
@@ -59,6 +65,17 @@ public class MessageService {
     public void anonymize(User user) {
         for(Message message : getByUserAlreadyRead(user)) {
             message.getUsers().remove(user);
+        }
+    }
+
+    private List<Message> sanitizeMessages(List<Message> messages) {
+        messages.forEach(this::sanitizeMessage);
+        return messages;
+    }
+
+    private void sanitizeMessage(Message message) {
+        if(message != null) {
+            message.setText(htmlSanitizerService.sanitize(message.getText()));
         }
     }
 

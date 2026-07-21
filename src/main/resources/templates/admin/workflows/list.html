@@ -9,7 +9,7 @@
         <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full text-uppercase">
             <ol id="breadcrumb-ol" class="breadcrumb">
                 <li class="breadcrumb-item"><a th:href="'/' + ${workflowRole}">Administration</a></li>
-                <li class="breadcrumb-item active"><i class="fi fi-rr-diagram-project project-diagram-color"></i> Liste des circuits</li>
+                <li class="breadcrumb-item es-breadcrumb-title active"><i class="fi fi-rr-diagram-project project-diagram-color"></i> Liste des circuits</li>
             </ol>
         </nav>
         <div id="content" class="es-content-full">
@@ -22,12 +22,12 @@
             <div class="p-0 m-2">
                 <div class="input-group mb-3 admin-list-filters admin-list-filters-loading" th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}">
                     <span class="input-group-text">Filtrer</span>
-                    <select id="tags" name="tags" class="form-control slim-select-simple" data-placeholder="Choisir un ou plusieurs tags" multiple onclick="event.stopPropagation();">
+                    <select id="tags" name="tags" class="form-control slim-select-simple js-admin-list-filter js-stop-propagation" data-filter-name="selectedTags" data-placeholder="Choisir un ou plusieurs tags" multiple>
                         <th:block th:each="tag : ${allTags}">
                             <option th:style="'color:' + ${tag.color}" th:data-html="'<span class=\'badge\' style=\'background-color:' + ${tag.color} + '\'>' + ${tag.name} + '</span>'" th:value="${tag.id}" th:text="${tag.name}" th:selected="${selectedTagIds.contains(tag.id)}"></option>
                         </th:block>
                     </select>
-                    <select id="displayWorkflowType" name="displayWorkflowType" class="form-select" onclick="event.stopPropagation();">
+                    <select id="displayWorkflowType" name="displayWorkflowType" class="form-select js-admin-list-filter js-stop-propagation" data-filter-name="displayWorkflowType">
                         <option value="all" th:selected="${displayWorkflowType == 'all'}">Tout voir</option>
                         <option value="system" th:selected="${displayWorkflowType == 'system'}">Workflows globaux (définis pas les administrateurs)</option>
                         <option value="classes" th:selected="${displayWorkflowType == 'classes'}">Classes workflow (définies par les développeurs)</option>
@@ -191,55 +191,7 @@
         </div>
     </div>
 </main>
-<script th:inline="javascript" type="module">
-    import {WorkflowManualAdd} from '/js/modules/ui/workflows/WorkflowManualAdd.js?version=@[(${versionApp})]@';
-    new WorkflowManualAdd();
-</script>
-<script>
-    (() => {
-        const navigateWithFilters = (updates) => {
-            const currentUrl = new URL(window.location.href);
-            const targetUrl = new URL(window.location.href);
-
-            Object.entries(updates).forEach(([key, value]) => {
-                if (Array.isArray(value)) {
-                    if (value.length > 0) {
-                        targetUrl.searchParams.set(key, value.join(','));
-                    } else {
-                        targetUrl.searchParams.delete(key);
-                    }
-                    return;
-                }
-
-                if (value == null || value === '') {
-                    targetUrl.searchParams.delete(key);
-                } else {
-                    targetUrl.searchParams.set(key, value);
-                }
-            });
-
-            if (targetUrl.pathname === currentUrl.pathname && targetUrl.search === currentUrl.search) {
-                return;
-            }
-
-            window.location.assign(targetUrl.pathname + targetUrl.search + targetUrl.hash);
-        };
-
-        const displayWorkflowTypeSelect = document.getElementById('displayWorkflowType');
-        if (displayWorkflowTypeSelect) {
-            displayWorkflowTypeSelect.addEventListener('change', function () {
-                navigateWithFilters({ displayWorkflowType: this.value });
-            });
-        }
-
-        const tagsSelect = document.getElementById('tags');
-        if (tagsSelect) {
-            tagsSelect.addEventListener('change', function () {
-                navigateWithFilters({ selectedTags: Array.from(this.selectedOptions).map(option => option.value) });
-            });
-        }
-    })();
-</script>
+<script type="module" th:src="'/js/modules/bootstrap/WorkflowListBootstrap.js?version=' + ${versionApp}"></script>
 <style>
     .admin-list-table-wrap {
         overflow-x: auto;
@@ -286,68 +238,6 @@
         }
     }
 </style>
-<script>
-    (() => {
-        const showFiltersWhenReady = () => {
-            document.querySelectorAll('.admin-list-filters-loading').forEach(filters => {
-                const selects = filters.querySelectorAll('select.slim-select-simple');
-                let attempts = 0;
-                const reveal = () => {
-                    const ready = Array.from(selects).every(select => select.nextElementSibling?.classList.contains('ss-main'));
-                    if (ready || attempts >= 60) {
-                        filters.classList.remove('admin-list-filters-loading');
-                        return;
-                    }
-                    attempts++;
-                    requestAnimationFrame(reveal);
-                };
-                reveal();
-            });
-        };
-
-        showFiltersWhenReady();
-
-        const normalize = value => value.trim().toLocaleLowerCase();
-
-        document.querySelectorAll('.js-search-name').forEach(input => {
-            const table = document.getElementById(input.dataset.tableId);
-            const columnIndex = Number(input.dataset.colIndex);
-            if (!table || Number.isNaN(columnIndex)) {
-                return;
-            }
-
-            input.addEventListener('input', () => {
-                const search = normalize(input.value);
-                table.querySelectorAll('tbody tr').forEach(row => {
-                    const cell = row.cells[columnIndex];
-                    row.classList.toggle('d-none', search !== '' && !normalize(cell ? cell.textContent : '').includes(search));
-                });
-            });
-        });
-
-        document.querySelectorAll('.js-sort-name').forEach(button => {
-            const table = document.getElementById(button.dataset.tableId);
-            const columnIndex = Number(button.dataset.colIndex);
-            if (!table || !table.tBodies.length || Number.isNaN(columnIndex)) {
-                return;
-            }
-
-            button.addEventListener('click', () => {
-                const tbody = table.tBodies[0];
-                const direction = button.dataset.direction === 'asc' ? -1 : 1;
-                button.dataset.direction = direction === 1 ? 'asc' : 'desc';
-                const icon = button.querySelector('i');
-                if (icon) {
-                    icon.className = direction === 1 ? 'fi fi-rr-sort-amount-down' : 'fi fi-rr-sort-amount-up';
-                }
-
-                Array.from(tbody.rows)
-                    .sort((a, b) => direction * normalize(a.cells[columnIndex]?.textContent || '').localeCompare(normalize(b.cells[columnIndex]?.textContent || ''), 'fr'))
-                    .forEach(row => tbody.appendChild(row));
-            });
-        });
-    })();
-</script>
 <div data-bs-focus="false" class="modal fade" id="newWorkflow"  role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">

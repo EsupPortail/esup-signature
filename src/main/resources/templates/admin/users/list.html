@@ -9,7 +9,7 @@
         <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full text-uppercase">
             <ol id="breadcrumb-ol" class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/admin" class="d-flex align-items-center"><i class="fi fi-rr-chess-queen"></i> Administration</a></li>
-                <li class="breadcrumb-item active">Utilisateurs</li>
+                <li class="breadcrumb-item es-breadcrumb-title active">Utilisateurs</li>
             </ol>
         </nav>
         <div id="content" class="es-content-full">
@@ -67,7 +67,8 @@
                                     <div data-bs-focus="false" class="modal modal-warning fade in" th:id="'modal-delete-' + ${user.id}">
                                         <div class="modal-dialog">
                                             <div class="modal-content">
-                                                <form th:id="${user.id}" th:action="'/admin/users/anonymize/'+ ${user.id}" th:method="post">
+                                                <form th:id="${user.id}" th:action="'/admin/users/anonymize/'+ ${user.id}" th:method="post"
+                                                      class="es-confirm-submit" data-confirm-message="Procéder à la suppression ?">
                                                     <div class="modal-header">
                                                         <h2>Attention !</h2>
                                                         <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close">
@@ -95,7 +96,7 @@
                                                     </div>
                                                     <div class="modal-footer">
                                                         <button type="button" class="btn btn-secondary float-start" data-bs-dismiss="modal">Non</button>
-                                                        <button type="submit" onclick="return confirm('Procéder à la suppression ?')" class="btn btn-danger">Oui</button>
+                                                        <button type="submit" class="btn btn-danger">Oui</button>
                                                     </div>
                                                 </form>
                                             </div>

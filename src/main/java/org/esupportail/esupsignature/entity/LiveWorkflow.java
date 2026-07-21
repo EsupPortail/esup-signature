@@ -10,6 +10,9 @@ import java.util.Set;
 
 @Entity
 @JsonIgnoreProperties(value = {"hibernateLazyInitializer", "handler"}, ignoreUnknown = true)
+@Table(indexes = {
+        @Index(name = "idx_live_workflow_workflow_id", columnList = "workflow_id")
+})
 public class LiveWorkflow {
 
     @Id

@@ -58,6 +58,7 @@ public class UiHomeDto {
         private String workflowName;
         private String createDateLabel;
         private String listTitle;
+        private int signRequestCount;
         private boolean viewedByCurrentUser;
         private boolean hasAttachments;
         private List<PostitItem> postits;
@@ -97,6 +98,8 @@ public class UiHomeDto {
         public void setCreateDateLabel(String createDateLabel) { this.createDateLabel = createDateLabel; }
         public String getListTitle() { return listTitle; }
         public void setListTitle(String listTitle) { this.listTitle = listTitle; }
+        public int getSignRequestCount() { return signRequestCount; }
+        public void setSignRequestCount(int signRequestCount) { this.signRequestCount = signRequestCount; }
         public boolean isViewedByCurrentUser() { return viewedByCurrentUser; }
         public void setViewedByCurrentUser(boolean viewedByCurrentUser) { this.viewedByCurrentUser = viewedByCurrentUser; }
         public boolean isHasAttachments() { return hasAttachments; }
@@ -113,6 +116,7 @@ public class UiHomeDto {
         public String workflowName() { return workflowName; }
         public String createDateLabel() { return createDateLabel; }
         public String listTitle() { return listTitle; }
+        public int signRequestCount() { return signRequestCount; }
         public boolean viewedByCurrentUser() { return viewedByCurrentUser; }
         public boolean hasAttachments() { return hasAttachments; }
         public List<PostitItem> postits() { return postits; }

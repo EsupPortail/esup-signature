@@ -2,9 +2,12 @@ package org.esupportail.esupsignature.dto.mapper;
 
 import org.esupportail.esupsignature.dto.page.user.signbook.SignBookFullDto;
 import org.esupportail.esupsignature.dto.page.user.signrequest.ShowSignRequestDto;
+import org.esupportail.esupsignature.dto.projection.jpa.HomePostitItemProjection;
+import org.esupportail.esupsignature.dto.projection.jpa.HomeSignRequestItemProjection;
 import org.esupportail.esupsignature.dto.projection.jpa.LiveWorkflowStepProjectionDto;
 import org.esupportail.esupsignature.dto.projection.jpa.LiveWorkflowStepRecipientProjectionDto;
 import org.esupportail.esupsignature.dto.projection.jpa.LiveWorkflowTargetProjectionDto;
+import org.esupportail.esupsignature.dto.projection.jpa.SignBookListMetadataProjection;
 import org.esupportail.esupsignature.dto.projection.jpa.SignBookViewerProjectionDto;
 import org.esupportail.esupsignature.entity.Comment;
 import org.esupportail.esupsignature.entity.Document;
@@ -34,6 +37,44 @@ public class UiSignBookMapper {
     public SignBookFullDto toSignBookListItemDto(SignBook signBook, String userEppn) {
         Integer currentStepNumber = signBook.getLiveWorkflow() != null ? signBook.getLiveWorkflow().getCurrentStepNumber() : null;
         return toSignBookFullDto(signBook, userEppn, false, currentStepNumber, List.of(), List.of(), List.of());
+    }
+
+    public SignBookFullDto toSignBookListItemDto(SignBook signBook, String userEppn, SignBookListMetadataProjection metadata, SignRequest primarySignRequest) {
+        Integer currentStepNumber = signBook.getLiveWorkflow() != null ? signBook.getLiveWorkflow().getCurrentStepNumber() : null;
+        int signRequestCount = metadata != null && metadata.getSignRequestCount() != null ? metadata.getSignRequestCount().intValue() : 0;
+        return toSignBookFullDto(signBook, userEppn, false, currentStepNumber, List.of(), List.of(), List.of(), primarySignRequest, signRequestCount, false);
+    }
+
+    public SignBookFullDto toManageSignBookListItemDto(SignBook signBook, String userEppn, SignBookListMetadataProjection metadata, SignRequest primarySignRequest) {
+        return toSignBookListItemDto(signBook, userEppn, metadata, primarySignRequest);
+    }
+
+    public List<SignBookFullDto.SignRequestDocumentDto> toSignRequestDocumentDtosFromProjections(List<HomeSignRequestItemProjection> signRequests) {
+        if (signRequests == null || signRequests.isEmpty()) {
+            return List.of();
+        }
+        return signRequests.stream().map(signRequest -> new SignBookFullDto.SignRequestDocumentDto(
+                signRequest.getSignRequestId(),
+                signRequest.getTitle(),
+                signRequest.getStatus(),
+                signRequest.getFileName(),
+                null,
+                null,
+                null
+        )).toList();
+    }
+
+    public List<SignBookFullDto.PostitDto> toPostitDtosFromProjections(List<HomePostitItemProjection> postits) {
+        if (postits == null || postits.isEmpty()) {
+            return List.of();
+        }
+        return postits.stream()
+                .filter(Objects::nonNull)
+                .map(postit -> new SignBookFullDto.PostitDto(
+                        toDisplayName(postit.getAuthorFirstname(), postit.getAuthorName()),
+                        postit.getText()
+                ))
+                .toList();
     }
 
     public SignBookFullDto toSignBookUpdateViewDto(SignBook signBook,
@@ -73,6 +114,20 @@ public class UiSignBookMapper {
                                               List<ShowSignRequestDto.StepDto> liveWorkflowSteps,
                                               List<ShowSignRequestDto.TargetDto> liveWorkflowTargets) {
         SignRequest primarySignRequest = signBook.getSignRequests().isEmpty() ? null : signBook.getSignRequests().get(0);
+        int signRequestCount = signBook.getSignRequests().size();
+        return toSignBookFullDto(signBook, userEppn, editable, liveWorkflowCurrentStepNumber, viewers, liveWorkflowSteps, liveWorkflowTargets, primarySignRequest, signRequestCount, true);
+    }
+
+    private SignBookFullDto toSignBookFullDto(SignBook signBook,
+                                              String userEppn,
+                                              boolean editable,
+                                              Integer liveWorkflowCurrentStepNumber,
+                                              List<ShowSignRequestDto.SignBookViewerDto> viewers,
+                                              List<ShowSignRequestDto.StepDto> liveWorkflowSteps,
+                                              List<ShowSignRequestDto.TargetDto> liveWorkflowTargets,
+                                              SignRequest primarySignRequest,
+                                              int signRequestCount,
+                                              boolean includeFullListDetails) {
         String currentSignType = null;
         if (signBook.getLiveWorkflow() != null && signBook.getLiveWorkflow().getCurrentStep() != null && signBook.getLiveWorkflow().getCurrentStep().getSignType() != null) {
             currentSignType = signBook.getLiveWorkflow().getCurrentStep().getSignType().name();
@@ -83,7 +138,7 @@ public class UiSignBookMapper {
             refusedCommentTitle = primarySignRequest.getComments().get(primarySignRequest.getComments().size() - 1).getText();
         }
 
-        return new SignBookFullDto(
+        SignBookFullDto dto = new SignBookFullDto(
                 signBook.getId(),
                 signBook.getSubject(),
                 signBook.getDescription(),
@@ -97,23 +152,25 @@ public class UiSignBookMapper {
                 Boolean.TRUE.equals(signBook.getDisplayNotif()),
                 isHiddenByCurrentUser(signBook, userEppn),
                 currentSignType,
-                toParticipantSteps(signBook, primarySignRequest),
+                toParticipantSteps(signBook, primarySignRequest, signRequestCount == 1),
                 formatDate(signBook.getEndDate()),
                 Boolean.TRUE.equals(signBook.getDeleted()) ? "Supprimé le : " + formatDate(signBook.getUpdateDate()) : null,
-                toLastSignedDocumentDateLabel(signBook, primarySignRequest),
+                toLastSignedDocumentDateLabel(signBook, primarySignRequest, signRequestCount),
                 refusedCommentTitle,
-                toPrimarySignRequestDto(signBook, primarySignRequest, userEppn),
-                toSignRequestDocumentDtos(signBook.getSignRequests()),
-                toPostitDtos(signBook.getPostits()),
+                toPrimarySignRequestDto(signBook, primarySignRequest, userEppn, signRequestCount),
+                includeFullListDetails ? toSignRequestDocumentDtos(signBook.getSignRequests()) : List.of(),
+                includeFullListDetails ? toPostitDtos(signBook.getPostits()) : List.of(),
                 editable,
                 liveWorkflowCurrentStepNumber,
                 viewers,
                 liveWorkflowSteps,
                 liveWorkflowTargets
         );
+        dto.setSignRequestCount(signRequestCount);
+        return dto;
     }
 
-    private SignBookFullDto.PrimarySignRequestDto toPrimarySignRequestDto(SignBook signBook, SignRequest signRequest, String userEppn) {
+    private SignBookFullDto.PrimarySignRequestDto toPrimarySignRequestDto(SignBook signBook, SignRequest signRequest, String userEppn, int signRequestCount) {
         if (signRequest == null) {
             return null;
         }
@@ -125,9 +182,9 @@ public class UiSignBookMapper {
                 isViewedByUser(signRequest, userEppn),
                 signRequest.getAttachments() != null && !signRequest.getAttachments().isEmpty(),
                 Boolean.TRUE.equals(signRequest.getDeleted()),
-                buildPrimaryRowTitle(signBook, signRequest),
+                buildPrimaryRowTitle(signBook, signRequest, signRequestCount),
                 canDownloadSingle(signBook, signRequest),
-                canDownloadAll(signBook, signRequest)
+                canDownloadAll(signRequestCount, signRequest)
         );
     }
 
@@ -156,7 +213,11 @@ public class UiSignBookMapper {
                 .toList();
     }
 
-    private List<SignBookFullDto.ParticipantStepDto> toParticipantSteps(SignBook signBook, SignRequest primarySignRequest) {
+    private String toDisplayName(String firstname, String name) {
+        return (Objects.requireNonNullElse(firstname, "") + " " + Objects.requireNonNullElse(name, "")).trim();
+    }
+
+    private List<SignBookFullDto.ParticipantStepDto> toParticipantSteps(SignBook signBook, SignRequest primarySignRequest, boolean singleDocument) {
         if (signBook.getLiveWorkflow() == null
                 || signBook.getLiveWorkflow().getLiveWorkflowSteps() == null
                 || signBook.getLiveWorkflow().getLiveWorkflowSteps().isEmpty()
@@ -168,7 +229,7 @@ public class UiSignBookMapper {
         for (int i = 0; i < signBook.getLiveWorkflow().getLiveWorkflowSteps().size(); i++) {
             LiveWorkflowStep liveWorkflowStep = signBook.getLiveWorkflow().getLiveWorkflowSteps().get(i);
             List<SignBookFullDto.ParticipantDto> recipients = liveWorkflowStep.getRecipients().stream()
-                    .map(recipient -> toParticipantDto(recipient, primarySignRequest, signBook.getSignRequests().size() == 1))
+                    .map(recipient -> toParticipantDto(recipient, primarySignRequest, singleDocument))
                     .toList();
             participantSteps.add(new SignBookFullDto.ParticipantStepDto(i + 1, recipients));
         }
@@ -211,8 +272,8 @@ public class UiSignBookMapper {
         return signBook.getHidedBy().stream().anyMatch(user -> user != null && userEppn.equals(user.getEppn()));
     }
 
-    private String buildPrimaryRowTitle(SignBook signBook, SignRequest signRequest) {
-        if (signBook.getSignRequests().size() <= 1) {
+    private String buildPrimaryRowTitle(SignBook signBook, SignRequest signRequest, int signRequestCount) {
+        if (signRequestCount <= 1) {
             return signBook.getSubject();
         }
         String firstOriginalFileName = getFirstOriginalFileName(signRequest);
@@ -232,11 +293,11 @@ public class UiSignBookMapper {
         return signRequest.getOriginalDocuments().get(0).getFileName();
     }
 
-    private String toLastSignedDocumentDateLabel(SignBook signBook, SignRequest primarySignRequest) {
+    private String toLastSignedDocumentDateLabel(SignBook signBook, SignRequest primarySignRequest, int signRequestCount) {
         if (primarySignRequest == null) {
             return null;
         }
-        if (!(!(Boolean.TRUE.equals(signBook.getDeleted()) || signBook.getEndDate() != null) || signBook.getSignRequests().size() != 1)) {
+        if (!(!(Boolean.TRUE.equals(signBook.getDeleted()) || signBook.getEndDate() != null) || signRequestCount != 1)) {
             return null;
         }
         Document lastSignedDocument = primarySignRequest.getLastSignedDocument();
@@ -246,8 +307,8 @@ public class UiSignBookMapper {
         return formatDate(lastSignedDocument.getCreateDate());
     }
 
-    private boolean canDownloadAll(SignBook signBook, SignRequest signRequest) {
-        if (signBook.getSignRequests().size() <= 1 || signRequest.getStatus() == null) {
+    private boolean canDownloadAll(int signRequestCount, SignRequest signRequest) {
+        if (signRequestCount <= 1 || signRequest.getStatus() == null) {
             return false;
         }
         return signRequest.getStatus() == SignRequestStatus.completed
@@ -285,4 +346,3 @@ public class UiSignBookMapper {
         return user != null ? user.getEmail() : null;
     }
 }
-

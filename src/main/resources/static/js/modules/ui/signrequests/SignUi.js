@@ -122,6 +122,10 @@ export class SignUi {
         return this.state.nbSignRequests;
     }
 
+    get nbPendingSignRequests() {
+        return this.state.nbPendingSignRequests;
+    }
+
     get attachmentRequire() {
         return this.state.attachmentRequire;
     }
@@ -180,7 +184,15 @@ export class SignUi {
         ["#visaLaunchButton", "#signAdvancedLaunchButton"].forEach(selector => {
             $(selector).on('click', () => this.signatureFlowController.prepareLaunchSign(true));
         });
-        this.signLaunchButton.on('click', () => this.signatureFlowController.launchQuickSign());
+        this.signLaunchButton.on('click', () => {
+            const selectableCertTypeOption = this.getSingleSelectableCertTypeOption();
+            if (selectableCertTypeOption.length && selectableCertTypeOption.val() !== "imageStamp") {
+                this.certTypeSelect.val(selectableCertTypeOption.val()).trigger("change");
+                $("#checkValidateAdvancedSignButton").trigger("click");
+                return;
+            }
+            this.signatureFlowController.launchQuickSign();
+        });
         $("#refuseLaunchButton").on('click', function () {
             window.onbeforeunload = null;
         });
@@ -192,12 +204,23 @@ export class SignUi {
             url: "/ws-secure/validation/short/" + self.signRequestId,
             type: 'GET',
             success: function (data, textStatus, xhr) {
-                let modal = "<div class=\"alert collapse\" data-bs-focus=\"false\" id=\"reportModal\" tabindex=\"-1\" role=\"dialog\" aria-hidden=\"true\">" +
-                    "<h5>Validation de la signature</h5>\n" +
-                    "<div>" +
-                    data +
-                    "</div></div>";
-                $("#alertSign").append(modal);
+                const reportModal = document.createElement("div");
+                reportModal.className = "alert collapse";
+                reportModal.id = "reportModal";
+                reportModal.tabIndex = -1;
+                reportModal.setAttribute("data-bs-focus", "false");
+                reportModal.setAttribute("role", "dialog");
+                reportModal.setAttribute("aria-hidden", "true");
+
+                const title = document.createElement("h5");
+                title.textContent = "Validation de la signature";
+                reportModal.appendChild(title);
+
+                const content = document.createElement("div");
+                $.parseHTML(data, document, false).forEach(node => content.appendChild(node));
+                reportModal.appendChild(content);
+
+                document.getElementById("alertSign")?.appendChild(reportModal);
                 $("#reportSpinner").hide();
                 $(".reportModalBtn").removeClass("d-none");
             }
@@ -239,7 +262,10 @@ export class SignUi {
                 throw new Error('HTTP ' + response.status);
             }
             const html = await response.text();
-            this.nexuProcessContent.html(html);
+            const fragment = document.createElement('template');
+            fragment.innerHTML = html;
+            fragment.content.querySelectorAll('script').forEach(script => script.remove());
+            this.nexuProcessContent.empty().append(fragment.content.cloneNode(true));
             this.nexuProcessLoading.addClass('d-none');
             NexuProcessUi.initWithin(modalElement);
             return true;
@@ -282,6 +308,14 @@ export class SignUi {
 
     getSelectableCertTypeCount() {
         return this.certTypeSelect.find("option:not(:disabled):not([unavailable])").length;
+    }
+
+    getSingleSelectableCertTypeOption() {
+        if (!this.certTypeSelect.length) {
+            return $();
+        }
+        const selectableCertTypeOptions = this.certTypeSelect.find("option:not(:disabled):not([unavailable])");
+        return selectableCertTypeOptions.length === 1 ? selectableCertTypeOptions.first() : $();
     }
 
     getActiveImageStampOption() {

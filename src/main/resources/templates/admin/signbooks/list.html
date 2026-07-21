@@ -6,18 +6,22 @@
 <!--/*@thymesVar id="statusFilter" type="org.esupportail.esupsignature.entity.enums.SignRequestStatus"*/-->
 <!--/*@thymesVar id="infiniteScrolling" type="java.lang.Boolean"*/-->
 <head th:replace="~{fragments/head :: head}"></head>
-<script th:inline="javascript" type="module">
-    import {ListSignBooksUi} from '/js/modules/ui/signbooks/ListSignBooksUi.js?version=@[(${versionApp})]@';
-    new ListSignBooksUi([[${signBooks}]], [[${statusFilter}]], [[${recipientsFilter}]], [[${workflowFilter}]], [[${creatorFilter}]], [[${docTitleFilter}]], [[${dateFilter}]], [[${infiniteScrolling}]], [[${_csrf}]], "admin");
-</script>
-<body>
+<script type="module" th:src="'/js/modules/bootstrap/SignBooksListBootstrap.js?version=' + ${versionApp}"></script>
+<body th:attr="data-status-filter=${statusFilter},
+               data-recipients-filter=${recipientsFilter},
+               data-workflow-filter=${workflowFilter},
+               data-creator-filter=${creatorFilter},
+               data-doc-title-filter=${docTitleFilter},
+               data-date-filter=${dateFilter},
+               data-infinite-scrolling=${infiniteScrolling},
+               data-signbooks-mode='admin'">
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main" th:style="${infiniteScrolling} ? '' : 'padding-bottom: 0px;'">
     <div class="es-wrapper">
         <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full text-uppercase">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/admin" class="d-flex align-items-center"><i class="fi fi-rr-chess-queen"></i> Administration</a></li>
-                <li class="breadcrumb-item active">Toutes les demandes</li>
+                <li class="breadcrumb-item es-breadcrumb-title active">Toutes les demandes</li>
             </ol>
         </nav>
         <div id="content" class="es-content-full">

@@ -6,53 +6,42 @@
 <!--/*@thymesVar id="statusFilter" type="org.esupportail.esupsignature.entity.enums.SignRequestStatus"*/-->
 <!--/*@thymesVar id="infiniteScrolling" type="java.lang.Boolean"*/-->
 <head th:replace="~{fragments/head :: head}"></head>
-<script th:inline="javascript">
-    (() => {
-        const storageKey = 'esup-user-signbooks-display-mode';
-        let storedMode = null;
-
-        try {
-            storedMode = window.localStorage.getItem(storageKey);
-        } catch (e) {
-            console.debug('LocalStorage indisponible pour la préférence d’affichage des signbooks', e);
-        }
-
-        const hasStoredPreference = storedMode === 'infinite' || storedMode === 'pagination';
-        if (!hasStoredPreference) {
-            return;
-        }
-
-        const resolvedInfiniteScrolling = storedMode === 'infinite';
-        const params = new URLSearchParams(window.location.search);
-        const currentInfiniteScrolling = params.get('infiniteScrolling');
-
-        if (currentInfiniteScrolling === String(resolvedInfiniteScrolling)) {
-            return;
-        }
-
-        params.set('infiniteScrolling', String(resolvedInfiniteScrolling));
-        params.delete('page');
-        const queryString = params.toString();
-        window.location.replace(window.location.pathname + (queryString !== '' ? '?' + queryString : ''));
-    })();
-</script>
-<script th:inline="javascript" type="module">
-    import {ListSignBooksUi} from '/js/modules/ui/signbooks/ListSignBooksUi.js?version=@[(${versionApp})]@';
-    new ListSignBooksUi([[${signBooks}]], [[${statusFilter}]], [[${recipientsFilter}]], [[${workflowFilter}]], [[${creatorFilter}]], [[${docTitleFilter}]], [[${dateFilter}]], [[${infiniteScrolling}]], [[${_csrf}]], "user", {
-        preferenceStorageKey: 'esup-user-signbooks-display-mode',
-        toggleSelector: '#signbooksDisplayModeSwitch'
-    });
-</script>
-<body class="signbooks-list-page signbooks-list-loading">
+<script type="module" th:src="'/js/modules/bootstrap/SignBooksListBootstrap.js?version=' + ${versionApp}"></script>
+<body class="signbooks-list-page signbooks-list-loading"
+      th:attr="data-status-filter=${statusFilter},
+               data-recipients-filter=${recipientsFilter},
+               data-workflow-filter=${workflowFilter},
+               data-creator-filter=${creatorFilter},
+               data-doc-title-filter=${docTitleFilter},
+               data-date-filter=${dateFilter},
+               data-infinite-scrolling=${infiniteScrolling}">
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main" th:style="${infiniteScrolling} ? '' : 'padding-bottom: 0px;'">
     <div class="es-wrapper">
         <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full text-uppercase">
             <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 w-100">
+                <button type="button"
+                        class="btn btn-sm btn-light d-xl-none ms-2"
+                        data-bs-toggle="offcanvas"
+                        data-bs-target="#sidebar"
+                        aria-controls="sidebar"
+                        aria-label="Ouvrir les filtres du tableau de bord">
+                    <i class="fi fi-rr-sidebar"></i>
+                </button>
                 <ol class="breadcrumb">
-                    <li class="breadcrumb-item text-uppercase d-flex align-items-center active"><i class="fi fi-rr-ballot"></i> Tableau de bord</li>
+                    <li class="breadcrumb-item es-breadcrumb-title text-uppercase d-flex align-items-center active"><i class="fi fi-rr-ballot"></i> Tableau de bord</li>
                 </ol>
-                <div class="btn-group me-2 ms-auto" role="group" aria-label="Mode d'affichage">
+                <div class="d-flex align-items-center gap-1 me-2 ms-auto">
+                    <form th:if="${statusFilter == 'deleted'}"
+                          class="d-lg-none es-confirm-submit"
+                          data-confirm-message="Voulez-vous vraiment vider la corbeille ?"
+                          th:action="'/user/signbooks/empty-trash'"
+                          th:method="'delete'">
+                        <button type="submit" class="btn btn-sm btn-light text-danger" title="Vider la corbeille" aria-label="Vider la corbeille">
+                            <i class="fi fi-rr-dumpster-fire"></i>
+                        </button>
+                    </form>
+                    <div class="btn-group" role="group" aria-label="Mode d'affichage">
                     <input type="checkbox"
                             class="btn-check"
                             id="signbooksDisplayModeSwitch"
@@ -63,13 +52,14 @@
                             title="Basculer entre pagination et défilement infini">
                         <i class="fi fi-rr-mouse-scroll"></i>
                     </label>
+                    </div>
                 </div>
             </div>
         </nav>
         <div id="content" class="es-content-full">
             <div class="es-main-content d-flex">
                 <nav th:replace="~{fragments/sides/side-dashboard :: side-dashboard}"></nav>
-                <div class="flex-grow-1">
+                <div class="flex-grow-1 signbooks-list-panel">
                     <div tabindex="0" id="listSignRequestTable" class="table-fix-head scrollbar-style rounded-3 p-0 m-2 signbooks-table-loading-shell" style="outline: none;">
                         <div id="loader" class="loader" style="position: fixed; left: 50%; top: 40%; z-index:100000000; display: none;"></div>
                         <table class="table table-borderless table-hover table-light">
@@ -168,10 +158,10 @@
                                         </a>
                                     </th:block>
                                 </th>
-                                <th class="text-center" style="width: 150px;">
+                                <th class="text-center signbooks-status-column" style="width: 150px;">
                                     <th:block th:with="order=${signBooks.sort.getOrderFor('status')}">
-                                        <a sd:pagination-sort="status" class="sorted" th:classappend="${order == null ? 'text-dark' : 'text-primary'}" style="text-decoration: none;">
-                                            Statut 
+                                        <a sd:pagination-sort="status" class="sorted" aria-label="Trier par statut" th:classappend="${order == null ? 'text-dark' : 'text-primary'}" style="text-decoration: none;">
+                                            <span class="d-none d-sm-inline">Statut </span>
                                             <i th:if="${order != null && order.direction.name() == 'ASC'}" class="fi fi-rr-sort-amount-down"></i>
                                             <i th:if="${order != null && order.direction.name() == 'DESC'}" class="fi fi-rr-sort-amount-up"></i>
                                             <i th:if="${order == null}" class="fi fi-rr-sort-alt"></i>
@@ -181,7 +171,7 @@
                                 <th class="d-none d-xxl-table-cell">
                                     <a class="sorted" sd:pagination-sort="archiveStatus"></a>
                                 </th>
-                                <th >Actions</th>
+                                <th class="signbooks-actions-column" aria-label="Actions"><span class="d-none d-sm-inline">Actions</span></th>
                             </tr>
                             </thead>
                             <tbody id="signRequestTable">
@@ -239,8 +229,9 @@
                             </a>
                         </li>
                         <li th:if="${statusFilter == 'deleted'}">
-                            <form th:action="'/user/signbooks/empty-trash'" th:method="'delete'"
-                                  onsubmit="return confirm('Voulez-vous vraiment vider la corbeille ?');">
+                            <form class="es-confirm-submit"
+                                  data-confirm-message="Voulez-vous vraiment vider la corbeille ?"
+                                  th:action="'/user/signbooks/empty-trash'" th:method="'delete'">
                                 <button type="submit" tabindex="1" id="trashLaunchButton" class="btn btn-transparent text-danger"
                                         title="Vider la corbeille" style="border: 0;">
                                     <i class="fi fi-rr-dumpster-fire" style="margin-top: 0;"></i>
@@ -289,10 +280,10 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button id="closeModal" type="button" class="btn btn-secondary align-self-center" data-bs-dismiss="modal" onclick="location.reload();">
+                <button id="closeModal" type="button" class="btn btn-secondary align-self-center js-signbooks-reload" data-bs-dismiss="modal">
                     Fermer
                 </button>
-                <button id="validModal" onclick="location.href = '/user/reports';" class="btn btn-secondary">Voir le rapport complet</button>
+                <button id="validModal" type="button" class="btn btn-secondary js-signbooks-reports">Voir le rapport complet</button>
             </div>
         </div>
     </div>

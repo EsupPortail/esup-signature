@@ -2,6 +2,7 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="httpSessions" type="java.util.Map<org.esupportail.esupsignature.dto.page.admin.HttpSessionViewDto>"*/-->
 <head th:replace="~{fragments/head :: head}"></head>
+<script type="module" th:src="'/js/modules/bootstrap/CurrentSessionsBootstrap.js?version=' + ${versionApp}"></script>
 <body>
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
@@ -9,7 +10,7 @@
         <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full text-uppercase">
             <ol id="breadcrumb-ol" class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/admin" class="d-flex align-items-center"><i class="fi fi-rr-chess-queen"></i> Administration</a></li>
-                <li class="breadcrumb-item active">Sessions courantes</li>
+                <li class="breadcrumb-item es-breadcrumb-title active">Sessions courantes</li>
             </ol>
         </nav>
         <div id="content" class="es-content-full">
@@ -31,22 +32,6 @@
                                 <i class="fi fi-rr-eye-crossed"></i> Afficher les sessions anonymes
                             </button>
 
-                            <script>
-                                $(document).ready(function() {
-                                    let isHidden = true;
-
-                                    $('#toggleAnonymous').click(function() {
-                                        $('tr.table-secondary').toggleClass('d-none');
-
-                                        isHidden = !isHidden;
-                                        const icon = isHidden ? 'fi fi-rr-eye-crossed' : 'fi fi-rr-eye';
-                                        const text = isHidden ? ' Afficher les sessions anonymes' : ' Masquer les sessions anonymes';
-
-                                        $(this).find('i').attr('class', `${icon}`);
-                                        $(this).html(`<i class="${icon}"></i> ${text}`);
-                                    });
-                                });
-                            </script>
                         </div>
                         <div class="table-fix-head scrollbar-style rounded-3" style="height: calc(100vh - 230px);">
                             <table class="table table-hover table-responsive">
@@ -81,7 +66,7 @@
                                     </td>
                                     <td th:classappend="${live} ? 'bg-success-subtle' : ''">
                                         <form th:action="'/admin/currentsessions'" th:method="'delete'"
-                                              onsubmit="return confirm('Attention,️ cette action va déconnecter l’utilisateur.')">
+                                              class="js-confirm-submit" data-confirm-message="Attention, cette action va déconnecter l’utilisateur.">
                                             <input type="hidden" name="sessionId" th:value="${httpSession.sessionId}"/>
                                             <button type="submit" class="btn btn-sm btn-danger">
                                                 <i class="fi fi-rr-trash"></i>

@@ -1,0 +1,1195 @@
+import * as FilePond from "/webjars/filepond/4.32.12/dist/filepond.esm.js";
+import filePondFrLocale from "/webjars/filepond/4.32.12/locale/fr-fr.js";
+import {getDocument, GlobalWorkerOptions} from "/webjars/pdfjs-dist/legacy/build/pdf.mjs";
+import {CsrfToken} from "../../prototypes/CsrfToken.js?version=@version@";
+import {EventFactory} from "./EventFactory.js?version=@version@";
+
+const FILES_INPUT_ADAPTER_KEY = "esup-files-input-adapter";
+const DEFAULT_PDF_PREVIEW_SCALE = 1.5;
+const MIN_PDF_PREVIEW_SCALE = 0.5;
+const MAX_PDF_PREVIEW_SCALE = 2.5;
+const PDF_PREVIEW_SCALE_STEP = 0.25;
+const MIN_PDF_PREVIEW_LOADING_MS = 300;
+
+GlobalWorkerOptions.workerSrc = "/webjars/pdfjs-dist/legacy/build/pdf.worker.min.mjs";
+
+export default class FilesInputFilePond extends EventFactory {
+
+    constructor(input, maxSize, csrf, documents, readOnly, signBookId) {
+        super();
+        this.input = input;
+        this.signBookId = signBookId;
+        this.csrf = new CsrfToken(csrf);
+        this.title = $("#title-wiz");
+        this.maxSizeBytes = maxSize != null ? Number(maxSize) : 1000000000;
+        this.readOnly = readOnly === true;
+        this.adapter = new FilePondFilesInputAdapter(this);
+        this.fileInput = this.adapter.init(documents || []);
+        this.input.data(FILES_INPUT_ADAPTER_KEY, this.adapter);
+        FilesInputFilePond.installFileInputFacade();
+        this.initListeners();
+    }
+
+    static installFileInputFacade() {
+        if ($.fn.fileinput?.esupFilePondFacade === true) {
+            return;
+        }
+        const originalFileInput = $.fn.fileinput;
+        $.fn.fileinput = function(command, ...args) {
+            const adapter = this.data(FILES_INPUT_ADAPTER_KEY);
+            if (adapter != null && typeof command === "string") {
+                return adapter.command(command, ...args);
+            }
+            if (adapter != null && command == null) {
+                return adapter.pond;
+            }
+            if (typeof originalFileInput === "function") {
+                return originalFileInput.apply(this, [command, ...args]);
+            }
+            return this;
+        };
+        $.fn.fileinput.esupFilePondFacade = true;
+    }
+
+    initListeners() {
+        this.input.on('fileselect', e => this.checkUniqueFile());
+        this.input.on('fileremoved', e => this.checkUniqueFile());
+        this.input.on('filecleared', e => this.checkUniqueFile());
+        this.input.on('fileclear', e => this.input.fileinput('unlock'));
+        this.input.on('change', e => this.updateZipOptionVisibility());
+        this.updateZipOptionVisibility();
+    }
+
+    checkUniqueFile() {
+        let nbFiles = this.input.fileinput('getFilesCount', true);
+        let compare = 1;
+        if(nbFiles > compare) {
+            $('#forceAllSign').removeClass('d-none');
+        } else {
+            $('#forceAllSign').addClass('d-none');
+        }
+        this.updateZipOptionVisibility();
+    }
+
+    getUnzipOptionContainer() {
+        return this.input.closest('form').find('[data-es-unzip-option-container]').first();
+    }
+
+    getUnzipOption() {
+        return this.input.closest('form').find('[data-es-unzip-option]').first();
+    }
+
+    getSelectedFiles() {
+        const adapter = this.input.data(FILES_INPUT_ADAPTER_KEY);
+        if (adapter != null) {
+            return adapter.getNativeFiles();
+        }
+        try {
+            return Object.values(this.input.fileinput('getFileStack') || {}).filter(file => file != null);
+        } catch (e) {
+            return Array.from(this.input[0]?.files || []);
+        }
+    }
+
+    isZipFile(file) {
+        if(file == null) {
+            return false;
+        }
+        const fileName = (file.name || file.filename || '').toLowerCase();
+        const contentType = (file.type || file.fileType || '').toLowerCase();
+        return fileName.endsWith('.zip') || contentType.includes('zip');
+    }
+
+    updateZipOptionVisibility() {
+        const unzipOptionContainer = this.getUnzipOptionContainer();
+        const unzipOption = this.getUnzipOption();
+        if(unzipOptionContainer.length === 0 || unzipOption.length === 0) {
+            return;
+        }
+        const hasZip = this.getSelectedFiles().some(file => this.isZipFile(file));
+        unzipOptionContainer.toggleClass('d-none', !hasZip);
+        unzipOption.prop('checked', hasZip);
+    }
+
+    changeUploadUrl() {
+        let uploadUrl = "/ws-secure/global/add-docs/" + this.signBookId + "?" + this.csrf.parameterName + "=" + this.csrf.token;
+        const unzipOption = this.getUnzipOption();
+        if(unzipOption.length > 0 && unzipOption.is(':checked')) {
+            uploadUrl += "&unzip=true";
+        }
+        return uploadUrl;
+    }
+}
+
+class FilePondFilesInputAdapter {
+
+    constructor(filesInput) {
+        this.filesInput = filesInput;
+        this.input = filesInput.input;
+        this.readOnly = filesInput.readOnly;
+        this.pond = null;
+        this.locked = false;
+        this.uploadPromise = null;
+        this.uploadRunId = 0;
+        this.batchCancelled = false;
+        this.revertedDocumentIds = new Set();
+        this.abortedUploads = new Map();
+        this.activeUploads = new Map();
+        this.initialReadOnlyFileCount = 0;
+        this.previewObjectUrl = null;
+    }
+
+    init(documents) {
+        console.info("Enable FilePond for : " + this.input.attr("name"));
+        this.input.closest(".file-loading").removeClass("file-loading").addClass("esup-filepond-container");
+        this.initialReadOnlyFileCount = documents.length;
+        const options = {
+            ...filePondFrLocale,
+            styleProgressIndicatorPosition: 'center',
+            allowBrowse: !this.readOnly,
+            allowDrop: !this.readOnly,
+            allowPaste: !this.readOnly,
+            allowMultiple: this.input.prop("multiple"),
+            allowReorder: !this.readOnly && this.input.prop("multiple"),
+            allowRemove: !this.readOnly,
+            allowRevert: !this.readOnly,
+            credits: false,
+            files: documents.map(document => this.toInitialFile(document)),
+            instantUpload: false,
+            maxParallelUploads: 4,
+            name: this.input.attr("name") || "multipartFiles",
+            storeAsFile: true,
+            beforeAddFile: file => this.validateFile(file),
+            beforeRemoveFile: file => this.removeServerFile(file),
+            onaddfile: (error, file) => {
+                if (error == null) {
+                    this.decorateFileIcon(file);
+                    this.requestReadonlyHeightUpdate();
+                    if (file?.origin === FilePond.FileOrigin.INPUT) {
+                        this.input.trigger("fileselect", [file]);
+                        this.input.trigger("filebatchselected", [this.getNativeFiles()]);
+                        this.input.trigger("change");
+                    }
+                }
+            },
+            onremovefile: (error, file) => {
+                if (error == null) {
+                    this.requestReadonlyHeightUpdate();
+                    this.input.trigger("fileremoved", [file]);
+                    this.input.trigger("change");
+                }
+            },
+            onprocessfilestart: file => {
+                this.removeFilePreviewButton(file);
+                this.handleProcessStart(file);
+            },
+            onprocessfileabort: file => this.handleUploadAbort(file),
+            onprocessfilerevert: file => this.handleFileReverted(file),
+            onprocessfile: (error, file) => {
+                if (error != null) {
+                    this.notifyUploadError(this.getUploadErrorMessage(error), file);
+                } else {
+                    this.storeUploadedDocuments(file);
+                    this.activeUploads.delete(this.getNativeFileKey(file.file || {}));
+                    this.handleSingleFileProcessed(file);
+                }
+            },
+            onactivatefile: file => this.previewFile(file)
+        };
+        if (!this.usesNativeMultipartSubmit()) {
+            options.server = {
+                process: (fieldName, file, metadata, load, error, progress, abort) => {
+                    return this.processFile(fieldName, file, load, error, progress, abort);
+                },
+                revert: (uniqueFileId, load, error) => {
+                    this.revertFile(uniqueFileId, load, error);
+                }
+            };
+        }
+        this.pond = FilePond.create(this.input[0], options);
+        this.pond.element.classList.add("esup-filepond");
+        if (this.readOnly) {
+            this.pond.element.classList.add("esup-filepond-readonly");
+        }
+        this.requestReadonlyHeightUpdate();
+        return this.pond;
+    }
+
+    usesNativeMultipartSubmit() {
+        const formAction = this.input.closest("form").attr("action") || "";
+        return formAction.includes("/signrequests/clone/");
+    }
+
+    command(command, ...args) {
+        switch(command) {
+            case "getFilesCount":
+                return this.pond.getFiles().length;
+            case "getFileList":
+                return this.asBootstrapFileList(this.getNativeFiles());
+            case "getFileStack":
+                return this.getNativeFiles();
+            case "upload":
+                return this.upload();
+            case "clear":
+                return this.clear();
+            case "clearFileStack":
+                return this.clearFileStack();
+            case "readFiles":
+                return this.readFiles(args[0]);
+            case "cancel":
+                return this.cancel();
+            case "unlock":
+                this.locked = false;
+                return this.input;
+            case "lock":
+                this.locked = true;
+                return this.input;
+            default:
+                console.debug("Unsupported FilePond fileinput command", command);
+                return this.input;
+        }
+    }
+
+    requestReadonlyHeightUpdate() {
+        this.updateReadonlyHeight();
+        window.requestAnimationFrame(() => this.updateReadonlyHeight());
+        window.setTimeout(() => this.updateReadonlyHeight(), 100);
+    }
+
+    updateReadonlyHeight() {
+        if (!this.readOnly || this.pond == null) {
+            return;
+        }
+        const fileCount = Math.max(this.pond.getFiles().length, this.initialReadOnlyFileCount, 1);
+        const heightRem = Math.max(4.375, fileCount * 3.75 + 1);
+        this.pond.element.style.setProperty("--esup-filepond-file-count", String(fileCount));
+        this.pond.element.style.height = heightRem + "rem";
+        this.pond.element.style.minHeight = heightRem + "rem";
+    }
+
+    getNativeFiles() {
+        return this.pond.getFiles()
+            .filter(file => file.origin === FilePond.FileOrigin.INPUT)
+            .map(file => file.file)
+            .filter(file => file != null);
+    }
+
+    asBootstrapFileList(files) {
+        const fileList = Array.from(files || []);
+        fileList.size = function() {
+            return this.length;
+        };
+        return fileList;
+    }
+
+    upload() {
+        if (this.locked) {
+            return this.uploadPromise;
+        }
+        const uploadRunId = ++this.uploadRunId;
+        this.locked = true;
+        this.batchCancelled = false;
+        this.uploadErrorNotified = false;
+        this.uploadAbortNotified = false;
+        this.uploadSuccessTriggered = false;
+        this.activeUploads.clear();
+        this.getFilesToProcess().forEach(file => this.removeFilePreviewButton(file));
+        this.uploadPromise = this.cleanupAbortedUploads()
+            .then(() => {
+                if (uploadRunId !== this.uploadRunId || this.batchCancelled) {
+                    return [];
+                }
+                const filesToProcess = this.getFilesToProcess();
+                if (filesToProcess.length === 0) {
+                    this.locked = false;
+                    this.triggerBatchUploadSuccess([]);
+                    return [];
+                }
+                return this.pond.processFiles(filesToProcess);
+            })
+            .then(files => {
+                if (uploadRunId !== this.uploadRunId || this.batchCancelled || !this.locked) {
+                    return [];
+                }
+                this.locked = false;
+                this.triggerBatchUploadSuccess(files);
+                return files;
+            })
+            .catch(error => {
+                if (uploadRunId !== this.uploadRunId) {
+                    return [];
+                }
+                this.locked = false;
+                if (!this.batchCancelled && error?.aborted !== true && this.uploadErrorNotified !== true) {
+                    this.notifyUploadError(this.getUploadErrorMessage(error));
+                }
+                return [];
+            });
+        return this.uploadPromise;
+    }
+
+    getFilesToProcess() {
+        return this.pond.getFiles()
+            .filter(file => file.origin === FilePond.FileOrigin.INPUT)
+            .filter(file => file.status !== FilePond.FileStatus.PROCESSING_COMPLETE);
+    }
+
+    triggerBatchUploadSuccess(files) {
+        if (this.uploadSuccessTriggered === true) {
+            return;
+        }
+        this.uploadSuccessTriggered = true;
+        this.input.trigger("filebatchuploadsuccess", [files]);
+    }
+
+    clear() {
+        this.input.trigger("fileclear");
+        this.pond.removeFiles();
+        this.input.trigger("filecleared");
+        this.input.trigger("change");
+        return this.input;
+    }
+
+    clearFileStack() {
+        this.pond.getFiles()
+            .filter(file => file.origin === FilePond.FileOrigin.INPUT)
+            .forEach(file => this.pond.removeFile(file.id));
+        return this.input;
+    }
+
+    readFiles(files) {
+        const nativeFiles = Array.from(files || []);
+        if (nativeFiles.length === 0) {
+            return this.input;
+        }
+        this.pond.addFiles(nativeFiles)
+            .then(() => this.input.trigger("filebatchselected", [nativeFiles]))
+            .catch(error => this.input.trigger("fileuploaderror", [error]));
+        return this.input;
+    }
+
+    cancel() {
+        this.pond.getFiles()
+            .filter(file => typeof file.abortProcessing === "function")
+            .forEach(file => file.abortProcessing());
+        this.locked = false;
+        return this.input;
+    }
+
+    validateFile(fileItem) {
+        const file = fileItem.file || fileItem;
+        if (file?.size == null || this.filesInput.maxSizeBytes <= 0) {
+            return true;
+        }
+        if (file.size <= this.filesInput.maxSizeBytes) {
+            return true;
+        }
+        const maxSize = this.formatSize(this.filesInput.maxSizeBytes);
+        const message = "Le fichier " + (file.name || "") + " dépasse la taille maximale autorisée (" + maxSize + ").";
+        if (typeof bootbox !== "undefined") {
+            bootbox.alert(message);
+        } else {
+            window.alert(message);
+        }
+        this.input.trigger("fileuploaderror", [message]);
+        return false;
+    }
+
+    processFile(fieldName, file, load, error, progress, abort) {
+        const request = new XMLHttpRequest();
+        request.open("POST", this.filesInput.changeUploadUrl(), true);
+        request.setRequestHeader(this.filesInput.csrf.headerName, this.filesInput.csrf.token);
+        request.upload.onprogress = event => {
+            progress(event.lengthComputable, event.loaded, event.total);
+        };
+        request.onload = () => {
+            if (request.status >= 200 && request.status < 300) {
+                this.rememberActiveUploadDocuments(file, request.responseText);
+                load(request.responseText);
+                return;
+            }
+            const message = request.responseText || request.statusText;
+            this.lastUploadErrorMessage = message;
+            error(message);
+        };
+        request.onerror = () => {
+            const message = request.responseText || "Erreur durant le transfert";
+            this.lastUploadErrorMessage = message;
+            error(message);
+        };
+        const formData = new FormData();
+        formData.append(fieldName, file, file.name);
+        request.send(formData);
+        return {
+            abort: () => {
+                request.abort();
+                this.rememberAbortedUpload(file);
+                this.handleUploadAbort();
+                abort();
+            }
+        };
+    }
+
+    storeUploadedDocuments(file) {
+        const uploadedDocuments = this.getUploadedDocuments(file?.serverId);
+        if (uploadedDocuments.length > 0 && typeof file?.setMetadata === "function") {
+            file.setMetadata("uploadedDocuments", uploadedDocuments, true);
+        }
+    }
+
+    revertFile(uniqueFileId, load, error) {
+        const uploadedDocuments = this.getUploadedDocuments(uniqueFileId);
+        if (uploadedDocuments.length === 0) {
+            load();
+            return;
+        }
+        this.removeUploadedDocuments(uploadedDocuments)
+            .then(() => load())
+            .catch(e => error(this.getUploadErrorMessage(e)));
+    }
+
+    handleFileReverted(file) {
+        if (file?.id == null) {
+            return;
+        }
+        window.setTimeout(() => {
+            try {
+                this.pond.removeFile(file.id, {revert: false});
+            } catch (e) {
+                console.debug("FilePond reverted file removal skipped", e);
+            }
+        }, 0);
+    }
+
+    removeUploadedDocuments(uploadedDocuments) {
+        const documentIds = uploadedDocuments
+            .map(document => document?.id)
+            .filter(documentId => documentId != null)
+            .filter(documentId => !this.revertedDocumentIds.has(String(documentId)));
+        if (documentIds.length === 0) {
+            return Promise.resolve();
+        }
+        return Promise.all(documentIds.map(documentId => this.removeDocumentById(documentId)))
+            .then(() => documentIds.forEach(documentId => this.revertedDocumentIds.add(String(documentId))));
+    }
+
+    removeDocumentById(documentId) {
+        return fetch("/ws-secure/global/remove-doc/" + documentId + "?" + this.filesInput.csrf.parameterName + "=" + this.filesInput.csrf.token, {
+            method: "POST",
+            headers: {
+                [this.filesInput.csrf.headerName]: this.filesInput.csrf.token
+            }
+        }).then(response => {
+            if (!response.ok) {
+                throw new Error(response.statusText || "Erreur durant la suppression du document");
+            }
+        });
+    }
+
+    getUploadedDocuments(serverId) {
+        if (!serverId) {
+            return [];
+        }
+        try {
+            const response = JSON.parse(serverId);
+            if (Array.isArray(response)) {
+                return response.filter(document => document?.id != null);
+            }
+            if (response?.id != null) {
+                return [response];
+            }
+        } catch (e) {
+            console.debug("FilePond upload response is not a document list", e);
+        }
+        return [];
+    }
+
+    getUploadedDocumentIds(serverId) {
+        return this.getUploadedDocuments(serverId)
+            .map(document => document.id)
+            .filter(documentId => documentId != null);
+    }
+
+    handleProcessStart(file) {
+        if (this.batchCancelled) {
+            window.setTimeout(() => file?.abortProcessing?.(), 0);
+            return;
+        }
+        this.rememberActiveUpload(file);
+        if (!this.locked) {
+            this.uploadRunId++;
+            this.uploadAbortNotified = false;
+            this.uploadErrorNotified = false;
+        }
+    }
+
+    handleUploadAbort(file = null) {
+        if (this.uploadAbortNotified === true) {
+            return;
+        }
+        this.rememberAbortedUpload(file);
+        this.rememberActiveUploadsAsAborted();
+        this.batchCancelled = true;
+        this.uploadRunId++;
+        this.uploadAbortNotified = true;
+        this.locked = false;
+        this.uploadPromise = null;
+        this.input.trigger("fileuploaderror", [{aborted: true, file}]);
+        window.setTimeout(() => {
+            this.abortQueuedFiles(file);
+            this.resetInterruptedFiles();
+            this.batchCancelled = false;
+        }, 0);
+    }
+
+    rememberAbortedUpload(fileItemOrNativeFile = null) {
+        const nativeFile = fileItemOrNativeFile?.file || fileItemOrNativeFile;
+        if (nativeFile?.name == null) {
+            return;
+        }
+        const documentIds = this.getUploadedDocumentIds(fileItemOrNativeFile?.serverId);
+        if (documentIds.length > 0) {
+            this.abortedUploads.set(this.getNativeFileKey(nativeFile), documentIds);
+        }
+    }
+
+    rememberActiveUpload(fileItem) {
+        const nativeFile = fileItem?.file;
+        if (nativeFile?.name == null) {
+            return;
+        }
+        this.activeUploads.set(this.getNativeFileKey(nativeFile), []);
+    }
+
+    rememberActiveUploadDocuments(nativeFile, serverId) {
+        if (nativeFile?.name == null) {
+            return;
+        }
+        const uploadKey = this.getNativeFileKey(nativeFile);
+        this.activeUploads.set(uploadKey, this.getUploadedDocumentIds(serverId));
+    }
+
+    rememberActiveUploadsAsAborted() {
+        this.activeUploads.forEach((documentIds, uploadKey) => {
+            if (documentIds.length > 0) {
+                this.abortedUploads.set(uploadKey, documentIds);
+            }
+        });
+        this.activeUploads.clear();
+    }
+
+    cleanupAbortedUploads() {
+        const documentIds = [...new Set(Array.from(this.abortedUploads.values()).flat())];
+        if (documentIds.length === 0) {
+            return Promise.resolve();
+        }
+        return Promise.all(documentIds.map(documentId => this.removeDraftDocument(documentId)))
+            .then(() => {
+                this.abortedUploads.clear();
+            });
+    }
+
+    removeDraftDocument(documentId) {
+        const params = new URLSearchParams();
+        params.set(this.filesInput.csrf.parameterName, this.filesInput.csrf.token);
+        return fetch("/ws-secure/global/remove-draft-doc/" + documentId + "?" + params.toString(), {
+            method: "POST",
+            headers: {
+                [this.filesInput.csrf.headerName]: this.filesInput.csrf.token
+            }
+        }).then(response => {
+            if (!response.ok) {
+                throw new Error(response.statusText || "Erreur durant le nettoyage du document annulé");
+            }
+        });
+    }
+
+    handleSingleFileProcessed(file) {
+        if (this.locked || this.batchCancelled) {
+            return;
+        }
+        if (this.getFilesToProcess().length > 0) {
+            return;
+        }
+        this.triggerBatchUploadSuccess([file]);
+    }
+
+    getNativeFileKey(file) {
+        return [file.name || "", file.size || "", file.type || ""].join("|");
+    }
+
+    abortQueuedFiles(sourceFile = null) {
+        this.pond.getFiles()
+            .filter(file => file !== sourceFile)
+            .filter(file => file.status === FilePond.FileStatus.PROCESSING || file.status === FilePond.FileStatus.PROCESSING_QUEUED)
+            .filter(file => typeof file.abortProcessing === "function")
+            .forEach(file => {
+                try {
+                    file.abortProcessing();
+                } catch (e) {
+                    console.debug("FilePond abort skipped", e);
+                }
+            });
+    }
+
+    resetInterruptedFiles() {
+        const interruptedFiles = this.pond.getFiles()
+            .filter(file => file.origin === FilePond.FileOrigin.INPUT)
+            .filter(file => file.status !== FilePond.FileStatus.PROCESSING_COMPLETE)
+            .map(file => ({
+                id: file.id,
+                file: file.file,
+                index: this.pond.getFiles().indexOf(file)
+            }))
+            .filter(item => item.file != null);
+
+        interruptedFiles.reduce((promise, item) => {
+            return promise
+                .then(() => Promise.resolve(this.pond.removeFile(item.id, {revert: false})))
+                .then(() => this.pond.addFile(item.file, {index: item.index}))
+                .then(file => this.decorateFileIcon(file))
+                .catch(e => console.debug("FilePond interrupted file reset skipped", e));
+        }, Promise.resolve());
+    }
+
+    notifyUploadError(message, file = null) {
+        if (this.uploadErrorNotified === true) {
+            return;
+        }
+        this.uploadErrorNotified = true;
+        const errorMessage = message || "Erreur durant le transfert";
+        this.locked = false;
+        this.input.trigger("fileuploaderror", [errorMessage, file]);
+    }
+
+    getUploadErrorMessage(error) {
+        if (this.lastUploadErrorMessage) {
+            const message = this.lastUploadErrorMessage;
+            this.lastUploadErrorMessage = null;
+            return message;
+        }
+        if (typeof error === "string") {
+            return error;
+        }
+        return error?.body || error?.main || error?.message || error?.error || "Erreur durant le transfert";
+    }
+
+    removeServerFile(file) {
+        const deleteUrl = file?.getMetadata?.("deleteUrl");
+        if (this.readOnly || !deleteUrl) {
+            const uploadedDocuments = file?.getMetadata?.("uploadedDocuments") || this.getUploadedDocuments(file?.serverId);
+            if (this.readOnly) {
+                return true;
+            }
+            if (uploadedDocuments.length > 0) {
+                return this.removeUploadedDocuments(uploadedDocuments);
+            }
+            return this.removeAbortedUpload(file);
+        }
+        return fetch(deleteUrl, {
+            method: "POST",
+            headers: {
+                [this.filesInput.csrf.headerName]: this.filesInput.csrf.token
+            }
+        }).then(response => response.ok);
+    }
+
+    removeAbortedUpload(fileItem) {
+        const nativeFile = fileItem?.file;
+        if (nativeFile?.name == null) {
+            return true;
+        }
+        const uploadKey = this.getNativeFileKey(nativeFile);
+        const documentIds = this.abortedUploads.get(uploadKey) || [];
+        if (documentIds.length === 0) {
+            return true;
+        }
+        return Promise.all(documentIds.map(documentId => this.removeDraftDocument(documentId)))
+            .then(() => {
+                this.abortedUploads.delete(uploadKey);
+                return true;
+            });
+    }
+
+    openInitialFile(file) {
+        const downloadUrl = file?.getMetadata?.("downloadUrl");
+        if (downloadUrl) {
+            window.open(downloadUrl, "_blank");
+        }
+    }
+
+    decorateFileIcon(file, attempts = 8) {
+        window.setTimeout(() => {
+            const item = document.getElementById("filepond--item-" + file.id);
+            const fileInfo = item?.querySelector(".filepond--file-info");
+            if (item == null || fileInfo == null || item.querySelector(".esup-filepond-file-icon") != null) {
+                if (attempts > 0 && (item == null || fileInfo == null)) {
+                    this.decorateFileIcon(file, attempts - 1);
+                }
+                if (item != null) {
+                    this.decorateFilePreviewButton(file);
+                }
+                return;
+            }
+            const icon = document.createElement("i");
+            icon.className = "esup-filepond-file-icon " + this.getIconClass(file);
+            icon.setAttribute("aria-hidden", "true");
+            fileInfo.before(icon);
+            this.decorateFilePreviewButton(file);
+        }, 50);
+    }
+
+    decorateFilePreviewButton(file, attempts = 8) {
+        window.setTimeout(() => {
+            const item = document.getElementById("filepond--item-" + file.id);
+            const fileElement = item?.querySelector(".filepond--file");
+            if (item == null || fileElement == null) {
+                if (attempts > 0) {
+                    this.decorateFilePreviewButton(file, attempts - 1);
+                }
+                return;
+            }
+            if (item.querySelector(".esup-filepond-preview-button") != null) {
+                return;
+            }
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = "filepond--file-action-button esup-filepond-preview-button";
+            button.title = "Voir";
+            button.setAttribute("aria-label", "Voir " + (file.filename || file.file?.name || "le fichier"));
+            button.innerHTML = '<i class="fi fi-rr-eye" aria-hidden="true"></i>';
+            button.addEventListener("click", event => {
+                event.preventDefault();
+                event.stopPropagation();
+                this.previewFile(file);
+            });
+            fileElement.appendChild(button);
+        }, 50);
+    }
+
+    removeFilePreviewButton(file) {
+        document.getElementById("filepond--item-" + file?.id)
+            ?.querySelector(".esup-filepond-preview-button")
+            ?.remove();
+    }
+
+    previewFile(file) {
+        if (this.isFileUploading(file)) {
+            return;
+        }
+        const preview = this.getPreviewDescriptor(file);
+        if (!preview.url) {
+            this.openInitialFile(file);
+            return;
+        }
+        const modal = this.getPreviewModal();
+        modal.querySelector(".js-esup-filepond-preview-title").textContent = preview.name || "Aperçu du fichier";
+        const body = modal.querySelector(".js-esup-filepond-preview-body");
+        const downloadLink = modal.querySelector(".js-esup-filepond-preview-download");
+        this.destroyPdfPreview(modal);
+        this.setPdfPreviewZoomControlsVisible(modal, this.isPdfPreview(preview));
+        body.replaceChildren();
+        const downloadUrl = preview.downloadUrl || preview.url;
+        if (downloadUrl) {
+            downloadLink.href = downloadUrl;
+            downloadLink.classList.remove("d-none");
+        } else {
+            downloadLink.removeAttribute("href");
+            downloadLink.classList.add("d-none");
+        }
+
+        if (this.isPdfPreview(preview)) {
+            const pdfPreview = document.createElement("div");
+            pdfPreview.className = "esup-filepond-preview-pdf";
+            pdfPreview.setAttribute("aria-busy", "true");
+            pdfPreview.innerHTML = this.createPdfPreviewLoadingMarkup();
+            body.appendChild(pdfPreview);
+            const previewToken = Symbol("pdf-preview");
+            modal.esupFilePondPreviewToken = previewToken;
+            modal.esupFilePondPdfScale = DEFAULT_PDF_PREVIEW_SCALE;
+            modal.esupFilePondPdfLoadingStartedAt = performance.now();
+            modal.esupFilePondPreviewShown = modal.classList.contains("show");
+            this.applyPdfPreviewZoom(modal);
+            this.updatePdfPreviewZoomLabel(modal);
+            this.renderPdfPreview(preview.url, pdfPreview, modal, previewToken);
+        } else if (this.isImagePreview(preview)) {
+            const image = document.createElement("img");
+            image.className = "esup-filepond-preview-image";
+            image.alt = preview.name || "Aperçu image";
+            image.src = preview.url;
+            body.appendChild(image);
+        } else {
+            const fallback = document.createElement("div");
+            fallback.className = "esup-filepond-preview-fallback";
+            fallback.innerHTML = '<i class="fi fi-rr-file text-muted" aria-hidden="true"></i><p class="mb-3">Aucun aperçu intégré disponible pour ce type de fichier.</p>';
+            const openLink = document.createElement("a");
+            openLink.className = "btn btn-primary";
+            openLink.href = preview.downloadUrl || preview.url;
+            openLink.target = "_blank";
+            openLink.rel = "noopener";
+            openLink.textContent = "Ouvrir le fichier";
+            fallback.appendChild(openLink);
+            body.appendChild(fallback);
+        }
+
+        modal.esupFilePondPreviewOwner = this;
+        this.showPreviewModal(modal);
+    }
+
+    async renderPdfPreview(url, container, modal, previewToken) {
+        if (modal.esupFilePondPdfRendering && modal.esupFilePondPdfRenderingToken === previewToken) {
+            return;
+        }
+        modal.esupFilePondPdfRendering = true;
+        modal.esupFilePondPdfRenderingToken = previewToken;
+        try {
+            let pdf = modal.esupFilePondPdfDocument;
+            if (pdf == null) {
+                const loadingTask = getDocument({
+                    verbosity: 0,
+                    url,
+                    useWasm: true,
+                    wasmUrl: "/webjars/pdfjs-dist/wasm/"
+                });
+                modal.esupFilePondPdfLoadingTask = loadingTask;
+                pdf = await loadingTask.promise;
+                if (modal.esupFilePondPdfLoadingTask === loadingTask) {
+                    modal.esupFilePondPdfLoadingTask = null;
+                }
+            }
+            if (modal.esupFilePondPreviewToken !== previewToken) {
+                await pdf.destroy();
+                return;
+            }
+            modal.esupFilePondPdfDocument = pdf;
+
+            const pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
+            const scaleFrame = document.createElement("div");
+            scaleFrame.className = "esup-pdf-preview-scale-frame";
+            const documentPreview = document.createElement("div");
+            documentPreview.className = "esup-pdf-preview-document";
+            scaleFrame.appendChild(documentPreview);
+            const pages = [];
+            for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
+                const page = await pdf.getPage(pageNumber);
+                const viewport = page.getViewport({scale: DEFAULT_PDF_PREVIEW_SCALE});
+                const pagePreview = document.createElement("div");
+                pagePreview.className = "esup-pdf-preview-page";
+                const canvas = document.createElement("canvas");
+                canvas.width = Math.ceil(viewport.width * pixelRatio);
+                canvas.height = Math.ceil(viewport.height * pixelRatio);
+                canvas.style.width = Math.ceil(viewport.width) + "px";
+                canvas.style.height = Math.ceil(viewport.height) + "px";
+                canvas.setAttribute("aria-label", "Page " + pageNumber + " du PDF");
+                pagePreview.appendChild(canvas);
+                documentPreview.appendChild(pagePreview);
+                pages.push({page, viewport, canvas});
+            }
+
+            if (modal.esupFilePondPreviewToken !== previewToken) {
+                pages.forEach(({page}) => page.cleanup());
+                await pdf.destroy();
+                return;
+            }
+
+            for (const {page, viewport, canvas} of pages) {
+                if (modal.esupFilePondPreviewToken !== previewToken) {
+                    page.cleanup();
+                    continue;
+                }
+                await page.render({
+                    canvasContext: canvas.getContext("2d"),
+                    transform: [pixelRatio, 0, 0, pixelRatio, 0, 0],
+                    viewport
+                }).promise;
+                page.cleanup();
+            }
+
+            if (modal.esupFilePondPreviewToken === previewToken) {
+                await this.waitForPdfPreviewReveal(modal);
+            }
+
+            if (modal.esupFilePondPreviewToken === previewToken) {
+                container.replaceChildren(scaleFrame);
+                this.applyPdfPreviewZoom(modal);
+                container.removeAttribute("aria-busy");
+                this.updatePdfPreviewZoomLabel(modal);
+            }
+        } catch (error) {
+            if (modal.esupFilePondPreviewToken === previewToken) {
+                this.showPdfPreviewError(container, "Impossible de générer l’aperçu PDF.");
+            }
+        } finally {
+            if (modal.esupFilePondPdfRenderingToken === previewToken) {
+                modal.esupFilePondPdfRendering = false;
+                modal.esupFilePondPdfRenderingToken = null;
+            }
+        }
+    }
+
+    createPdfPreviewLoadingMarkup() {
+        return `
+            <div class="esup-pdf-preview-loading" role="status">
+                <span class="spinner-border text-dark" aria-hidden="true"></span>
+                <span>Chargement du document...</span>
+            </div>`;
+    }
+
+    waitForPdfPreviewReveal(modal) {
+        const waits = [];
+        const startedAt = modal.esupFilePondPdfLoadingStartedAt || performance.now();
+        const remainingDelay = MIN_PDF_PREVIEW_LOADING_MS - (performance.now() - startedAt);
+        if (remainingDelay > 0) {
+            waits.push(new Promise(resolve => window.setTimeout(resolve, remainingDelay)));
+        }
+        if (!modal.esupFilePondPreviewShown) {
+            waits.push(new Promise(resolve => modal.addEventListener("shown.bs.modal", resolve, {once: true})));
+        }
+        return Promise.all(waits).then(() => new Promise(resolve => {
+            window.requestAnimationFrame(() => window.requestAnimationFrame(resolve));
+        }));
+    }
+
+    async changePdfPreviewZoom(modal, delta) {
+        const container = modal.querySelector(".esup-filepond-preview-pdf");
+        const previewToken = modal.esupFilePondPreviewToken;
+        if (container == null || previewToken == null || modal.esupFilePondPdfDocument == null || modal.esupFilePondPdfRendering) {
+            return;
+        }
+        const nextScale = Math.min(MAX_PDF_PREVIEW_SCALE, Math.max(MIN_PDF_PREVIEW_SCALE,
+            Number((modal.esupFilePondPdfScale + delta).toFixed(2))));
+        if (nextScale === modal.esupFilePondPdfScale) {
+            return;
+        }
+        modal.esupFilePondPdfScale = nextScale;
+        this.applyPdfPreviewZoom(modal);
+        this.updatePdfPreviewZoomLabel(modal);
+    }
+
+    applyPdfPreviewZoom(modal) {
+        const container = modal.querySelector(".esup-filepond-preview-pdf");
+        const documentPreview = container?.querySelector(".esup-pdf-preview-document");
+        const scaleFrame = container?.querySelector(".esup-pdf-preview-scale-frame");
+        if (documentPreview == null || scaleFrame == null) {
+            return;
+        }
+        const zoom = modal.esupFilePondPdfScale / DEFAULT_PDF_PREVIEW_SCALE;
+        scaleFrame.style.width = Math.ceil(documentPreview.offsetWidth * zoom) + "px";
+        scaleFrame.style.height = Math.ceil(documentPreview.offsetHeight * zoom) + "px";
+        documentPreview.style.transform = "scale(" + zoom + ")";
+    }
+
+    updatePdfPreviewZoomLabel(modal) {
+        const label = modal.querySelector(".js-esup-filepond-pdf-zoom-value");
+        if (label != null) {
+            label.textContent = Math.round(modal.esupFilePondPdfScale * 100) + "%";
+        }
+    }
+
+    setPdfPreviewZoomControlsVisible(modal, visible) {
+        modal.querySelector(".js-esup-filepond-pdf-zoom-controls")?.classList.toggle("d-none", !visible);
+    }
+
+    showPdfPreviewError(container, message) {
+        container.classList.add("esup-filepond-preview-fallback");
+        container.removeAttribute("aria-busy");
+        container.textContent = message;
+    }
+
+    destroyPdfPreview(modal) {
+        modal.esupFilePondPreviewToken = null;
+        const loadingTask = modal.esupFilePondPdfLoadingTask;
+        const pdf = modal.esupFilePondPdfDocument;
+        modal.esupFilePondPdfLoadingTask = null;
+        modal.esupFilePondPdfDocument = null;
+        modal.esupFilePondPdfRendering = false;
+        modal.esupFilePondPdfRenderingToken = null;
+        modal.esupFilePondPdfScale = DEFAULT_PDF_PREVIEW_SCALE;
+        loadingTask?.destroy?.();
+        pdf?.destroy?.();
+    }
+
+    getPreviewDescriptor(file) {
+        const nativeFile = file?.file;
+        const name = file?.filename || nativeFile?.name || "";
+        const contentType = nativeFile?.type || file?.fileType || "";
+        const downloadUrl = file?.getMetadata?.("downloadUrl") || "";
+        const previewUrl = file?.getMetadata?.("previewUrl") || downloadUrl;
+        if (nativeFile instanceof Blob && file?.origin === FilePond.FileOrigin.INPUT) {
+            this.revokePreviewObjectUrl();
+            this.previewObjectUrl = URL.createObjectURL(nativeFile);
+            return {
+                name,
+                contentType,
+                url: this.previewObjectUrl,
+                downloadUrl: this.previewObjectUrl
+            };
+        }
+        return {
+            name,
+            contentType,
+            url: previewUrl,
+            downloadUrl
+        };
+    }
+
+    getPreviewModal() {
+        let modal = document.getElementById("esup-filepond-preview-modal");
+        if (modal != null) {
+            return modal;
+        }
+        modal = document.createElement("div");
+        modal.id = "esup-filepond-preview-modal";
+        modal.className = "modal fade esup-filepond-preview-modal";
+        modal.tabIndex = -1;
+        modal.setAttribute("aria-hidden", "true");
+        modal.innerHTML = `
+            <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+                <div class="modal-content">
+                    <div class="modal-header esup-filepond-preview-header">
+                        <div class="esup-filepond-preview-title-row">
+                            <h5 class="modal-title js-esup-filepond-preview-title">Aperçu du fichier</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                        </div>
+                        <div class="d-none align-items-center justify-content-center gap-2 js-esup-filepond-pdf-zoom-controls">
+                            <button type="button" data-ui-tooltip="false" class="btn btn-outline-secondary btn-sm js-esup-filepond-pdf-zoom-out" title="Zoom arrière" aria-label="Zoom arrière">-</button>
+                            <span class="badge text-bg-light js-esup-filepond-pdf-zoom-value">150%</span>
+                            <button type="button" data-ui-tooltip="false" class="btn btn-outline-secondary btn-sm js-esup-filepond-pdf-zoom-in" title="Zoom avant" aria-label="Zoom avant">+</button>
+                        </div>
+                    </div>
+                    <div class="modal-body js-esup-filepond-preview-body"></div>
+                    <div class="modal-footer">
+                        <a class="btn btn-outline-secondary js-esup-filepond-preview-download" target="_blank" rel="noopener">Télécharger</a>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                    </div>
+                </div>
+            </div>`;
+        modal.addEventListener("click", event => {
+            if (event.target.closest(".js-esup-filepond-pdf-zoom-in") != null) {
+                this.changePdfPreviewZoom(modal, PDF_PREVIEW_SCALE_STEP);
+            } else if (event.target.closest(".js-esup-filepond-pdf-zoom-out") != null) {
+                this.changePdfPreviewZoom(modal, -PDF_PREVIEW_SCALE_STEP);
+            }
+        });
+        modal.addEventListener("shown.bs.modal", () => {
+            modal.esupFilePondPreviewShown = true;
+            this.applyPdfPreviewZoom(modal);
+        });
+        modal.addEventListener("hidden.bs.modal", () => {
+            modal.esupFilePondPreviewShown = false;
+            this.destroyPdfPreview(modal);
+            this.setPdfPreviewZoomControlsVisible(modal, false);
+            modal.querySelector(".js-esup-filepond-preview-body")?.replaceChildren();
+            modal.esupFilePondPreviewOwner?.revokePreviewObjectUrl?.();
+            modal.esupFilePondPreviewOwner = null;
+        });
+        document.body.appendChild(modal);
+        return modal;
+    }
+
+    showPreviewModal(modal) {
+        if (window.bootstrap?.Modal != null) {
+            window.bootstrap.Modal.getOrCreateInstance(modal).show();
+            return;
+        }
+        $(modal).modal("show");
+    }
+
+    revokePreviewObjectUrl() {
+        if (this.previewObjectUrl != null) {
+            URL.revokeObjectURL(this.previewObjectUrl);
+            this.previewObjectUrl = null;
+        }
+    }
+
+    isPdfPreview(preview) {
+        return (preview.contentType || "").toLowerCase().includes("pdf") || (preview.name || "").toLowerCase().endsWith(".pdf");
+    }
+
+    isImagePreview(preview) {
+        return (preview.contentType || "").toLowerCase().startsWith("image/") || (preview.name || "").toLowerCase().match(/\.(jpg|jpeg|gif|png|svg|bmp|webp|tif|tiff)$/) != null;
+    }
+
+    isFileUploading(file) {
+        return file?.status === FilePond.FileStatus.PROCESSING
+            || file?.status === FilePond.FileStatus.PROCESSING_QUEUED;
+    }
+
+    getIconClass(file) {
+        const ext = (file?.fileExtension || this.getExtension(file?.filename) || "").toLowerCase();
+        if (ext.match(/^(sce)$/i)) {
+            return "fi fi-rr-document-signed text-success";
+        }
+        if (ext.match(/^(pdf)$/i)) {
+            return "fi fi-rr-file-pdf text-danger";
+        }
+        if (ext.match(/^(doc|docx|odt|rtf)$/i)) {
+            return "fi fi-rr-file-word text-primary";
+        }
+        if (ext.match(/^(xls|xlsx|ods)$/i)) {
+            return "fi fi-rr-file-excel text-success";
+        }
+        if (ext.match(/^(odp|ppt|pptx)$/i)) {
+            return "fi fi-rr-file-powerpoint text-danger";
+        }
+        if (ext.match(/^(zip|rar|tar|gzip|gz|7z|bz2|xz|tgz)$/i)) {
+            return "fi fi-rr-file-zipper text-warning";
+        }
+        if (ext.match(/^(htm|html|xhtml)$/i)) {
+            return "fi fi-rr-file-code text-info";
+        }
+        if (ext.match(/^(txt|ini|csv|log|md|java|php|js|css|json|xml|yml|yaml)$/i)) {
+            return "fi fi-rr-document text-info";
+        }
+        if (ext.match(/^(avi|mpg|mpeg|mkv|mov|mp4|3gp|webm|wmv)$/i)) {
+            return "fi fi-rr-video-camera text-warning";
+        }
+        if (ext.match(/^(mp3|wav|ogg|oga|m4a|aac|flac)$/i)) {
+            return "fi fi-rr-file-audio text-warning";
+        }
+        if (ext.match(/^(jpg|jpeg|gif|png|svg|bmp|webp|tif|tiff)$/i)) {
+            return "fi fi-rr-file-image text-secondary";
+        }
+        return "fi fi-rr-file text-muted";
+    }
+
+    getExtension(filename) {
+        if (!filename || !filename.includes(".")) {
+            return "";
+        }
+        return filename.split(".").pop();
+    }
+
+    toInitialFile(document) {
+        const downloadUrl = "/ws-secure/global/get-file/" + document.id;
+        const previewUrl = "/ws-secure/global/get-file-inline/" + document.id;
+        return {
+            source: String(document.id),
+            options: {
+                type: "local",
+                file: {
+                    name: document.fileName,
+                    size: document.size,
+                    type: document.contentType
+                },
+                metadata: {
+                    documentId: document.id,
+                    deleteUrl: this.readOnly ? "" : "/ws-secure/global/remove-doc/" + document.id + "?" + this.filesInput.csrf.parameterName + "=" + this.filesInput.csrf.token,
+                    downloadUrl,
+                    previewUrl
+                }
+            }
+        };
+    }
+
+    formatSize(size) {
+        if (size >= 1000000000) {
+            return (size / 1000000000).toFixed(1).replace(".0", "") + " Go";
+        }
+        if (size >= 1000000) {
+            return (size / 1000000).toFixed(1).replace(".0", "") + " Mo";
+        }
+        return Math.ceil(size / 1000) + " Ko";
+    }
+
+}

@@ -8,16 +8,14 @@
 <!--/*@thymesVar id="messageCustom" type="java.lang.String"*/-->
 <!--/*@thymesVar id="form" type="org.esupportail.esupsignature.entity.Form"*/-->
 <div th:fragment="message">
-	<div id="snackbar" class="es-notification es-notification--snackbar" role="alert" aria-live="assertive" aria-atomic="true" aria-hidden="true" data-es-delay="3000"></div>
+		<div id="snackbar" class="es-notification es-notification--snackbar" role="alert" aria-live="assertive" aria-atomic="true" aria-hidden="true" data-es-delay="3000"
+			 th:attr="data-message-type=${message != null ? message.type : ''},
+					  data-message-text=${message != null ? message.text : ''}"></div>
 	<div id="toast-backdrop" class="es-notification-backdrop"></div>
 	<div style="width: 100%; position: absolute; left: 0; top: 0; pointer-events: none;">
-		<script th:inline="javascript" type="module">
-			import NotificationCenter from '../../js/modules/ui/NotificationCenter.js?version=@[(${versionApp})]@';
-			const backendMessage = /*[[${message}]]*/ null;
-			new NotificationCenter(backendMessage);
-		</script>
+			<script type="module" th:src="'/js/modules/bootstrap/NotificationBootstrap.js?version=' + ${versionApp}"></script>
 		<th:block th:each="messageNew : ${messageNews}">
-		<div th:id="'toast-message-' + ${messageNew.id}" class="toast toast-es toast-xl es-notification es-notification--panel es-notification--xl bg-white" role="alert" aria-live="assertive" aria-atomic="true" aria-hidden="true" data-es-delay="999999999" data-es-notification-kind="news">
+			<div th:id="'toast-message-' + ${messageNew.id}" class="toast toast-es toast-xl es-notification es-notification--panel es-notification--xl bg-white" role="alert" aria-live="assertive" aria-atomic="true" aria-hidden="true" data-es-delay="999999999" data-es-notification-kind="news">
 			<div class="toast-header pt-3">
 				<h4 class="me-auto">Information !</h4>
 				<button type="button" class="btn-close" title="Fermer" data-es-dismiss="notification" aria-label="Close">

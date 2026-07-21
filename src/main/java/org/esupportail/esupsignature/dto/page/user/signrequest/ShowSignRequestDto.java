@@ -51,6 +51,11 @@ public class ShowSignRequestDto {
     private List<SignRequestLightDto> clonedSignRequests;
     private Map<Long, RecipientActionDto> recipientActions;
     private List<SignRequestTabDto> signRequestTabs;
+    private Integer signRequestTabCount;
+    private Integer currentSignRequestTabIndex;
+    private SignRequestTabDto currentSignRequestTab;
+    private SignRequestTabDto previousSignRequestTab;
+    private SignRequestTabDto nextSignRequestTab;
     private Integer liveWorkflowStepCount;
     private Boolean viewedByCurrentUser;
     private Boolean viewRight;
@@ -121,6 +126,16 @@ public class ShowSignRequestDto {
     public void setRecipientActions(Map<Long, RecipientActionDto> recipientActions) { this.recipientActions = recipientActions; }
     public List<SignRequestTabDto> getSignRequestTabs() { return signRequestTabs; }
     public void setSignRequestTabs(List<SignRequestTabDto> signRequestTabs) { this.signRequestTabs = signRequestTabs; }
+    public Integer getSignRequestTabCount() { return signRequestTabCount; }
+    public void setSignRequestTabCount(Integer signRequestTabCount) { this.signRequestTabCount = signRequestTabCount; }
+    public Integer getCurrentSignRequestTabIndex() { return currentSignRequestTabIndex; }
+    public void setCurrentSignRequestTabIndex(Integer currentSignRequestTabIndex) { this.currentSignRequestTabIndex = currentSignRequestTabIndex; }
+    public SignRequestTabDto getCurrentSignRequestTab() { return currentSignRequestTab; }
+    public void setCurrentSignRequestTab(SignRequestTabDto currentSignRequestTab) { this.currentSignRequestTab = currentSignRequestTab; }
+    public SignRequestTabDto getPreviousSignRequestTab() { return previousSignRequestTab; }
+    public void setPreviousSignRequestTab(SignRequestTabDto previousSignRequestTab) { this.previousSignRequestTab = previousSignRequestTab; }
+    public SignRequestTabDto getNextSignRequestTab() { return nextSignRequestTab; }
+    public void setNextSignRequestTab(SignRequestTabDto nextSignRequestTab) { this.nextSignRequestTab = nextSignRequestTab; }
     public Integer getLiveWorkflowStepCount() { return liveWorkflowStepCount; }
     public void setLiveWorkflowStepCount(Integer liveWorkflowStepCount) { this.liveWorkflowStepCount = liveWorkflowStepCount; }
     public Boolean getViewedByCurrentUser() { return viewedByCurrentUser; }
@@ -167,6 +182,11 @@ public class ShowSignRequestDto {
     public List<SignRequestLightDto> clonedSignRequests() { return clonedSignRequests; }
     public Map<Long, RecipientActionDto> recipientActions() { return recipientActions; }
     public List<SignRequestTabDto> signRequestTabs() { return signRequestTabs; }
+    public Integer signRequestTabCount() { return signRequestTabCount; }
+    public Integer currentSignRequestTabIndex() { return currentSignRequestTabIndex; }
+    public SignRequestTabDto currentSignRequestTab() { return currentSignRequestTab; }
+    public SignRequestTabDto previousSignRequestTab() { return previousSignRequestTab; }
+    public SignRequestTabDto nextSignRequestTab() { return nextSignRequestTab; }
     public Integer liveWorkflowStepCount() { return liveWorkflowStepCount; }
     public Boolean viewedByCurrentUser() { return viewedByCurrentUser; }
     public Boolean viewRight() { return viewRight; }

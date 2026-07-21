@@ -5,6 +5,7 @@ import org.esupportail.esupsignature.config.GlobalProperties;
 public class SignatureUiConfigDto {
 
     private Integer defaultFontSize;
+    private Float signatureExtraLineHeightFactor;
     private UiGlobalPropertiesDto.ExternalSignatureParamsDto externalSignatureParams;
     private Boolean returnToHomeAfterSign;
 
@@ -12,9 +13,11 @@ public class SignatureUiConfigDto {
     }
 
     public SignatureUiConfigDto(Integer defaultFontSize,
+                                Float signatureExtraLineHeightFactor,
                                 UiGlobalPropertiesDto.ExternalSignatureParamsDto externalSignatureParams,
                                 Boolean returnToHomeAfterSign) {
         this.defaultFontSize = defaultFontSize;
+        this.signatureExtraLineHeightFactor = signatureExtraLineHeightFactor;
         this.externalSignatureParams = externalSignatureParams;
         this.returnToHomeAfterSign = returnToHomeAfterSign;
     }
@@ -25,6 +28,14 @@ public class SignatureUiConfigDto {
 
     public void setDefaultFontSize(Integer defaultFontSize) {
         this.defaultFontSize = defaultFontSize;
+    }
+
+    public Float getSignatureExtraLineHeightFactor() {
+        return signatureExtraLineHeightFactor;
+    }
+
+    public void setSignatureExtraLineHeightFactor(Float signatureExtraLineHeightFactor) {
+        this.signatureExtraLineHeightFactor = signatureExtraLineHeightFactor;
     }
 
     public UiGlobalPropertiesDto.ExternalSignatureParamsDto getExternalSignatureParams() {
@@ -44,6 +55,7 @@ public class SignatureUiConfigDto {
     }
 
     public Integer defaultFontSize() { return defaultFontSize; }
+    public Float signatureExtraLineHeightFactor() { return signatureExtraLineHeightFactor; }
     public UiGlobalPropertiesDto.ExternalSignatureParamsDto externalSignatureParams() { return externalSignatureParams; }
     public Boolean returnToHomeAfterSign() { return returnToHomeAfterSign; }
 
@@ -53,6 +65,7 @@ public class SignatureUiConfigDto {
         }
         return new SignatureUiConfigDto(
                 props.getDefaultFontSize(),
+                props.getSignatureExtraLineHeightFactor(),
                 UiGlobalPropertiesDto.ExternalSignatureParamsDto.fromSignRequestParams(props.getExternalSignatureParams()),
                 props.getReturnToHomeAfterSign()
         );

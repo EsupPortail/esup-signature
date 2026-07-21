@@ -521,10 +521,6 @@ export class GlobalUi {
             window.history.back();
         });
 
-        $("#display-side-btn").on('click', function(e) {
-           $("#sidebar").toggleClass("es-sidebar-mobile").toggleClass("sidebar-mobile");
-        });
-
         $(window).on("resize", (e) => {
             const w = window.innerWidth;
             const h = window.innerHeight;
@@ -649,12 +645,12 @@ export class GlobalUi {
     }
 
     initTooltips() {
-        const tooltipItems = ".rounded-circle[title], .btn[title], #new-scroll[title], [data-ui-tooltip='true'][title]";
+        const tooltipItems = ".rounded-circle[title]:not([data-ui-tooltip='false']), .btn[title]:not([data-ui-tooltip='false']), #new-scroll[title]:not([data-ui-tooltip='false']), [data-ui-tooltip='true'][title]";
         const tooltipOptions = {
             items: tooltipItems,
             disabled: false,
             show: { effect: "fade", duration: 500 },
-            hide: { effect: "fade", duration: 500 }
+            hide: { effect: "fade", duration: 100 }
         };
 
         const documentElement = $(document);
@@ -718,10 +714,6 @@ export class GlobalUi {
         return os;
     }
 
-    disableSendButton(e) {
-        $("#send-pending-button").unbind();
-    }
-
     checkCurrentPage() {
         let url = window.location.pathname;
         if(!url.match("/user/signrequests/+[\\w\\W]+")) {
@@ -755,9 +747,6 @@ export class GlobalUi {
         $("#mega-result").modal('hide');
         $("#second-tools").collapse('hide');
         var clickover = $(event.target);
-        if(clickover.attr("id") !== "display-side-btn" && clickover.parent().attr("id") !== "display-side-btn" && clickover.parent().parent().attr("id") !== "display-side-btn") {
-            $("#sidebar").removeClass("es-sidebar-mobile").removeClass("sidebar-mobile");
-        }
         $("div[id^='menu-']").each(function() {
             var _opened = $(this).hasClass("collapse show");
             if (_opened === true && !clickover.hasClass("toggle-mini-menu")) {
@@ -780,15 +769,9 @@ export class GlobalUi {
     adjustUi() {
         if (window.innerWidth < 992) {
             console.info("auto adjust : hide");
-            this.hideSideBar();
         } else {
             console.debug("debug - " + "auto adjust : display");
             let url = window.location.pathname;
-            if(this.sideBarStatus === 'on') {
-                this.showSideBar();
-            } else {
-                this.hideSideBar();
-            }
             if(!url.match("/user/users+[\\w\\W]+")
                 && !url.match("/user/users")
                 && !url.match("/admin")
@@ -803,7 +786,6 @@ export class GlobalUi {
                 && !url.match("^/user/signbooks$")
                 && !url.match("/user/signbooks/+[\\w\\W]+")) {
                 console.info("auto display side bar : show");
-                this.hideSideBar();
                 this.disableSideBarButton();
             }
             if(url.match("^/user/workflows/+[\\w\\W]+")
@@ -817,7 +799,6 @@ export class GlobalUi {
                 || url.match("^/otp/signrequests/$")
                 || url.match("/otp/signrequests/+[\\w\\W]+")) {
                 console.info("auto display side bar : hide");
-                this.showSideBar();
                 this.disableSideBarButton();
             }
         }
@@ -837,33 +818,11 @@ export class GlobalUi {
         console.info("change name to " + fileName);
     }
 
-    scrollToHash() {
-        if(window.location.hash) {
-            var element_to_scroll_to = document.getElementById(window.location.hash.substring(1));
-            element_to_scroll_to.scrollIntoView();
-        }
-    }
-
-    closeUserMenu(event) {
-        let clickover = $(event.target);
-        let _opened = $("#user-infos").hasClass("show");
-        if (_opened === true && !clickover.hasClass("user-toggle")) {
-            $("#user-toggle").click();
-        }
-    }
-
     initSideBar() {
         console.info("init side bar : " + this.sideBarStatus);
         if(this.sideBarStatus == null) {
             localStorage.setItem('sideBarStatus', 'on');
             this.sideBarStatus = localStorage.getItem('sideBarStatus');
-        }
-        if(this.sideBarStatus === 'off' && !this.sideBar.hasClass('active')) {
-            this.hideSideBar();
-        }
-
-        if(this.sideBarStatus === 'on' && this.sideBar.hasClass('active')) {
-            this.showSideBar();
         }
     }
 
@@ -872,34 +831,12 @@ export class GlobalUi {
         this.sideBarStatus = localStorage.getItem('sideBarStatus');
 
         if(this.sideBarStatus === 'on') {
-            this.hideSideBar();
             localStorage.setItem('sideBarStatus', 'off');
             this.sideBarStatus = 'off';
         } else {
-            this.showSideBar()
             localStorage.setItem('sideBarStatus', 'on');
             this.sideBarStatus = 'on';
         }
-    }
-
-    showSideBar() {
-        // console.debug("debug - " + "show side");
-        // this.sideBar.removeClass('active');
-        // this.sideBar2.removeClass('d-none');
-        // this.sideBarLabels.removeClass('d-none');
-        // this.content.removeClass('content-full');
-        // this.newDiv.removeClass('new-width-full');
-        // this.breadcrumb.removeClass('breadcrumb-nav-full');
-    }
-
-    hideSideBar() {
-        // console.debug("debug - " + "hide side");
-        // this.sideBar.addClass('active');
-        // this.sideBar2.addClass('d-none');
-        // this.sideBarLabels.addClass('d-none');
-        // this.content.addClass('content-full');
-        // this.newDiv.addClass('new-width-full');
-        // this.breadcrumb.addClass('breadcrumb-nav-full');
     }
 
     checkSelectUser() {

@@ -9,7 +9,7 @@
             <ol id="breadcrumb-ol" class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/admin" class="d-flex align-items-center"><i class="fi fi-rr-chess-queen"></i> Administration</a></li>
                 <li class="breadcrumb-item active"><a href="/admin/dss">Statut DSS</a></li>
-                <li class="breadcrumb-item active" th:text="#{${'label.country.code.'+ tlInfo.parsingCacheInfo.territory}}" ></li>
+                <li class="breadcrumb-item es-breadcrumb-title active" th:text="#{${'label.country.code.'+ tlInfo.parsingCacheInfo.territory}}" ></li>
             </ol>
         </nav>
         <div id="content" class="es-content-full">
@@ -17,7 +17,7 @@
                 <div class="es-sidebar d-flex">
                     <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
                 </div>
-                <div class="flex-grow-1 overflow-scroll">
+                <div class="flex-grow-1 overflow-auto">
                     <div class="p-0 m-2">
                         <div class="p-2">
                             <p th:if="${tlInfo == null}">No data found for this country</p>

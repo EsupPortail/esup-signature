@@ -105,7 +105,7 @@ export class FieldFrontDto {
 export class SignUiFrontDto {
     constructor(raw = {}) {
         const source = asObject(raw);
-        this.signRequestId = source.signRequestId ?? null;
+        this.signRequestId = source.signRequestId ?? source.id ?? null;
         this.dataId = source.dataId ?? null;
         this.formId = source.formId ?? null;
         this.steps = asArray(source.steps);
@@ -130,6 +130,7 @@ export class SignUiFrontDto {
         this.status = source.status ?? null;
         this.action = source.action ?? null;
         this.nbSignRequests = source.nbSignRequests ?? 0;
+        this.nbPendingSignRequests = source.nbPendingSignRequests ?? 0;
         this.notSigned = Boolean(source.notSigned);
         this.attachmentAlert = Boolean(source.attachmentAlert);
         this.attachmentRequire = Boolean(source.attachmentRequire);

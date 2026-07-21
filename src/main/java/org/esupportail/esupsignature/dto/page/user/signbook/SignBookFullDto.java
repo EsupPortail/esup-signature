@@ -28,6 +28,7 @@ public class SignBookFullDto {
     private String refusedCommentTitle;
     private PrimarySignRequestDto primarySignRequest;
     private List<SignRequestDocumentDto> signRequests;
+    private Integer signRequestCount;
     private List<PostitDto> postits;
     private boolean editable;
     private Integer liveWorkflowCurrentStepNumber;
@@ -70,6 +71,7 @@ public class SignBookFullDto {
         this.refusedCommentTitle = refusedCommentTitle;
         this.primarySignRequest = primarySignRequest;
         this.signRequests = signRequests;
+        this.signRequestCount = signRequests != null ? signRequests.size() : 0;
         this.postits = postits;
         this.editable = editable;
         this.liveWorkflowCurrentStepNumber = liveWorkflowCurrentStepNumber;
@@ -118,6 +120,7 @@ public class SignBookFullDto {
     public void setPrimarySignRequest(PrimarySignRequestDto primarySignRequest) { this.primarySignRequest = primarySignRequest; }
     public List<SignRequestDocumentDto> getSignRequests() { return signRequests; }
     public void setSignRequests(List<SignRequestDocumentDto> signRequests) { this.signRequests = signRequests; }
+    public void setSignRequestCount(Integer signRequestCount) { this.signRequestCount = signRequestCount; }
     public List<PostitDto> getPostits() { return postits; }
     public void setPostits(List<PostitDto> postits) { this.postits = postits; }
     public boolean isEditable() { return editable; }
@@ -163,7 +166,7 @@ public class SignBookFullDto {
     }
 
     public int getSignRequestCount() {
-        return signRequests == null ? 0 : signRequests.size();
+        return signRequestCount != null ? signRequestCount : (signRequests == null ? 0 : signRequests.size());
     }
 
     public boolean isMultiSignRequest() {

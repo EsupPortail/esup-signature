@@ -20,6 +20,7 @@ import org.esupportail.esupsignature.service.interfaces.sms.SmsService;
 import org.esupportail.esupsignature.service.security.LogoutHandlerImpl;
 import org.esupportail.esupsignature.service.security.OidcOtpSecurityService;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
+import org.esupportail.esupsignature.service.security.oauth.OAuth2FailureHandler;
 import org.esupportail.esupsignature.service.security.oauth.OidcUserSecurityServiceResolver;
 import org.esupportail.esupsignature.service.security.otp.OtpService;
 import org.esupportail.esupsignature.service.security.oauth.OAuthAuthenticationSuccessHandler;
@@ -57,10 +58,12 @@ import org.springframework.ui.ConcurrentModel;
 import org.springframework.web.servlet.mvc.support.RedirectAttributesModelMap;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyList;
@@ -255,6 +258,7 @@ class GlobalSecurityAttackSurfaceTest {
             var session = request.getSession(false);
             assertNotNull(session);
             assertEquals("/otp/signrequests/signbook-redirect/52", session.getAttribute("after_oauth_redirect"));
+            assertEquals("/otp-access/first/sms-required-link", session.getAttribute(OAuth2FailureHandler.AFTER_OAUTH_FAILURE_REDIRECT));
             assertNull(session.getAttribute(SPRING_SECURITY_CONTEXT_KEY));
         }
 
@@ -470,6 +474,40 @@ class GlobalSecurityAttackSurfaceTest {
         }
 
         @Test
+        void otpEntryPointShouldExposeCancelledOauthMessage() throws Exception {
+            GlobalProperties globalProperties = new GlobalProperties();
+            globalProperties.setSmsRequired(true);
+            globalProperties.setNbSignOtpTries(3);
+            OtpService otpService = mock(OtpService.class);
+            SignBookService signBookService = mock(SignBookService.class);
+            UserService userService = mock(UserService.class);
+
+            OtpAccessController controller = new OtpAccessController(
+                    globalProperties,
+                    otpService,
+                    signBookService,
+                    userService,
+                    List.of(),
+                    null,
+                    null,
+                    new SmsProperties()
+            );
+
+            Otp otp = otp("cancelled-oauth-link", false, 0, 55L);
+            when(otpService.getAndCheckOtpFromDatabase("cancelled-oauth-link")).thenReturn(otp);
+            when(signBookService.getExternalAuths(eq(55L), anyList())).thenReturn(List.of());
+
+            ConcurrentModel model = new ConcurrentModel();
+            MockHttpServletRequest request = new MockHttpServletRequest("GET", "/otp-access/first/cancelled-oauth-link");
+            request.setParameter("oauth2_cancelled", "true");
+
+            String view = controller.signin("cancelled-oauth-link", model, request, new RedirectAttributesModelMap());
+
+            assertEquals("otp/signin", view);
+            assertNotNull(model.getAttribute("message"));
+        }
+
+        @Test
         void otpAuthenticationShouldBypassSmsChallengeWhenSmsIsDisabledGlobally() {
             GlobalProperties globalProperties = new GlobalProperties();
             globalProperties.setSmsRequired(false);
@@ -623,8 +661,9 @@ class GlobalSecurityAttackSurfaceTest {
             ValidationService validationService = mock(ValidationService.class);
             SignService signService = mock(SignService.class);
             MobileSignTokenService mobileSignTokenService = mock(MobileSignTokenService.class);
+            GlobalProperties globalProperties = mock(GlobalProperties.class);
 
-            PublicController controller = publicController(logService, signRequestService, auditTrailService, fileService, userService, xsltService, preAuthorizeService, validationService, signService, mobileSignTokenService);
+            PublicController controller = publicController(logService, globalProperties, signRequestService, auditTrailService, fileService, userService, xsltService, preAuthorizeService, validationService, signService, mobileSignTokenService);
 
             AuditTrail auditTrail = new AuditTrail();
             auditTrail.setToken("known-public-token");
@@ -656,8 +695,9 @@ class GlobalSecurityAttackSurfaceTest {
             ValidationService validationService = mock(ValidationService.class);
             SignService signService = mock(SignService.class);
             MobileSignTokenService mobileSignTokenService = mock(MobileSignTokenService.class);
+            GlobalProperties globalProperties = mock(GlobalProperties.class);
 
-            PublicController controller = publicController(logService, signRequestService, auditTrailService, fileService, userService, xsltService, preAuthorizeService, validationService, signService, mobileSignTokenService);
+            PublicController controller = publicController(logService, globalProperties, signRequestService, auditTrailService, fileService, userService, xsltService, preAuthorizeService, validationService, signService, mobileSignTokenService);
 
             when(auditTrailService.getAuditTrailByToken("missing-token")).thenReturn(null);
 
@@ -680,8 +720,9 @@ class GlobalSecurityAttackSurfaceTest {
             SignService signService = mock(SignService.class);
 
             MobileSignTokenService mobileSignTokenService = mock(MobileSignTokenService.class);
+            GlobalProperties globalProperties = mock(GlobalProperties.class);
 
-            PublicController controller = publicController(logService, signRequestService, auditTrailService, fileService, userService, xsltService, preAuthorizeService, validationService, signService, mobileSignTokenService);
+            PublicController controller = publicController(logService, globalProperties, signRequestService, auditTrailService, fileService, userService, xsltService, preAuthorizeService, validationService, signService, mobileSignTokenService);
 
             AuditTrail auditTrail = new AuditTrail();
             auditTrail.setToken("known-token");
@@ -722,8 +763,9 @@ class GlobalSecurityAttackSurfaceTest {
             SignService signService = mock(SignService.class);
 
             MobileSignTokenService mobileSignTokenService = mock(MobileSignTokenService.class);
+            GlobalProperties globalProperties = mock(GlobalProperties.class);
 
-            PublicController controller = publicController(logService, signRequestService, auditTrailService, fileService, userService, xsltService, preAuthorizeService, validationService, signService, mobileSignTokenService);
+            PublicController controller = publicController(logService, globalProperties, signRequestService, auditTrailService, fileService, userService, xsltService, preAuthorizeService, validationService, signService, mobileSignTokenService);
 
             MockMultipartFile multipartFile = new MockMultipartFile("multipartFile", "test.pdf", "application/pdf", "payload".getBytes());
             when(fileService.getFileChecksum(multipartFile.getInputStream())).thenReturn("checksum-1");
@@ -750,8 +792,9 @@ class GlobalSecurityAttackSurfaceTest {
             SignService signService = mock(SignService.class);
 
             MobileSignTokenService mobileSignTokenService = mock(MobileSignTokenService.class);
+            GlobalProperties globalProperties = mock(GlobalProperties.class);
 
-            PublicController controller = publicController(logService, signRequestService, auditTrailService, fileService, userService, xsltService, preAuthorizeService, validationService, signService, mobileSignTokenService);
+            PublicController controller = publicController(logService, globalProperties, signRequestService, auditTrailService, fileService, userService, xsltService, preAuthorizeService, validationService, signService, mobileSignTokenService);
 
             MockMultipartFile multipartFile = new MockMultipartFile("multipartFile", "test.pdf", "application/pdf", "payload".getBytes());
             when(fileService.getFileChecksum(multipartFile.getInputStream())).thenReturn("checksum-2");
@@ -777,8 +820,9 @@ class GlobalSecurityAttackSurfaceTest {
             ValidationService validationService = mock(ValidationService.class);
             SignService signService = mock(SignService.class);
             MobileSignTokenService mobileSignTokenService = mock(MobileSignTokenService.class);
+            GlobalProperties globalProperties = mock(GlobalProperties.class);
 
-            PublicController controller = publicController(logService, signRequestService, auditTrailService, fileService, userService, xsltService, preAuthorizeService, validationService, signService, mobileSignTokenService);
+            PublicController controller = publicController(logService, globalProperties, signRequestService, auditTrailService, fileService, userService, xsltService, preAuthorizeService, validationService, signService, mobileSignTokenService);
 
             when(mobileSignTokenService.tokenExists("mobile-token")).thenReturn(true);
             when(mobileSignTokenService.validateToken("mobile-token")).thenReturn(false);
@@ -810,8 +854,9 @@ class GlobalSecurityAttackSurfaceTest {
             ValidationService validationService = mock(ValidationService.class);
             SignService signService = mock(SignService.class);
             MobileSignTokenService mobileSignTokenService = mock(MobileSignTokenService.class);
+            GlobalProperties globalProperties = mock(GlobalProperties.class);
 
-            PublicController controller = publicController(logService, signRequestService, auditTrailService, fileService, userService, xsltService, preAuthorizeService, validationService, signService, mobileSignTokenService);
+            PublicController controller = publicController(logService, globalProperties, signRequestService, auditTrailService, fileService, userService, xsltService, preAuthorizeService, validationService, signService, mobileSignTokenService);
 
             when(mobileSignTokenService.tokenExists("mobile-token")).thenReturn(true);
             when(mobileSignTokenService.validateToken("mobile-token")).thenReturn(true);
@@ -838,8 +883,9 @@ class GlobalSecurityAttackSurfaceTest {
             ValidationService validationService = mock(ValidationService.class);
             SignService signService = mock(SignService.class);
             MobileSignTokenService mobileSignTokenService = mock(MobileSignTokenService.class);
+            GlobalProperties globalProperties = mock(GlobalProperties.class);
 
-            PublicController controller = publicController(logService, signRequestService, auditTrailService, fileService, userService, xsltService, preAuthorizeService, validationService, signService, mobileSignTokenService);
+            PublicController controller = publicController(logService, globalProperties, signRequestService, auditTrailService, fileService, userService, xsltService, preAuthorizeService, validationService, signService, mobileSignTokenService);
 
             when(mobileSignTokenService.getPendingSignaturePreview("mobile-token")).thenReturn("data:image/png;base64,abc123");
 
@@ -874,8 +920,9 @@ class GlobalSecurityAttackSurfaceTest {
             ValidationService validationService = mock(ValidationService.class);
             SignService signService = mock(SignService.class);
             MobileSignTokenService mobileSignTokenService = mock(MobileSignTokenService.class);
+            GlobalProperties globalProperties = mock(GlobalProperties.class);
 
-            PublicController controller = publicController(logService, signRequestService, auditTrailService, fileService, userService, xsltService, preAuthorizeService, validationService, signService, mobileSignTokenService);
+            PublicController controller = publicController(logService, globalProperties, signRequestService, auditTrailService, fileService, userService, xsltService, preAuthorizeService, validationService, signService, mobileSignTokenService);
 
             when(mobileSignTokenService.validateToken("mobile-token")).thenReturn(false);
             when(mobileSignTokenService.isTokenUsed("mobile-token")).thenReturn(true);
@@ -894,6 +941,52 @@ class GlobalSecurityAttackSurfaceTest {
 
     @Nested
     class WebSecurityPropertiesTests {
+
+        @Test
+        void contentSecurityPolicyShouldDefaultToDisabledReportOnlyMode() {
+            WebSecurityProperties webSecurityProperties = new WebSecurityProperties();
+
+            assertFalse(webSecurityProperties.isContentSecurityPolicyEnabled());
+            assertTrue(webSecurityProperties.isContentSecurityPolicyReportOnly());
+        }
+
+        @Test
+        void contentSecurityPolicyShouldAllowNexuLocalScriptWithoutUnsafeInline() throws Exception {
+            WebSecurityConfig config = webSecurityConfig();
+            Set<String> scriptSrc = new LinkedHashSet<>();
+            scriptSrc.add("'self'");
+            scriptSrc.add("blob:");
+            Set<String> connectSrc = new LinkedHashSet<>();
+            connectSrc.add("'self'");
+            connectSrc.add("blob:");
+            Set<String> formAction = new LinkedHashSet<>();
+            formAction.add("'self'");
+
+            var addHttpSrcOrigin = WebSecurityConfig.class.getDeclaredMethod(
+                    "addHttpSrcOrigin",
+                    Set.class,
+                    String.class,
+                    String.class,
+                    String.class
+            );
+            addHttpSrcOrigin.setAccessible(true);
+            addHttpSrcOrigin.invoke(config, scriptSrc, "http://localhost:9795", "test", "script-src");
+            addHttpSrcOrigin.invoke(config, connectSrc, "http://localhost:9795", "test", "connect-src");
+
+            var buildCspPolicy = WebSecurityConfig.class.getDeclaredMethod(
+                    "buildCspPolicy",
+                    Set.class,
+                    Set.class,
+                    Set.class,
+                    boolean.class
+            );
+            buildCspPolicy.setAccessible(true);
+            String policy = (String) buildCspPolicy.invoke(config, scriptSrc, connectSrc, formAction, false);
+
+            assertTrue(policy.contains("script-src 'self' blob: http://localhost:9795 http://127.0.0.1:9795"));
+            assertTrue(policy.contains("connect-src 'self' blob: http://localhost:9795 http://127.0.0.1:9795"));
+            assertFalse(policy.contains("script-src 'self' 'unsafe-inline'"));
+        }
 
         @Test
         void actuatorIpAllowlistShouldImplicitlyReuseWsAllowlistWhenUnset() {
@@ -1141,13 +1234,14 @@ class GlobalSecurityAttackSurfaceTest {
         return new WsAccessTokenService(repository, signRequestService, workflowService, userService);
     }
 
-    private PublicController publicController(LogService logService, SignRequestService signRequestService, AuditTrailService auditTrailService,
+    private PublicController publicController(LogService logService, GlobalProperties globalProperties, SignRequestService signRequestService, AuditTrailService auditTrailService,
                                               FileService fileService, UserService userService,
                                               org.esupportail.esupsignature.dss.service.XSLTService xsltService,
                                               PreAuthorizeService preAuthorizeService, ValidationService validationService,
                                               SignService signService, MobileSignTokenService mobileSignTokenService) {
         return new PublicController(
                 null,
+                globalProperties,
                 logService,
                 signRequestService,
                 auditTrailService,
@@ -1159,6 +1253,44 @@ class GlobalSecurityAttackSurfaceTest {
                 signService,
                 mobileSignTokenService
         );
+    }
+
+    @Nested
+    class OAuth2FailureHandlerTests {
+
+        @Test
+        void accessDeniedShouldRedirectToOtpEntryPointWhenFailureRedirectIsStored() throws Exception {
+            OAuth2FailureHandler handler = new OAuth2FailureHandler();
+            MockHttpServletRequest request = new MockHttpServletRequest("GET", "/login/oauth2/code/franceconnect");
+            request.setParameter("error", "access_denied");
+            request.setParameter("error_description", "User auth aborted");
+            request.getSession().setAttribute(OAuth2FailureHandler.AFTER_OAUTH_FAILURE_REDIRECT, "/otp-access/first/url-token");
+            request.getSession().setAttribute("after_oauth_redirect", "/otp/signrequests/signbook-redirect/42");
+            MockHttpServletResponse response = new MockHttpServletResponse();
+
+            handler.onAuthenticationFailure(request, response, new AuthenticationServiceException("[access_denied] User auth aborted"));
+
+            assertEquals("/otp-access/first/url-token?oauth2_cancelled=true", response.getRedirectedUrl());
+            assertNull(request.getSession().getAttribute(OAuth2FailureHandler.AFTER_OAUTH_FAILURE_REDIRECT));
+            assertNull(request.getSession().getAttribute("after_oauth_redirect"));
+        }
+
+        @Test
+        void providerErrorShouldRedirectToOauthErrorPage() throws Exception {
+            OAuth2FailureHandler handler = new OAuth2FailureHandler();
+            MockHttpServletRequest request = new MockHttpServletRequest("GET", "/login/oauth2/code/franceconnect");
+            request.setParameter("error", "server_error");
+            request.setParameter("error_description", "Provider unavailable");
+            request.setParameter("state", "state-123");
+            MockHttpServletResponse response = new MockHttpServletResponse();
+
+            handler.onAuthenticationFailure(request, response, new AuthenticationServiceException("provider failure"));
+
+            assertNotNull(response.getRedirectedUrl());
+            assertTrue(response.getRedirectedUrl().startsWith("/otp-access/oauth2?"));
+            assertTrue(response.getRedirectedUrl().contains("error=server_error"));
+            assertTrue(response.getRedirectedUrl().contains("state=state-123"));
+        }
     }
 
     private Otp otp(String urlId, boolean forceSms, int tries, long signBookId) {

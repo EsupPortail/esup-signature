@@ -12,7 +12,7 @@
 	</parent>
 	<groupId>org.esupportail</groupId>
 	<artifactId>esup-signature</artifactId>
-	<version>1.37.15</version>
+	<version>1.37.20-SNAPSHOT</version>
 	<name>esup-signature</name>
 	<properties>
 		<startClass>org.esupportail.esupsignature.EsupSignatureApplication</startClass>
@@ -20,7 +20,7 @@
 		<bouncycastle.version>1.84</bouncycastle.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<dss.version>6.4</dss.version>
-        <pdfbox.version>3.0.6</pdfbox.version>
+	        <pdfbox.version>3.0.6</pdfbox.version>
 		<playwright.version>1.49.0</playwright.version>
 		<skipDockerCompose>true</skipDockerCompose>
 		<skipSurefire>false</skipSurefire>
@@ -235,6 +235,11 @@
 			<groupId>org.webjars.npm</groupId>
 			<artifactId>croppie</artifactId>
 			<version>2.6.5</version>
+		</dependency>
+		<dependency>
+			<groupId>org.webjars.npm</groupId>
+			<artifactId>filepond</artifactId>
+			<version>4.32.12</version>
 		</dependency>
 		<dependency>
 			<groupId>org.webjars.npm</groupId>
@@ -539,6 +544,12 @@
 			<version>1.15.0</version>
 		</dependency>
 
+		<dependency>
+			<groupId>org.jsoup</groupId>
+			<artifactId>jsoup</artifactId>
+			<version>1.22.2</version>
+		</dependency>
+
         <dependency>
             <groupId>commons-validator</groupId>
             <artifactId>commons-validator</artifactId>
@@ -550,7 +561,11 @@
 			<groupId>com.github.jai-imageio</groupId>
 			<artifactId>jai-imageio-core</artifactId>
 			<version>1.4.0</version>
-			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.github.jai-imageio</groupId>
+			<artifactId>jai-imageio-jpeg2000</artifactId>
+			<version>1.4.0</version>
 		</dependency>
 		<dependency>
 			<groupId>io.github.jpenren</groupId>
@@ -621,17 +636,6 @@
 				<exclusion>
 					<artifactId>commons-logging</artifactId>
 					<groupId>commons-logging</groupId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>org.verapdf</groupId>
-			<artifactId>validation-model</artifactId>
-			<version>1.28.2</version>
-			<exclusions>
-				<exclusion>
-					<artifactId>jaxb-api</artifactId>
-					<groupId>javax.xml.bind</groupId>
 				</exclusion>
 			</exclusions>
 		</dependency>
@@ -820,8 +824,8 @@
 							<target>
                                 <!--suppress UnresolvedMavenProperty -->
 								<replaceregexp flags="g"
-                                               match="[?]version=@(version|[A-Z0-9.]+)@"
-                                               replace="?version=@${project.version}@">
+                                               match="[?]version=@[^@]+@"
+                                               replace="?version=${project.version}">
                                     <fileset dir="target/classes/static/" includes="**/*.css **/*.js" />
                                 </replaceregexp>
                             </target>

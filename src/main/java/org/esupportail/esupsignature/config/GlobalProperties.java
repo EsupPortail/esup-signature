@@ -223,6 +223,11 @@ public class GlobalProperties {
     private Boolean pdfOnly = false;
 
     /**
+     * Désactiver la normalisation des PDF.
+     */
+    private Boolean disableNormalizePdf = false;
+
+    /**
      * Exporter les pièces jointes (si actif, l'export sera un dossier contenant le document signé ainsi que les PJ)
      */
     public Boolean exportAttachements = true;
@@ -429,6 +434,9 @@ public class GlobalProperties {
 
     /** Taille de police par défaut pour le texte des signatures */
     private Integer defaultFontSize = 14;
+
+    /** Interligne des informations ajoutées aux signatures */
+    private Float signatureExtraLineHeightFactor = 1.5f;
 
 
     public String newVersion;
@@ -714,6 +722,14 @@ public class GlobalProperties {
 
     public void setPdfOnly(Boolean pdfOnly) {
         this.pdfOnly = pdfOnly;
+    }
+
+    public Boolean getDisableNormalizePdf() {
+        return disableNormalizePdf;
+    }
+
+    public void setDisableNormalizePdf(Boolean disableNormalizePdf) {
+        this.disableNormalizePdf = disableNormalizePdf;
     }
 
     public boolean getExportAttachements() {
@@ -1038,5 +1054,16 @@ public class GlobalProperties {
 
     public void setDefaultFontSize(Integer defaultFontSize) {
         this.defaultFontSize = defaultFontSize;
+    }
+
+    public Float getSignatureExtraLineHeightFactor() {
+        if(signatureExtraLineHeightFactor == null || !Float.isFinite(signatureExtraLineHeightFactor) || signatureExtraLineHeightFactor <= 0) {
+            return 1.5f;
+        }
+        return signatureExtraLineHeightFactor;
+    }
+
+    public void setSignatureExtraLineHeightFactor(Float signatureExtraLineHeightFactor) {
+        this.signatureExtraLineHeightFactor = signatureExtraLineHeightFactor;
     }
 }

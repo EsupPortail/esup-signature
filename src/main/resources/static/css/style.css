@@ -5,15 +5,15 @@ html {
 @-moz-document url-prefix() {
     * {
         scrollbar-color: var(--color-red-ish) var(--color-transparent);
-        scrollbar-track-color: var(--color-transparent);
+        scrollbar-track-color: var(--color-rgba-0-0-0-01);
         scrollbar-width: unset;
     }
 }
 
 ::-webkit-scrollbar {
     background-color: var(--color-transparent);
-    width: 4px;
-    height: 4px;
+    width: 6px;
+    height: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -23,7 +23,19 @@ html {
 
 ::-webkit-scrollbar-thumb {
     border-radius: 6px;
+    background-color: var(--color-rgba-0-0-0-06);
+}
+
+::-webkit-scrollbar-thumb:hover {
     background-color: var(--color-red-ish);
+}
+
+::-webkit-scrollbar:hover {
+    background-color: var(--color-rgba-0-0-0-02);
+}
+
+::-webkit-scrollbar {
+    background-color: var(--color-rgba-0-0-0-01);
 }
 
 body {
@@ -48,9 +60,14 @@ main {
 }
 
  #sidebar {
-     background-color: var(--bs-secondary-bg);
+     background-color: var(--bs-secondary-bg, #e9ecef) !important;
      font-size: clamp(0.8rem, 1vw, 0.95rem);
  }
+
+#sidebar > .offcanvas-header,
+#sidebar > .offcanvas-body {
+    background-color: var(--bs-secondary-bg, #e9ecef) !important;
+}
 
  #sidebar a {
      font-size: clamp(0.8rem, 1vw, 0.95rem);
@@ -367,7 +384,9 @@ pre {
     user-select: text !important;
     -moz-user-select: text !important;
     -webkit-user-select: text !important;
-    min-height: 100%;
+    min-height: 0;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
 }
 
 #listSignRequestTable th {
@@ -470,6 +489,7 @@ td {
 }
 
 .nav-item.ws-tab.active a {
+    pointer-events: none;
     opacity: 1;
     border-bottom: 1px solid var(--bs-light);
 }
@@ -485,7 +505,7 @@ td {
     border-top-right-radius: 0 !important;
     margin-top: 1px;
     max-height: 40px;
-    border-bottom: 1px solid var(--bs-secondary-bg-subtle);
+    /*border-bottom: 1px solid var(--bs-secondary-bg-subtle);*/
 }
 
 .es-form-select-xl {
@@ -527,10 +547,27 @@ option[unavailable="unavailable"] {
     font-weight: bold;
 }
 
+#addDocTab a {
+    border: 0 !important;
+    margin-top: 2px;
+    height: 38px;
+}
+
+#addDocTab a:hover {
+    background-color: var(--bs-secondary-bg-subtle) !important;
+    border: 0 !important;
+}
+
+
+.es-breadcrumb-title {
+    color: var(--bs-secondary-color);
+}
+
+
 .breadcrumb-nav,
 .es-breadcrumb-nav {
     background-color: var(--bs-white);
-    border-bottom: 1px solid var(--bs-secondary-bg-subtle);
+    border-bottom: 1px solid var(--color-dee2e6);
 }
 
 .breadcrumb-nav.breadcrumb-sign,
@@ -1825,11 +1862,6 @@ tr[aria-expanded="true"] .caret-toggle-expanded {
     display: none !important;
 }
 
-.modal-pdf .modal-dialog {
-    width: 80% !important;
-    max-width: 80vw !important;
-}
-
 :root {
     --underline-max-width: 100%;
     --underline-hover-width: 0;
@@ -1857,20 +1889,20 @@ tr[aria-expanded="true"] .caret-toggle-expanded {
     margin: var(--text-spacing);
 }
 
-.oidc-connect a {
+.oidc-connect a:not(.oidc-connect-btn) {
     color: var(--color-blue-oidc);
     font-size: .875rem  !important;
     line-height: 1.5rem  !important;
     -webkit-tap-highlight-color: transparent;
 }
 
-.oidc-connect a {
+.oidc-connect a:not(.oidc-connect-btn) {
     --hover-tint: transparent;
     --active-tint: var(--color-e9ecef);
     text-decoration: var(--text-decoration);
 }
 
-.oidc-connect [href] {
+.oidc-connect [href]:not(.oidc-connect-btn) {
     background-image: var(--underline-img), var(--underline-img);
     background-position: var(--underline-x) 100%, var(--underline-x) calc(100% - var(--underline-thickness));
     background-repeat: no-repeat, no-repeat;
@@ -1879,7 +1911,7 @@ tr[aria-expanded="true"] .caret-toggle-expanded {
 }
 
 
-.oidc-connect a::after {
+.oidc-connect a:not(.oidc-connect-btn)::after {
     --icon-size: 1rem;
     background-color: currentColor;
     content: "";
@@ -1893,6 +1925,19 @@ tr[aria-expanded="true"] .caret-toggle-expanded {
     mask-size: 100% 100%;
     vertical-align: calc((.75em - var(--icon-size)) * .5);
     width: var(--icon-size);
+}
+
+.oidc-connect-btn {
+    display: inline-block;
+    flex: 0 0 auto;
+    cursor: pointer;
+    text-decoration: none !important;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.oidc-connect-btn:focus-visible {
+    outline: 2px solid var(--color-blue-oidc);
+    outline-offset: 3px;
 }
 
 .step-vertical {

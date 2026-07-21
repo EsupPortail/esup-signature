@@ -2,6 +2,7 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments/head :: head}"></head>
 <script th:src="@{/webjars/chart.js/dist/chart.umd.js}"></script>
+<script type="module" th:src="'/js/modules/bootstrap/AdminChartsBootstrap.js?version=' + ${versionApp}"></script>
 <body>
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
@@ -9,7 +10,7 @@
         <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full text-uppercase">
             <ol id="breadcrumb-ol" class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/admin" class="d-flex align-items-center"><i class="fi fi-rr-chess-queen"></i> Administration</a></li>
-                <li class="breadcrumb-item active">Statistiques</li>
+                <li class="breadcrumb-item es-breadcrumb-title active">Statistiques</li>
             </ol>
         </nav>
         <div id="content" class="es-content-full">
@@ -21,11 +22,7 @@
                     <div class="p-0 m-2">
                         <div class="alert alert-light">
                             <div style="width: 100%; height: 500px;">
-                                <canvas id="signsCount" style="width: 100%; height: 100%;"></canvas>
-                                <script th:inline="javascript">
-                                    let ctx = document.getElementById('signsCount');
-                                    new Chart(ctx, JSON.parse([[${signsByYears}]]));
-                                </script>
+                                <canvas id="signsCount" class="js-chart" th:data-chart-config="${signsByYears}" style="width: 100%; height: 100%;"></canvas>
                             </div>
                         </div>
                     </div>

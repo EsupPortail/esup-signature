@@ -17,7 +17,7 @@ body.es-signrequest-page #tools.es-tools {
     position: sticky !important;
     width: 100%;
     max-width: 100%;
-    margin-top: -2px;
+    margin-top: -4px;
 }
 
 body.es-signrequest-page {
@@ -155,7 +155,7 @@ body.es-signrequest-page .es-signrequest-main-content > .es-workspace {
 
 .table-fix-head {
     overflow-y: auto;
-    height: calc(100vh - 190px);
+    height: calc(100vh - 138px);
 }
 
 .table-fix-head thead th {
@@ -224,7 +224,7 @@ body.es-signrequest-page .es-signrequest-main-content > .es-workspace {
 #workspace {
     position: relative;
     overflow-y: scroll;
-    margin-top: 12px;
+    /*margin-top: 12px;*/
     margin-bottom: 0;
     padding: 5px;
 }
@@ -347,7 +347,7 @@ body.es-signrequest-page .es-signrequest-main-content > .es-workspace {
     z-index: 1;
 }
 
-#ws-tabs {
+.es-signrequest-workspace-header {
     width: auto !important;
     flex: 1 1 auto;
     min-width: 0;
@@ -356,9 +356,84 @@ body.es-signrequest-page .es-signrequest-main-content > .es-workspace {
     /*overflow: hidden;*/
 }
 
+.es-signrequest-workspace-header.es-tabs-loading,
+.es-signrequest-workspace-header.es-tabs-calculating {
+    position: relative;
+    overflow: hidden;
+}
+
+.es-signrequest-workspace-header.es-tabs-loading > li,
+.es-signrequest-workspace-header.es-tabs-calculating > li {
+    visibility: hidden;
+}
+
+.es-signrequest-workspace-header.es-tabs-loading::after,
+.es-signrequest-workspace-header.es-tabs-calculating::after {
+    content: "";
+    position: absolute;
+    inset: 6px 8px;
+    border-radius: 0.375rem;
+    background: linear-gradient(90deg, var(--color-rgba-248-249-250-09) 25%, var(--color-rgba-233-236-239-09) 37%, var(--color-rgba-248-249-250-09) 63%);
+    background-size: 400% 100%;
+    animation: placeholder-shimmer 1.2s ease-in-out infinite;
+    pointer-events: none;
+}
+
+.es-signrequest-tabs-dropdown {
+    max-width: min(520px, calc(100vw - 2rem));
+    max-height: min(70vh, 720px);
+    overflow-y: auto;
+    z-index: 1033;
+}
+
+.es-signrequest-tabs-dropdown .dropdown-item {
+    min-width: 0;
+}
+
+.es-signrequest-tabs-dropdown .text-truncate {
+    min-width: 0;
+}
+
+.es-signrequest-workspace-header > li.es-tab-overflow-hidden {
+    display: none !important;
+}
+
+.es-signrequest-tabs-dropdown > li.es-tab-overflow-hidden {
+    display: none !important;
+}
+
+.es-signrequest-workspace-header > li {
+    flex-shrink: 0;
+}
+
+.es-signrequest-workspace-header > li.file-tab {
+    flex: 0 0 auto;
+    min-width: 0;
+    max-width: min(260px, 24vw);
+}
+
+.es-signrequest-workspace-header > li.file-tab > .nav-link {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+}
+
+.es-signrequest-workspace-header > li.file-tab > .nav-link > .d-flex {
+    min-width: 0;
+    max-width: 100%;
+}
+
+.es-signrequest-workspace-header > li.file-tab .truncate {
+    flex: 1 1 auto;
+    max-width: none;
+}
+
+.es-signrequest-workspace-header > li.file-tab .badge {
+    flex: 0 0 auto;
+}
+
 .breadcrumb {
     padding: 0 !important;
-    padding-top: 2px !important;
     padding-left: 15px !important;
 }
 
@@ -369,6 +444,74 @@ body.es-signrequest-page .es-signrequest-main-content > .es-workspace {
     position: fixed;
     width: 100%;
     z-index: 1029;
+    display: flex;
+    align-items: center;
+}
+
+.es-breadcrumb-nav .breadcrumb {
+    display: flex;
+    align-items: center;
+    align-self: stretch;
+    min-width: 0;
+    line-height: 1.2;
+}
+
+.es-breadcrumb-nav .breadcrumb-item {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+}
+
+.es-breadcrumb-nav .breadcrumb-item > a,
+.es-breadcrumb-nav .breadcrumb-item > span {
+    display: inline-flex;
+    align-items: center;
+    min-width: 0;
+}
+
+.es-breadcrumb-nav button,
+.es-nav-tools-breadcrumb button {
+    align-self: center;
+}
+
+.es-breadcrumb-nav i,
+.es-nav-tools-breadcrumb i {
+    display: inline-flex;
+    align-items: center;
+    line-height: 1;
+}
+
+.es-breadcrumb-sign {
+    z-index: 1030;
+}
+
+.js-display-side-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    margin-right: 0.5rem;
+}
+
+.js-display-side-btn::after {
+    content: "";
+    position: absolute;
+    right: -0.3rem;
+    width: 2px;
+    height: 20px;
+    background-color: var(--bs-secondary);
+}
+
+.js-display-side-btn i::before {
+    font-size: 20px;
+}
+
+.es-signrequest-workspace-header {
+    align-items: stretch;
+}
+
+.es-signrequest-workspace-header > li,
+.es-signrequest-workspace-header > li > .nav-link {
     display: flex;
     align-items: center;
 }
@@ -494,6 +637,3 @@ body.es-signrequest-page .es-signrequest-main-content > .es-workspace {
 .global-button {
     width: 200px;
 }
-
-
-

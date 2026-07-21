@@ -185,25 +185,182 @@
     th.col-nom { min-width: 130px; }
 
 
-    /* On signrequest page, sidebar is hidden by default on <= xl and opened only via mobile toggle class. */
-    body.es-signrequest-page #sidebar {
-        display: none !important;
-    }
-
-    body.es-signrequest-page #sidebar.es-sidebar-mobile,
-    body.es-signrequest-page #sidebar.sidebar-mobile {
-        display: block !important;
+    body.es-signrequest-page #sidebar.offcanvas-xxl {
+        --bs-offcanvas-bg: var(--bs-secondary-bg);
+        display: flex;
         position: fixed !important;
         left: 0;
-        top: 92px !important;
+        top: 0 !important;
+        min-width: 0;
         max-width: 300px !important;
-        width: 300px !important;
-        height: calc(100vh - 138px) !important;
-        z-index: 10003 !important;
+        width: min(85vw, 300px) !important;
+        height: 100vh !important;
+        z-index: 1045 !important;
+        background-color: var(--bs-secondary-bg);
+    }
+
+    body.es-signrequest-page #sidebar.offcanvas-xxl .offcanvas-header,
+    body.es-signrequest-page #sidebar.offcanvas-xxl .offcanvas-body {
+        background-color: inherit;
+    }
+
+    body.es-signrequest-page #sidebar.offcanvas-xxl .offcanvas-body {
+        min-height: 0;
+        overflow-y: auto;
     }
 }
 
 @media (max-width: 1200px) {
+    body.manage-signbooks-page,
+    body.manage-list-page {
+        overflow-x: clip;
+    }
+
+    body.manage-signbooks-page #breadcrumb,
+    body.manage-list-page #breadcrumb {
+        display: flex;
+        margin-left: 0;
+    }
+
+    body.manage-signbooks-page #breadcrumb .breadcrumb,
+    body.manage-list-page #breadcrumb .breadcrumb {
+        min-width: 0;
+        flex-wrap: nowrap;
+        overflow: hidden;
+    }
+
+    body.manage-signbooks-page #breadcrumb .breadcrumb-item,
+    body.manage-list-page #breadcrumb .breadcrumb-item {
+        min-width: 0;
+        white-space: nowrap;
+    }
+
+    body.manage-signbooks-page #breadcrumb .breadcrumb-item:last-child,
+    body.manage-list-page #breadcrumb .breadcrumb-item:last-child {
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    body.user-settings-page {
+        overflow-x: clip;
+    }
+
+    body.user-settings-page #breadcrumb {
+        display: flex;
+        margin-left: 0;
+        flex-wrap: nowrap;
+    }
+
+    body.user-settings-page #breadcrumb .user-settings-sidebar-toggle {
+        flex: 0 0 auto;
+    }
+
+    body.user-settings-page #breadcrumb .breadcrumb {
+        min-width: 0;
+        overflow: hidden;
+        flex-wrap: nowrap;
+    }
+
+    body.user-settings-page #breadcrumb .breadcrumb-item {
+        min-width: 0;
+        white-space: nowrap;
+    }
+
+    body.user-settings-page #breadcrumb .breadcrumb-item:last-child {
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    body.user-settings-page .es-main-content {
+        box-sizing: border-box;
+        width: 100%;
+        max-width: 100%;
+        height: calc(100vh - 38px);
+        min-height: 0;
+        overflow: hidden;
+    }
+
+    body.user-settings-page .es-main-content > .flex-grow-1 {
+        min-width: 0;
+        max-width: 100%;
+    }
+
+    body.user-settings-page .es-sidebar {
+        flex: 0 0 0;
+        width: 0;
+        min-width: 0;
+    }
+
+    body.user-settings-page #sidebar.offcanvas-xl {
+        display: flex;
+        position: fixed;
+        top: 0;
+        width: min(85vw, 300px);
+        min-width: 0;
+        max-width: 300px;
+        height: 100vh;
+        z-index: 1045;
+    }
+
+    body.user-settings-page #sidebar .offcanvas-body {
+        overflow-y: auto;
+    }
+
+    body.user-replace-page .user-replace-panel,
+    body.user-shares-list-page .user-shares-list-panel {
+        min-width: 0;
+        max-width: 100%;
+        overflow-x: hidden;
+        overflow-y: auto;
+    }
+
+    body.user-replace-page .es-fixed-action-btns,
+    body.user-shares-list-page .es-fixed-action-btns {
+        display: none !important;
+    }
+
+    body.signbooks-list-page {
+        overflow-x: clip;
+    }
+
+    body.signbooks-list-page #breadcrumb {
+        display: flex;
+        margin-left: 0;
+    }
+
+    body.signbooks-list-page .es-main-content {
+        width: 100%;
+        max-width: 100%;
+        overflow: hidden;
+    }
+
+    body.signbooks-list-page .signbooks-list-panel {
+        width: 100%;
+        min-width: 0;
+        max-width: 100%;
+    }
+
+    body.signbooks-list-page #listSignRequestTable {
+        width: calc(100% - 1rem);
+        max-width: calc(100% - 1rem);
+        overflow-x: hidden;
+    }
+
+    body.signbooks-list-page #sidebar.offcanvas-xl {
+        display: flex;
+        position: fixed;
+        top: 0;
+        width: min(85vw, 300px);
+        min-width: 0;
+        max-width: 300px;
+        height: 100vh;
+        z-index: 1045;
+    }
+
+    body.signbooks-list-page #sidebar .offcanvas-body {
+        overflow-y: auto;
+    }
+
     body.es-signrequest-page #breadcrumb {
         display: flex !important;
     }
@@ -229,11 +386,6 @@
     #breadcrumb {
         display: none;
         margin-left: 0;
-    }
-
-        .workspace-sign,
-    .es-workspace-sign {
-        margin-top: 142px;
     }
 
     .workspace,
@@ -284,7 +436,21 @@
 
 }
 
-@media (max-width: 992px) {
+
+@media (max-width: 991.98px) {
+
+    body {
+        margin-bottom: 0;
+    }
+
+    .footer {
+        position: static !important;
+        height: auto !important;
+    }
+
+    body.signbooks-list-page #signButtons {
+        display: none !important;
+    }
 
     th.col-nom {
         min-width: 110px;
@@ -300,15 +466,49 @@
         flex-wrap: nowrap;
         gap: 0;
         width: 100%;
+        flex: 0 0 42px;
+        height: 42px;
+        box-sizing: border-box;
+        position: relative;
+        z-index: 1032;
+        background-color: var(--bs-white);
+        border-bottom: 1px solid var(--color-dee2e6);
     }
 
     body.es-signrequest-page .es-nav-tools-breadcrumb {
         display: flex !important;
+        flex: 0 1 auto;
+        width: auto;
+        min-width: 0;
+        overflow: hidden;
         align-items: center;
-        min-height: 42px;
+        height: 100%;
+        min-height: 0;
         background: var(--bs-white);
-        border-bottom: 1px solid var(--bs-border-color);
+        border-bottom: 0;
         padding-right: 0.5rem;
+        position: relative;
+        z-index: 1032;
+    }
+
+    body.es-signrequest-page .es-nav-tools-breadcrumb:has(.es-signrequest-tabs-dropdown.show) {
+        overflow: visible;
+    }
+
+    body.es-signrequest-page .es-nav-tools-breadcrumb > .d-flex,
+    body.es-signrequest-page #ws-tabs-mobile {
+        width: auto !important;
+        min-width: 0;
+        max-width: 100%;
+    }
+
+    body.es-signrequest-page .es-document-navigation-tools {
+        flex: 0 0 auto;
+    }
+
+    body.es-signrequest-page #ws-tabs-mobile > li,
+    body.es-signrequest-page #ws-tabs-mobile > li > .nav-link {
+        border-bottom: 0 !important;
     }
 
     .es-nav-tools {
@@ -317,7 +517,7 @@
 
     .workspace,
     .es-workspace {
-        margin-top: -45px;
+        margin-top: -42px;
     }
 
     .pdf-alerts-btn {
@@ -330,7 +530,83 @@
     }
 }
 
-@media (max-width: 768px) {
+@media (min-width: 576px) and (max-width: 991.98px) {
+    body.es-signrequest-page .es-nav-tools {
+        width: calc(100% + 68px);
+        max-width: none;
+    }
+}
+
+@media (max-width: 767.98px) {
+    body.user-shares-list-page .user-shares-list-container {
+        width: calc(100% - 1rem);
+        height: auto;
+        min-height: 0;
+        overflow-x: hidden;
+    }
+
+    body.user-shares-list-page .user-shares-table {
+        display: block;
+        width: 100%;
+        margin-bottom: 0;
+    }
+
+    body.user-shares-list-page .user-shares-table thead {
+        display: none;
+    }
+
+    body.user-shares-list-page .user-shares-table tbody,
+    body.user-shares-list-page .user-shares-table tr,
+    body.user-shares-list-page .user-shares-table td {
+        display: block;
+        width: 100%;
+    }
+
+    body.user-shares-list-page .user-shares-table tr {
+        --bs-table-bg-type: transparent;
+        --bs-table-accent-bg: transparent;
+        --bs-table-striped-bg: transparent;
+        margin-bottom: 0.75rem;
+        padding: 0.75rem;
+        overflow: hidden;
+        border: 1px solid var(--bs-border-color);
+        border-radius: var(--bs-border-radius-lg);
+        background: var(--bs-white);
+    }
+
+    body.user-shares-list-page .user-shares-table td {
+        --bs-table-bg-type: transparent;
+        display: grid;
+        grid-template-columns: minmax(7rem, 35%) minmax(0, 1fr);
+        gap: 0.75rem;
+        align-items: start;
+        padding: 0.5rem 0;
+        overflow-wrap: anywhere;
+        border-bottom: 1px solid var(--bs-border-color-translucent);
+        background-color: transparent !important;
+    }
+
+    body.user-shares-list-page .user-shares-table td:last-child {
+        border-bottom: 0;
+    }
+
+    body.user-shares-list-page .user-shares-table td::before {
+        content: attr(data-label);
+        color: var(--bs-secondary-color);
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    body.user-shares-list-page .user-shares-table td ul {
+        margin-bottom: 0;
+        padding-left: 1rem;
+    }
+
+    body.user-shares-list-page .user-shares-table td[data-label="Actions"] > .d-flex {
+        justify-content: flex-start;
+    }
+
     body.es-signrequest-page #breadcrumb {
         display: none !important;
     }
@@ -421,7 +697,7 @@
 
     .workspace,
     .es-workspace {
-        margin-top: -45px;
+        margin-top: -40px;
     }
 
     body.es-signrequest-page #tools.es-tools {
@@ -452,8 +728,13 @@
     }
 
     body.es-signrequest-page .es-nav-tools-breadcrumb {
-        background-color: var(--bs-light);
+        background-color: var(--bs-white);
 
+    }
+
+    body.es-signrequest-page .es-nav-tools .nav-tabs li,
+    body.es-signrequest-page .es-nav-tools .nav-tabs .nav-link {
+        background-color: var(--bs-white);
     }
 
     .wizard-steps-preview--horizontal .step-vertical {
@@ -484,6 +765,27 @@
 
 @media (max-width: 640px) {
 
+    body.es-signrequest-page #workspace {
+        margin-bottom: 0;
+    }
+
+    body.manage-signbooks-page .main-content,
+    body.manage-signbooks-page .es-main-content,
+    body.manage-list-page .main-content,
+    body.manage-list-page .es-main-content {
+        margin-top: 0 !important;
+    }
+
+    body.user-settings-page .main-content,
+    body.user-settings-page .es-main-content {
+        margin-top: 0 !important;
+    }
+
+    body.signbooks-list-page .main-content,
+    body.signbooks-list-page .es-main-content {
+        margin-top: 0 !important;
+    }
+
     .es-auth-page {
         padding-right: 1rem;
         padding-left:  1rem;
@@ -501,12 +803,35 @@
     .es-content-full {
         /*margin-top: 40px;*/
     }
+    .workspace,
+    .es-workspace {
+        margin-top: 0px;
+    }
     .main-content, .es-main-content {
         margin-top: -40px !important;
     }
 }
 
-@media (max-width: 576px) {
+@media (max-width: 575.98px) {
+
+    body.signbooks-list-page .signbooks-status-column {
+        width: 3.25rem !important;
+    }
+
+    body.signbooks-list-page .signbooks-actions-column {
+        width: 3.25rem !important;
+        text-align: center;
+    }
+
+    body.signbooks-list-page .badge-status {
+        justify-content: center;
+        gap: 0;
+        padding-inline: 0 !important;
+    }
+
+    body.signbooks-list-page .badge-status span {
+        display: none !important;
+    }
 
     /*body.es-signrequest-page #tools #signActionButtons > .es-quick-sign-action {*/
     /*    display: none !important;*/
@@ -608,7 +933,7 @@
 
     .workspace,
     .es-workspace {
-        margin-top: -45px;
+        margin-top: 0px;
     }
 
     body.es-signrequest-page #tools.es-tools {
@@ -633,6 +958,18 @@
     }
 }
 
+@media (max-width: 432px) {
+    #prev{
+        display: none !important;
+    }
+    #next{
+        display: none !important;
+    }
+    #page-indicator {
+        display: none !important;
+    }
+}
+
 @media (max-width: 319px) {
     body {
         visibility: hidden;
@@ -646,4 +983,3 @@
         content: 'Résolution trop faible !!!';
     }
 }
-

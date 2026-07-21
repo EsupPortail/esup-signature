@@ -19,7 +19,13 @@
                     <tr>
                         <td><span th:text="${#dates.format(log.logDate, 'dd/MM/yyyy HH:mm')}"></span></td>
                         <td><span th:text="${log.eppn}"></span></td>
-                        <td><span th:text="${log.action}"></span></td>
+                        <td>
+                            <span th:text="${log.action}"></span>
+                            <div th:if="${log.comment != null && !#strings.isEmpty(log.comment)}"
+                                 class="small text-muted mt-1"
+                                 style="white-space: pre-line;"
+                                 th:text="${log.comment}"></div>
+                        </td>
                         <td><span th:text="#{'signbook.status.' + ${log.finalStatus}}"></span></td>
                     </tr>
                 </th:block>
