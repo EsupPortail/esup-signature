@@ -62,6 +62,8 @@ import java.util.stream.Collectors;
 @Service
 public class UserService {
 
+    public static final String MISSING_INSTITUTIONAL_EMAIL_MESSAGE = "Connexion impossible : aucune boîte mail institutionnelle n’est associée à ce compte. Veuillez contacter votre établissement afin de faire créer ou renseigner votre adresse institutionnelle.";
+
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
     private static final String DATE_PATTERN = "yyyy-MM-dd'T'HH:mm";
@@ -247,6 +249,9 @@ public class UserService {
                 String name = personLdaps.get(0).getSn();
                 String firstName = personLdaps.get(0).getGivenName();
                 String mail = personLdaps.get(0).getMail();
+                if (!StringUtils.hasText(mail)) {
+                    throw new EsupSignatureUserException(MISSING_INSTITUTIONAL_EMAIL_MESSAGE);
+                }
                 return createUser(eppn, name, firstName, mail, UserType.ldap, false);
             } else {
                 throw new EsupSignatureUserException("ldap user not found : " + eppn);
@@ -341,8 +346,12 @@ public class UserService {
                 throw new EsupSignatureUserException("user " + authName + " not found");
             }
         }
-        if(mail == null) {
-            throw new EsupSignatureRuntimeException("user must have an email");
+        if (!StringUtils.hasText(mail)) {
+            User existingUser = StringUtils.hasText(eppn) ? getByEppn(eppn) : null;
+            if (existingUser == null) {
+                throw new EsupSignatureUserException(MISSING_INSTITUTIONAL_EMAIL_MESSAGE);
+            }
+            mail = existingUser.getEmail();
         }
         return createUser(eppn, name, firstName, mail, userType, true);
     }
@@ -686,6 +695,10 @@ public class UserService {
     @Transactional
     public List<Long> getFavoriteIds(String authUserEppn, UiParams uiParams) {
         User authUser = getByEppn(authUserEppn);
+        if (authUser == null) {
+            logger.warn("unable to load favorites: user {} not found", authUserEppn);
+            return new ArrayList<>();
+        }
         if(authUser.getUiParams().containsKey(uiParams)) {
             return Arrays.stream(authUser.getUiParams().get(uiParams).split(",")).map(s -> {
                 try {

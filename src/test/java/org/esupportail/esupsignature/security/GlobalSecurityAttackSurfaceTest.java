@@ -1081,7 +1081,10 @@ class GlobalSecurityAttackSurfaceTest {
                     null,
                     null,
                     null,
-                    null
+                    null,
+                    mock(org.esupportail.esupsignature.service.security.su.SuAuthenticationSuccessHandler.class),
+                    mock(org.esupportail.esupsignature.service.security.su.SuAuthenticationFailureHandler.class),
+                    mock(org.esupportail.esupsignature.service.security.su.SwitchUserDetailsService.class)
             );
 
             assertDoesNotThrow(() -> config.wsJwtAuthenticationFailureHandler().onAuthenticationFailure(request, response, exception));
@@ -1335,7 +1338,10 @@ class GlobalSecurityAttackSurfaceTest {
                 mock(LogoutHandlerImpl.class),
                 mock(CasJwtDecoder.class),
                 mock(OidcUserSecurityServiceResolver.class),
-                mock(Environment.class)
+                mock(Environment.class),
+                mock(org.esupportail.esupsignature.service.security.su.SuAuthenticationSuccessHandler.class),
+                mock(org.esupportail.esupsignature.service.security.su.SuAuthenticationFailureHandler.class),
+                mock(org.esupportail.esupsignature.service.security.su.SwitchUserDetailsService.class)
         );
     }
 }
