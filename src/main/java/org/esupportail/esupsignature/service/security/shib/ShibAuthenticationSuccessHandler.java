@@ -5,11 +5,14 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
+import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.authentication.session.RegisterSessionAuthenticationStrategy;
 import org.springframework.security.web.savedrequest.DefaultSavedRequest;
 import org.springframework.stereotype.Service;
@@ -36,12 +39,20 @@ public class ShibAuthenticationSuccessHandler extends SavedRequestAwareAuthentic
         String name = httpServletRequest.getHeader("sn");
 		String firstname = httpServletRequest.getHeader("givenName");
 		logger.info("shib auth with - eppn : " + eppn + ", mail : " + email + ", name : " + name + ", givenName : " + firstname);
-		if(StringUtils.hasText(eppn) && StringUtils.hasText(email) && StringUtils.hasText(name) && StringUtils.hasText(firstname)) {
+		if(StringUtils.hasText(eppn) && StringUtils.hasText(name) && StringUtils.hasText(firstname)) {
 			name = new String(name.getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
 			firstname = new String(firstname.getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
-			userService.createUserWithAuthentication(eppn, name, firstname, email, authentication, UserType.shib);
+			try {
+				userService.createUserWithAuthentication(eppn, name, firstname, email, authentication, UserType.shib);
+			} catch (EsupSignatureUserException e) {
+				logger.warn("Shibboleth authentication refused for {}: {}", authentication.getName(), e.getMessage());
+				clearAuthentication(httpServletRequest);
+				httpServletRequest.getSession(true).setAttribute("errorMsg", e.getMessage());
+				httpServletResponse.sendRedirect("/");
+				return;
+			}
 		} else {
-			throw new EsupSignatureRuntimeException("At least one shib attribut is missing. Needed attributs are eppn, mail, sn and givenName");
+			throw new EsupSignatureRuntimeException("At least one shib attribut is missing. Needed attributs are eppn, sn and givenName");
 		}
 		registerSessionAuthenticationStrategy.onAuthentication(authentication, httpServletRequest, httpServletResponse);
 		httpServletRequest.getSession().setAttribute("securityServiceName", "shib");
@@ -56,6 +67,16 @@ public class ShibAuthenticationSuccessHandler extends SavedRequestAwareAuthentic
 		}
 		logger.info("redirect to /user");
 		httpServletResponse.sendRedirect("/user");
+	}
+
+	private void clearAuthentication(HttpServletRequest request) {
+		SecurityContextHolder.clearContext();
+		if (request.getSession(false) != null) {
+			request.getSession(false).removeAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY);
+			request.getSession(false).removeAttribute("userEppn");
+			request.getSession(false).removeAttribute("authUserEppn");
+			request.getSession(false).removeAttribute("SPRING_SECURITY_SAVED_REQUEST");
+		}
 	}
 	
 }

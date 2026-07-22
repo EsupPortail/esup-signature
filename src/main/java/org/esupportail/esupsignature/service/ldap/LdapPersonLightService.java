@@ -34,22 +34,22 @@ public class LdapPersonLightService {
     public List<PersonLightLdap> searchLight(String searchString) {
         String formattedFilter = MessageFormat.format(ldapProperties.getUsersSearchFilter(), (Object[]) new String[] { LdapEncoder.filterEncode(searchString) });
         logger.debug("search PersonLdapLight with : " + formattedFilter);
-        return launchLdapQuery(formattedFilter);
+        return launchLdapQuery(formattedFilter, true);
     }
 
     public List<PersonLightLdap> getPersonLdapLight(String authName) {
         String formattedFilter = MessageFormat.format(ldapProperties.getUserIdSearchFilter(), (Object[]) new String[] { LdapEncoder.filterEncode(authName) });
         logger.debug("search PersonLdapLight with : " + formattedFilter);
-        return launchLdapQuery(formattedFilter);
+        return launchLdapQuery(formattedFilter, false);
     }
 
     public List<PersonLightLdap> getPersonLdapLightByEppn(String eppn) {
         String formattedFilter = MessageFormat.format(ldapProperties.getUserEppnSearchFilter(), (Object[]) new String[] { LdapEncoder.filterEncode(eppn) });
         logger.debug("search PersonLdapLight by eppn");
-        return launchLdapQuery(formattedFilter);
+        return launchLdapQuery(formattedFilter, false);
     }
 
-    private List<PersonLightLdap> launchLdapQuery(String formattedFilter) {
+    private List<PersonLightLdap> launchLdapQuery(String formattedFilter, boolean requireMail) {
         StringBuilder objectClasses = new StringBuilder();
         for(String objectClass : ldapProperties.getUserObjectClasses()) {
             objectClasses.append("(objectClass=").append(objectClass).append(")");
@@ -61,7 +61,11 @@ public class LdapPersonLightService {
         }
         LdapQuery ldapQuery = LdapQueryBuilder.query().countLimit(20).base(ldapProperties.getSearchBase()).filter(formattedFilter);
         logQuery(ldapQuery);
-        return ldapTemplate.search(ldapQuery, new PersonLightLdapAttributesMapper()).stream().filter(personLightLdap -> StringUtils.hasText(personLightLdap.getMail())).toList();
+        List<PersonLightLdap> results = ldapTemplate.search(ldapQuery, new PersonLightLdapAttributesMapper());
+        if (requireMail) {
+            return results.stream().filter(personLightLdap -> StringUtils.hasText(personLightLdap.getMail())).toList();
+        }
+        return results;
     }
 
     private void logQuery(LdapQuery ldapQuery) {
