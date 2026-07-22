@@ -106,7 +106,7 @@
                                     <i th:unless="${form.publicUsage}" class="fi fi-rr-cross-small text-danger"></i>
                                 </td>
                                 <td class="clickable-td" th:text="${form.roles}"></td>
-                                <td class="text-center">
+                                <td class="text-center admin-list-actions-cell">
                                     <div class="dropdown position-relative">
                                         <button type="button" th:id="'menu-toggle_' + ${form.id}" class="btn text-dark" th:title="'Actions ' + ${form.title}"
                                                 th:data-bs-target="'#menu-' + ${form.id}" th:aria-controls="'menu-' + ${form.id}" data-bs-toggle="dropdown">

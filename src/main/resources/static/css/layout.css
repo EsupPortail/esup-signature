@@ -165,6 +165,15 @@ body.es-signrequest-page .es-signrequest-main-content > .es-workspace {
     top: 0;
 }
 
+.admin-list-table td.admin-list-actions-cell {
+    overflow: visible;
+}
+
+.admin-list-table td.admin-list-actions-cell:has(.dropdown-menu.show) {
+    position: relative;
+    z-index: 3;
+}
+
 .es-table-list-layout {
     min-height: 0;
     overflow: hidden;
