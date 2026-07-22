@@ -165,6 +165,50 @@ body.es-signrequest-page .es-signrequest-main-content > .es-workspace {
     top: 0;
 }
 
+.admin-list-table td.admin-list-actions-cell {
+    overflow: visible;
+}
+
+.admin-list-table td.admin-list-actions-cell:has(.dropdown-menu.show) {
+    position: relative;
+    z-index: 3;
+}
+
+.es-table-list-layout {
+    min-height: 0;
+    overflow: hidden;
+}
+
+.es-table-list-content {
+    display: flex;
+    flex-direction: column;
+    height: calc(100% - 1rem);
+    min-height: 0;
+}
+
+.es-table-list-content > .table-fix-head,
+.es-table-list-content > .card > .card-body > .table-fix-head {
+    flex: 1 1 auto;
+    height: auto;
+    min-height: 0;
+}
+
+.es-table-list-content > .card {
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+.es-table-list-content > .card > .card-body {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.es-table-list-layout > .table-fix-head {
+    height: calc(100% - 1rem);
+    min-height: 0;
+}
+
 .new-width {
     width: calc(100vw - 270px);
 }

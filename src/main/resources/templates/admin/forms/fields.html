@@ -109,8 +109,8 @@
                     <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
                     <nav th:replace="~{fragments/sides/side-manager :: side-manager}"></nav>
                 </div>
-                <div class="flex-grow-1">
-                    <div class="p-0 m-2">
+                <div class="es-table-list-layout flex-grow-1">
+                    <div class="es-table-list-content p-0 m-2">
                         <ul class="nav nav-tabs">
                             <li class="nav-item">
                                 <a class="nav-link" th:href="'/' + ${workflowRole} + '/forms/update/' + ${form.id}"><i class="fi fi-rr-settings-sliders"></i> Paramètres</a>
@@ -128,7 +128,7 @@
                         <div th:unless="${form.fields.size() > 0}" class="alert alert-warning">
                             Ce formulaire ne contient pas de modèle
                         </div>
-                        <div class="table-fix-head scrollbar-style rounded-3 p-0 m-2" style="height: calc(100vh - 200px);">
+                        <div class="table-fix-head scrollbar-style rounded-3 p-0 m-2">
                             <table class="table table-borderless table-striped table-hover table-light">
                                 <thead class="table-secondary">
                                 <tr>

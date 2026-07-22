@@ -75,6 +75,12 @@
                     <span class="d-none d-xxxxl-block text-nowrap" style="font-size: clamp(0.8rem, 1vw, 0.95rem);">Assistant de création de circuit</span>
                     <span class="d-none d-xxxxl-none d-lg-block" style="font-size: clamp(0.8rem, 1vw, 0.95rem);">Assistant</span>
                 </a>
+                <a th:if="${userEppn == authUserEppn && reportNumber > 0  && #authorization.expression('hasRole(''ROLE_USER'')')}" th:classappend="${activeMenu == 'reports'} ? 'bg-secondary bg-opacity-75'" id="link-report"
+                   href="/user/reports" class="btn btn-light border-secondary-subtle text-left rounded-5 d-flex align-items-center gap-2 flex-shrink-1" style="font-size: clamp(13px, 1.5vw, 16px); padding: 0.5rem 0.75rem; min-width: fit-content;">
+                    <i class="fi fi-rr-file-medical-alt text-secondary-emphasis" style="font-size: clamp(16px, 2vw, 20px);"></i>
+                    <span class="d-none d-xxxxl-block text-nowrap" style="font-size: clamp(0.8rem, 1vw, 0.95rem);">Rapports de signature en masse</span>
+                    <span class="d-none d-xxxxl-none d-lg-block" style="font-size: clamp(0.8rem, 1vw, 0.95rem);">Rapports de signature</span>
+                </a>
             </div>
             <div class="col-12 col-xxl-10 mx-auto d-flex flex-column flex-xl-row gap-2 gap-xxl-3">
                 <div id="toSignDiv" class="alert bg-white rounded-3 shadow-sm border-0 gap-2 border-secondary-subtle pe-xxl-3 position-relative home-signbooks-loading-shell"
