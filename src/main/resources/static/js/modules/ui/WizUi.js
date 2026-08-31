@@ -410,7 +410,7 @@ export class WizUi {
                     self.input.fileinput("upload")
                     return;
                 }
-                let title = $("#title-wiz").val();
+                let title = $("#title-wiz").val() ?? "";
                 let comment = $("#comment-wiz").val();
                 $.ajax({
                     type: "POST",
@@ -807,7 +807,8 @@ export class WizUi {
             $("#send-form-submit").click();
             self.enableButtons();
         };
-        this.sendSteps('/user/datas/send-form/' + formId + '?title=' + encodeURIComponent($('#send-form').find('[name="title"]').val()) + '&pending=' + false, $("li[id^='step-form-']"), successCallback, errorCallback);
+        const title = $('#send-form').find('[name="title"]').val() ?? "";
+        this.sendSteps('/user/datas/send-form/' + formId + '?title=' + encodeURIComponent(title) + '&pending=' + false, $("li[id^='step-form-']"), successCallback, errorCallback);
     }
 
     sendSteps(url, stepsSources, successCallback, errorCallback) {

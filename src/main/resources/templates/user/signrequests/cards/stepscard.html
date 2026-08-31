@@ -255,7 +255,7 @@
                                                    canShowLayerActions=${!signRequestFull.hasDocumentsHistory && (isCompleted || isWorkflowFinished)},
                                                    canDownloadHistory=${signRequestFull.hasDocumentsHistory},
                                                    canAddStep=${signRequestFull.updateAllowed && !isNextCompleted && isEditableStatus},
-                                                   canUpdateStep=${signRequestFull.updateAllowed && isEditableStatus && stepNumber >= signRequestFull.currentStepNumber},
+                                                   canUpdateStep=${signRequestFull.updateAllowed && !isAutoSign && isEditableStatus && stepNumber >= signRequestFull.currentStepNumber},
                                                    canDeleteStep=${signRequestFull.updateAllowed && signRequestFull.manager && isEditableStatus && showSignRequest.steps.size() > 1 && showSignRequest.steps.size() > signRequestFull.currentStepNumber && stepNumber >= signRequestFull.currentStepNumber},
                                                    hasStepMenu=${canResendLink || canShowLayerActions || canDownloadHistory || canAddStep || canUpdateStep || canDeleteStep}">
                                 <div class="wv-100 dropdown dropdown-center float-end" th:classappend="${hasStepMenu ? '' : ' pb-1'}">
@@ -347,7 +347,7 @@
                                 </div>
                                 </th:block>
                             </div>
-                            <div th:if="${signRequestFull.updateAllowed  && (signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft  || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)  && stepNumber >= signRequestFull.currentStepNumber}"
+                            <div th:if="${signRequestFull.updateAllowed && !isAutoSign && isEditableStatus && stepNumber >= signRequestFull.currentStepNumber}"
                                  data-bs-focus="false"
                                  role="dialog"
                                  class="modal modal-lg fade"

@@ -37,6 +37,7 @@ public class UiWorkflowMapper {
         dto.setSendAlertToAllRecipients(workflow.getSendAlertToAllRecipients());
         dto.setFromCode(workflow.getFromCode());
         dto.setMessageToDisplay(messageToDisplay);
+        dto.setNamingTemplateDefined(workflow.getNamingTemplate() != null);
         dto.setTargets(workflow.getTargets() == null ? List.of() : workflow.getTargets().stream().map(this::toWorkflowTargetViewDto).toList());
         dto.setViewers(workflow.getViewers() == null ? List.of() : workflow.getViewers().stream().map(this::toWorkflowUserDto).toList());
         dto.setSharedToUsers(workflow.getSharedToUsers() == null ? List.of() : workflow.getSharedToUsers().stream().map(this::toWorkflowUserDto).toList());

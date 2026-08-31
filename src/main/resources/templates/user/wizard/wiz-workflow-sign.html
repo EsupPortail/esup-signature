@@ -58,7 +58,7 @@
     <div class="col-lg-12">
         <form id="start-workflow-form">
             <input type="submit" id="workflow-form-submit" class="d-none">
-            <div class="form-group mb-3">
+            <div th:if="${workflow == null || !workflow.namingTemplateDefined}" class="form-group mb-3">
                 <label class="form-label" for="title-wiz">Titre (Facultatif)</label>
                 <input th:required="${workflow == null}" type="text" maxlength="128" placeholder="Vous pouvez saisir un titre pour retrouver votre demande" id="title-wiz" name="title" class="form-control" autofocus>
             </div>
