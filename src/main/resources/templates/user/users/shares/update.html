@@ -3,10 +3,7 @@
 <!--/*@thymesVar id="userShare" type="org.esupportail.esupsignature.dto.page.user.share.UserShareViewDto"*/-->
 <!--/*@thymesVar id="forms" type="java.util.List<org.esupportail.esupsignature.entity.Form>"*/-->
 <head th:replace="~{fragments/head :: head}"></head>
-<script th:inline="javascript" type="module">
-    import {default as ShareUi} from '/js/modules/ui/users/ShareUi.js?version=@[(${versionApp})]@';
-    new ShareUi();
-</script>
+<script type="module" th:src="'/js/modules/bootstrap/ShareBootstrap.js?version=' + ${versionApp}"></script>
 <body class="user-settings-page">
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
@@ -105,7 +102,7 @@
                 <div class="es-sign-buttons es-fixed-action-btns active">
                     <ul class="list-unstyled">
                         <li>
-                            <button id="saveButton" role="button" title="Enregistrer" class="btn btn-transparent text-dark" onclick="document.getElementById('shareForm').submit();">
+                            <button id="saveButton" type="submit" form="shareForm" title="Enregistrer" class="btn btn-transparent text-dark">
                                 <i class="fi fi-rr-disk"></i>
                             </button>
                         </li>

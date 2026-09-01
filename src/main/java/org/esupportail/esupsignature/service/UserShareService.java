@@ -290,6 +290,20 @@ public class UserShareService {
         return userShareRepository.findById(id).orElseThrow();
     }
 
+    @Transactional(readOnly = true)
+    public String resolveSignatureUserEppn(String userEppn, String authUserEppn, Long userShareId) {
+        if (userShareId == null) {
+            return userEppn;
+        }
+        UserShare userShare = getById(userShareId);
+        if (userShare.getUser() != null
+                && Objects.equals(userShare.getUser().getEppn(), userEppn)
+                && Boolean.TRUE.equals(userShare.getSignWithOwnSign())) {
+            return authUserEppn;
+        }
+        return userEppn;
+    }
+
     private UserShareViewDto toViewDto(UserShare userShare) {
         UserShareViewDto dto = new UserShareViewDto();
         dto.setId(userShare.getId());

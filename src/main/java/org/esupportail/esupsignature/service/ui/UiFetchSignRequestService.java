@@ -35,6 +35,7 @@ import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.SignWithService;
 import org.esupportail.esupsignature.service.UserService;
+import org.esupportail.esupsignature.service.UserShareService;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
 import org.esupportail.esupsignature.service.utils.sign.SignService;
 import org.springframework.stereotype.Service;
@@ -52,10 +53,11 @@ public class UiFetchSignRequestService {
     private final PreAuthorizeService preAuthorizeService;
     private final SignService signService;
     private final SignWithService signWithService;
+    private final UserShareService userShareService;
     private final AuditTrailService auditTrailService;
     private final CertificatService certificatService;
     private final UiFetchSignRequestMapper mapper;
-    public UiFetchSignRequestService(SignRequestService signRequestService, SignBookService signBookService, UserService userService, CommentService commentService, LogService logService, PreAuthorizeService preAuthorizeService, SignService signService, SignWithService signWithService, AuditTrailService auditTrailService, CertificatService certificatService, UiFetchSignRequestMapper mapper) {
+    public UiFetchSignRequestService(SignRequestService signRequestService, SignBookService signBookService, UserService userService, CommentService commentService, LogService logService, PreAuthorizeService preAuthorizeService, SignService signService, SignWithService signWithService, UserShareService userShareService, AuditTrailService auditTrailService, CertificatService certificatService, UiFetchSignRequestMapper mapper) {
         this.signRequestService = signRequestService;
         this.signBookService = signBookService;
         this.userService = userService;
@@ -64,6 +66,7 @@ public class UiFetchSignRequestService {
         this.preAuthorizeService = preAuthorizeService;
         this.signService = signService;
         this.signWithService = signWithService;
+        this.userShareService = userShareService;
         this.auditTrailService = auditTrailService;
         this.certificatService = certificatService;
         this.mapper = mapper;
@@ -130,10 +133,11 @@ public class UiFetchSignRequestService {
         List<SignRequestParams> currentSignRequestParamses = signRequestService.getToUseSignRequestParams(id, userEppn);
         List<Comment> comments = signRequestService.getComments(id);
         List<SignRequestParams> spots = signRequestService.getSpots(id);
+        Long userShareId = getUserShareId(httpSession);
         List<String> signImages = new ArrayList<>();
         String signImagesWarningMessage = null;
         try {
-            signImages = fetchSignImagesForRequest(id, userEppn, authUserEppn, httpSession);
+            signImages = signBookService.getSignImagesForSignRequest(id, userEppn, authUserEppn, userShareId);
         } catch (EsupSignatureUserException e) {
             signImagesWarningMessage = e.getMessage();
         }
@@ -219,12 +223,16 @@ public class UiFetchSignRequestService {
         List<Comment> postits = signRequestService.getPostits(id);
         User frontUser = userService.getFullUserByEppn(userEppn);
         User frontAuthUser = userService.getByEppn(authUserEppn);
-        Integer signImageNumber = frontUser != null ? frontUser.getDefaultSignImageNumber() : null;
+        String signatureUserEppn = userShareService.resolveSignatureUserEppn(userEppn, authUserEppn, userShareId);
+        User signatureUser = userService.getFullUserByEppn(signatureUserEppn);
+        Integer signImageNumber = signatureUser != null ? signatureUser.getDefaultSignImageNumber() : null;
         boolean restore = frontUser == null || frontUser.getFavoriteSignRequestParams() == null;
         String phone = frontUser != null ? frontUser.getPhone() : null;
         Boolean returnToHomeAfterSign = frontUser != null ? frontUser.getReturnToHomeAfterSign() : null;
         String userName = mapper.toDisplayName(frontUser);
-        String authUserName = mapper.toDisplayName(frontAuthUser);
+        String authUserName = Objects.equals(signatureUserEppn, userEppn)
+                ? userName
+                : mapper.toDisplayName(frontAuthUser);
         var fieldFrontDtos = mapper.toFieldFrontDtos(fields, workflow);
         ShowSignRequestContextDto context = new ShowSignRequestContextDto();
         context.setUserEppn(userEppn);
@@ -454,11 +462,6 @@ public class UiFetchSignRequestService {
         dto.setReturnToHomeAfterSign(context.getReturnToHomeAfterSign());
         dto.setManager(common.getManager());
         return dto;
-    }
-    private List<String> fetchSignImagesForRequest(Long signRequestId, String userEppn, String authUserEppn, HttpSession httpSession)
-            throws IOException, EsupSignatureUserException {
-        Long userShareId = getUserShareId(httpSession);
-        return signBookService.getSignImagesForSignRequest(signRequestId, userEppn, authUserEppn, userShareId);
     }
     private Long getUserShareId(HttpSession httpSession) {
         if (httpSession == null) {
