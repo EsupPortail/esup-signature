@@ -2770,10 +2770,8 @@ public class SignBookService {
                 if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() != null && !signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.visa) && !signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.hiddenVisa)) {
                     if(userShareId != null) {
                         try {
-                            UserShare userShare = userShareService.getById(userShareId);
-                            if (userShare.getUser().getEppn().equals(userEppn) && userShare.getSignWithOwnSign() != null && userShare.getSignWithOwnSign()) {
-                                user = userService.getByEppn(authUserEppn);
-                            }
+                            String signatureUserEppn = userShareService.resolveSignatureUserEppn(userEppn, authUserEppn, userShareId);
+                            user = userService.getByEppn(signatureUserEppn);
                         } catch (Exception e) {
                             logger.warn("unable to get shared user");
                         }
@@ -2786,9 +2784,9 @@ public class SignBookService {
                 }
             }
         }
-        signImages.add(fileService.getBase64Image(userService.getDefaultImage(userEppn), "default-image.png"));
+        signImages.add(fileService.getBase64Image(userService.getDefaultImage(user.getEppn()), "default-image.png"));
         if(StringUtils.hasText(user.getName()) && StringUtils.hasText(user.getFirstname())) {
-            signImages.add(fileService.getBase64Image(userService.getDefaultParaphe(userEppn), "default-paraphe.png"));
+            signImages.add(fileService.getBase64Image(userService.getDefaultParaphe(user.getEppn()), "default-paraphe.png"));
         }
         return signImages;
     }

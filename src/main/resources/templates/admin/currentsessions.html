@@ -18,22 +18,17 @@
                 <div class="es-sidebar d-flex">
                     <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
                 </div>
-                <div class="flex-grow-1">
-                    <div class="p-0 m-2">
-                        <div class="alert alert-light mb-2">
-                            <div class="card-header bg-transparent border-light-subtle p-0 pt-1">
-                            </div>
-                            <div class="card-body">
-                                <span th:text="${httpSessions.size()} + ' session(s) ouverte(s)'"></span>
-                                <br>
-                                <span th:text="${httpSessionsAlive.size()} + ' session(s) live'"></span>
-                            </div>
+                <div class="es-table-list-layout flex-grow-1">
+                    <div class="es-table-list-content p-0 m-2">
+                        <div class="alert alert-light mb-2 d-flex flex-column">
+                            <span th:text="${httpSessions.size()} + ' session(s) ouverte(s)'"></span>
+                            <span th:text="${httpSessionsAlive.size()} + ' session(s) live'"></span>
                             <button id="toggleAnonymous" class="btn btn-sm btn-secondary">
                                 <i class="fi fi-rr-eye-crossed"></i> Afficher les sessions anonymes
                             </button>
 
                         </div>
-                        <div class="table-fix-head scrollbar-style rounded-3" style="height: calc(100vh - 230px);">
+                        <div class="table-fix-head scrollbar-style rounded-3">
                             <table class="table table-hover table-responsive">
                                 <thead class="table-secondary">
                                 <tr>

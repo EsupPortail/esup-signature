@@ -18,7 +18,6 @@ import org.esupportail.esupsignature.service.security.LogoutHandlerImpl;
 import org.esupportail.esupsignature.service.security.OidcSecurityService;
 import org.esupportail.esupsignature.service.security.OidcOtpSecurityService;
 import org.esupportail.esupsignature.service.security.SecurityService;
-import org.esupportail.esupsignature.service.security.cas.CasSecurityServiceImpl;
 import org.esupportail.esupsignature.service.security.oauth.CustomAuthorizationRequestResolver;
 import org.esupportail.esupsignature.service.security.oauth.OidcUserSecurityServiceResolver;
 import org.esupportail.esupsignature.service.security.oauth.OAuth2FailureHandler;
@@ -27,8 +26,9 @@ import org.esupportail.esupsignature.service.security.oauth.ValidatingOAuth2User
 import org.esupportail.esupsignature.service.security.oauth.franceconnect.FranceConnectSecurityServiceImpl;
 import org.esupportail.esupsignature.service.security.oauth.proconnect.ProConnectSecurityServiceImpl;
 import org.esupportail.esupsignature.service.security.shib.DevShibRequestFilter;
-import org.esupportail.esupsignature.service.security.shib.ShibSecurityServiceImpl;
 import org.esupportail.esupsignature.service.security.su.SuAuthenticationSuccessHandler;
+import org.esupportail.esupsignature.service.security.su.SuAuthenticationFailureHandler;
+import org.esupportail.esupsignature.service.security.su.SwitchUserDetailsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,7 +60,6 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandlerImpl;
 import org.springframework.security.web.access.expression.WebExpressionAuthorizationManager;
 import org.springframework.security.web.access.intercept.AuthorizationFilter;
-import org.springframework.security.web.authentication.ExceptionMappingAuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.security.web.authentication.session.RegisterSessionAuthenticationStrategy;
@@ -99,9 +98,12 @@ public class WebSecurityConfig {
 	private final CasJwtDecoder casJwtDecoder;
 	private final OidcUserSecurityServiceResolver oidcUserSecurityServiceResolver;
 	private final Environment environment;
+	private final SuAuthenticationSuccessHandler suAuthenticationSuccessHandler;
+	private final SuAuthenticationFailureHandler suAuthenticationFailureHandler;
+	private final SwitchUserDetailsService switchUserDetailsService;
 	private DevShibRequestFilter devShibRequestFilter;
 
-	public WebSecurityConfig(GlobalProperties globalProperties, OAuthAuthenticationSuccessHandler oAuthAuthenticationSuccessHandler, WebSecurityProperties webSecurityProperties, @Autowired(required = false) ClientRegistrationRepository clientRegistrationRepository, List<SecurityService> securityServices, RegisterSessionAuthenticationStrategy sessionAuthenticationStrategy, SessionRegistryImpl sessionRegistry, LogoutHandlerImpl logoutHandler, @Autowired(required = false) CasJwtDecoder casJwtDecoder, OidcUserSecurityServiceResolver oidcUserSecurityServiceResolver, Environment environment) {
+	public WebSecurityConfig(GlobalProperties globalProperties, OAuthAuthenticationSuccessHandler oAuthAuthenticationSuccessHandler, WebSecurityProperties webSecurityProperties, @Autowired(required = false) ClientRegistrationRepository clientRegistrationRepository, List<SecurityService> securityServices, RegisterSessionAuthenticationStrategy sessionAuthenticationStrategy, SessionRegistryImpl sessionRegistry, LogoutHandlerImpl logoutHandler, @Autowired(required = false) CasJwtDecoder casJwtDecoder, OidcUserSecurityServiceResolver oidcUserSecurityServiceResolver, Environment environment, SuAuthenticationSuccessHandler suAuthenticationSuccessHandler, SuAuthenticationFailureHandler suAuthenticationFailureHandler, SwitchUserDetailsService switchUserDetailsService) {
         this.globalProperties = globalProperties;
         this.oAuthAuthenticationSuccessHandler = oAuthAuthenticationSuccessHandler;
         this.webSecurityProperties = webSecurityProperties;
@@ -113,6 +115,9 @@ public class WebSecurityConfig {
         this.casJwtDecoder = casJwtDecoder;
         this.oidcUserSecurityServiceResolver = oidcUserSecurityServiceResolver;
         this.environment = environment;
+		this.suAuthenticationSuccessHandler = suAuthenticationSuccessHandler;
+		this.suAuthenticationFailureHandler = suAuthenticationFailureHandler;
+		this.switchUserDetailsService = switchUserDetailsService;
     }
 
 	@Bean
@@ -225,14 +230,7 @@ public class WebSecurityConfig {
 			}
 		}
 		if(globalProperties.getEnableSu()) {
-			for (SecurityService securityService : securityServices) {
-				if (securityService instanceof CasSecurityServiceImpl) {
-					switchUserFilter().setUserDetailsService(securityService.getUserDetailsService());
-				} else if (securityService instanceof ShibSecurityServiceImpl) {
-					switchUserFilter().setUserDetailsService(securityService.getUserDetailsService());
-					break;
-				}
-			}
+			switchUserFilter().setUserDetailsService(switchUserDetailsService);
 		}
 		http.logout(logout -> logout.addLogoutHandler(logoutHandler).invalidateHttpSession(true)
 						.logoutUrl("/logout").logoutSuccessUrl("/logged-out"));
@@ -501,8 +499,8 @@ public class WebSecurityConfig {
 		switchUserFilter.setUserDetailsService(new InMemoryUserDetailsManager());
 		switchUserFilter.setSwitchUserUrl("/admin/su-login");
 		switchUserFilter.setExitUserUrl("/su-logout");
-		switchUserFilter.setSuccessHandler(new SuAuthenticationSuccessHandler());
-		switchUserFilter.setFailureHandler(new ExceptionMappingAuthenticationFailureHandler());
+		switchUserFilter.setSuccessHandler(suAuthenticationSuccessHandler);
+		switchUserFilter.setFailureHandler(suAuthenticationFailureHandler);
 		return switchUserFilter;
 	}
 

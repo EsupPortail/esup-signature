@@ -7,12 +7,12 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>4.1.0</version>
+		<version>4.1.1</version>
 		<relativePath />
 	</parent>
 	<groupId>org.esupportail</groupId>
 	<artifactId>esup-signature</artifactId>
-	<version>1.37.20-SNAPSHOT</version>
+	<version>1.37.21-SNAPSHOT</version>
 	<name>esup-signature</name>
 	<properties>
 		<startClass>org.esupportail.esupsignature.EsupSignatureApplication</startClass>
@@ -20,7 +20,7 @@
 		<bouncycastle.version>1.84</bouncycastle.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<dss.version>6.4</dss.version>
-	        <pdfbox.version>3.0.6</pdfbox.version>
+	    <pdfbox.version>3.0.6</pdfbox.version>
 		<playwright.version>1.49.0</playwright.version>
 		<skipDockerCompose>true</skipDockerCompose>
 		<skipSurefire>false</skipSurefire>

@@ -7,6 +7,7 @@ import fr.gouv.vitam.tools.sedalib.core.BinaryDataObject;
 import fr.gouv.vitam.tools.sedalib.core.DataObjectPackage;
 import fr.gouv.vitam.tools.sedalib.core.seda.SedaContext;
 import fr.gouv.vitam.tools.sedalib.core.seda.SedaVersion;
+import fr.gouv.vitam.tools.sedalib.droid.DroidIdentifier;
 import fr.gouv.vitam.tools.sedalib.inout.SIPBuilder;
 import fr.gouv.vitam.tools.sedalib.metadata.content.*;
 import fr.gouv.vitam.tools.sedalib.metadata.management.*;
@@ -26,7 +27,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -37,6 +41,11 @@ import java.util.List;
 public class SedaExportService {
 
     private static final Logger logger = LoggerFactory.getLogger(SedaExportService.class);
+    private static final Path DROID_CONFIG_DIR = Paths.get(".", "config");
+    private static final String DROID_FALLBACK_SIGNATURE_FILE = "DROID_SignatureFile_V97.xml";
+    private static final String DROID_FALLBACK_CONTAINER_SIGNATURE_FILE = "container-signature-20201001.xml";
+    private static final Object DROID_INITIALIZATION_LOCK = new Object();
+    private static volatile boolean droidInitialized;
 
     @Resource
     SignRequestService signRequestService;
@@ -71,6 +80,7 @@ public class SedaExportService {
             fw.close();
             SedaContext.setVersion(SedaVersion.V2_3);
             SEDALibProgressLogger pl = new SEDALibProgressLogger(logger, SEDALibProgressLogger.GLOBAL);
+            initializeDroid(pl);
             SIPBuilder sb = new SIPBuilder(targetFile.getAbsolutePath(), pl);
             sb.setAgencies("FRAN_NP_000001", "FRAN_NP_000010", "FRAN_NP_000015", "FRAN_NP_000019");
             sb.setArchivalAgreement("IC-000001");
@@ -129,6 +139,41 @@ public class SedaExportService {
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
             return null;
+        }
+    }
+
+    private void initializeDroid(SEDALibProgressLogger progressLogger) throws Exception {
+        if (droidInitialized) {
+            return;
+        }
+
+        synchronized (DROID_INITIALIZATION_LOCK) {
+            if (droidInitialized) {
+                return;
+            }
+
+            prepareDroidConfiguration(DROID_CONFIG_DIR, DroidIdentifier.class.getClassLoader());
+            DroidIdentifier.init(progressLogger, DROID_CONFIG_DIR.toString());
+            droidInitialized = true;
+        }
+    }
+
+    static void prepareDroidConfiguration(Path configDir, ClassLoader classLoader) throws IOException {
+        Files.createDirectories(configDir);
+        copyClasspathResourceIfAvailable(DROID_FALLBACK_SIGNATURE_FILE, configDir, classLoader);
+        copyClasspathResourceIfAvailable(DROID_FALLBACK_CONTAINER_SIGNATURE_FILE, configDir, classLoader);
+    }
+
+    private static void copyClasspathResourceIfAvailable(String resourceName, Path configDir, ClassLoader classLoader) throws IOException {
+        Path target = configDir.resolve(resourceName);
+        if (Files.exists(target)) {
+            return;
+        }
+
+        try (InputStream inputStream = classLoader.getResourceAsStream(resourceName)) {
+            if (inputStream != null) {
+                Files.copy(inputStream, target, StandardCopyOption.REPLACE_EXISTING);
+            }
         }
     }
 

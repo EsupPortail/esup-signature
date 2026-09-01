@@ -15,6 +15,7 @@ public class WorkflowViewDto {
     private Boolean sendAlertToAllRecipients;
     private Boolean fromCode;
     private String messageToDisplay;
+    private boolean namingTemplateDefined;
     private List<TargetDto> targets;
     private List<UserDto> viewers;
     private List<UserDto> sharedToUsers;
@@ -74,6 +75,14 @@ public class WorkflowViewDto {
 
     public void setMessageToDisplay(String messageToDisplay) {
         this.messageToDisplay = messageToDisplay;
+    }
+
+    public boolean isNamingTemplateDefined() {
+        return namingTemplateDefined;
+    }
+
+    public void setNamingTemplateDefined(boolean namingTemplateDefined) {
+        this.namingTemplateDefined = namingTemplateDefined;
     }
 
     public List<TargetDto> getTargets() {

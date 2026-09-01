@@ -421,8 +421,16 @@ const userParamsForm = document.getElementById('userParamsForm');
                         return initials || '?';
                     }
 
+                    function isDelegationContext() {
+                        const userEppn = document.body?.dataset.esupUserEppn || '';
+                        const authUserEppn = document.querySelector('meta[name="esup-auth-user-eppn"]')?.getAttribute('content') || '';
+                        return userEppn !== '' && authUserEppn !== '' && userEppn !== authUserEppn;
+                    }
+
                     function updateNavbarUser(userState) {
-                        if (!userState) {
+                        // In delegation mode, userState describes the authenticated delegate's
+                        // signature profile while the navbar and window.user represent the principal.
+                        if (!userState || isDelegationContext()) {
                             return;
                         }
                         const navbarDisplayName = document.getElementById('navbar-user-display-name');
@@ -525,7 +533,7 @@ const userParamsForm = document.getElementById('userParamsForm');
                     }
 
                     function renderNavbarSignatures(userState) {
-                        if (!navbarUserSignaturesContent) {
+                        if (!navbarUserSignaturesContent || isDelegationContext()) {
                             return;
                         }
                         const signImageIds = userState?.signImageIds || [];

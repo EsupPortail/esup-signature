@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="logs" type="java.util.List<org.esupportail.esupsignature.entity.Log>"*/-->
-<head th:replace="~{fragments/head-full :: head}"></head>
+<head th:replace="~{fragments/head :: head}"></head>
 <body>
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
@@ -17,8 +17,8 @@
                 <div class="es-sidebar d-flex">
                     <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
                 </div>
-                <div class="flex-grow-1">
-                    <div class="p-0 m-2">
+                <div class="es-table-list-layout flex-grow-1">
+                    <div class="es-table-list-content p-0 m-2">
                         <div class="table-fix-head scrollbar-style rounded-3">
                             <table class="table table-light table-borderless table-hover">
                                 <thead class="table-secondary">

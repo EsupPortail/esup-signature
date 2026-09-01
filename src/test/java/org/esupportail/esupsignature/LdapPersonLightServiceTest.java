@@ -2,6 +2,7 @@ package org.esupportail.esupsignature;
 
 import org.esupportail.esupsignature.config.ldap.LdapProperties;
 import org.esupportail.esupsignature.service.ldap.LdapPersonLightService;
+import org.esupportail.esupsignature.service.ldap.entry.PersonLightLdap;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.ldap.core.AttributesMapper;
@@ -17,6 +18,20 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class LdapPersonLightServiceTest {
+
+    @Test
+    void exactUserLookupKeepsEntryWithoutMailSoCallerCanReportItClearly() {
+        LdapTemplate ldapTemplate = mock(LdapTemplate.class);
+        PersonLightLdap person = new PersonLightLdap();
+        person.setUid("missingmail");
+        person.setMail("");
+        when(ldapTemplate.search(any(LdapQuery.class), any(AttributesMapper.class))).thenReturn(List.of(person));
+
+        LdapPersonLightService service = new LdapPersonLightService(new LdapProperties(), ldapTemplate);
+
+        assertThat(service.getPersonLdapLight("missingmail")).containsExactly(person);
+        assertThat(service.searchLight("missingmail")).isEmpty();
+    }
 
     @Test
     void searchLightEscapesUserInputBeforeBuildingLdapFilter() {

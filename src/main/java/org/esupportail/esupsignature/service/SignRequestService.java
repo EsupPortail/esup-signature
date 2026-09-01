@@ -367,13 +367,8 @@ public class SignRequestService {
 		StepStatus stepStatus;
 		Date date = new Date();
 		List<Log> lastSignLogs = new ArrayList<>();
-		User signerUser = user;
-		if(userShareId != null) {
-			UserShare userShare = userShareService.getById(userShareId);
-			if (userShare.getUser().getEppn().equals(userEppn) && userShare.getSignWithOwnSign() != null && userShare.getSignWithOwnSign()) {
-				signerUser = userService.getByEppn(authUserEppn);
-			}
-		}
+		String signatureUserEppn = userShareService.resolveSignatureUserEppn(userEppn, authUserEppn, userShareId);
+		User signerUser = userService.getByEppn(signatureUserEppn);
 		List<Document> toSignDocuments = getToSignDocuments(signRequest.getId());
 		SignType signType = signRequest.getCurrentSignType();
 		byte[] filledInputStream;
@@ -448,7 +443,7 @@ public class SignRequestService {
 			SignRequestParams lastSignRequestParams = signService.findLastSignRequestParams(signRequest);
 			reports = validationService.validate(getToValidateFile(signRequest.getId()), null);
 			if (reports == null || reports.getDiagnosticData().getAllSignatures().isEmpty()) {
-				filledInputStream = stampImagesOnFirstSign(signRequest, signRequest.getSignRequestParams(), userEppn, authUserEppn, filledInputStream, date, lastSignLogs, lastSignRequestParams);
+				filledInputStream = stampImagesOnFirstSign(signRequest, signRequest.getSignRequestParams(), signerUser, userEppn, authUserEppn, filledInputStream, date, lastSignLogs, lastSignRequestParams);
 			} else {
 				logger.warn("skip add visuals because document already signed");
 			}
@@ -480,8 +475,11 @@ public class SignRequestService {
 	 * @return Le flux PDF représenté comme un tableau d'octets, contenant les images supplémentaires insérées.
 	 */
 	public byte[] stampImagesOnFirstSign(SignRequest signRequest, List<SignRequestParams> signRequestParamses, String userEppn, String authUserEppn, byte[] filledInputStream, Date date, List<Log> lastSignLogs, SignRequestParams lastSignRequestParams) {
-		User signerUser = userService.getByEppn(userEppn);
-		boolean isViewed = signRequest.getViewedBy().contains(signerUser);
+		return stampImagesOnFirstSign(signRequest, signRequestParamses, userService.getByEppn(userEppn), userEppn, authUserEppn, filledInputStream, date, lastSignLogs, lastSignRequestParams);
+	}
+
+	private byte[] stampImagesOnFirstSign(SignRequest signRequest, List<SignRequestParams> signRequestParamses, User signerUser, String userEppn, String authUserEppn, byte[] filledInputStream, Date date, List<Log> lastSignLogs, SignRequestParams lastSignRequestParams) {
+		boolean isViewed = signRequest.getViewedBy().contains(userService.getByEppn(userEppn));
 		String ocgName = getCurrentStepLayerId(signRequest);
 		if (signRequestParamses.size() > 1) {
 			for (SignRequestParams signRequestParams : signRequestParamses) {

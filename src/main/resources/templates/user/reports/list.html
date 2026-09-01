@@ -2,27 +2,32 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org" xmlns:sd="http://www.w3.org/1999/xhtml">
 <!--/*@thymesVar id="report" type="org.esupportail.esupsignature.dto.page.user.report.ReportListViewDto.RowDto"*/-->
 <!--/*@thymesVar id="reportStatus" type="org.esupportail.esupsignature.dto.page.user.report.ReportListViewDto.StatusDto"*/-->
-<head th:replace="~{fragments/head-full :: head}"></head>
+<head th:replace="~{fragments/head :: head}"></head>
 <body>
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
     <div class="es-wrapper">
         <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full text-uppercase">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item es-breadcrumb-title active">Rapports de signature en masse</li>
+                <li class="breadcrumb-item">
+                    <a href="/user" class="d-flex align-items-center"><i class="fi fi-rr-home"></i> Accueil</a>
+                </li>
+                <li class="breadcrumb-item es-breadcrumb-title active d-flex align-items-center gap-2">
+                    <i class="fi fi-rr-file-medical-alt"></i>
+                    <span>Rapports de signature en masse</span>
+                    <span class="badge rounded-pill bg-secondary" th:text="${#lists.size(reports)}" th:aria-label="${#lists.size(reports)} + ' rapport(s)'"></span>
+                </li>
             </ol>
         </nav>
         <div id="content" class="es-content-full">
             <div class="es-main-content d-flex">
-                <div class="flex-grow-1 overflow-auto">
-                    <div class="p-0 m-2">
-                        <div class="card text-bg-light">
-                            <div class="card-header bg-transparent border-light-subtle p-0 pt-1">
-                                <h5 class="ms-4">
-                                    Rapports de signature en masse
-                                    <span class="text-muted" th:text="'(' + ${#lists.size(reports)} + ')'"></span>
-                                </h5>
-                            </div>
+                <div class="es-table-list-layout flex-grow-1">
+                    <div class="es-table-list-content p-0 m-2">
+                        <div class="alert alert-light border border-light-subtle mb-2 d-flex align-items-center gap-2">
+                            <i class="fi fi-rr-info text-secondary" aria-hidden="true"></i>
+                            <span>Cette page présente le résultat de chaque opération de signature en masse et répartit les demandes selon leur statut.</span>
+                        </div>
+                        <div class="card table-fix-head text-bg-light">
                             <div class="card-body p-0">
                                 <div th:if="${reports.size() == 0}" class="p-3">
                                     <div class="alert alert-secondary mb-0">Aucun rapport</div>
@@ -42,7 +47,9 @@
                                                         th:aria-controls="'collapse' + ${iterator.index}">
                                                     <span th:text="'Rapport du ' + ${#dates.format(report.date, 'dd/MM/yyyy HH:mm')}"></span>
                                                 </button>
-                                                <form th:action="'/user/reports/' + ${report.id}" th:method="delete" class="ms-auto flex-shrink-0">
+                                                <form th:action="'/user/reports/' + ${report.id}" th:method="delete"
+                                                      class="es-confirm-submit ms-auto flex-shrink-0"
+                                                      data-confirm-message="Voulez-vous vraiment supprimer ce rapport ?">
                                                     <button class="btn btn-sm btn-transparent text-danger"
                                                             type="submit"
                                                             title="Supprimer ce rapport">
@@ -81,13 +88,13 @@
                         </div>
                     </div>
                 </div>
-                <div class="es-sign-buttons es-fixed-action-btns active">
+                <div class="es-sign-buttons es-fixed-action-btns active" th:if="${reports.size() > 0}">
                     <ul class="list-unstyled">
                         <li>
                             <a title="Supprimer tous les rapports"
                                data-bs-toggle="modal"
                                data-bs-target="#deleteAllModal"
-                               type="button"
+                               role="button"
                                class="btn btn-transparent text-danger">
                                 <i class="fi fi-rr-dumpster-fire"></i>
                             </a>
@@ -98,12 +105,12 @@
         </div>
     </div>
 </main>
-<div data-bs-focus="false" class="modal fade" id="deleteAllModal"  role="dialog"
-    aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div data-bs-focus="false" class="modal fade" id="deleteAllModal" role="dialog"
+    aria-labelledby="deleteAllModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 class="modal-title">Confirmer la suppression de tous les rapports</h3>
+                <h3 class="modal-title" id="deleteAllModalLabel">Confirmer la suppression de tous les rapports</h3>
                 <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close">
                 </button>
             </div>

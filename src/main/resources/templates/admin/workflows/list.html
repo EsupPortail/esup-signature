@@ -18,8 +18,8 @@
                     <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
                     <nav th:replace="~{fragments/sides/side-manager :: side-manager}"></nav>
                 </div>
-                <div class="flex-grow-1">
-            <div class="p-0 m-2">
+                <div class="es-table-list-layout flex-grow-1">
+            <div class="es-table-list-content p-0 m-2">
                 <div class="input-group mb-3 admin-list-filters admin-list-filters-loading" th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}">
                     <span class="input-group-text">Filtrer</span>
                     <select id="tags" name="tags" class="form-control slim-select-simple js-admin-list-filter js-stop-propagation" data-filter-name="selectedTags" data-placeholder="Choisir un ou plusieurs tags" multiple>
@@ -110,7 +110,7 @@
                                 <td th:unless="${#lists.size(workflow.workflowSteps) > 0}">
                                     Aucun
                                 </td>
-                                <td class="text-center">
+                                <td class="text-center admin-list-actions-cell">
                                     <div class="dropdown position-relative" th:if="${workflow.id != null}">
                                         <button type="button" th:id="'menu-toggle_' + ${workflow.id}" class="btn text-dark" th:title="'Actions ' + ${workflow.description}"
                                                 th:data-bs-target="'#menu-' + ${workflow.id}" th:aria-controls="'menu-' + ${workflow.id}" data-bs-toggle="dropdown">
