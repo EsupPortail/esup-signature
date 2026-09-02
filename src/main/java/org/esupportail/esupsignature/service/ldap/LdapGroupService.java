@@ -10,6 +10,8 @@ import org.esupportail.esupsignature.service.security.GroupService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.ldap.InvalidSearchFilterException;
 import org.springframework.ldap.core.ContextMapper;
 import org.springframework.ldap.core.DirContextAdapter;
@@ -50,16 +52,31 @@ public class LdapGroupService implements GroupService {
     }
 
     @Transactional
+    @EventListener(ApplicationReadyEvent.class)
     public void loadLdapFiltersGroups() {
+        ldapFiltersGroups.clear();
         for(Map.Entry<String, String> entry : ldapProperties.getMappingFiltersGroups().entrySet()) {
-            ldapFiltersGroups.put(entry.getValue(), entry.getKey());
+            if(validateGroupName(entry.getKey(), "ldap.mapping-filters-groups")) {
+                ldapFiltersGroups.put(entry.getValue(), entry.getKey());
+            }
         }
         Iterator<Config> configs = configRepository.findAll().iterator();
         if(configs.hasNext()) {
             for(Map.Entry<String, String> entry : configs.next().getMappingFiltersGroups().entrySet()) {
-                ldapFiltersGroups.put(entry.getValue(), entry.getKey());
+                if(validateGroupName(entry.getKey(), "config_mapping_filters_groups")) {
+                    ldapFiltersGroups.put(entry.getValue(), entry.getKey());
+                }
             }
         }
+    }
+
+    private boolean validateGroupName(String groupName, String source) {
+        if(groupName != null && groupName.trim().endsWith(":")) {
+            logger.error("Invalid group name [{}] in {}: the trailing ':' is YAML syntax and must not be part of the group name",
+                    groupName, source);
+            return false;
+        }
+        return true;
     }
 
     public Map<String, String> getLdapFiltersGroups() {
