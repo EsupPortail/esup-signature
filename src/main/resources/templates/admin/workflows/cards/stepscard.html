@@ -83,7 +83,7 @@
                                                                     th:text="${sealCertificatProperties.sealCertificatTitle != null && !#strings.isEmpty(sealCertificatProperties.sealCertificatTitle) ? sealCertificatProperties.sealCertificatTitle : sealCertificatProperties.sealCertificatName}"></option>
                                                         </th:block>
                                                         <th:block th:each="certificat : ${certificats}">
-                                                            <option th:text="${certificat.keystore.fileName.substring(0, 50)}" th:value="${'cert:' + certificat.id}" th:selected="${workflowStep.certificat != null && workflowStep.certificat.id == certificat.id}"></option>
+                                                            <option th:text="${#strings.abbreviate(certificat.fileName, 50)}" th:value="${'cert:' + certificat.id}" th:selected="${workflowStep.certificat != null && workflowStep.certificat.id == certificat.id}"></option>
                                                         </th:block>
                                                     </select>
                                                 </div>
