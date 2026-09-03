@@ -1350,3 +1350,7 @@ input, textarea, select {
 .esup-filepond-readonly .filepond--drop-label {
     display: none;
 }
+
+.spinner-border {
+    --bs-spinner-border-width: 2px !important;
+}
