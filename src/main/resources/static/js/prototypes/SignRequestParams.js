@@ -1245,6 +1245,13 @@ export class SignRequestParams extends EventFactory {
                 }
             }
         }
+        if (this.signImages === SPECIAL_SIGN_IMAGE_NUMBERS.SPOT) {
+            window.requestAnimationFrame?.(() => {
+                this.synchronizePositionWithRenderedCross();
+                this.refreshVisualState();
+                this.#refreshToolsPosition();
+            });
+        }
     }
 
     #updatePlacementState(dragRect) {
