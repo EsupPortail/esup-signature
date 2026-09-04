@@ -297,6 +297,23 @@ export class SignSpaceManager {
 		return this.applySignRequestParamsToSignSpace(bestMatch, signRequestParams);
 	}
 
+	scrollToPlacedSignSpace(signSpaceDiv, pdfViewer) {
+		if (signSpaceDiv == null || !signSpaceDiv.length || pdfViewer == null) {
+			return;
+		}
+		const pageNum = parseInt(signSpaceDiv.attr("data-es-pos-page"), 10);
+		const signSpaceTop = parseInt(signSpaceDiv.css("top"), 10);
+		const pageTop = Number.isFinite(pageNum) && typeof pdfViewer.getPageTopInPdf === "function"
+			? pdfViewer.getPageTopInPdf(pageNum)
+			: 0;
+		const targetTop = Number.isFinite(signSpaceTop)
+			? Math.max(0, signSpaceTop - 120)
+			: Math.max(0, pageTop - 40);
+		if (typeof pdfViewer.animateScrollToPosition === "function") {
+			pdfViewer.animateScrollToPosition(targetTop);
+		}
+	}
+
 	applySignRequestParamsToSignSpace(signSpaceDiv, signRequestParams) {
 		const signPlacementController = this.options.getSignPlacementController();
 		const pdfViewer = this.options.getPdfViewer();
@@ -398,6 +415,7 @@ export class SignSpaceManager {
 		if (typeof signPlacementController.refreshSteps === "function") {
 			signPlacementController.refreshSteps();
 		}
+		window.requestAnimationFrame?.(() => this.scrollToPlacedSignSpace(signSpaceDiv, pdfViewer));
 		return true;
 	}
 
