@@ -86,7 +86,7 @@
                                     <tbody>
                                     <th:block th:each="certificat : ${certificats}">
                                         <tr>
-                                            <td style="width: 600px; word-break: break-all" th:text="${certificat.keystore.fileName}"></td>
+                                            <td style="width: 600px; word-break: break-all" th:text="${certificat.fileName}"></td>
                                             <td th:text="${#dates.format(certificat.createDate, 'dd/MM/yyyy HH:mm')}"></td>
                                             <td th:text="${#dates.format(certificat.expireDate, 'dd/MM/yyyy HH:mm')}"></td>
                                             <td th:text="${certificat.roles}"></td>

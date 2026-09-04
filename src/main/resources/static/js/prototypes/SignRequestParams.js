@@ -1270,6 +1270,32 @@ export class SignRequestParams extends EventFactory {
         this.fireEvent("placementStateChanged", [this]);
     }
 
+    #refreshTextOverflowState() {
+        const textRect = this.cross[0]?.getBoundingClientRect?.();
+        if (textRect == null) {
+            return;
+        }
+        this.inside = false;
+        const epsilon = 1;
+        $(".pdf-page").each((_, pageElement) => {
+            const pageRect = pageElement.getBoundingClientRect();
+            if (
+                textRect.left >= pageRect.left - epsilon &&
+                textRect.top >= pageRect.top - epsilon &&
+                textRect.right <= pageRect.right + epsilon &&
+                textRect.bottom <= pageRect.bottom + epsilon
+            ) {
+                this.inside = true;
+            }
+        });
+        this.#computeBgColor();
+        const signActionButtons = $("#signActionButtons button");
+        signActionButtons.prop("disabled", !this.inside);
+        signActionButtons.toggleClass("btn-success", this.inside);
+        signActionButtons.toggleClass("btn-secondary", !this.inside);
+        $("#signActionButtons").attr("aria-busy", !this.inside ? "true" : "false");
+    }
+
     #refreshToolsPosition() {
         const tools = this.signImages === SPECIAL_SIGN_IMAGE_NUMBERS.SPOT
             ? $("#spot-tools_" + this.id)
@@ -2406,6 +2432,7 @@ export class SignRequestParams extends EventFactory {
 
         this.cross.css("width", this.textareaPart.css("width"));
         this.cross.css("height", this.textareaPart.css("height"));
+        this.#refreshTextOverflowState();
         this.#refreshAllPagesSigns();
     }
 

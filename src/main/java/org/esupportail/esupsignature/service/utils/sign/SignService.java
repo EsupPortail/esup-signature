@@ -359,7 +359,7 @@ public class SignService {
 	private PAdESSignatureParameters fillVisibleParameters(SignatureDocumentForm signatureDocumentForm, SignRequestParams signRequestParams, User user, Date date) throws IOException {
 		InputStream toSignFile = new ByteArrayInputStream(signatureDocumentForm.getDocumentToSign().getBytes());
 		PAdESSignatureParameters pAdESSignatureParameters = new PAdESSignatureParameters();
-		SignatureImageParameters imageParameters = new SignatureImageParameters();
+		SignatureImageParameters imageParameters = createSignatureImageParameters();
 		InMemoryDocument fileDocumentImage;
     Integer signImageNumber = signRequestParams.getSignImageNumber();
     if(signImageNumber != null && signImageNumber >= 0 && (signImageNumber == 999997 || signImageNumber == 999998 || signImageNumber == 999999 || user.getSignImages().size() > signImageNumber || user.getEppn().equals("system"))) {
@@ -378,7 +378,6 @@ public class SignService {
 				signImage = new ByteArrayInputStream(outputStream.toByteArray());
 			}
 			SignatureFieldParameters signatureFieldParameters = imageParameters.getFieldParameters();
-			imageParameters.getFieldParameters().setRotation(VisualSignatureRotation.AUTOMATIC);
 			PdfParameters pdfParameters = pdfService.getPdfParameters(toSignFile, signRequestParams.getSignPageNumber());
 			int widthAdjusted = Math.round(signRequestParams.getSignWidth() * signRequestParams.getSignScale() * globalProperties.getFixFactor());
 			int heightAdjusted = Math.round(signRequestParams.getSignHeight() * signRequestParams.getSignScale() * globalProperties.getFixFactor());
@@ -388,19 +387,9 @@ public class SignService {
 				signatureFieldParameters.setFieldId(signRequestParams.getPdSignatureFieldName());
 			} else {
 				signatureFieldParameters.setPage(signRequestParams.getSignPageNumber());
-				if (pdfParameters.getRotation() == 0) {
-					signatureFieldParameters.setWidth(widthAdjusted);
-					signatureFieldParameters.setHeight(heightAdjusted);
-					signatureFieldParameters.setOriginX(Math.round(signRequestParams.getxPos() * globalProperties.getFixFactor()));
-				} else {
-					signatureFieldParameters.setWidth(heightAdjusted);
-					signatureFieldParameters.setHeight(widthAdjusted);
-					signatureFieldParameters.setOriginX(Math.round(signRequestParams.getxPos() - 50 * globalProperties.getFixFactor()));
-				}
+				configureSignatureFieldPosition(signatureFieldParameters, pdfParameters, signRequestParams,
+						widthAdjusted, heightAdjusted, globalProperties.getFixFactor());
 			}
-			int yPos = Math.round(signRequestParams.getyPos() * globalProperties.getFixFactor());
-			if (yPos < 0) yPos = 0;
-			signatureFieldParameters.setOriginY(yPos);
 
 			BufferedImage bufferedSignImage = ImageIO.read(signImage);
 			ByteArrayOutputStream os = new ByteArrayOutputStream();
@@ -421,6 +410,38 @@ public class SignService {
 		pAdESSignatureParameters.setContactInfo(user.getEmail());
 		fillCommonsParameters(pAdESSignatureParameters, signatureDocumentForm);
 		return pAdESSignatureParameters;
+	}
+
+	SignatureImageParameters createSignatureImageParameters() {
+		SignatureImageParameters imageParameters = new SignatureImageParameters();
+		imageParameters.getFieldParameters().setRotation(VisualSignatureRotation.AUTOMATIC);
+		imageParameters.setImageScaling(ImageScaling.ZOOM_AND_CENTER);
+		return imageParameters;
+	}
+
+	void configureSignatureFieldPosition(SignatureFieldParameters fieldParameters, PdfParameters pdfParameters,
+			SignRequestParams signRequestParams, int width, int height, float fixFactor) {
+		int rotation = Math.floorMod(pdfParameters.getRotation(), 360);
+		float x = Math.round(signRequestParams.getxPos() * fixFactor);
+		float y = Math.round(signRequestParams.getyPos() * fixFactor);
+
+		fieldParameters.setWidth(width);
+		fieldParameters.setHeight(height);
+		fieldParameters.setOriginX(x);
+		if (rotation == 270) {
+			// DSS applies the inverse page rotation to the visual appearance. Its Y origin must
+			// be expressed from the opposite edge of the unrotated PDF page. The native DSS
+			// drawer also translates the rotated appearance by its width, which has to be
+			// compensated in the opposite direction to keep the visible image at the requested
+			// top coordinate.
+			fieldParameters.setOriginY(Math.max(0, pdfParameters.getWidth() - y - height - width));
+		} else if (rotation == 90) {
+			fieldParameters.setOriginY(Math.max(0, pdfParameters.getWidth() - y - height));
+		} else if (rotation == 180) {
+			fieldParameters.setOriginY(Math.max(0, pdfParameters.getHeight() - y - height));
+		} else {
+			fieldParameters.setOriginY(Math.max(0, y));
+		}
 	}
 
 	private void fillCommonsParameters(AbstractSignatureParameters<?> parameters, AbstractSignatureForm form) {

@@ -811,8 +811,18 @@ public class SignBookService {
     private void dispatchSignRequestParams(SignRequest signRequest) {
         int docNumber = signRequest.getParentSignBook().getSignRequests().indexOf(signRequest);
         if(!signRequest.getSignRequestParams().isEmpty()) {
+            LiveWorkflow liveWorkflow = signRequest.getParentSignBook().getLiveWorkflow();
+            if(liveWorkflow.getWorkflow() == null) {
+                int paramsToDispatch = Math.min(signRequest.getSignRequestParams().size(), liveWorkflow.getLiveWorkflowSteps().size());
+                for(int i = 0; i < paramsToDispatch; i++) {
+                    SignRequestParams signRequestParams = signRequest.getSignRequestParams().get(i);
+                    signRequestParams.setSignDocumentNumber(docNumber);
+                    addSignRequestParamToStep(signRequestParams, liveWorkflow.getLiveWorkflowSteps().get(i));
+                }
+                return;
+            }
             int i = 0;
-            for (LiveWorkflowStep liveWorkflowStep : signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps()) {
+            for (LiveWorkflowStep liveWorkflowStep : liveWorkflow.getLiveWorkflowSteps()) {
                 if (!liveWorkflowStep.getSignType().equals(SignType.hiddenVisa)) {
                     WorkflowStep workflowStep = liveWorkflowStep.getWorkflowStep();
                     if (workflowStep != null) {
@@ -1257,6 +1267,9 @@ public class SignBookService {
                     throw new EsupSignatureException("L'étape ne peut pas être ajoutée car le circuit est déjà démarré");
                 }
             }
+        }
+        if(signBook.getLiveWorkflow().getWorkflow() == null) {
+            dispatchSignRequestParams(signBook);
         }
         userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUserEppn), Collections.singletonList(step));
         logStepChange(signBook, insertedStepNumber, "Ajout de l'étape " + insertedStepNumber, "Destinataires de l'étape ajoutée : " + liveWorkflowStepRecipientsToLogLabel(liveWorkflowStep), authUserEppn);
