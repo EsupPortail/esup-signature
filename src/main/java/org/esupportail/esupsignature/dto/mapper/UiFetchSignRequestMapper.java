@@ -178,6 +178,7 @@ public class UiFetchSignRequestMapper {
         dto.setNotSigned(false);
         dto.setAttachmentAlert(false);
         dto.setAttachmentRequire(false);
+        dto.setAttachmentAddAllowed(false);
         dto.setManager(true);
         dto.setUpdateAllowed(false);
         dto.setCommentDeleteAllowed(false);
@@ -319,6 +320,7 @@ public class UiFetchSignRequestMapper {
         dto.setNotSigned(context.isNotSigned());
         dto.setAttachmentAlert(context.isAttachmentAlert());
         dto.setAttachmentRequire(context.isAttachmentRequire());
+        dto.setAttachmentAddAllowed(context.isAttachmentAddAllowed());
         dto.setManager(context.isManager());
         dto.setUpdateAllowed(updateAllowed);
         dto.setCommentDeleteAllowed(context.isManager() && isCommentDeleteStatusAllowed(context));

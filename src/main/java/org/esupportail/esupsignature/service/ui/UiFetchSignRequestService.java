@@ -84,6 +84,7 @@ public class UiFetchSignRequestService {
         boolean updateAllowed = preAuthorizeService.signBookUpdate(signBook.getId(), authUserEppn);
         boolean attachmentAlert = signRequestService.isAttachmentAlert(signRequest);
         boolean attachmentRequire = signRequestService.isAttachmentRequire(signRequest);
+        boolean attachmentAddAllowed = signRequestService.canAddAttachment(id, userEppn);
         SignType currentSignType = signRequest.getCurrentSignType();
         Integer currentStepNumber = liveWorkflow.getCurrentStepNumber();
         boolean currentStepMultiSign = true;
@@ -261,6 +262,7 @@ public class UiFetchSignRequestService {
         context.setManager(manager);
         context.setAttachmentAlert(attachmentAlert);
         context.setAttachmentRequire(attachmentRequire);
+        context.setAttachmentAddAllowed(attachmentAddAllowed);
         context.setCurrentSignType(currentSignType);
         context.setCurrentStepNumber(currentStepNumber);
         context.setCurrentStepId(currentStepId);
