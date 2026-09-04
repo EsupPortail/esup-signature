@@ -768,13 +768,20 @@ export class SignWorkspaceController {
         this.pdfViewer?.pdfDiv?.css('opacity', 1);
     }
 
-    canUseAnnotationActions() {
-        return this.editable
-            && (!this.isPdf || this.pdfRenderComplete)
+    canUseDocumentPlacementActions() {
+        return (!this.isPdf || this.pdfRenderComplete)
             && !this.addCommentEnabled
             && !this.addSpotEnabled
             && !$("body").hasClass("es-spot-add-mode")
             && !this.hasActiveSignRequestParamsOnCurrentPage();
+    }
+
+    canUseCommentAction() {
+        return this.editable && this.canUseDocumentPlacementActions();
+    }
+
+    canUseSpotAction() {
+        return this.isManager && this.canUseDocumentPlacementActions();
     }
 
     hasActiveSignRequestParamsOnCurrentPage() {
@@ -800,7 +807,10 @@ export class SignWorkspaceController {
             this.toolbar.setCommentAddActive(true);
             return;
         }
-        this.toolbar.setSpotActionButtonsDisabled(!this.canUseAnnotationActions());
+        this.toolbar.setAnnotationActionButtonsDisabled(
+            !this.canUseSpotAction(),
+            !this.canUseCommentAction()
+        );
     }
 
     focusPrimaryToolbarAction() {
@@ -968,9 +978,17 @@ export class SignWorkspaceController {
             this.toggleDNone(['#sign-tools', '#signTools', '#signLaunchButton', '#signAdvancedLaunchButton', '#addSignButton2', '#addParaphButton', '#visaLaunchButton', '#signButtons', '#forward-btn', '#refuseLaunchButton', '#trashLaunchButton'], false);
         }
 
+        if (this.editable || this.isManager) {
+            $('#commentsTools').show();
+        }
+
         if (this.editable) {
-            $('#commentsTools, #insert-btn-div, #insert-btn').show();
-            this.toggleDNone(['#addCommentButton2', '#addSpotButton2', '#postit', '#commentHelp'], false);
+            $('#insert-btn-div, #insert-btn').show();
+            this.toggleDNone(['#addCommentButton2', '#postit', '#commentHelp'], false);
+        }
+
+        if (this.isManager) {
+            this.toggleDNone(['#addSpotButton2'], false);
         }
 
         if (this.displayComments) {
@@ -1017,7 +1035,7 @@ export class SignWorkspaceController {
     }
 
     enableCommentAdd(e) {
-        if (!this.canUseAnnotationActions()) {
+        if (!this.canUseCommentAction()) {
             return;
         }
         return this.commentManager.enableCommentAdd(e);
@@ -1035,14 +1053,18 @@ export class SignWorkspaceController {
     }
 
     enableSpotAdd() {
-        if (!this.canUseAnnotationActions()) {
+        if (!this.canUseSpotAction()) {
             return;
         }
         return this.spotManager.enableSpotAdd();
     }
 
     setSpotActionButtonsDisabled(disabled) {
-        this.toolbar.setSpotActionButtonsDisabled(disabled || !this.canUseAnnotationActions());
+        if (disabled) {
+            this.toolbar.setAnnotationActionButtonsDisabled(true, true);
+            return;
+        }
+        this.updateAnnotationActionButtonsAvailability();
     }
 
     shouldKeepToolsEnabledDuringPdfRender() {

@@ -255,8 +255,7 @@ export class SignToolbar {
 
 
     setCommentAddActive(enabled) {
-        $("#addSpotButton").attr("disabled", enabled);
-        $("#addSpotButton2").attr("disabled", enabled);
+        $("#addSpotButton, #addSpotButton2").prop("disabled", enabled);
         $("#addCommentButton").toggleClass("border-dark", enabled);
         const addCommentButton2 = $("#addCommentButton2");
         addCommentButton2.toggleClass("bg-danger", enabled);
@@ -264,14 +263,13 @@ export class SignToolbar {
         addCommentButton2.attr("title", enabled ? "Annuler l'ajout d'annotation" : "Ajouter une annotation");
     }
 
-    setSpotActionButtonsDisabled(disabled) {
+    setAnnotationActionButtonsDisabled(spotDisabled, commentDisabled) {
+        const allActionsDisabled = spotDisabled && commentDisabled;
         $("#commentsTools")
-            .toggleClass("tools-disabled", disabled)
-            .attr("aria-disabled", disabled ? "true" : "false");
-        $("#addSpotButton").prop("disabled", disabled);
-        $("#addCommentButton").prop("disabled", disabled);
-        $("#addSpotButton2").prop("disabled", disabled);
-        $("#addCommentButton2").prop("disabled", disabled);
+            .toggleClass("tools-disabled", allActionsDisabled)
+            .attr("aria-disabled", allActionsDisabled ? "true" : "false");
+        $("#addSpotButton, #addSpotButton2").prop("disabled", spotDisabled);
+        $("#addCommentButton, #addCommentButton2").prop("disabled", commentDisabled);
     }
 
     setInsertActionsDisabled(disabled) {
