@@ -459,6 +459,16 @@ export class SignPlacementController extends EventFactory {
             this.bindSignRequestParamsEvents(signRequestParams, id, signImageNumber, isParaph);
             this.syncAddSignButtonState();
 
+            if (signImageNumber === SPECIAL_SIGN_IMAGE_NUMBERS.SPOT
+                && currentSignRequestParams == null
+                && typeof signRequestParams.centerOnCurrentViewport === "function") {
+                signRequestParams.centerOnCurrentViewport();
+                window.requestAnimationFrame?.(() => {
+                    signRequestParams.synchronizePositionWithRenderedCross?.();
+                    signRequestParams.refreshVisualState?.();
+                });
+            }
+
             if (signImageNumber != null && signImageNumber !== SPECIAL_SIGN_IMAGE_NUMBERS.SPOT && (!isVisaPlacement || isParaph)) {
                 await signRequestParams.changeSignImage(signImageNumber);
                 if (!restore && typeof signRequestParams.syncExtraLayoutFromState === "function") {
