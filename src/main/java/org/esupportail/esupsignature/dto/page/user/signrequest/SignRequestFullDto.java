@@ -36,6 +36,7 @@ public class SignRequestFullDto {
     private Boolean notSigned;
     private Boolean attachmentAlert;
     private Boolean attachmentRequire;
+    private Boolean attachmentAddAllowed;
     private Boolean manager;
     private Boolean updateAllowed;
     private Boolean commentDeleteAllowed;
@@ -91,6 +92,8 @@ public class SignRequestFullDto {
     public void setAttachmentAlert(Boolean attachmentAlert) { this.attachmentAlert = attachmentAlert; }
     public Boolean getAttachmentRequire() { return attachmentRequire; }
     public void setAttachmentRequire(Boolean attachmentRequire) { this.attachmentRequire = attachmentRequire; }
+    public Boolean getAttachmentAddAllowed() { return attachmentAddAllowed; }
+    public void setAttachmentAddAllowed(Boolean attachmentAddAllowed) { this.attachmentAddAllowed = attachmentAddAllowed; }
     public Boolean getManager() { return manager; }
     public void setManager(Boolean manager) { this.manager = manager; }
     public Boolean getUpdateAllowed() { return updateAllowed; }
@@ -125,6 +128,7 @@ public class SignRequestFullDto {
     public Boolean notSigned() { return notSigned; }
     public Boolean attachmentAlert() { return attachmentAlert; }
     public Boolean attachmentRequire() { return attachmentRequire; }
+    public Boolean attachmentAddAllowed() { return attachmentAddAllowed; }
     public Boolean manager() { return manager; }
     public Boolean updateAllowed() { return updateAllowed; }
     public Boolean commentDeleteAllowed() { return commentDeleteAllowed; }

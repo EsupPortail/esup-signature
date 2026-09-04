@@ -83,6 +83,15 @@ GlobalWorkerOptions.workerSrc = "/webjars/pdfjs-dist/legacy/build/pdf.worker.min
                 updateAttachmentBadge();
             }
 
+            function updateAttachmentValidationState(payload) {
+                if (typeof payload?.attachmentRequire === 'boolean') {
+                    document.body.dataset.esupAttachmentRequire = String(payload.attachmentRequire);
+                }
+                if (typeof payload?.attachmentAlert === 'boolean') {
+                    document.body.dataset.esupAttachmentAlert = String(payload.attachmentAlert);
+                }
+            }
+
             function isPdfFile(fileName) {
                 return String(fileName || '').toLowerCase().endsWith('.pdf');
             }
@@ -739,6 +748,7 @@ GlobalWorkerOptions.workerSrc = "/webjars/pdfjs-dist/legacy/build/pdf.worker.min
                         }
                         addAttachmentForm.reset();
                         updateEmptyState();
+                        updateAttachmentValidationState(payload);
                         showMessage('success', payload.message || 'La pièce jointe a bien été ajoutée');
                     } catch (error) {
                         showMessage('error', error.message || 'Erreur lors de l’ajout');
@@ -758,6 +768,7 @@ GlobalWorkerOptions.workerSrc = "/webjars/pdfjs-dist/legacy/build/pdf.worker.min
                         const attachmentId = payload.attachmentId || removeAttachmentForm.dataset.attachmentId;
                         document.getElementById(`attachment-row-${attachmentId}`)?.remove();
                         updateEmptyState();
+                        updateAttachmentValidationState(payload);
                         showMessage('success', payload.message || 'La pièce jointe a été supprimée');
                     } catch (error) {
                         showMessage('error', error.message || 'Erreur lors de la suppression');
@@ -776,6 +787,7 @@ GlobalWorkerOptions.workerSrc = "/webjars/pdfjs-dist/legacy/build/pdf.worker.min
                         if (Array.isArray(payload.links)) {
                             renderLinks(payload.links);
                         }
+                        updateAttachmentValidationState(payload);
                         showMessage('success', payload.message || 'Le lien a été supprimé');
                     } catch (error) {
                         showMessage('error', error.message || 'Erreur lors de la suppression');

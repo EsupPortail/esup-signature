@@ -200,6 +200,10 @@ public class PreAuthorizeService {
         return false;
     }
 
+    public boolean signRequestAttachmentAdd(Long id, String userEppn) {
+        return userEppn != null && signRequestService.canAddAttachment(id, userEppn);
+    }
+
     public boolean signRequestRecipientAndViewers(Long id, String userEppn) {
         if(userEppn != null) {
             SignRequest signRequest = signRequestService.getById(id);

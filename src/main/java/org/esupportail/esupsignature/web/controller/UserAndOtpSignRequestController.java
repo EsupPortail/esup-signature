@@ -257,7 +257,7 @@ public class UserAndOtpSignRequestController {
         }
     }
 
-    @PreAuthorize("@preAuthorizeService.signRequestRecipient(#id, #authUserEppn)")
+    @PreAuthorize("@preAuthorizeService.signRequestAttachmentAdd(#id, #authUserEppn)")
     @PostMapping(value = "/add-attachment/{id}")
     public Object addAttachement(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
                                  @RequestParam(value = "multipartFiles", required = false) MultipartFile[] multipartFiles,
@@ -312,6 +312,7 @@ public class UserAndOtpSignRequestController {
                 response.put("success", true);
                 response.put("message", "La pièce jointe a été supprimée");
                 response.put("attachmentId", attachementId);
+                addAttachmentValidationState(response, id);
                 return ResponseEntity.ok(response);
             }
             redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "La pieces jointe a été supprimée"));
@@ -336,6 +337,7 @@ public class UserAndOtpSignRequestController {
                 response.put("success", true);
                 response.put("message", "Le lien a été supprimé");
                 response.put("links", new ArrayList<>(signRequestService.getById(id).getLinks()));
+                addAttachmentValidationState(response, id);
                 return ResponseEntity.ok(response);
             }
             redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "Le lien a été supprimé"));
@@ -573,6 +575,7 @@ public class UserAndOtpSignRequestController {
 
         List<String> links = new ArrayList<>(signRequest.getLinks());
         response.put("links", links);
+        addAttachmentValidationState(response, id);
         if (StringUtils.hasText(submittedLink) && !linksBefore.contains(submittedLink)) {
             int addedLinkIndex = links.indexOf(submittedLink);
             if (addedLinkIndex >= 0) {
@@ -583,6 +586,12 @@ public class UserAndOtpSignRequestController {
             }
         }
         return response;
+    }
+
+    private void addAttachmentValidationState(Map<String, Object> response, Long signRequestId) {
+        var validationState = signRequestService.getAttachmentValidationState(signRequestId);
+        response.put("attachmentRequire", validationState.attachmentRequire());
+        response.put("attachmentAlert", validationState.attachmentAlert());
     }
 
     private Map<String, Object> toAttachmentResponse(AttachmentProjectionDto attachment) {
