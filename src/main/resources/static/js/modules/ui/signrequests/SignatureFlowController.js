@@ -355,14 +355,20 @@ export class SignatureFlowController {
 
     checkAttachement() {
         const signUi = this.signUi;
-        if (signUi.attachmentRequire) {
+        const attachmentRequire = document.body.dataset.esupAttachmentRequire == null
+            ? signUi.attachmentRequire
+            : document.body.dataset.esupAttachmentRequire === "true";
+        const attachmentAlert = document.body.dataset.esupAttachmentAlert == null
+            ? signUi.attachmentAlert
+            : document.body.dataset.esupAttachmentAlert === "true";
+        if (attachmentRequire) {
             return new Promise(resolve => {
                 bootbox.alert({
                     message: "Vous devez joindre un document à cette étape avant de signer",
                     callback: () => resolve(false)
                 });
             });
-        } else if (signUi.attachmentAlert) {
+        } else if (attachmentAlert) {
             return new Promise(resolve => {
                 bootbox.confirm({
                     message: "Attention, il est demandé de joindre un document à cette étape avant de signer",

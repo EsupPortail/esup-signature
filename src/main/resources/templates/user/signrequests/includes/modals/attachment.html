@@ -110,7 +110,7 @@
                           th:action="'/' + ${showSignRequest.urlProfil} + '/signrequests/add-attachment/' + ${signRequestLight.id}"
                           method="post"
                           enctype="multipart/form-data"
-                          th:if="${signRequestFull.editable && (signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft)  && (user.userType.name() != 'external' || showSignRequest.workflow.externalCanEditAttachments)}">
+                          th:if="${signRequestFull.attachmentAddAllowed}">
                         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                         <hr/>
                         <div class="form-group mb-3">

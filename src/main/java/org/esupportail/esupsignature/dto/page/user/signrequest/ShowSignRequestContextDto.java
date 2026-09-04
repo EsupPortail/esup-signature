@@ -65,6 +65,7 @@ public class ShowSignRequestContextDto {
     private boolean manager;
     private boolean attachmentAlert;
     private boolean attachmentRequire;
+    private boolean attachmentAddAllowed;
     private SignType currentSignType;
     private Integer currentStepNumber;
     private Long currentStepId;
@@ -203,6 +204,8 @@ public class ShowSignRequestContextDto {
     public void setAttachmentAlert(boolean attachmentAlert) { this.attachmentAlert = attachmentAlert; }
     public boolean isAttachmentRequire() { return attachmentRequire; }
     public void setAttachmentRequire(boolean attachmentRequire) { this.attachmentRequire = attachmentRequire; }
+    public boolean isAttachmentAddAllowed() { return attachmentAddAllowed; }
+    public void setAttachmentAddAllowed(boolean attachmentAddAllowed) { this.attachmentAddAllowed = attachmentAddAllowed; }
     public SignType getCurrentSignType() { return currentSignType; }
     public void setCurrentSignType(SignType currentSignType) { this.currentSignType = currentSignType; }
     public Integer getCurrentStepNumber() { return currentStepNumber; }

@@ -15,6 +15,7 @@ import org.esupportail.esupsignature.dto.projection.jpa.AttachmentProjectionDto;
 import org.esupportail.esupsignature.dto.projection.jpa.DocumentProjectionDto;
 import org.esupportail.esupsignature.dto.projection.jpa.SignRequestLightProjectionDto;
 import org.esupportail.esupsignature.dto.projection.jpa.SignRequestTabProjectionDto;
+import org.esupportail.esupsignature.dto.page.user.signrequest.AttachmentValidationStateDto;
 import org.esupportail.esupsignature.dto.ws.RecipientWsDto;
 import org.esupportail.esupsignature.dto.ws.RecipientsActionsWsDto;
 import org.esupportail.esupsignature.dto.ws.SignRequestStepsWsDto;
@@ -1359,7 +1360,7 @@ public class SignRequestService {
 	@Transactional
 	public boolean addAttachement(MultipartFile[] multipartFiles, String link, Long signRequestId, String authUserEppn) throws EsupSignatureIOException {
 		SignRequest signRequest = getById(signRequestId);
-		if(isEditable(signRequestId, authUserEppn) || (isUserInRecipients(signRequest, authUserEppn) && signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null && signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getExternalCanEditAttachments())) {
+		if(canAddAttachment(signRequest, authUserEppn)) {
 			int nbAttachmentAdded = 0;
 			if (multipartFiles != null) {
 				for (MultipartFile multipartFile : multipartFiles) {
@@ -1377,6 +1378,34 @@ public class SignRequestService {
 		} else {
 			return false;
 		}
+	}
+
+	@Transactional(readOnly = true)
+	public boolean canAddAttachment(Long signRequestId, String userEppn) {
+		return canAddAttachment(getById(signRequestId), userEppn);
+	}
+
+	private boolean canAddAttachment(SignRequest signRequest, String userEppn) {
+		if (signRequest == null || userEppn == null) {
+			return false;
+		}
+		if (isEditable(signRequest.getId(), userEppn)) {
+			return true;
+		}
+		SignBook signBook = signRequest.getParentSignBook();
+		Workflow workflow = signBook != null && signBook.getLiveWorkflow() != null
+				? signBook.getLiveWorkflow().getWorkflow()
+				: null;
+		if (workflow == null || Boolean.TRUE.equals(signRequest.getDeleted()) || signRequest.getStatus() != SignRequestStatus.pending) {
+			return false;
+		}
+		User user = userService.getByEppn(userEppn);
+		boolean workflowManager = user != null
+				&& (workflow.getManagers().contains(user.getEmail())
+				|| workflow.getDashboardRoles().stream().anyMatch(user.getRoles()::contains));
+		boolean recipientCanEditAttachments = isUserInRecipients(signRequest, userEppn)
+				&& workflow.getExternalCanEditAttachments();
+		return workflowManager || recipientCanEditAttachments;
 	}
 
 	private void addAttachmentToSignRequest(SignRequest signRequest, String authUserEppn, MultipartFile... multipartFiles) throws EsupSignatureIOException {
@@ -2125,6 +2154,15 @@ public class SignRequestService {
 			attachmentRequire = true;
 		}
 		return attachmentRequire;
+	}
+
+	@Transactional(readOnly = true)
+	public AttachmentValidationStateDto getAttachmentValidationState(Long signRequestId) {
+		SignRequest signRequest = getById(signRequestId);
+		return new AttachmentValidationStateDto(
+				isAttachmentRequire(signRequest),
+				isAttachmentAlert(signRequest)
+		);
 	}
 
 	/**
