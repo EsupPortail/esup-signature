@@ -387,6 +387,11 @@ export class SignWorkspaceController {
             this.updateAnnotationActionButtonsAvailability();
             return;
         }
+        if (typeof this.signSpaceManager?.placeSignOnOverlappingSignSpace === "function"
+            && this.signSpaceManager.placeSignOnOverlappingSignSpace(signRequestParams)) {
+            this.updateAnnotationActionButtonsAvailability();
+            return;
+        }
         if (typeof signRequestParams.activatePlacement === "function") {
             const activatePlacement = () => signRequestParams.activatePlacement();
             activatePlacement();

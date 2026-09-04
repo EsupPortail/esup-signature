@@ -259,6 +259,44 @@ export class SignSpaceManager {
 		return null;
 	}
 
+	placeSignOnOverlappingSignSpace(signRequestParams) {
+		const cross = signRequestParams?.cross;
+		if (cross == null || !cross.length || !cross.hasClass("drop-sign") || signRequestParams?.signSpace != null) {
+			return false;
+		}
+
+		const crossRect = cross.get(0)?.getBoundingClientRect?.();
+		if (crossRect == null) {
+			return false;
+		}
+
+		let bestMatch = null;
+		let bestOverlapArea = 0;
+		$(".sign-space").each((_, element) => {
+			const signSpaceDiv = $(element);
+			if (!signSpaceDiv.is(":visible") || signSpaceDiv.data("locked") != null) {
+				return;
+			}
+			const rect = element.getBoundingClientRect?.();
+			if (rect == null) {
+				return;
+			}
+			const overlapWidth = Math.max(0, Math.min(crossRect.right, rect.right) - Math.max(crossRect.left, rect.left));
+			const overlapHeight = Math.max(0, Math.min(crossRect.bottom, rect.bottom) - Math.max(crossRect.top, rect.top));
+			const overlapArea = overlapWidth * overlapHeight;
+			if (overlapArea > bestOverlapArea) {
+				bestOverlapArea = overlapArea;
+				bestMatch = signSpaceDiv;
+			}
+		});
+
+		if (bestMatch == null || bestOverlapArea <= 0) {
+			return false;
+		}
+
+		return this.applySignRequestParamsToSignSpace(bestMatch, signRequestParams);
+	}
+
 	applySignRequestParamsToSignSpace(signSpaceDiv, signRequestParams) {
 		const signPlacementController = this.options.getSignPlacementController();
 		const pdfViewer = this.options.getPdfViewer();
