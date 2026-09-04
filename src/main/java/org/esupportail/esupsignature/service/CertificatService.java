@@ -19,6 +19,7 @@ import jakarta.annotation.PostConstruct;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.certificat.SealCertificatProperties;
 import org.esupportail.esupsignature.config.sign.SignProperties;
+import org.esupportail.esupsignature.dto.ui.global.CertificatViewDto;
 import org.esupportail.esupsignature.entity.AppliVersion;
 import org.esupportail.esupsignature.entity.Certificat;
 import org.esupportail.esupsignature.entity.User;
@@ -129,6 +130,19 @@ public class CertificatService implements HealthIndicator {
     public List<Certificat> getAllCertificats() {
         List<Certificat> certificats = new ArrayList<>();
         certificatRepository.findAll().forEach(certificats::add);
+        return certificats;
+    }
+
+    @Transactional(readOnly = true)
+    public List<CertificatViewDto> getAllCertificatViews() {
+        List<CertificatViewDto> certificats = new ArrayList<>();
+        certificatRepository.findAll().forEach(certificat -> certificats.add(new CertificatViewDto(
+                certificat.getId(),
+                certificat.getKeystore().getFileName(),
+                certificat.getCreateDate(),
+                certificat.getExpireDate(),
+                certificat.getRoles()
+        )));
         return certificats;
     }
 

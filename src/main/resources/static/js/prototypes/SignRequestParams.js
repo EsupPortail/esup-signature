@@ -1245,6 +1245,13 @@ export class SignRequestParams extends EventFactory {
                 }
             }
         }
+        if (this.signImages === SPECIAL_SIGN_IMAGE_NUMBERS.SPOT) {
+            window.requestAnimationFrame?.(() => {
+                this.synchronizePositionWithRenderedCross();
+                this.refreshVisualState();
+                this.#refreshToolsPosition();
+            });
+        }
     }
 
     #updatePlacementState(dragRect) {
@@ -1268,6 +1275,32 @@ export class SignRequestParams extends EventFactory {
         this.#computeBgColor();
         this.#syncSpotSaveState();
         this.fireEvent("placementStateChanged", [this]);
+    }
+
+    #refreshTextOverflowState() {
+        const textRect = this.cross[0]?.getBoundingClientRect?.();
+        if (textRect == null) {
+            return;
+        }
+        this.inside = false;
+        const epsilon = 1;
+        $(".pdf-page").each((_, pageElement) => {
+            const pageRect = pageElement.getBoundingClientRect();
+            if (
+                textRect.left >= pageRect.left - epsilon &&
+                textRect.top >= pageRect.top - epsilon &&
+                textRect.right <= pageRect.right + epsilon &&
+                textRect.bottom <= pageRect.bottom + epsilon
+            ) {
+                this.inside = true;
+            }
+        });
+        this.#computeBgColor();
+        const signActionButtons = $("#signActionButtons button");
+        signActionButtons.prop("disabled", !this.inside);
+        signActionButtons.toggleClass("btn-success", this.inside);
+        signActionButtons.toggleClass("btn-secondary", !this.inside);
+        $("#signActionButtons").attr("aria-busy", !this.inside ? "true" : "false");
     }
 
     #refreshToolsPosition() {
@@ -2406,6 +2439,7 @@ export class SignRequestParams extends EventFactory {
 
         this.cross.css("width", this.textareaPart.css("width"));
         this.cross.css("height", this.textareaPart.css("height"));
+        this.#refreshTextOverflowState();
         this.#refreshAllPagesSigns();
     }
 
@@ -2558,28 +2592,32 @@ export class SignRequestParams extends EventFactory {
 
     simulateDrop() {
         if(this.firstLaunch) {
-            // Guard: ensure cross is in DOM before simulating drag.
+            // À l'initialisation, la position visuelle est déjà calculée correctement.
+            // Simuler un drag dans un conteneur scrollable (#workspace) décale les coordonnées
+            // clientY/clientX et peut attribuer la mauvaise page au premier ajout.
+            // On synchronise donc directement l'état logique avec la position rendue.
             if (!this.cross || !this.cross.length || !this.cross.closest("html").length) {
                 console.warn("Cross element not in DOM, cannot simulate drop for sign " + this.id);
                 return;
             }
-            const pageLayout = this.#getPageLayout(this.signPageNumber);
-            const targetX = Math.round(this.xPos * this.currentScale * this.getBrowserZoom() + pageLayout.left);
-            const targetY = Math.round(this.yPos * this.currentScale  * this.getBrowserZoom() + pageLayout.top);
-            const currentLeft = parseInt(this.cross.css("left"), 10) || 0;
-            const currentTop = parseInt(this.cross.css("top"), 10) || 0;
-            // simulate("drag") expects movement deltas, not absolute coordinates.
-            const x = targetX - currentLeft;
-            const y = targetY - currentTop;
-            let self = this;
-            this.cross.on("dragstop", function () {
-                let test = self.#getScrollTop() + self.#getViewportHeight();
-                if (targetY > test) {
-                    self.#scrollTo(targetY);
+            this.firstLaunch = false;
+            this.cross.css("background-color", "var(--color-rgba-248-249-250-09)");
+
+            const dragRect = this.cross[0]?.getBoundingClientRect?.();
+            if (dragRect == null) {
+                return;
+            }
+
+            this.#refreshPageAttributeFromRect(dragRect);
+            this.#updatePlacementState(dragRect);
+            this.#afterDropRefresh({
+                position: {
+                    left: parseInt(this.cross.css("left"), 10) || 0,
+                    top: parseInt(this.cross.css("top"), 10) || 0
                 }
-                $(this).unbind("dragstop");
             });
-            this.#simulateDrag(x, y);
+            this.#refreshToolsPosition();
+            this.#syncSpotSaveState();
         }
     }
 

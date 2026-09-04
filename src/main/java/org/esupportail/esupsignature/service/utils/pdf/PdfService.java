@@ -313,7 +313,6 @@ public class PdfService {
             PDFont pdFont = PDType0Font.load(pdDocument, new ClassPathResource("/static/fonts/LiberationSans-Regular.ttf").getInputStream(), true);
             String[] lines = signRequestParams.getTextPart().split("\n", -1);
             float lineHeight = fontSize * 1.2f;
-            float textHeight = lines.length * lineHeight;
             float maxWidth = 0;
             for (String line : lines) {
                 float w = pdFont.getStringWidth(line) / 1000 * fontSize;
@@ -322,8 +321,11 @@ public class PdfService {
                 }
             }
             yAdjusted = pageBox.getLowerLeftY() + pageBox.getHeight() - (signRequestParams.getyPos() * fixFactor + fontSize);
-            float textBottomY = yAdjusted - textHeight;
-            validateSignatureBounds(pageBox, xAdjusted, textBottomY, maxWidth, textHeight, pageNumber);
+            float ascent = Math.max(0, pdFont.getFontDescriptor().getAscent() / 1000 * fontSize);
+            float descent = Math.abs(pdFont.getFontDescriptor().getDescent() / 1000 * fontSize);
+            float textHeight = (lines.length - 1) * lineHeight + ascent + descent;
+            float textBottomY = yAdjusted - 1 - (lines.length - 1) * lineHeight - descent;
+            validateSignatureBounds(pageBox, xAdjusted + 1, textBottomY, maxWidth, textHeight, pageNumber);
             contentStream.beginText();
             contentStream.setFont(pdFont, fontSize);
             contentStream.newLineAtOffset(xAdjusted + 1, yAdjusted - 1);

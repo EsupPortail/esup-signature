@@ -46,7 +46,7 @@ public class WorkflowController {
         model.addAttribute("fromAdmin", false);
         var workflow = uiFetchService.buildWorkflowView(id, userEppn);
         model.addAttribute("workflow", workflow);
-        model.addAttribute("certificats", certificatService.getAllCertificats());
+        model.addAttribute("certificats", certificatService.getAllCertificatViews());
         model.addAttribute("sealCertificatPropertieses", certificatService.getCheckedSealCertificates());
         model.addAttribute("workflowRole", "user");
         model.addAttribute("allSteps", workflow.getWorkflowSteps());
