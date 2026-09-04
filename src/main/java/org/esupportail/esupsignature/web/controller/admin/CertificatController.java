@@ -38,7 +38,7 @@ public class CertificatController {
 
     @GetMapping
     public String list(Model model) {
-        model.addAttribute("certificats", certificatService.getAllCertificats());
+        model.addAttribute("certificats", certificatService.getAllCertificatViews());
         model.addAttribute("roles", userService.getAllRoles());
         model.addAttribute("sealCertificatPropertieses", certificatService.getCheckedSealCertificates());
         model.addAttribute("openscVersion", certificatService.getOpenSCVersion());

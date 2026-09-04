@@ -145,7 +145,7 @@
                                                     th:text="${sealCertificatProperties.sealCertificatTitle != null && !#strings.isEmpty(sealCertificatProperties.sealCertificatTitle) ? sealCertificatProperties.sealCertificatTitle : sealCertificatProperties.sealCertificatName}"></option>
                                         </th:block>
                                         <th:block th:each="certificat : ${certificats}">
-                                            <option th:text="${certificat.keystore.fileName}" th:value="${'cert:' + certificat.id}"></option>
+                                            <option th:text="${certificat.fileName}" th:value="${'cert:' + certificat.id}"></option>
                                         </th:block>
                                     </select>
                                 </div>
