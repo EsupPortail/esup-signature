@@ -69,6 +69,7 @@ import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
@@ -282,53 +283,77 @@ public class SignBookService {
                                                                   String userEppn,
                                                                   Boolean hided) {
         Page<SignBook> signBooks = getSignBooksForManagers(statusFilter, recipientsFilter, workflowId, docTitleFilter, creatorFilter, dateFilter, pageable, userEppn, hided);
-        SignBookListItemContext listItemContext = buildSignBookListItemContext(signBooks.getContent(), userEppn, false);
-        Map<Long, List<HomeSignRequestItemProjection>> signRequestsBySignBookId = getHomeSignRequestItems(
-                signBooks.getContent().stream().map(SignBook::getId).toList(),
-                userEppn
-        ).stream().collect(Collectors.groupingBy(HomeSignRequestItemProjection::getSignBookId, LinkedHashMap::new, Collectors.toList()));
-        Map<Long, List<HomePostitItemProjection>> postitsBySignBookId = getHomePostitItems(
-                signBooks.getContent().stream().map(SignBook::getId).toList()
-        ).stream().collect(Collectors.groupingBy(HomePostitItemProjection::getSignBookId, LinkedHashMap::new, Collectors.toList()));
+        return toSignBookListItems(signBooks, userEppn, false, true);
+    }
+
+    private Page<SignBookFullDto> toSignBookListItems(Page<SignBook> signBooks, String userEppn, boolean includeDeleteable, boolean includeDisplayNotif) {
+        SignBookListItemContext listItemContext = buildSignBookListItemContext(signBooks.getContent(), userEppn, includeDeleteable, includeDisplayNotif);
+        List<Long> signBookIds = signBooks.getContent().stream().map(SignBook::getId).toList();
+        Map<Long, List<HomeSignRequestItemProjection>> signRequestsBySignBookId = getHomeSignRequestItems(signBookIds, userEppn).stream()
+                .collect(Collectors.groupingBy(HomeSignRequestItemProjection::getSignBookId, LinkedHashMap::new, Collectors.toList()));
+        Map<Long, List<HomePostitItemProjection>> postitsBySignBookId = getHomePostitItems(signBookIds).stream()
+                .collect(Collectors.groupingBy(HomePostitItemProjection::getSignBookId, LinkedHashMap::new, Collectors.toList()));
         return signBooks.map(signBook -> {
-            SignBookListMetadataProjection metadata = listItemContext.metadataBySignBookId().get(signBook.getId());
-            SignRequest primarySignRequest = listItemContext.primarySignRequestBySignBookId().get(signBook.getId());
-            SignBookFullDto dto = uiSignBookMapper.toManageSignBookListItemDto(signBook, userEppn, metadata, primarySignRequest);
+            SignBookFullDto dto = uiSignBookMapper.toSignBookListItemDto(
+                    signBook,
+                    userEppn,
+                    listItemContext.metadataBySignBookId().get(signBook.getId())
+            );
             dto.setSignRequests(uiSignBookMapper.toSignRequestDocumentDtosFromProjections(signRequestsBySignBookId.get(signBook.getId())));
             dto.setPostits(uiSignBookMapper.toPostitDtosFromProjections(postitsBySignBookId.get(signBook.getId())));
             return dto;
         });
     }
 
-    private SignBookListItemContext buildSignBookListItemContext(List<SignBook> signBooks, String userEppn, boolean includeDeleteable) {
+    private SignBookListItemContext buildSignBookListItemContext(List<SignBook> signBooks, String userEppn, boolean includeDeleteable, boolean includeDisplayNotif) {
         List<Long> signBookIds = signBooks.stream().map(SignBook::getId).toList();
         Map<Long, SignBookListMetadataProjection> metadataBySignBookId = signBookIds.isEmpty()
                 ? Map.of()
-                : signBookRepository.findListMetadataBySignBookIds(signBookIds).stream()
+                : signBookRepository.findListMetadataBySignBookIds(signBookIds, userEppn).stream()
                 .collect(Collectors.toMap(SignBookListMetadataProjection::getSignBookId, metadata -> metadata));
-        Map<Long, SignRequest> primarySignRequestsById = metadataBySignBookId.values().stream()
-                .map(SignBookListMetadataProjection::getPrimarySignRequestId)
-                .filter(Objects::nonNull)
-                .map(signRequestService::getById)
-                .collect(Collectors.toMap(SignRequest::getId, signRequest -> signRequest));
-        Map<Long, SignRequest> primarySignRequestBySignBookId = new HashMap<>();
+        User user = signBooks.isEmpty() || (!includeDeleteable && !includeDisplayNotif) ? null : userService.getByEppn(userEppn);
         for (SignBook signBook : signBooks) {
             SignBookListMetadataProjection metadata = metadataBySignBookId.get(signBook.getId());
             if (metadata != null && metadata.getPrimarySignRequestId() != null) {
-                SignRequest primarySignRequest = primarySignRequestsById.get(metadata.getPrimarySignRequestId());
-                primarySignRequestBySignBookId.put(signBook.getId(), primarySignRequest);
-                signBook.setDisplayNotif(signRequestService.isDisplayNotif(primarySignRequest, userEppn));
+                if (includeDisplayNotif) {
+                    signBook.setDisplayNotif(isDisplayNotifForList(signBook, metadata, userEppn, user));
+                }
                 if (includeDeleteable) {
                     boolean createdByCurrentUser = signBook.getCreateBy() != null && userEppn.equals(signBook.getCreateBy().getEppn());
-                    signBook.setDeleteableByCurrentUser(createdByCurrentUser && signRequestService.isDeletetable(primarySignRequest, userEppn));
+                    signBook.setDeleteableByCurrentUser(createdByCurrentUser && isDeleteableForList(signBook, user));
                 }
             }
         }
-        return new SignBookListItemContext(metadataBySignBookId, primarySignRequestBySignBookId);
+        return new SignBookListItemContext(metadataBySignBookId);
     }
 
-    private record SignBookListItemContext(Map<Long, SignBookListMetadataProjection> metadataBySignBookId,
-                                           Map<Long, SignRequest> primarySignRequestBySignBookId) {
+    private boolean isDisplayNotifForList(SignBook signBook, SignBookListMetadataProjection metadata, String userEppn, User user) {
+        if (signBook.getStatus() != SignRequestStatus.pending || userEppn == null) {
+            return false;
+        }
+        Workflow workflow = signBook.getLiveWorkflow() != null ? signBook.getLiveWorkflow().getWorkflow() : null;
+        boolean creatorCanReplay = userEppn.equals(metadata.getPrimarySignRequestCreateByEppn())
+                && (workflow == null
+                || workflow.getCreateBy() != null && userEppn.equals(workflow.getCreateBy().getEppn())
+                || BooleanUtils.isTrue(workflow.getAuthorizeReplayByCreator()));
+        boolean managerCanReplay = workflow != null
+                && user != null
+                && (workflow.getManagers().contains(user.getEmail())
+                || !Collections.disjoint(workflow.getDashboardRoles(), user.getRoles()));
+        Date referenceDate = signBook.getLastNotifDate() != null ? signBook.getLastNotifDate() : signBook.getCreateDate();
+        boolean refreshDelayReached = referenceDate != null
+                && Duration.between(referenceDate.toInstant(), new Date().toInstant()).toHours() >= globalProperties.getHoursBeforeRefreshNotif();
+        return (userEppn.equals("system") || creatorCanReplay || managerCanReplay) && refreshDelayReached;
+    }
+
+    private boolean isDeleteableForList(SignBook signBook, User user) {
+        Workflow workflow = signBook.getLiveWorkflow() != null ? signBook.getLiveWorkflow().getWorkflow() : null;
+        return workflow == null
+                || !BooleanUtils.isTrue(workflow.getDisableDeleteByCreator())
+                || user != null && (workflow.getManagers().contains(user.getEmail()) || user.getRoles().contains("ROLE_ADMIN"));
+    }
+
+    private record SignBookListItemContext(Map<Long, SignBookListMetadataProjection> metadataBySignBookId) {
     }
 
     @Transactional(readOnly = true)
@@ -340,11 +365,11 @@ public class SignBookService {
     }
 
     @Transactional(readOnly = true)
-    public List<SignBookListMetadataProjection> getSignBookListMetadata(Collection<Long> signBookIds) {
+    public List<SignBookListMetadataProjection> getSignBookListMetadata(Collection<Long> signBookIds, String userEppn) {
         if (signBookIds == null || signBookIds.isEmpty()) {
             return List.of();
         }
-        return signBookRepository.findListMetadataBySignBookIds(signBookIds);
+        return signBookRepository.findListMetadataBySignBookIds(signBookIds, userEppn);
     }
 
     @Transactional(readOnly = true)
@@ -450,25 +475,7 @@ public class SignBookService {
     @Transactional(readOnly = true)
     public Page<SignBookFullDto> getSignBookListItems(String userEppn, String authUserEppn, String statusFilter, String recipientsFilter, String workflowFilter, String docTitleFilter, String creatorFilter, String dateFilter, Pageable pageable) {
         Page<SignBook> signBooks = getSignBooks(userEppn, authUserEppn, statusFilter, recipientsFilter, workflowFilter, docTitleFilter, creatorFilter, dateFilter, pageable);
-        SignBookListItemContext listItemContext = buildSignBookListItemContext(signBooks.getContent(), userEppn, true);
-        Map<Long, List<HomeSignRequestItemProjection>> signRequestsBySignBookId = getHomeSignRequestItems(
-                signBooks.getContent().stream().map(SignBook::getId).toList(),
-                userEppn
-        ).stream().collect(Collectors.groupingBy(HomeSignRequestItemProjection::getSignBookId, LinkedHashMap::new, Collectors.toList()));
-        Map<Long, List<HomePostitItemProjection>> postitsBySignBookId = getHomePostitItems(
-                signBooks.getContent().stream().map(SignBook::getId).toList()
-        ).stream().collect(Collectors.groupingBy(HomePostitItemProjection::getSignBookId, LinkedHashMap::new, Collectors.toList()));
-        return signBooks.map(signBook -> {
-            SignBookFullDto dto = uiSignBookMapper.toSignBookListItemDto(
-                    signBook,
-                    userEppn,
-                    listItemContext.metadataBySignBookId().get(signBook.getId()),
-                    listItemContext.primarySignRequestBySignBookId().get(signBook.getId())
-            );
-            dto.setSignRequests(uiSignBookMapper.toSignRequestDocumentDtosFromProjections(signRequestsBySignBookId.get(signBook.getId())));
-            dto.setPostits(uiSignBookMapper.toPostitDtosFromProjections(postitsBySignBookId.get(signBook.getId())));
-            return dto;
-        });
+        return toSignBookListItems(signBooks, userEppn, true, true);
     }
 
     @Transactional(readOnly = true)
@@ -496,7 +503,7 @@ public class SignBookService {
                                                          String dateFilter,
                                                          Pageable pageable) {
         Page<SignBook> signBooks = getAllSignBooks(statusFilter, workflowFilter, docTitleFilter, creatorFilter, dateFilter, pageable);
-        return signBooks.map(signBook -> uiSignBookMapper.toSignBookListItemDto(signBook, userEppn));
+        return toSignBookListItems(signBooks, userEppn, false, false);
     }
 
     @Transactional(readOnly = true)

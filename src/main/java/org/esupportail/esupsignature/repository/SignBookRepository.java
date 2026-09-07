@@ -107,13 +107,65 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
 
     @Query(value = """
             select sbs.sign_book_id as signBookId,
-                   (array_agg(sbs.sign_requests_id order by sbs.sign_requests_order))[1] as primarySignRequestId,
-                   count(*) as signRequestCount
+                   sr.id as primarySignRequestId,
+                   (
+                       select count(*)
+                       from sign_book_sign_requests counted_sbs
+                       where counted_sbs.sign_book_id = sbs.sign_book_id
+                   ) as signRequestCount,
+                   sr.title as primarySignRequestTitle,
+                   sr.status as primarySignRequestStatus,
+                   sr.create_date as primarySignRequestCreateDate,
+                   sr.deleted as primarySignRequestDeleted,
+                   creator.eppn as primarySignRequestCreateByEppn,
+                   exists (
+                       select 1
+                       from sign_request_viewed_by srvb
+                       join user_account viewed_user on viewed_user.id = srvb.viewed_by_id
+                       where srvb.sign_request_id = sr.id
+                         and viewed_user.eppn = :userEppn
+                   ) as primarySignRequestViewedByCurrentUser,
+                   exists (
+                       select 1
+                       from sign_request_attachments sra
+                       where sra.sign_request_id = sr.id
+                   ) as primarySignRequestHasAttachments,
+                   (
+                       select document.file_name
+                       from sign_request_original_documents srod
+                       join document document on document.id = srod.original_documents_id
+                       where srod.sign_request_id = sr.id
+                       order by srod.original_documents_order
+                       limit 1
+                   ) as primarySignRequestFirstOriginalFileName,
+                   (
+                       select document.create_date
+                       from sign_request_signed_documents srsd
+                       join document document on document.id = srsd.signed_documents_id
+                       where srsd.sign_request_id = sr.id
+                       order by srsd.signed_documents_order desc
+                       limit 1
+                   ) as primarySignRequestLastSignedDocumentDate,
+                   (
+                       select comment.text
+                       from sign_request_comments src
+                       join comment comment on comment.id = src.comments_id
+                       where src.sign_request_id = sr.id
+                       order by src.comments_order desc
+                       limit 1
+                   ) as primarySignRequestLastComment
             from sign_book_sign_requests sbs
+            join sign_request sr on sr.id = sbs.sign_requests_id
+            left join user_account creator on creator.id = sr.create_by_id
             where sbs.sign_book_id in (:ids)
-            group by sbs.sign_book_id
+              and sbs.sign_requests_order = (
+                  select min(primary_sbs.sign_requests_order)
+                  from sign_book_sign_requests primary_sbs
+                  where primary_sbs.sign_book_id = sbs.sign_book_id
+              )
             """, nativeQuery = true)
-    List<SignBookListMetadataProjection> findListMetadataBySignBookIds(@Param("ids") Collection<Long> ids);
+    List<SignBookListMetadataProjection> findListMetadataBySignBookIds(@Param("ids") Collection<Long> ids,
+                                                                       @Param("userEppn") String userEppn);
 
     @Query(value = """
             select sbs.sign_book_id as signBookId,

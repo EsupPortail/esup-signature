@@ -378,7 +378,7 @@ public class UiFetchService {
         List<Long> signBookIds = signBooks.stream().map(SignBook::getId).toList();
         Map<Long, SignBookListMetadataProjection> metadataBySignBookId = signBookIds.isEmpty()
                 ? Map.of()
-                : signBookService.getSignBookListMetadata(signBookIds).stream()
+                : signBookService.getSignBookListMetadata(signBookIds, userEppn).stream()
                 .collect(java.util.stream.Collectors.toMap(SignBookListMetadataProjection::getSignBookId, metadata -> metadata));
         Map<Long, List<HomeSignRequestItemProjection>> signRequestsBySignBookId = signBookIds.isEmpty()
                 ? Map.of()

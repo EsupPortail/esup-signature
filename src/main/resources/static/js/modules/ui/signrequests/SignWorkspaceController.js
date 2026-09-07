@@ -746,17 +746,54 @@ export class SignWorkspaceController {
     }
 
     handlePdfRenderFailure(error) {
-        console.error("Echec du rendu PDF dans le workspace", error);
+        const diagnostic = this.getPdfRenderDiagnostic(error);
+        console.error("Echec du rendu PDF dans le workspace", {error, diagnostic});
         this.toolsLoadingStateReleased = false;
         this.setPdfRenderComplete(false);
         this.setPdfRenderMode(true);
         this.setToolsBarDisabled(true);
         this.refreshToolbarAccessibility();
-        this.showPdfRenderError();
+        this.showPdfRenderError(error, diagnostic);
         this.updateAnnotationActionButtonsAvailability();
     }
 
-    showPdfRenderError() {
+    getPdfRenderDiagnostic(error) {
+        const userAgent = navigator.userAgent || "indisponible";
+        const firefoxMatch = userAgent.match(/Firefox\/(\d+(?:\.\d+)?)/i);
+        const firefoxVersion = firefoxMatch?.[1] ?? null;
+        const firefoxMajorVersion = firefoxVersion == null ? null : parseInt(firefoxVersion, 10);
+        const errorName = typeof error?.name === "string" && error.name.trim() !== ""
+            ? error.name.trim()
+            : "Erreur inconnue";
+        const errorMessage = typeof error?.message === "string" && error.message.trim() !== ""
+            ? error.message.trim()
+            : (typeof error === "string" && error.trim() !== "" ? error.trim() : "Aucun détail fourni");
+        const pdfJsVersion = globalThis.pdfjsLib?.version || "non chargée";
+        let probableCause = "Le chargement ou le rendu du document a échoué.";
+
+        if (errorName === "InvalidPDFException") {
+            probableCause = "Le fichier reçu n’est pas un document PDF valide ou il est endommagé.";
+        } else if (errorName === "MissingPDFException") {
+            probableCause = "Le document PDF demandé est introuvable ou n’a pas été renvoyé par le serveur.";
+        } else if (errorName === "PasswordException") {
+            probableCause = "Le document PDF est protégé par un mot de passe que l’application ne peut pas fournir.";
+        } else if (errorName === "UnexpectedResponseException") {
+            probableCause = "Le serveur a renvoyé une réponse inattendue à la place du document PDF.";
+        } else if (firefoxMajorVersion != null && firefoxMajorVersion < 140) {
+            probableCause = `Firefox ${firefoxVersion} est probablement trop ancien pour PDF.js 6 (version ESR prise en charge : Firefox 140 ou ultérieure).`;
+        } else if (!globalThis.pdfjsLib || typeof Promise.withResolvers !== "function") {
+            probableCause = "Le navigateur ne fournit pas les fonctions nécessaires au moteur d’affichage PDF.";
+        }
+
+        return {
+            probableCause,
+            technicalDetail: `${errorName} : ${errorMessage}`,
+            browser: firefoxVersion == null ? userAgent : `Firefox ${firefoxVersion} — ${userAgent}`,
+            pdfJsVersion
+        };
+    }
+
+    showPdfRenderError(error, diagnostic = this.getPdfRenderDiagnostic(error)) {
         if (document.getElementById("pdf-render-error") != null) {
             return;
         }
@@ -768,7 +805,15 @@ export class SignWorkspaceController {
         alert.id = "pdf-render-error";
         alert.className = "alert alert-danger m-3";
         alert.setAttribute("role", "alert");
-        alert.textContent = "Impossible d’afficher le document PDF. Rechargez la page après vérification du document ou du cache navigateur.";
+        alert.style.whiteSpace = "pre-line";
+        alert.textContent = [
+            "Impossible d’afficher le document PDF.",
+            `Cause probable : ${diagnostic.probableCause}`,
+            "Rechargez la page. Si le problème persiste, transmettez les informations suivantes au support informatique :",
+            `Erreur : ${diagnostic.technicalDetail}`,
+            `Navigateur : ${diagnostic.browser}`,
+            `PDF.js : ${diagnostic.pdfJsVersion}`
+        ].join("\n");
         pdfElement.prepend(alert);
         this.pdfViewer?.pdfDiv?.css('opacity', 1);
     }

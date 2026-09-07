@@ -67,7 +67,7 @@ public class SignRequest {
     @OrderColumn
     private List<Document> attachments = new ArrayList<>();
 
-    @ElementCollection(targetClass = String.class, fetch = FetchType.EAGER)
+    @ElementCollection(targetClass = String.class, fetch = FetchType.LAZY)
     private Set<String> links = new HashSet<>();
 
     @Enumerated(EnumType.STRING)

@@ -13,7 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-    @ConfigurationProperties(prefix="global")
+@ConfigurationProperties(prefix="global")
 public class GlobalProperties {
 
     /**
