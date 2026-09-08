@@ -116,7 +116,7 @@ export class PdfViewer extends EventFactory {
                 const message = "Votre navigateur ne supporte pas pdfJs pour l'affichage des PDF.";
                 const error = new Error(message);
                 this.failRender(error, message);
-                bootbox.alert(message + "<br>Versions minimales : Firefox 121, Chrome 119, Safari 17.4", function () {
+                bootbox.alert(message + "<br>Versions prises en charge par PDF.js 6 : Firefox 140 ESR, Chrome 125, Safari 18", function () {
                     document.location = "https://www.mozilla.org/fr/firefox/new/";
                 });
                 return null;

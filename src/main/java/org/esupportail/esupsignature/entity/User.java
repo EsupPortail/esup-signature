@@ -103,7 +103,7 @@ public class User {
     private Date lastSendAlertDate = new Date(0);
 
     @JsonIgnore
-    @ElementCollection(fetch = FetchType.EAGER)
+    @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(
             name = "user_transmitted_sign_request_ids",
             joinColumns = @JoinColumn(name = "user_id"),
