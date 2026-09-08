@@ -172,6 +172,11 @@ public class SignRequestService {
 	}
 
 	@Transactional(readOnly = true)
+	public List<String> getLinks(Long id) {
+		return signRequestRepository.findLinksById(id);
+	}
+
+	@Transactional(readOnly = true)
 	public List<DocumentProjectionDto> getOriginalDocumentProjections(Long signRequestId) {
 		return signRequestRepository.findOriginalDocumentProjectionsById(signRequestId);
 	}

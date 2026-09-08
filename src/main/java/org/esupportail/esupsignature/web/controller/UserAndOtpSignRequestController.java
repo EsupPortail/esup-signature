@@ -269,7 +269,7 @@ public class UserAndOtpSignRequestController {
                 .map(AttachmentProjectionDto::getId)
                 .filter(Objects::nonNull)
                 .collect(LinkedHashSet::new, Set::add, Set::addAll);
-        Set<String> linksBefore = new HashSet<>(signRequestService.getById(id).getLinks());
+        Set<String> linksBefore = new HashSet<>(signRequestService.getLinks(id));
         try {
             if(StringUtils.hasText(link)) {
                 new URI(link);
@@ -336,7 +336,7 @@ public class UserAndOtpSignRequestController {
                 Map<String, Object> response = new LinkedHashMap<>();
                 response.put("success", true);
                 response.put("message", "Le lien a été supprimé");
-                response.put("links", new ArrayList<>(signRequestService.getById(id).getLinks()));
+                response.put("links", signRequestService.getLinks(id));
                 addAttachmentValidationState(response, id);
                 return ResponseEntity.ok(response);
             }
@@ -560,7 +560,6 @@ public class UserAndOtpSignRequestController {
 
     private Map<String, Object> buildAddAttachmentResponse(Long id, Set<Long> attachmentIdsBefore, Set<String> linksBefore, String submittedLink) {
         List<AttachmentProjectionDto> attachments = signRequestService.getAttachmentProjections(id);
-        SignRequest signRequest = signRequestService.getById(id);
         Map<String, Object> response = new LinkedHashMap<>();
         response.put("success", true);
         response.put("message", "La pièce jointe a bien été ajoutée");
@@ -573,7 +572,7 @@ public class UserAndOtpSignRequestController {
         }
         response.put("addedAttachments", addedAttachments);
 
-        List<String> links = new ArrayList<>(signRequest.getLinks());
+        List<String> links = signRequestService.getLinks(id);
         response.put("links", links);
         addAttachmentValidationState(response, id);
         if (StringUtils.hasText(submittedLink) && !linksBefore.contains(submittedLink)) {

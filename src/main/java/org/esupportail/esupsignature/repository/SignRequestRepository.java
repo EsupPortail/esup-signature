@@ -37,6 +37,9 @@ public interface SignRequestRepository extends CrudRepository<SignRequest, Long>
 
     Optional<SignRequest> findByToken(String token);
 
+    @Query("select link from SignRequest s join s.links link where s.id = :id")
+    List<String> findLinksById(@Param("id") Long id);
+
     @Query("""
             select d.id as id,
                    d.fileName as fileName,
