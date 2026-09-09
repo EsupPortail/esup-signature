@@ -18,7 +18,7 @@
                         <h3 th:text="'Utilisez ' + ${securityService.title}"></h3>
                         <p class="text-left" th:utext="${securityService.description}"></p>
                         </div>
-                        <div class="oidc-connect d-flex flex-column align-items-start">
+                        <div class="oidc-connect d-flex flex-column align-items-center gap-2">
                             <form th:action="${securityService.loginUrl}" method="post">
                                 <button th:class="'oidc-connect-btn ' + ${securityService.code} + '-button'">
                                     <span th:class="${securityService.code} + '-sr-only'" th:text="'S`identifier avec ' + ${securityService.title}"></span>
