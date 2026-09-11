@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 
 @Entity
@@ -145,6 +146,7 @@ public class SignRequestParams {
         this.signHeight = signHeight;
     }
 
+    @JsonProperty("xPos")
     public Integer getxPos() {
         return xPos;
     }
@@ -156,6 +158,7 @@ public class SignRequestParams {
         this.xPos = xPos;
     }
 
+    @JsonProperty("yPos")
     public Integer getyPos() {
         if(yPos < 0) {
             yPos = 0;
