@@ -66,7 +66,7 @@
                                 <th:block th:each="user : ${step.users}">
                                     <option th:if="${user.email != null && user.email != 'generic'}"
                                             selected="selected"
-                                            th:text="${user.email}"
+                                            th:text="${user.firstname} + ' ' + ${user.name} + ' (' + ${user.email} + ')'"
                                             th:placeholder="${user.email}"
                                             th:value="${user.email}"></option>
                                 </th:block>
