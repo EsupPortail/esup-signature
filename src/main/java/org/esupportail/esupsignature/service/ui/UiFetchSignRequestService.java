@@ -81,6 +81,7 @@ public class UiFetchSignRequestService {
         boolean signable = signBookService.checkSignRequestSignable(signRequest, userEppn, authUserEppn);
         boolean editable = signRequestService.isEditable(id, userEppn);
         boolean manager = signBookService.checkUserManageRights(signBook.getId(), userEppn);
+        boolean signBookManageAllowed = preAuthorizeService.signBookManage(signBook.getId(), authUserEppn);
         boolean updateAllowed = preAuthorizeService.signBookUpdate(signBook.getId(), authUserEppn);
         boolean attachmentAlert = signRequestService.isAttachmentAlert(signRequest);
         boolean attachmentRequire = signRequestService.isAttachmentRequire(signRequest);
@@ -303,6 +304,7 @@ public class UiFetchSignRequestService {
         context.setTempUsers(tempUsers);
         context.setCurrentUserAsSigned(currentUserAsSigned);
         context.setViewRight(viewRight);
+        context.setSignBookManageAllowed(signBookManageAllowed);
         context.setAuditTrailChecked(auditTrailChecked);
         context.setHasNextSignBook(hasNextSignBook);
         context.setNextSignRequestId(nextSignRequestId);
@@ -400,6 +402,7 @@ public class UiFetchSignRequestService {
         dto.setLiveWorkflowStepCount(context.getSteps() != null ? context.getSteps().size() : 0);
         dto.setViewedByCurrentUser(context.isViewedByCurrentUser());
         dto.setViewRight(context.isViewRight());
+        dto.setSignBookManageAllowed(context.isSignBookManageAllowed());
         dto.setLogs(context.getLogs());
         dto.setPdfaCheck(context.getPdfaCheck());
         dto.setAuditTrailChecked(context.isAuditTrailChecked());
