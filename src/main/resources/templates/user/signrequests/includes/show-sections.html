@@ -45,6 +45,7 @@
         </button>
         <form th:if="${showSignRequest.displayNotif}"
               th:action="'/user/signrequests/replay-notif/' + ${signRequestLight.id}" method="post">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
             <button title="Relancer le destinataire" type="submit" class="d-flex justify-content-center btn btn-transparent text-dark">
                 <i class="fi fi-rr-bullhorn"></i> <span class="d-none"> Relancer</span>
             </button>
