@@ -63,6 +63,7 @@ global:
 #tomcat:
 #    ajp:
 #        port: 6009
+#        address: 127.0.0.1
 
 info:
     app:
