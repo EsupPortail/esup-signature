@@ -36,7 +36,6 @@ import org.esupportail.esupsignature.dss.model.SignatureMultipleDocumentsForm;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.entity.enums.SignWith;
-import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
@@ -181,7 +180,8 @@ public class SignService {
 
     public Document certSign(AbstractSignatureForm signatureDocumentForm, SignRequest signRequest, String userEppn, String password, SignWith signWith, String sealCertificat, SignRequestParams signRequestParams) throws EsupSignatureRuntimeException {
 		User user = userService.getByEppn(userEppn);
-    String resolvedSealCertificat = signWith.equals(SignWith.sealCert) ? resolveSealCertificat(userEppn, sealCertificat) : sealCertificat;
+        boolean isAlreadyCertSign = signWith.equals(SignWith.sealCert) && hasExistingElectronicSignature(signRequest);
+        String resolvedSealCertificat = signWith.equals(SignWith.sealCert) ? resolveSealCertificat(userEppn, sealCertificat, isAlreadyCertSign) : sealCertificat;
 		logger.info("start certSign for signRequest : " + signRequest.getId());
 		SignatureForm signatureForm;
 		SignatureTokenConnection abstractKeyStoreTokenConnection = null;
@@ -196,9 +196,8 @@ public class SignService {
 				Certificat certificat = certificatService.getCertificatByUser(userEppn).get(0);
 				abstractKeyStoreTokenConnection = userKeystoreService.getPkcs12Token(certificat.getKeystore().getInputStream(), certificatService.decryptPassword(certificat));
 			} else if (signWith.equals(SignWith.sealCert)
-                    &&
-                    isSealSigningAllowed(user, userEppn, resolvedSealCertificat)
-            ) {
+					&& isSealSigningAllowed(userEppn, resolvedSealCertificat, isAlreadyCertSign)
+			) {
 				try {
                     abstractKeyStoreTokenConnection = certificatService.getSealToken(globalProperties.getSealCertificatProperties().get(resolvedSealCertificat));
                     userKeystoreService.getCertificateToken(abstractKeyStoreTokenConnection);
@@ -273,53 +272,37 @@ public class SignService {
 		}
 	}
 
-    private String resolveSealCertificat(String userEppn, String sealCertificat) {
+    private String resolveSealCertificat(String userEppn, String sealCertificat, boolean isAlreadyCertSign) {
         if (StringUtils.hasText(sealCertificat)) {
             return sealCertificat;
         }
 
-        List<SealCertificatProperties> authorizedSealCertificatProperties = certificatService.getAuthorizedSealCertificatProperties(userEppn);
+        List<SealCertificatProperties> authorizedSealCertificatProperties = certificatService.getAuthorizedSealCertificatProperties(userEppn, isAlreadyCertSign);
         if (authorizedSealCertificatProperties.size() == 1) {
             return authorizedSealCertificatProperties.get(0).getSealCertificatName();
         }
         if (authorizedSealCertificatProperties.isEmpty()) {
-            return null;
+            throw new EsupSignatureRuntimeException("Aucun certificat cachet autorisé pour cet utilisateur");
         }
 
         throw new EsupSignatureRuntimeException("Merci de sélectionner un certificat cachet");
     }
 
-    private boolean isSealSigningAllowed(User user, String userEppn, String sealCertificat) {
+    private boolean isSealSigningAllowed(String userEppn, String sealCertificat, boolean isAlreadyCertSign) {
         return userEppn.equals("system")
-                || (user.getUserType().equals(UserType.external) && globalProperties.getSealForExternals())
-                || (!user.getUserType().equals(UserType.external) && globalProperties.getSealAuthorizedForSignedFiles())
-                || hasAuthorizedSealOrAuthorizedPrincipalSpare(userEppn, sealCertificat);
+                || certificatService.isSealCertificatAuthorized(userEppn, sealCertificat, isAlreadyCertSign);
     }
 
-    private boolean hasAuthorizedSealOrAuthorizedPrincipalSpare(String userEppn, String sealCertificat) {
-        List<SealCertificatProperties> authorizedSealCertificatProperties = certificatService.getAuthorizedSealCertificatProperties(userEppn);
-        if (authorizedSealCertificatProperties.isEmpty()) {
+    private boolean hasExistingElectronicSignature(SignRequest signRequest) {
+        try {
+            Reports reports = validate(signRequest.getId());
+            return reports != null
+                    && reports.getSimpleReport() != null
+                    && !reports.getSimpleReport().getSignatureIdList().isEmpty();
+        } catch (IOException e) {
+            logger.warn("Impossible de contrôler les signatures existantes de la demande {}", signRequest.getId(), e);
             return false;
         }
-
-        boolean hasDirectAuthorization = authorizedSealCertificatProperties.stream()
-                .anyMatch(sc -> Objects.equals(sc.getSealCertificatName(), sealCertificat));
-        if (hasDirectAuthorization) {
-            return true;
-        }
-
-        Map<String, SealCertificatProperties> configuredSealCertificatProperties = globalProperties.getSealCertificatProperties();
-        if (configuredSealCertificatProperties == null || configuredSealCertificatProperties.isEmpty()) {
-            return false;
-        }
-
-        SealCertificatProperties requestedSealCertificatProperties = configuredSealCertificatProperties.get(sealCertificat);
-        if (requestedSealCertificatProperties == null) {
-            return false;
-        }
-
-        return authorizedSealCertificatProperties.stream()
-                .anyMatch(sc -> Objects.equals(sc.getSealCertificatName(), requestedSealCertificatProperties.getSealSpareOf()));
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })

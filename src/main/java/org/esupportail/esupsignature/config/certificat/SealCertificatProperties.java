@@ -54,6 +54,14 @@ public class SealCertificatProperties {
      */
     private String sealSpareOf = "";
 
+    /**
+     * Autoriser les utilisateurs externes à utiliser ce certificat cachet sur un document déjà signé.
+     */
+    private Boolean sealForExternals = false;
+
+    @JsonIgnore
+    private boolean sealForExternalsConfigured;
+
     private List<String> roles = new ArrayList<>();
 
     @JsonIgnore
@@ -132,6 +140,20 @@ public class SealCertificatProperties {
 
     public void setSealSpareOf(String sealSpareOf) {
         this.sealSpareOf = sealSpareOf;
+    }
+
+    public Boolean getSealForExternals() {
+        return sealForExternals;
+    }
+
+    public void setSealForExternals(Boolean sealForExternals) {
+        this.sealForExternals = Boolean.TRUE.equals(sealForExternals);
+        this.sealForExternalsConfigured = true;
+    }
+
+    @JsonIgnore
+    public boolean isSealForExternalsConfigured() {
+        return sealForExternalsConfigured;
     }
 
     public List<String> getRoles() {

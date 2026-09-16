@@ -221,17 +221,16 @@
                                                                         <span th:unless="${globalProperties.smsRequired}">Mobile facultatif</span>
                                                                         <br>
                                                                         <input type="tel"
-                                                                            th:id="'phone_' + ${liveWorkflowStep.id}"
+                                                                            th:id="'phone_' + ${recipient.id}"
                                                                             name="phone"
                                                                             class="form-control js-resend-otp-phone"
-                                                                            th:attr="data-signbook-id=${showSignRequest.signBookLight.id},data-recipient-id=${recipient.user.id}"
                                                                             th:value="${recipient.user.hidedPhone}">
                                                                         <br><br>
                                                                     </div>
                                                                     <button type="button"
-                                                                            th:id="'confirmBtn_' + ${liveWorkflowStep.id}"
+                                                                            th:id="'confirmBtn_' + ${recipient.id}"
                                                                             class="btn btn-success float-end mb-2 js-resend-otp-confirm"
-                                                                            th:attr="data-phone-target='phone_' + ${liveWorkflowStep.id}"
+                                                                            th:attr="data-signbook-id=${showSignRequest.signBookLight.id},data-recipient-id=${recipient.user.id}"
                                                                             title="Envoyer un nouveau lien d'accès"
                                                                             style="right: 17px; bottom: 7px !important; position: absolute;">
                                                                         Confirmer

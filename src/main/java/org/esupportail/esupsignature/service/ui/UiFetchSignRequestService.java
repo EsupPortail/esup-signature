@@ -216,8 +216,9 @@ public class UiFetchSignRequestService {
         } else if (signable) {
             signWiths = signWithService.getAuthorizedSignWiths(userEppn, signRequest, false);
         }
-        boolean sealCertOK = signWithService.checkSealCertificat(userEppn, true);
-        List<SealCertificatProperties> sealCertificatPropertieses = certificatService.getAuthorizedSealCertificatProperties(userEppn);
+        boolean isAlreadyCertSign = !signatureIds.isEmpty();
+        boolean sealCertOK = signWithService.checkSealCertificat(userEppn, true, isAlreadyCertSign);
+        List<SealCertificatProperties> sealCertificatPropertieses = certificatService.getAuthorizedSealCertificatProperties(userEppn, isAlreadyCertSign);
         Long nextSignRequestId = signBookService.getNextSignRequestId(id, signBook.getId(), userEppn, authUserEppn);
         boolean hasNextSignBook = nextSignRequestId != null;
         List<RecipientWsDto> externalsRecipients = auditTrailChecked ? signRequestService.getExternalRecipients(id) : new ArrayList<>();

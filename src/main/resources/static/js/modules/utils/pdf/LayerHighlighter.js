@@ -25,8 +25,6 @@ class LayerHighlighter {
             const page = await this.viewer.pdfDoc.getPage(pageNum);
             const annotations = await page.getAnnotations();
 
-            console.log(`\n[Page ${pageNum}] ${annotations.length} annotation(s) trouvée(s)`);
-
             const matchingAnnotationIds = [];
 
             for (const annotation of annotations) {
@@ -36,8 +34,6 @@ class LayerHighlighter {
                     annotation.contents ||
                     annotation.contentsObj ||
                     '';
-                console.log(`\n  Annotation ${annotationId}:`);
-                console.log(`    - contents:`, contents);
                 let layerIdFromContent = null;
                 try {
                     const parsed = JSON.parse(contents);
@@ -46,7 +42,6 @@ class LayerHighlighter {
                     // pas du JSON → ignorer
                 }
                 if (layerIdFromContent === targetLayerId) {
-                    console.log(`    ✓ MATCH avec calque ${targetLayerId}!`);
                     matchingAnnotationIds.push(annotationId);
                 }
             }
@@ -85,37 +80,29 @@ class LayerHighlighter {
             return;
         }
 
-        console.log(`\n🎯 HIGHLIGHT CALQUE: ${groupName} (ID: ${groupId})`);
         this.highlightedLayers.add(groupId);
 
         // Récupérer les annotations de ce calque pour chaque page
         const allAnnotationIds = [];
         for (let pageNum = 1; pageNum <= this.viewer.numPages; pageNum++) {
-            console.log(`\n--- PAGE ${pageNum} ---`);
             const pageAnnotationIds = await this.getAnnotationIdsForLayer(pageNum, groupName);
             allAnnotationIds.push(...pageAnnotationIds);
         }
 
         if (allAnnotationIds.length === 0) {
-            console.log(`\n❌ Aucune annotation trouvée pour le calque ${groupId}`);
             return;
         }
-
-        console.log(`\n✓ Total: ${allAnnotationIds.length} annotation(s) trouvée(s)`);
 
         // Highlight dans le DOM
         this._highlightAnnotationsInDOM(groupId, allAnnotationIds);
     }
 
     /**
-     * Highlight les annotations spécifiques dans le DOM
+    * Highlight les annotations spécifiques dans le DOM
      */
     _highlightAnnotationsInDOM(groupId, annotationIds) {
-        let highlightCount = 0;
         const pages = document.querySelectorAll('.pdf-page');
 
-        console.log(`\nCherchant ${annotationIds.length} annotation(s) dans le DOM...`);
-        let self = this;
         pages.forEach((page) => {
             const annotationLayer = page.querySelector('.annotationLayer');
             if (!annotationLayer) {
@@ -130,15 +117,9 @@ class LayerHighlighter {
                     section.style.outline = `2px solid ${this.highlightColor}`;
                     section.style.borderRadius = `3px`;
                     section.style.backgroundColor = this._hexToRgba(this.highlightColor, this.highlightOpacity);
-                    console.log(`  ✓ Highlighted annotation ${annotationId}`);
-                    highlightCount++;
-                } else {
-                    console.log(`  ⚠ Annotation ${annotationId} not found in DOM`);
                 }
             });
         });
-
-        console.log(`\n✓ Highlight appliqué: ${highlightCount} annotation(s) mis en évidence`);
     }
 
     /**
