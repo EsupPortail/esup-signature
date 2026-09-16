@@ -368,7 +368,6 @@ export class PdfLayerController {
             }
             this.viewer.highlighter.clearHighlights();
             await this.viewer.highlighter.highlightLayer(targetGroup.id);
-            console.log(`highlightStep(${stepNumber}): Calque "${targetGroup.name}" en ${this.viewer.highlighter.highlightColor}`);
         } catch(err) {
             console.error('highlightStep error:', err);
         }
@@ -377,7 +376,6 @@ export class PdfLayerController {
     clearHighlight() {
         if (this.viewer.highlighter) {
             this.viewer.highlighter.clearHighlights();
-            console.log('Highlight effacé');
         }
     }
 }
