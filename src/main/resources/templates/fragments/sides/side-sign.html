@@ -51,7 +51,7 @@
                        data-bs-toggle="collapse" href="#followed-by" role="button" aria-expanded="false" aria-controls="followed-by">Suivi par <i class="fi fi-rr-angle-down"></i></a>
                     <div id="followed-by" class="collapse show">
                     <ul class="d-flex gap-1 list-unstyled mb-0">
-                        <li>
+                        <li th:if="${showSignRequest.signBookManageAllowed}">
                             <div class="rounded-circle text-white d-flex align-items-center justify-content-center fw-semibold" style="background-color: var(--bs-secondary); width: 2rem; height: 2rem;">
                             <button class="btn btn-transparent text-white d-flex" title="Ajouter des observateurs" data-bs-toggle="modal" data-bs-target="#addViewersModal" >
                                 <i class="fi fi-rr-plus"></i>

@@ -4,8 +4,6 @@ import jakarta.annotation.Resource;
 import org.apereo.cas.client.util.AbstractConfigurationFilter;
 import org.esupportail.esupsignature.config.security.WebSecurityProperties;
 import org.esupportail.esupsignature.config.security.shib.ShibProperties;
-import org.esupportail.esupsignature.repository.MappingFiltersGroupsRepository;
-import org.esupportail.esupsignature.repository.MappingGroupsRolesRepository;
 import org.esupportail.esupsignature.service.ldap.LdapGroupService;
 import org.esupportail.esupsignature.service.security.Group2UserRoleService;
 import org.esupportail.esupsignature.service.security.SecurityService;
@@ -37,20 +35,15 @@ public class ShibSecurityServiceImpl implements SecurityService {
     private final LdapGroupService ldapGroupService;
 	private final WebSecurityProperties webSecurityProperties;
 	private final SpelGroupService spelGroupService;
-	private final MappingFiltersGroupsRepository mappingFiltersGroupsRepository;
-	private final MappingGroupsRolesRepository mappingGroupsRolesRepository;
 	private final ShibProperties shibProperties;
 	private final ShibAuthenticationSuccessHandler shibAuthenticationSuccessHandler;
-
-    public ShibSecurityServiceImpl(@Autowired(required = false) LdapGroupService ldapGroupService, @Autowired(required = false) WebSecurityProperties webSecurityProperties, SpelGroupService spelGroupService, MappingFiltersGroupsRepository mappingFiltersGroupsRepository, MappingGroupsRolesRepository mappingGroupsRolesRepository, ShibProperties shibProperties, ShibAuthenticationSuccessHandler shibAuthenticationSuccessHandler) {
+    public ShibSecurityServiceImpl(@Autowired(required = false) LdapGroupService ldapGroupService, @Autowired(required = false) WebSecurityProperties webSecurityProperties, SpelGroupService spelGroupService, ShibProperties shibProperties, ShibAuthenticationSuccessHandler shibAuthenticationSuccessHandler) {
         this.ldapGroupService = ldapGroupService;
         if(this.ldapGroupService != null) {
             this.ldapGroupService.loadLdapFiltersGroups();
         }
         this.webSecurityProperties = webSecurityProperties;
         this.spelGroupService = spelGroupService;
-        this.mappingFiltersGroupsRepository = mappingFiltersGroupsRepository;
-        this.mappingGroupsRolesRepository = mappingGroupsRolesRepository;
         this.shibProperties = shibProperties;
         this.shibAuthenticationSuccessHandler = shibAuthenticationSuccessHandler;
     }
@@ -135,8 +128,6 @@ public class ShibSecurityServiceImpl implements SecurityService {
 		shibAuthenticatedUserDetailsService.setGroup2UserRoleService(group2UserRoleService);
 		shibAuthenticatedUserDetailsService.setMappingGroupesRoles(webSecurityProperties.getMappingGroupsRoles());
 		shibAuthenticatedUserDetailsService.setLdapGroupService(ldapGroupService);
-		shibAuthenticatedUserDetailsService.setMappingFiltersGroupsRepository(mappingFiltersGroupsRepository);
-		shibAuthenticatedUserDetailsService.setMappingGroupsRolesRepository(mappingGroupsRolesRepository);
 		return shibAuthenticatedUserDetailsService;
 	}
 
