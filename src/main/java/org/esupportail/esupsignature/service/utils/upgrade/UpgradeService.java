@@ -551,9 +551,6 @@ public class UpgradeService {
                         END IF;
                     END IF;
                 END $$;
-
-                DROP TABLE IF EXISTS public.mapping_filters_groups;
-                DROP TABLE IF EXISTS public.mapping_groups_roles;
                 """).executeUpdate();
         logger.info("#### Legacy group mappings migration completed ####");
     }
