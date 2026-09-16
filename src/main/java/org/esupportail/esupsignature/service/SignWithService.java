@@ -1,23 +1,15 @@
 package org.esupportail.esupsignature.service;
 
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 import org.esupportail.esupsignature.config.GlobalProperties;
-import org.esupportail.esupsignature.config.certificat.SealCertificatProperties;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignLevel;
 import org.esupportail.esupsignature.entity.enums.SignWith;
-import org.esupportail.esupsignature.entity.enums.UserType;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 @Service
 public class SignWithService {
@@ -26,18 +18,10 @@ public class SignWithService {
     private final CertificatService certificatService;
     private final GlobalProperties globalProperties;
 
-    private static LoadingCache<String, Boolean> sealCertOKCache;
-
     public SignWithService(UserService userService, CertificatService certificatService, GlobalProperties globalProperties) {
         this.userService = userService;
         this.certificatService = certificatService;
         this.globalProperties = globalProperties;
-        sealCertOKCache = CacheBuilder.newBuilder().expireAfterWrite(10, TimeUnit.MINUTES).build(new CacheLoader<>() {
-            @Override
-            public @NotNull Boolean load(@NotNull String s) {
-                return false;
-            }
-        });
     }
 
     @Transactional
@@ -72,7 +56,7 @@ public class SignWithService {
                 signWiths.add(SignWith.sealCert);
             }
         }
-        if(certificatService.getAuthorizedSealCertificatProperties(userEppn).isEmpty()) {
+        if(certificatService.getAuthorizedSealCertificatProperties(userEppn, isAlreadyCertSign).isEmpty()) {
             signWiths.remove(SignWith.sealCert);
         }
         return signWiths;
@@ -86,7 +70,7 @@ public class SignWithService {
             signWiths.remove(SignWith.userCert);
         }
         signWiths.remove(SignWith.sealCert);
-        if(checkSealCertificat(userEppn, false) && (isAlreadyCertSign || user.getRoles().contains("ROLE_SEAL"))) {
+        if(checkSealCertificat(userEppn, false, isAlreadyCertSign)) {
             signWiths.add(SignWith.sealCert);
         }
         if(certificatService.getCertificatByUser(user.getEppn()).isEmpty()) {
@@ -107,33 +91,13 @@ public class SignWithService {
     }
 
     public boolean checkSealCertificat(String userEppn, boolean force) {
-        User user = userService.getByEppn(userEppn);
-        if(
-                (user.getRoles().contains("ROLE_SEAL")
-                    || (!user.getUserType().equals(UserType.external) && globalProperties.getSealAuthorizedForSignedFiles())
-                    || (globalProperties.getSealForExternals() && user.getUserType().equals(UserType.external))
-                )
-                && globalProperties.getSealCertificatProperties().containsKey("default")
-                && StringUtils.hasText(globalProperties.getSealCertificatProperties().get("default").getSealCertificatPin())
-                && (
-                    (globalProperties.getSealCertificatProperties().get("default").getSealCertificatType() != null && globalProperties.getSealCertificatProperties().get("default").getSealCertificatType().equals(SealCertificatProperties.TokenType.PKCS11) && StringUtils.hasText(globalProperties.getSealCertificatProperties().get("default").getSealCertificatDriver()))
-                    ||
-                    (globalProperties.getSealCertificatProperties().get("default").getSealCertificatType() != null && globalProperties.getSealCertificatProperties().get("default").getSealCertificatType().equals(SealCertificatProperties.TokenType.OPENSC))
-                    ||
-                    (globalProperties.getSealCertificatProperties().get("default").getSealCertificatType() != null && globalProperties.getSealCertificatProperties().get("default").getSealCertificatType().equals(SealCertificatProperties.TokenType.PKCS12) && StringUtils.hasText(globalProperties.getSealCertificatProperties().get("default").getSealCertificatFile()))
-                )
-        ) {
-            if(Boolean.TRUE.equals(sealCertOKCache.getIfPresent("sealOK"))) {
-                return true;
-            } else {
-                if (!certificatService.getSealCertificats().isEmpty()) {
-                    sealCertOKCache.put("sealOK", true);
-                    return true;
-                } else {
-                    return false;
-                }
-            }
+        return checkSealCertificat(userEppn, force, false);
+    }
+
+    public boolean checkSealCertificat(String userEppn, boolean force, boolean isAlreadyCertSign) {
+        if (!certificatService.getAuthorizedSealCertificatProperties(userEppn, isAlreadyCertSign).isEmpty()) {
+            return true;
         }
-        return force;
+        return false;
     }
 }

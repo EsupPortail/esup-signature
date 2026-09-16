@@ -272,8 +272,11 @@ public class GlobalProperties {
     private Boolean sealAllDocs = false;
 
     /**
-     * Autoriser les externes à signer avec le cachet
+     * Autoriser les externes à signer avec le cachet par défaut.
+     *
+     * @deprecated utiliser seal-certificat-properties.&lt;nom&gt;.seal-for-externals
      */
+    @Deprecated
     private Boolean sealForExternals = false;
 
     /**
@@ -449,6 +452,13 @@ public class GlobalProperties {
             }
         } else if(!sealCertificatProperties.containsKey("default")){
             throw new IllegalStateException("La configuration 'seal-certificat-properties' doit contenir une entrée 'default' lorsqu'elle n'est pas vide.");
+        }
+        sealCertificatProperties.forEach((name, properties) -> properties.sealCertificatName = name);
+        SealCertificatProperties defaultSealCertificat = sealCertificatProperties.get("default");
+        if (defaultSealCertificat != null
+                && !defaultSealCertificat.isSealForExternalsConfigured()
+                && Boolean.TRUE.equals(sealForExternals)) {
+            defaultSealCertificat.setSealForExternals(true);
         }
     }
 
@@ -788,10 +798,12 @@ public class GlobalProperties {
         this.sealAllDocs = sealAllDocs;
     }
 
+    @Deprecated
     public Boolean getSealForExternals() {
         return sealForExternals;
     }
 
+    @Deprecated
     public void setSealForExternals(Boolean sealForExternals) {
         this.sealForExternals = sealForExternals;
     }

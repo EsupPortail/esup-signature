@@ -24,6 +24,7 @@ import org.esupportail.esupsignature.entity.AppliVersion;
 import org.esupportail.esupsignature.entity.Certificat;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.WorkflowStep;
+import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.repository.AppliVersionRepository;
@@ -555,19 +556,43 @@ public class CertificatService implements HealthIndicator {
     }
 
     public List<SealCertificatProperties> getAuthorizedSealCertificatProperties(String userEppn) {
+        return getAuthorizedSealCertificatProperties(userEppn, false);
+    }
+
+    public List<SealCertificatProperties> getAuthorizedSealCertificatProperties(String userEppn, boolean isAlreadyCertSign) {
         User user = userService.getByEppn(userEppn);
-        List<SealCertificatProperties> sealCertificatProperties = new ArrayList<>();
-        try {
-            sealCertificatProperties = new ArrayList<>(getCheckedSealCertificates().stream().filter(sc -> sc.containsRole(user.getRoles().stream().toList())).toList());
-            for(SealCertificatProperties sealCertificatProperties1 : globalProperties.getSealCertificatProperties().values().stream().filter(sc -> sc.containsRole(user.getRoles().stream().toList())).toList()) {
-                if(!sealCertificatProperties.contains(sealCertificatProperties1) && globalProperties.getSealCertificatProperties().values().stream().anyMatch(sc1 -> sc1.getSealSpareOf().equals(sealCertificatProperties1.sealCertificatName))) {
-                    sealCertificatProperties.add(sealCertificatProperties1);
-                }
-            }
-        } catch (Exception e) {
-            logger.error(e.getMessage());
+        return globalProperties.getSealCertificatProperties().values().stream()
+                .filter(sc -> isSealCertificatDirectlyAuthorized(user, sc, isAlreadyCertSign))
+                .sorted(Comparator.comparing(SealCertificatProperties::getSealCertificatName))
+                .toList();
+    }
+
+    public boolean isSealCertificatAuthorized(String userEppn, String sealCertificatName, boolean isAlreadyCertSign) {
+        if (!StringUtils.hasText(sealCertificatName)) {
+            return false;
         }
-        return sealCertificatProperties;
+        List<SealCertificatProperties> authorizedSealCertificatProperties = getAuthorizedSealCertificatProperties(userEppn, isAlreadyCertSign);
+        if (authorizedSealCertificatProperties.stream()
+                .anyMatch(sc -> Objects.equals(sc.getSealCertificatName(), sealCertificatName))) {
+            return true;
+        }
+        SealCertificatProperties requestedSealCertificatProperties = globalProperties.getSealCertificatProperties().get(sealCertificatName);
+        return requestedSealCertificatProperties != null
+                && authorizedSealCertificatProperties.stream()
+                .anyMatch(sc -> Objects.equals(sc.getSealCertificatName(), requestedSealCertificatProperties.getSealSpareOf()));
+    }
+
+    private boolean isSealCertificatDirectlyAuthorized(User user, SealCertificatProperties sealCertificatProperties, boolean isAlreadyCertSign) {
+        if (sealCertificatProperties.containsRole(user.getRoles().stream().toList())) {
+            return true;
+        }
+        if (!isAlreadyCertSign) {
+            return false;
+        }
+        if (user.getUserType().equals(UserType.external)) {
+            return Boolean.TRUE.equals(sealCertificatProperties.getSealForExternals());
+        }
+        return Boolean.TRUE.equals(globalProperties.getSealAuthorizedForSignedFiles());
     }
 
     public void clearSealCertificatsCache() {
