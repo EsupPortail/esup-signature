@@ -11,13 +11,11 @@ import jakarta.servlet.MultipartConfigElement;
 import org.esupportail.esupsignature.entity.Config;
 import org.esupportail.esupsignature.service.ConfigService;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.web.servlet.FilterRegistrationBean;
-import org.springframework.boot.web.servlet.MultipartConfigFactory;
+import org.springframework.boot.servlet.MultipartConfigFactory;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.orm.jpa.support.OpenEntityManagerInViewFilter;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.util.unit.DataSize;
 import org.springframework.web.filter.HiddenHttpMethodFilter;
@@ -67,25 +65,10 @@ public class WebAppConfig implements WebMvcConfigurer {
 		return factory.createMultipartConfig();
 	}
 
-	@Bean
-	public FilterRegistrationBean<OpenEntityManagerInViewFilter> registerOpenEntityManagerInViewFilterBean() {
-		FilterRegistrationBean<OpenEntityManagerInViewFilter> registrationBean = new FilterRegistrationBean<>();
-		OpenEntityManagerInViewFilter filter = new OpenEntityManagerInViewFilter();
-		registrationBean.setFilter(filter);
-		registrationBean.setOrder(5);
-		registrationBean.addUrlPatterns(
-				"/user/", "/user/*",
-				"/nexu-sign/", "/nexu-sign/*",
-				"/otp/", "/otp/*",
-				"/error", "/error/*",
-				"/admin/", "/admin/*",
-				"/manager/", "/manager/*",
-				"/public/", "/public/*");
-		return registrationBean;
-	}
+
 
 	@Bean
-	public OpenAPI springShopOpenAPI() {
+	public OpenAPI springDocOpenAPI() {
 		return new OpenAPI()
 				.info(new Info().title("Esup Signature")
 						.description("Esup Signature REST API")

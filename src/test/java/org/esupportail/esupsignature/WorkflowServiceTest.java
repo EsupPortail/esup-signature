@@ -12,7 +12,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = EsupSignatureApplication.class)
@@ -26,18 +30,14 @@ public class WorkflowServiceTest {
 
     @Test
     public void testWorkflows() {
-        boolean workflowTest = true;
-        for(Workflow defaultWorkflow : workflowService.getClassesWorkflows()) {
-            try {
-                ((ClassWorkflow) defaultWorkflow).getWorkflowSteps();
-                logger.info("Test Workflow : " + defaultWorkflow.getName() + " OK");
-            } catch (Exception e) {
-                logger.error("Test Workflow : " + defaultWorkflow.getName() + " KO", e);
-                workflowTest = false;
-            }
-        }
-        if(!workflowTest) {
-            assumeTrue(workflowTest, "Attention, un des workflows est mal configuré");
+        List<Workflow> classWorkflows = workflowService.getClassesWorkflows();
+        assertFalse(classWorkflows.isEmpty(), "Au moins un workflow de classe doit être déclaré.");
+
+        for(Workflow defaultWorkflow : classWorkflows) {
+            ClassWorkflow classWorkflow = assertInstanceOf(ClassWorkflow.class, defaultWorkflow, "Chaque workflow de classe doit implémenter ClassWorkflow : " + defaultWorkflow.getName());
+            List<?> workflowSteps = classWorkflow.getWorkflowSteps();
+            assertNotNull(workflowSteps, "Les étapes du workflow ne doivent pas être nulles : " + defaultWorkflow.getName());
+            logger.info("Test Workflow : {} OK ({} étapes)", defaultWorkflow.getName(), workflowSteps.size());
         }
     }
 

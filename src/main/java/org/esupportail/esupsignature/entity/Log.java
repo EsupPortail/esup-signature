@@ -26,7 +26,6 @@ public class Log {
 
     private String workflowName;
 
-	@Temporal(TemporalType.TIMESTAMP)
     @DateTimeFormat(pattern = "dd/MM/yyyy - HH:mm")
     private Date logDate;
 

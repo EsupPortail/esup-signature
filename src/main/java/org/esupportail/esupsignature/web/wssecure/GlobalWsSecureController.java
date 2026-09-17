@@ -5,9 +5,10 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.config.GlobalProperties;
-import org.esupportail.esupsignature.dto.js.JsMessage;
+import org.esupportail.esupsignature.dto.ui.global.UiMessageDto;
 import org.esupportail.esupsignature.entity.Document;
 import org.esupportail.esupsignature.entity.SignRequest;
+import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
@@ -30,8 +31,11 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @CrossOrigin(origins = "*")
 @RestController
@@ -114,7 +118,7 @@ public class GlobalWsSecureController {
         return ResponseEntity.notFound().build();
     }
 
-    @PreAuthorize("@preAuthorizeService.signRequestCreator(#id, #authUserEppn)")
+    @PreAuthorize("@preAuthorizeService.signRequestManager(#id, #authUserEppn)")
     @GetMapping(value = "/get-original-file/{id}")
     public ResponseEntity<Void> getOriginalFile(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletResponse httpServletResponse) {
         try {
@@ -138,6 +142,18 @@ public class GlobalWsSecureController {
         return ResponseEntity.ok().build();
     }
 
+    @PreAuthorize("@preAuthorizeService.documentView(#documentId, #userEppn, #authUserEppn)")
+    @GetMapping(value = "/get-file-inline/{documentId}")
+    public ResponseEntity<Void> getFileInline(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("documentId") Long documentId, HttpServletResponse httpServletResponse) throws IOException {
+        try {
+            signRequestService.getFileInlineResponse(documentId, httpServletResponse);
+        } catch (Exception e) {
+            logger.warn(e.getMessage());
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        return ResponseEntity.ok().build();
+    }
+
     @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
     @GetMapping("/get-documents-history/{id}/documents/{version}")
     public ResponseEntity<byte[]> downloadDocumentVersion(
@@ -149,6 +165,22 @@ public class GlobalWsSecureController {
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_PDF)
                 .header("Content-Disposition", "attachment; filename=document_v" + version + ".pdf")
+                .body(pdf);
+    }
+
+    @PreAuthorize("@preAuthorizeService.signRequestLayeredDownload(#id, #stepNumber, #userEppn, #authUserEppn)")
+    @GetMapping("/get-layered-file/{id}/{stepNumber}")
+    public ResponseEntity<byte[]> downloadLayeredDocumentAtStep(
+            @PathVariable Long id,
+            @PathVariable int stepNumber,
+            @ModelAttribute("userEppn") String userEppn,
+            @ModelAttribute("authUserEppn") String authUserEppn
+    ) throws IOException, EsupSignatureException {
+        byte[] pdf = signRequestService.getLayeredPdfAtStep(id, stepNumber);
+        String safeFileName = "document_step_" + stepNumber + ".pdf";
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_PDF)
+                .header("Content-Disposition", "attachment; filename=" + safeFileName)
                 .body(pdf);
     }
 
@@ -203,9 +235,17 @@ public class GlobalWsSecureController {
     @PostMapping(value = "/remove-doc/{documentId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public String removeDocument(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("documentId") Long documentId) {
         logger.info("remove document " + documentId);
-        Document document = documentService.getById(documentId);
-        SignRequest signRequest = signRequestService.getById(document.getParentId());
-        signRequest.getOriginalDocuments().remove(document);
+        signRequestService.deleteByOriginalDocument(documentId, authUserEppn);
+        return "{}";
+    }
+
+    @PreAuthorize("@preAuthorizeService.draftDocumentCreator(#documentId, #userEppn)")
+    @PostMapping(value = "/remove-draft-doc/{documentId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public String removeDraftDocument(@ModelAttribute("userEppn") String userEppn,
+                                      @ModelAttribute("authUserEppn") String authUserEppn,
+                                      @PathVariable("documentId") Long documentId) {
+        logger.info("remove draft document {}", documentId);
+        signRequestService.deleteDraftByOriginalDocument(documentId, authUserEppn);
         return "{}";
     }
 
@@ -221,26 +261,22 @@ public class GlobalWsSecureController {
     }
 
     @DeleteMapping("/delete-spot/{id}/{spotId}")
-    @PreAuthorize("@preAuthorizeService.signRequestCreator(#id, #authUserEppn)")
+    @PreAuthorize("@preAuthorizeService.signRequestManager(#id, #authUserEppn)")
     public void deleteSpot(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("spotId") Long spotId,
                            @PathVariable("id") Long id,
                            RedirectAttributes redirectAttributes) {
         signRequestService.deleteSpot(id, spotId);
-        redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Champ signature supprimé"));
+        redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "Champ signature supprimé"));
     }
 
-    @PreAuthorize("@preAuthorizeService.signRequestOwner(#id, #authUserEppn)")
+    @PreAuthorize("@preAuthorizeService.signRequestCommentDelete(#id, #commentId, #authUserEppn)")
     @DeleteMapping(value = "/delete-comment/{id}/{commentId}")
     public ResponseEntity<Void> deleteComments(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @PathVariable("commentId") Long commentId,  RedirectAttributes redirectAttributes) {
         commentService.deleteComment(commentId, null);
-        redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Le commentaire a bien été supprimé"));
+        redirectAttributes.addFlashAttribute("message", new UiMessageDto("success", "Le commentaire a bien été supprimé"));
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping(value = "/warning-readed")
-    public void warningReaded(@ModelAttribute("authUserEppn") String authUserEppn) {
-        signRequestService.warningReaded(authUserEppn);
-    }
 
     @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
     @GetMapping(value = "/print-with-code/{id}")
@@ -256,17 +292,38 @@ public class GlobalWsSecureController {
 
     @PreAuthorize("@preAuthorizeService.signBookCreator(#signBookId, #userEppn)")
     @PostMapping(value = "/add-docs/{signBookId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> addDocumentToNewSignRequest(@PathVariable("signBookId") Long signBookId,  @ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @RequestParam("multipartFiles") MultipartFile[] multipartFiles) throws EsupSignatureIOException {
+    public ResponseEntity<?> addDocumentToNewSignRequest(@PathVariable("signBookId") Long signBookId,  @ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @RequestParam("multipartFiles") MultipartFile[] multipartFiles, @RequestParam(value = "unzip", defaultValue = "false") boolean unzip) throws EsupSignatureIOException {
         logger.info("start add documents");
-        if(globalProperties.getPdfOnly() && Arrays.stream(multipartFiles).anyMatch(m -> !Objects.equals(m.getContentType(), "application/pdf"))) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Seul les fichiers PDF sont autorisés");
+        if(globalProperties.getPdfOnly() && Arrays.stream(multipartFiles).anyMatch(m -> !isAuthorizedPdfOnlyUpload(m, unzip))) {
+            return ResponseEntity.badRequest().body("Seul les fichiers PDF sont autorisés");
         }
         try {
-            signBookService.addDocumentsToSignBook(signBookId, multipartFiles, authUserEppn, null, false);
+            List<Document> documents = signBookService.addDocumentsToSignBook(signBookId, multipartFiles, authUserEppn, null, false, unzip);
+            return ResponseEntity.ok().body(documents.stream()
+                    .map(document -> {
+                        Map<String, Object> uploadedDocument = new LinkedHashMap<>();
+                        uploadedDocument.put("id", document.getId());
+                        uploadedDocument.put("fileName", document.getFileName());
+                        uploadedDocument.put("size", document.getSize());
+                        uploadedDocument.put("contentType", document.getContentType());
+                        return uploadedDocument;
+                    })
+                    .collect(Collectors.toList()));
         } catch(Exception e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
-        return ResponseEntity.ok().body(signBookId.toString());
+    }
+
+    private boolean isAuthorizedPdfOnlyUpload(MultipartFile multipartFile, boolean unzip) {
+        if (Objects.equals(multipartFile.getContentType(), "application/pdf")) {
+            return true;
+        }
+        if (!unzip) {
+            return false;
+        }
+        String originalFilename = multipartFile.getOriginalFilename();
+        return (multipartFile.getContentType() != null && multipartFile.getContentType().toLowerCase().contains("zip"))
+                || (originalFilename != null && originalFilename.toLowerCase().endsWith(".zip"));
     }
 
     @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")

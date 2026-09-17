@@ -76,8 +76,7 @@ public class OpenXPKICertificatGenerationService implements CertificatGeneration
             certificates[0] = cert;
             certificates[1] = chain;
             KeyStore pkcs12 = KeyStore.getInstance("PKCS12");
-            RandomStringGenerator pwdGenerator = new RandomStringGenerator.Builder().withinRange(33, 45)
-                    .build();
+            RandomStringGenerator pwdGenerator = new RandomStringGenerator.Builder().withinRange(33, 45).get();
             char[] password = pwdGenerator.generate(8, 12).toCharArray();
             pkcs12.load(null, null);
             pkcs12.setKeyEntry("temp", pair.getPrivate(), password, certificates);

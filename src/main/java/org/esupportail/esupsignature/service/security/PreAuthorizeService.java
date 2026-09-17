@@ -72,6 +72,22 @@ public class PreAuthorizeService {
         return signRequest.getCreateBy().getEppn().equals(authUserEppn);
     }
 
+    public boolean draftDocumentCreator(Long documentId, String userEppn) {
+        if (documentId == null || userEppn == null) {
+            return false;
+        }
+        Document document = documentService.getById(documentId);
+        if (document == null || document.getParentId() == null) {
+            return false;
+        }
+        SignRequest signRequest = signRequestService.getById(document.getParentId());
+        return signRequest != null
+                && SignRequestStatus.draft.equals(signRequest.getStatus())
+                && signRequest.getParentSignBook() != null
+                && signRequest.getParentSignBook().getCreateBy() != null
+                && userEppn.equals(signRequest.getParentSignBook().getCreateBy().getEppn());
+    }
+
     public boolean documentView(Long documentId, String userEppn, String authUserEppn) {
         Document document = documentService.getById(documentId);
         if(signRequestService.getById(document.getParentId()) != null) {
@@ -101,25 +117,46 @@ public class PreAuthorizeService {
         return false;
     }
 
-    public boolean signRequestCreator(Long id, String userEppn) {
+    public boolean signBookUpdate(Long id, String userEppn) {
+        if (userEppn != null) {
+            return signBookService.checkUserUpdateRights(id, userEppn);
+        }
+        return false;
+    }
+
+    public boolean signRequestManager(Long id, String userEppn) {
         if(userEppn != null) {
             SignRequest signRequest = signRequestService.getById(id);
             if(signRequest != null) {
-            return signRequest.getCreateBy().getEppn().equals(userEppn) || isManager(userEppn, signRequest.getParentSignBook());
+                return signBookService.checkUserManageRights(signRequest.getParentSignBook().getId(), userEppn);
             }
         }
         return false;
     }
 
-    public boolean signRequestOwner(Long id, String userEppn) {
-        if(userEppn != null) {
-            SignRequest signRequest = signRequestService.getById(id);
-            if(signRequest != null) {
-                boolean isManager = isManager(userEppn, signRequest.getParentSignBook());
-                return signRequest.getCreateBy().getEppn().equals(userEppn) || isManager;
-            }
+    public boolean signRequestCommentDelete(Long id, Long commentId, String userEppn) {
+        if (userEppn == null || id == null || commentId == null) {
+            return false;
         }
-        return false;
+        SignRequest signRequest = signRequestService.getById(id);
+        if (signRequest == null
+                || (signRequest.getStatus() != SignRequestStatus.draft
+                    && signRequest.getStatus() != SignRequestStatus.pending)) {
+            return false;
+        }
+        Comment comment;
+        try {
+            comment = commentService.getById(commentId);
+        } catch (RuntimeException e) {
+            return false;
+        }
+        boolean commentBelongsToSignRequest = signRequest.getComments() != null
+                && signRequest.getComments().contains(comment);
+        boolean managerAllowed = signRequest.getCreateBy().getEppn().equals(userEppn)
+                || isManager(userEppn, signRequest.getParentSignBook());
+        boolean creatorAllowed = comment.getCreateBy() != null
+                && userEppn.equals(comment.getCreateBy().getEppn());
+        return commentBelongsToSignRequest && (managerAllowed || creatorAllowed);
     }
 
     public boolean signRequestDelete(Long id, String userEppn) {
@@ -163,6 +200,10 @@ public class PreAuthorizeService {
         return false;
     }
 
+    public boolean signRequestAttachmentAdd(Long id, String userEppn) {
+        return userEppn != null && signRequestService.canAddAttachment(id, userEppn);
+    }
+
     public boolean signRequestRecipientAndViewers(Long id, String userEppn) {
         if(userEppn != null) {
             SignRequest signRequest = signRequestService.getById(id);
@@ -185,10 +226,18 @@ public class PreAuthorizeService {
         if(userEppn != null && authUserEppn != null) {
             SignRequest signRequest = signRequestService.getById(id);
             if (signRequest != null) {
-                return checkUserViewRights(signRequest, userEppn, authUserEppn) || signBookService.checkUserViewRights(userEppn, authUserEppn, signRequest.getParentSignBook().getId());
+                return checkUserViewRights(id, userEppn, authUserEppn) || signBookService.checkUserViewRights(userEppn, authUserEppn, signRequest.getParentSignBook().getId());
             }
         }
         return false;
+    }
+
+    public boolean signRequestLayeredDownload(Long id, int stepNumber, String userEppn, String authUserEppn) {
+        if (!signRequestView(id, userEppn, authUserEppn)) {
+            return false;
+        }
+        SignRequest signRequest = signRequestService.getById(id);
+        return signRequestService.canDownloadLayeredPdfAtStep(signRequest, stepNumber);
     }
 
     public boolean attachmentCreator(Long id, String userEppn, String authUserEppn) {
@@ -217,6 +266,8 @@ public class PreAuthorizeService {
             Workflow workflow = workflowService.getById(id);
             if(workflow != null) {
                 return userEppn.equals(workflow.getCreateBy().getEppn()) || workflow.getCreateBy().equals(userService.getSystemUser());
+            } else {
+                return true;
             }
         }
         return false;
@@ -262,19 +313,37 @@ public class PreAuthorizeService {
         return null;
     }
 
+    public boolean checkUserViewRights(Long signRequestId, String userEppn, String authUserEppn) {
+        if (signRequestId == null) {
+            return false;
+        }
+        SignRequest signRequest = signRequestService.getById(signRequestId);
+        if (signRequest == null) {
+            return false;
+        }
+        return checkUserViewRights(signRequest, userEppn, authUserEppn);
+    }
+
     public boolean checkUserViewRights(SignRequest signRequest, String userEppn, String authUserEppn) {
+        if (signRequest == null || signRequest.getId() == null) {
+            return false;
+        }
+        SignRequest managedSignRequest = signRequestService.getById(signRequest.getId());
+        if (managedSignRequest == null) {
+            return false;
+        }
         if(userEppn != null && authUserEppn != null) {
             User user = userService.getByEppn(userEppn);
-            if (!user.getUserType().equals(UserType.external) && (userEppn.equals(authUserEppn) || signBookService.checkAllShareTypesForSignRequest(userEppn, authUserEppn, signRequest.getParentSignBook().getId()))) {
-                List<SignRequest> signRequests = signRequestService.getByIdAndRecipient(signRequest.getId(), userEppn);
-                Data data = dataService.getBySignBook(signRequest.getParentSignBook());
+            if (!user.getUserType().equals(UserType.external) && (userEppn.equals(authUserEppn) || signBookService.checkAllShareTypesForSignRequest(userEppn, authUserEppn, managedSignRequest.getParentSignBook().getId()))) {
+                List<SignRequest> signRequests = signRequestService.getByIdAndRecipient(managedSignRequest.getId(), userEppn);
+                Data data = dataService.getBySignBook(managedSignRequest.getParentSignBook());
                 User authUser = userService.getByEppn(authUserEppn);
                 return (data != null && (data.getForm() != null && data.getForm().getWorkflow() != null && data.getForm().getWorkflow().getManagers().contains(authUser.getEmail())))
                         ||
-                        (signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null && signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getManagers().contains(authUser.getEmail()))
-                        || signRequest.getCreateBy().getEppn().equals(userEppn)
-                        || signRequest.getParentSignBook().getViewers().contains(userService.getByEppn(authUserEppn))
-                        || signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().stream().map(LiveWorkflowStep::getUsers).anyMatch(users -> users.contains(user))
+                        (managedSignRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null && managedSignRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getManagers().contains(authUser.getEmail()))
+                        || managedSignRequest.getCreateBy().getEppn().equals(userEppn)
+                        || managedSignRequest.getParentSignBook().getViewers().contains(userService.getByEppn(authUserEppn))
+                        || managedSignRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().stream().map(LiveWorkflowStep::getUsers).anyMatch(users -> users.contains(user))
                         || !signRequests.isEmpty();
             }
         }

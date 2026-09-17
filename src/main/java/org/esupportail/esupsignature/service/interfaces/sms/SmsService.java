@@ -8,6 +8,6 @@ import java.net.URISyntaxException;
 public interface SmsService {
 
     String getName();
-    void sendSms(String phoneNumber, String message) throws EsupSignatureRuntimeException;
+    void sendSms(String userEmail, String phoneNumber, String message) throws EsupSignatureRuntimeException;
     boolean testSms() throws IOException, URISyntaxException;
 }

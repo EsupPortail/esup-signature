@@ -1,0 +1,68 @@
+:root {
+    --color-transparent: transparent;
+
+    --color-adb5bd: #adb5bd;
+    --color-dee2e6: #dee2e6;
+    --color-e9ecef: #e9ecef;
+    --color-f8f9fa: #f8f9fa;
+
+    --color-rgba-0-0-0-01: rgba(0, 0, 0, 0.1);
+    --color-rgba-0-0-0-02: rgba(0, 0, 0, 0.2);
+    --color-rgba-0-0-0-03: rgba(0, 0, 0, 0.3);
+    --color-rgba-0-0-0-05: rgba(0, 0, 0, 0.5);
+    --color-rgba-0-0-0-06: rgba(0, 0, 0, 0.6);
+    --color-rgba-33-37-41-05: rgba(33, 37, 41, 0.5);
+    --color-rgba-63-63-63-08: rgba(63, 63, 63, 0.8);
+    --color-rgba-63-63-63-09: rgba(63, 63, 63, 0.9);
+    --color-rgba-108-117-125-03: rgba(108, 117, 125, 0.3);
+    --color-rgba-108-117-125-05: rgba(108, 117, 125, 0.5);
+    --color-rgba-200-200-200-05: rgba(200, 200, 200, 0.5);
+    --color-rgba-233-236-239-09: rgba(233, 236, 239, 0.9);
+    --color-rgba-248-249-250-05: rgba(248, 249, 250, 0.5);
+    --color-rgba-248-249-250-09: rgba(248, 249, 250, 0.9);
+    --color-rgba-255-255-255-02: rgba(255, 255, 255, 0.2);
+    --color-rgba-255-255-255-05: rgba(255, 255, 255, 0.5);
+    --color-rgba-255-255-255-06: rgba(255, 255, 255, 0.6);
+    --color-rgba-255-255-255-08: rgba(255, 255, 255, 0.8);
+    --color-rgba-255-255-255-09: rgba(255, 255, 255, 0.9);
+
+    --color-red-ish: #e30f47;
+    --color-rgba-255-0-0-03: rgba(255, 0, 0, 0.3);
+    --color-rgba-220-53-69-05: rgba(220, 53, 69, 0.5);
+    --color-rgba-220-53-69-07: rgba(220, 53, 69, 0.7);
+    --color-rgba-255-151-151-05: rgba(255, 151, 151, 0.5);
+    --color-rgba-255-151-151-06: rgba(255, 151, 151, 0.6);
+    --color-rgba-255-235-238-085: rgba(255, 235, 238, 0.85);
+
+    --color-fff740: #FFF740;
+    --color-ffc107: #ffc107;
+    --color-rgba-255-223-151-06: rgba(255, 223, 151, 0.6);
+    --color-rgba-255-193-7-05: rgba(255, 193, 7, 0.5);
+
+    --color-1e7e34: rgba(25, 135, 84);
+    --color-rgba-25-135-84-05: rgba(25, 135, 84, 0.5);
+    --color-rgba-25-135-84-06: rgba(25, 135, 84, 0.6);
+    --color-rgba-25-135-84-07: rgba(25, 135, 84, 0.7);
+    --color-rgba-25-135-84-08: rgba(25, 135, 84, 0.8);
+    --color-9cdf7f: #9cdf7f;
+    --color-rgb-123-246-123: rgb(123, 246, 123);
+    --color-rgb-220-250-220: rgb(220, 250, 220);
+    --color-rgba-220-250-220-08: rgba(220, 250, 220, 0.8);
+
+    --color-blue-oidc: #000091;
+    --color-blue-ish: #1d71b8;
+    --color-blue-neon: #2aa8ff;
+    --color-rgba-42-168-255-06: rgba(42, 168, 255, 0.6);
+    --color-rgba-42-168-255-08: rgba(42, 168, 255, 0.8);
+    --color-e7f3ff: #e7f3ff;
+    --color-rgba-0-54-255-013: rgba(0, 54, 255, 0.13);
+    --color-rgba-13-110-253-0: rgba(13, 110, 253, 0);
+    --color-rgba-13-110-253-03: rgba(13, 110, 253, 0.3);
+    --color-rgba-13-110-253-05: rgba(13, 110, 253, 0.5);
+    --color-rgba-13-110-253-08: rgba(13, 110, 253, 0.8);
+    --color-rgba-100-150-255-09: rgba(100, 150, 255, 0.9);
+    --color-rgba-13-202-240-05: rgba(13, 202, 240, 0.5);
+    --neon-warning: 255, 193, 7;
+    --neon-success: 25, 135, 84;
+
+}

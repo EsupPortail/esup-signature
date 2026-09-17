@@ -46,15 +46,17 @@ public class SympaUserList implements UserList {
     public List<String> getUsersEmailFromList(String listName) throws DataAccessException {
         List<String> userEmails = new ArrayList<>();
         if(listName.contains(globalProperties.getDomain())) {
+            String listNameWithoutDomain = listName.split("@")[0];
             jdbcTemplate.query("select user_subscriber from subscriber_table where list_subscriber = ?", (ResultSet rs) -> {
-                userEmails.add(rs.getString("user_subscriber"));
-                while (rs.next()) {
-                    userEmails.add(rs.getString("user_subscriber"));
-                }
-            }, listName.split("@")[0]);
-            return userEmails;
+                        userEmails.add(rs.getString("user_subscriber"));
+                        while (rs.next()) {
+                            userEmails.add(rs.getString("user_subscriber"));
+                        }
+                    },
+                    listNameWithoutDomain
+            );
         }
-        return new ArrayList<>();
+        return userEmails;
     }
 
     @Override
@@ -64,14 +66,20 @@ public class SympaUserList implements UserList {
 
     @Override
     public List<Map.Entry<String, String>> getListOfLists(String search) {
-        List<Map.Entry<String, String>> listNames= new ArrayList<>();
-        String pattern = LikePatternUtils.containsPattern(search);
-        jdbcTemplate.query("select distinct concat(name_list, '@', robot_list ) as list_name, subject_list from list_table where searchkey_list like ? escape '\\' or name_list like ? escape '\\'", (ResultSet rs) -> {
-            listNames.add(new AbstractMap.SimpleEntry<>(rs.getString("list_name"), rs.getString("subject_list")));
-            while (rs.next()) {
-                listNames.add(new AbstractMap.SimpleEntry<>(rs.getString("list_name"), rs.getString("subject_list")));
-            }
-        }, pattern, pattern);
+        List<Map.Entry<String, String>> listNames = new ArrayList<>();
+        String pattern = "%" + search + "%";
+        jdbcTemplate.query(
+                "select distinct concat(name_list, '@', robot_list) as list_name, subject_list " + "from list_table " + "where searchkey_list like ? or name_list like ?",
+                (ResultSet rs) -> {
+                    listNames.add(new AbstractMap.SimpleEntry<>(rs.getString("list_name"), rs.getString("subject_list")));
+                    while (rs.next()) {
+                        listNames.add(new AbstractMap.SimpleEntry<>(rs.getString("list_name"), rs.getString("subject_list")));
+                    }
+                },
+                pattern,
+                pattern
+        );
+
         return listNames;
     }
 }

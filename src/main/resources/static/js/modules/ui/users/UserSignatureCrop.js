@@ -36,14 +36,16 @@ export class UserSignatureCrop extends EventFactory {
 
     initListeners() {
         Array.prototype.forEach.call(this.vanillaRotate, e => this.rotateListener(e));
-        this.zoomInButton.addEventListener('click', e => this.zoomIn());
-        this.zoomOutButton.addEventListener('click', e => this.zoomOut());
-        this.vanillaUpload.addEventListener('change', e => this.readFile(this.vanillaUpload));
-        this.vanillaCrop.addEventListener('update', e => this.update());
+        this.zoomInButton.addEventListener('click', () => this.zoomIn());
+        this.zoomOutButton.addEventListener('click', () => this.zoomOut());
+        this.vanillaUpload.addEventListener('change', () => this.readFile(this.vanillaUpload));
+        this.vanillaCrop.addEventListener('update', () => this.update());
+        $('#erase').click(() => this.reset());
+
     }
 
     rotateListener(item) {
-        item.addEventListener('click', e => this.rotate(item));
+        item.addEventListener('click', () => this.rotate(item));
     }
 
     update() {
@@ -74,7 +76,7 @@ export class UserSignatureCrop extends EventFactory {
 
     saveVanilla(result) {
         this.signImageBase64 = result;
-        $("#signImageBase64").val(result);
+        this.updateSignImageField(result);
     }
 
     getResult() {
@@ -102,6 +104,44 @@ export class UserSignatureCrop extends EventFactory {
                 this.fireEvent("started", ['ok']);
             }
         }
+    }
+
+    reset() {
+        this.signImageBase64 = null;
+        this.updateSignImageField('');
+        this.cropDiv.style.display = "none";
+        this.signPad.style.display = '';
+        this.signPadLabel.style.display = '';
+        this.vanillaUpload.value = '';
+        this.zoomLevel = 1;
+        this.vanillaCrop.classList.remove('good');
+        this.vanillaCroppie.destroy();
+        this.vanillaCroppie = new Croppie(this.vanillaCrop, {
+            viewport: {
+                width: 600,
+                height: 300
+            },
+            boundary: {
+                width: 604,
+                height: 304
+            },
+            enableExif: true,
+            enableOrientation: true,
+            enableResize: false,
+            enforceBoundary: false,
+            mouseWheelZoom: true
+        });
+    }
+
+    updateSignImageField(value) {
+        const signImageBase64Element = document.getElementById('signImageBase64');
+        if (signImageBase64Element == null) {
+            return;
+        }
+
+        signImageBase64Element.value = value;
+        signImageBase64Element.dispatchEvent(new Event('input', {bubbles: true}));
+        signImageBase64Element.dispatchEvent(new Event('change', {bubbles: true}));
     }
 
 }

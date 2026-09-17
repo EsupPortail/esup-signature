@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import org.esupportail.esupsignature.entity.enums.FieldType;
@@ -43,6 +44,7 @@ public class Field {
 	@Transient
 	private Boolean editable = false;
 
+	@JsonIgnore
 	@ManyToMany
 	@JoinTable(
 			indexes = @Index(name = "idx_workflow_steps_field_id", columnList = "field_id")
@@ -79,10 +81,6 @@ public class Field {
 	public void setId(Long id) {
 		this.id = id;
 	}
-
-	
-
-	
 
 	public String getName() {
 		return name;

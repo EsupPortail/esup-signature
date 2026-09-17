@@ -13,12 +13,27 @@ public class DSSProperties {
     private String cacheDataSourceDriverClassName;
     private String defaultValidationPolicy;
     private List<String> tspServers = List.of("http://timestamp.sectigo.com/qualified", "http://tsa.belgium.be");
-    private String serverSigningKeystoreType;
-    private String serverSigningKeystoreFilename;
-    private String serverSigningKeystorePassword;
     private String lotlUrl;
     private String lotlCountryCode;
     private String ojUrl;
+    private String ojContentKeystoreType = "PKCS12";
+    private String ojContentKeystoreFilename = "classpath:keystore.p12";
+    private String ojContentKeystorePassword = "dss-password";
+    private Boolean tlLoaderTrustAll = false;
+    private Boolean tlLoaderLotlUseSunsetDate = true;
+    private List<Integer> tlLoaderLotlTlVersions = List.of(5, 6);
+    private String tlLoaderCacheFolder;
+    private Boolean tlLoaderAdesEnabled = false;
+    private String tlLoaderAdesLotlUrl = "https://ec.europa.eu/tools/lotl/mra/ades-lotl.xml";
+    private String tlLoaderAdesKeystoreType = "PKCS12";
+    private String tlLoaderAdesKeystoreFilename = "classpath:ades/ades-keystore.p12";
+    private String tlLoaderAdesKeystorePassword = "dss-password";
+    private String tlLoaderAdesTslType = "http://ec.europa.eu/tools/lotl/mra/ades-lotl-tsl-type";
+    private List<String> tlLoaderAdesTslStatusList = List.of();
+    private List<Integer> tlLoaderAdesTlVersions = List.of(5, 6);
+    private String trustedSourceKeystoreType;
+    private String trustedSourceKeystoreFilename;
+    private String trustedSourceKeystorePassword;
     private String rootUrlInTlBrowser;
     private String country;
     private String stateOrProvince;
@@ -76,30 +91,6 @@ public class DSSProperties {
         this.tspServers = tspServers;
     }
 
-    public String getServerSigningKeystoreType() {
-        return serverSigningKeystoreType;
-    }
-
-    public void setServerSigningKeystoreType(String serverSigningKeystoreType) {
-        this.serverSigningKeystoreType = serverSigningKeystoreType;
-    }
-
-    public String getServerSigningKeystoreFilename() {
-        return serverSigningKeystoreFilename;
-    }
-
-    public void setServerSigningKeystoreFilename(String serverSigningKeystoreFilename) {
-        this.serverSigningKeystoreFilename = serverSigningKeystoreFilename;
-    }
-
-    public String getServerSigningKeystorePassword() {
-        return serverSigningKeystorePassword;
-    }
-
-    public void setServerSigningKeystorePassword(String serverSigningKeystorePassword) {
-        this.serverSigningKeystorePassword = serverSigningKeystorePassword;
-    }
-
     public String getLotlUrl() {
         return lotlUrl;
     }
@@ -122,6 +113,150 @@ public class DSSProperties {
 
     public void setOjUrl(String ojUrl) {
         this.ojUrl = ojUrl;
+    }
+
+    public String getOjContentKeystoreType() {
+        return ojContentKeystoreType;
+    }
+
+    public void setOjContentKeystoreType(String ojContentKeystoreType) {
+        this.ojContentKeystoreType = ojContentKeystoreType;
+    }
+
+    public String getOjContentKeystoreFilename() {
+        return ojContentKeystoreFilename;
+    }
+
+    public void setOjContentKeystoreFilename(String ojContentKeystoreFilename) {
+        this.ojContentKeystoreFilename = ojContentKeystoreFilename;
+    }
+
+    public String getOjContentKeystorePassword() {
+        return ojContentKeystorePassword;
+    }
+
+    public void setOjContentKeystorePassword(String ojContentKeystorePassword) {
+        this.ojContentKeystorePassword = ojContentKeystorePassword;
+    }
+
+    public Boolean getTlLoaderTrustAll() {
+        return tlLoaderTrustAll;
+    }
+
+    public void setTlLoaderTrustAll(Boolean tlLoaderTrustAll) {
+        this.tlLoaderTrustAll = tlLoaderTrustAll;
+    }
+
+    public Boolean getTlLoaderLotlUseSunsetDate() {
+        return tlLoaderLotlUseSunsetDate;
+    }
+
+    public void setTlLoaderLotlUseSunsetDate(Boolean tlLoaderLotlUseSunsetDate) {
+        this.tlLoaderLotlUseSunsetDate = tlLoaderLotlUseSunsetDate;
+    }
+
+    public List<Integer> getTlLoaderLotlTlVersions() {
+        return tlLoaderLotlTlVersions;
+    }
+
+    public void setTlLoaderLotlTlVersions(List<Integer> tlLoaderLotlTlVersions) {
+        this.tlLoaderLotlTlVersions = tlLoaderLotlTlVersions;
+    }
+
+    public String getTlLoaderCacheFolder() {
+        return tlLoaderCacheFolder;
+    }
+
+    public void setTlLoaderCacheFolder(String tlLoaderCacheFolder) {
+        this.tlLoaderCacheFolder = tlLoaderCacheFolder;
+    }
+
+    public Boolean getTlLoaderAdesEnabled() {
+        return tlLoaderAdesEnabled;
+    }
+
+    public void setTlLoaderAdesEnabled(Boolean tlLoaderAdesEnabled) {
+        this.tlLoaderAdesEnabled = tlLoaderAdesEnabled;
+    }
+
+    public String getTlLoaderAdesLotlUrl() {
+        return tlLoaderAdesLotlUrl;
+    }
+
+    public void setTlLoaderAdesLotlUrl(String tlLoaderAdesLotlUrl) {
+        this.tlLoaderAdesLotlUrl = tlLoaderAdesLotlUrl;
+    }
+
+    public String getTlLoaderAdesKeystoreType() {
+        return tlLoaderAdesKeystoreType;
+    }
+
+    public void setTlLoaderAdesKeystoreType(String tlLoaderAdesKeystoreType) {
+        this.tlLoaderAdesKeystoreType = tlLoaderAdesKeystoreType;
+    }
+
+    public String getTlLoaderAdesKeystoreFilename() {
+        return tlLoaderAdesKeystoreFilename;
+    }
+
+    public void setTlLoaderAdesKeystoreFilename(String tlLoaderAdesKeystoreFilename) {
+        this.tlLoaderAdesKeystoreFilename = tlLoaderAdesKeystoreFilename;
+    }
+
+    public String getTlLoaderAdesKeystorePassword() {
+        return tlLoaderAdesKeystorePassword;
+    }
+
+    public void setTlLoaderAdesKeystorePassword(String tlLoaderAdesKeystorePassword) {
+        this.tlLoaderAdesKeystorePassword = tlLoaderAdesKeystorePassword;
+    }
+
+    public String getTlLoaderAdesTslType() {
+        return tlLoaderAdesTslType;
+    }
+
+    public void setTlLoaderAdesTslType(String tlLoaderAdesTslType) {
+        this.tlLoaderAdesTslType = tlLoaderAdesTslType;
+    }
+
+    public List<String> getTlLoaderAdesTslStatusList() {
+        return tlLoaderAdesTslStatusList;
+    }
+
+    public void setTlLoaderAdesTslStatusList(List<String> tlLoaderAdesTslStatusList) {
+        this.tlLoaderAdesTslStatusList = tlLoaderAdesTslStatusList;
+    }
+
+    public List<Integer> getTlLoaderAdesTlVersions() {
+        return tlLoaderAdesTlVersions;
+    }
+
+    public void setTlLoaderAdesTlVersions(List<Integer> tlLoaderAdesTlVersions) {
+        this.tlLoaderAdesTlVersions = tlLoaderAdesTlVersions;
+    }
+
+    public String getTrustedSourceKeystoreType() {
+        return trustedSourceKeystoreType;
+    }
+
+    public void setTrustedSourceKeystoreType(String trustedSourceKeystoreType) {
+        this.trustedSourceKeystoreType = trustedSourceKeystoreType;
+    }
+
+    public String getTrustedSourceKeystoreFilename() {
+        return trustedSourceKeystoreFilename;
+    }
+
+    public void setTrustedSourceKeystoreFilename(String trustedSourceKeystoreFilename) {
+        this.trustedSourceKeystoreFilename = trustedSourceKeystoreFilename;
+    }
+
+    public String getTrustedSourceKeystorePassword() {
+        return trustedSourceKeystorePassword;
+    }
+
+    public void setTrustedSourceKeystorePassword(String trustedSourceKeystorePassword) {
+        this.trustedSourceKeystorePassword = trustedSourceKeystorePassword;
     }
 
     public String getRootUrlInTlBrowser() {

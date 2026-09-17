@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.UserType;
+import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,6 +14,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.savedrequest.DefaultSavedRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,7 +41,16 @@ public class CasAuthenticationSuccessHandler extends SavedRequestAwareAuthentica
 		String name = httpServletRequest.getHeader("sn");
 		String firstname = httpServletRequest.getHeader("givenName");
 		String email = httpServletRequest.getHeader("mail");
-        User user = userService.createUserWithAuthentication(null, name, firstname, email, authentication, UserType.ldap);
+		User user;
+		try {
+			user = userService.createUserWithAuthentication(null, name, firstname, email, authentication, UserType.ldap);
+		} catch (EsupSignatureUserException e) {
+			logger.warn("CAS authentication refused for {}: {}", authentication.getName(), e.getMessage());
+			clearAuthentication(httpServletRequest);
+			httpServletRequest.getSession(true).setAttribute("errorMsg", e.getMessage());
+			httpServletResponse.sendRedirect("/");
+			return;
+		}
 		if(!user.getManagersRoles().isEmpty()) {
 			CasAuthenticationToken auth = (CasAuthenticationToken) authentication;
 			List<GrantedAuthority> updatedAuthorities = new ArrayList<>(auth.getAuthorities());
@@ -60,6 +71,16 @@ public class CasAuthenticationSuccessHandler extends SavedRequestAwareAuthentica
 			}
 		}
 		httpServletResponse.sendRedirect("/");
+	}
+
+	private void clearAuthentication(HttpServletRequest request) {
+		SecurityContextHolder.clearContext();
+		if (request.getSession(false) != null) {
+			request.getSession(false).removeAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY);
+			request.getSession(false).removeAttribute("userEppn");
+			request.getSession(false).removeAttribute("authUserEppn");
+			request.getSession(false).removeAttribute("SPRING_SECURITY_SAVED_REQUEST");
+		}
 	}
 
 }

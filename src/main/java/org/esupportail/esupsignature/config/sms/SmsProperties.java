@@ -7,7 +7,7 @@ public class SmsProperties {
 
     private boolean enableSms;
     /**
-     * Nom du service de SMS (SMSU, OVH)
+     * Nom du service de SMS (SMSU, OVH, EMAIL)
      */
     private String serviceName;
     /**

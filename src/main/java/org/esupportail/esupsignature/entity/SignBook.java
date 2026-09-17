@@ -20,11 +20,12 @@ import java.util.stream.Collectors;
         @Index(name = "idx_sb_deleted", columnList = "deleted"),
         @Index(name = "idx_sb_workflow_name", columnList = "workflow_name"),
         @Index(name = "idx_sb_status_deleted", columnList = "status, deleted"),
+        @Index(name = "idx_sb_status_deleted_create_date", columnList = "status, deleted, create_date"),
         @Index(name = "idx_sb_create_date_status", columnList = "create_date, status, deleted")
 })
 public class SignBook {
 
-	@Id
+    @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "hibernate_sequence")
     @SequenceGenerator(name = "hibernate_sequence", allocationSize = 1)
     private Long id;
@@ -38,7 +39,7 @@ public class SignBook {
     private Set<Otp> otps = new HashSet<>();
 
     @Deprecated
-	private String name;
+    private String name;
 
     @Deprecated
     private String title;
@@ -46,7 +47,6 @@ public class SignBook {
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    @Temporal(TemporalType.TIMESTAMP)
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
     private Date createDate;
 
@@ -58,7 +58,6 @@ public class SignBook {
     @Enumerated(EnumType.STRING)
     private ArchiveStatus archiveStatus;
 
-    @Temporal(TemporalType.TIMESTAMP)
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
     private Date updateDate;
 
@@ -71,7 +70,10 @@ public class SignBook {
     private LiveWorkflow liveWorkflow;
 
     @JsonIgnore
-	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    @JoinTable(
+            indexes = @Index(name = "idx_sign_book_sign_requests_sign_book_id_order", columnList = "sign_book_id, sign_requests_order")
+    )
     @OrderColumn
     private List<SignRequest> signRequests = new ArrayList<>();
 
@@ -104,7 +106,6 @@ public class SignBook {
 
     private Boolean forceAllDocsSign = false;
 
-    @Temporal(TemporalType.TIMESTAMP)
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
     private Date endDate;
 
@@ -319,7 +320,9 @@ public class SignBook {
     }
 
     public boolean isEditable() {
-        return this.getLiveWorkflow().getCurrentStepNumber() < 2 && getSignRequests().stream().noneMatch(s -> !s.getStatus().equals(SignRequestStatus.pending) && !s.getDeleted() && !s.getStatus().equals(SignRequestStatus.draft) && !s.getStatus().equals(SignRequestStatus.uploading));
+        return this.getLiveWorkflow().getCurrentStepNumber() < 2 && getSignRequests().stream()
+                .filter(Objects::nonNull)
+                .noneMatch(s -> !s.getStatus().equals(SignRequestStatus.pending) && !s.getDeleted() && !s.getStatus().equals(SignRequestStatus.draft) && !s.getStatus().equals(SignRequestStatus.uploading));
     }
 
 }

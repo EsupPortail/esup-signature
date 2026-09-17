@@ -1,7 +1,10 @@
+import {markIntroAsRead} from "./HelpState.js?version=@version@";
+
 export class Home2Help {
 
     constructor(doneTour) {
         this.doneTour = doneTour;
+        this.introReadMarked = false;
         this.intro = introJs();
         this.intro.setOptions({nextLabel: 'Suivant', prevLabel: 'Précédent', doneLabel: 'Terminer', skipLabel: '<i class="fi fi-rr-cross"></i>', showStepNumbers: 'false', overlayOpacity: 0.3})
         this.initListeners();
@@ -9,12 +12,21 @@ export class Home2Help {
     }
 
     initListeners() {
-        this.intro.onbeforechange(e => this.scrollTop(e));
-        this.intro.onafterchange(e => this.modButtons());
-        this.intro.onexit(function () {
-            $.get("/user/users/mark-intro-as-read/home2Help");
-        });
-        $("#helpStartButton").on('click', e => this.start());
+        this.intro.onbeforechange(() => this.scrollTop());
+        this.intro.onafterchange(() => this.modButtons());
+        this.intro.onexit(() => this.markAsRead());
+        this.intro.oncomplete(() => this.markAsRead());
+        $("#helpStartButton").on('click', () => this.start());
+    }
+
+    markAsRead() {
+        if (this.introReadMarked) {
+            return;
+        }
+
+        this.introReadMarked = true;
+        this.doneTour = true;
+        markIntroAsRead('home2Help');
     }
 
     initStep() {
@@ -106,7 +118,7 @@ export class Home2Help {
         if($.trim($("#myFavorites").html()) !== '') {
             this.intro.addStep({
                 element: '#myFavorites',
-                intro: "Vous pouvez ajouter les circuits et formulaires les plus souvent utilisés ici. Pour cela, parcourez toutes les procédures et cliquez sur l'étoile ! <i style=\"font-family: 'Font Awesome 5 Free'\" class=\"fa-solid fa-star text-warning\"></i>",
+                intro: "Vous pouvez ajouter les circuits et formulaires les plus souvent utilisés ici. Pour cela, parcourez toutes les procédures et cliquez sur l'étoile ! <i style=\"font-family: 'Font Awesome 5 Free'\" class=\"fi fi-rr-star text-warning\"></i>",
                 position: 'right'
             });
         }
@@ -124,7 +136,7 @@ export class Home2Help {
         this.intro.start();
     }
 
-    scrollTop(e) {
+    scrollTop() {
         window.scrollTo(0, 0);
     }
 

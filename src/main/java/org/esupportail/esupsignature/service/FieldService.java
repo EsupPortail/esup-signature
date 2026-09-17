@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.service;
 
 import jakarta.annotation.Resource;
+import org.esupportail.esupsignature.dto.page.admin.FormFieldUpdateDto;
 import org.esupportail.esupsignature.entity.Field;
 import org.esupportail.esupsignature.entity.Form;
 import org.esupportail.esupsignature.entity.Workflow;
@@ -13,7 +14,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -65,6 +69,83 @@ public class FieldService {
 			}
 		}
 		setFieldValues(description, fieldType, favorisable, required, readOnly, extValueServiceName, extValueType, extValueReturn, searchServiceName, searchType, searchReturn, stepZero, workflowSteps, field);
+	}
+
+	@Transactional
+	public void updateFields(Long formId, List<FormFieldUpdateDto> fieldUpdates) {
+		Form form = formRepository.findById(formId)
+				.orElseThrow(() -> new IllegalArgumentException("form not found"));
+		List<FormFieldUpdateDto> safeFieldUpdates = fieldUpdates == null ? List.of() : fieldUpdates;
+
+		Map<Long, Field> fieldsById = form.getFields().stream()
+				.filter(field -> field.getId() != null)
+				.collect(Collectors.toMap(Field::getId, field -> field, (left, right) -> left, LinkedHashMap::new));
+
+		List<Long> workflowStepIds = safeFieldUpdates.stream()
+				.filter(fieldUpdate -> fieldUpdate.workflowStepsIds() != null)
+				.flatMap(fieldUpdate -> fieldUpdate.workflowStepsIds().stream())
+				.filter(id -> id != null)
+				.distinct()
+				.toList();
+
+		Map<Long, WorkflowStep> workflowStepsById = new LinkedHashMap<>();
+		workflowStepRepository.findAllById(workflowStepIds)
+				.forEach(workflowStep -> workflowStepsById.put(workflowStep.getId(), workflowStep));
+
+		for (FormFieldUpdateDto fieldUpdate : safeFieldUpdates) {
+			if (fieldUpdate == null || fieldUpdate.id() == null) {
+				throw new IllegalArgumentException("field id is required");
+			}
+
+			Field field = fieldsById.get(fieldUpdate.id());
+			if (field == null) {
+				throw new IllegalArgumentException("field does not belong to form");
+			}
+
+			List<WorkflowStep> workflowSteps = new ArrayList<>();
+			for (Long workflowStepId : new LinkedHashSet<>(fieldUpdate.workflowStepsIds() == null ? List.<Long>of() : fieldUpdate.workflowStepsIds())) {
+				WorkflowStep workflowStep = workflowStepsById.get(workflowStepId);
+				if (workflowStep == null) {
+					throw new IllegalArgumentException("workflow step not found");
+				}
+				workflowSteps.add(workflowStep);
+			}
+
+			String extValueServiceName = "";
+			String extValueType = "";
+			String extValueReturn = "";
+			String searchServiceName = "";
+			String searchType = "";
+			String searchReturn = "";
+
+			if (Boolean.TRUE.equals(fieldUpdate.prefill())) {
+				extValueServiceName = fieldUpdate.valueServiceName();
+				extValueType = fieldUpdate.valueType();
+				extValueReturn = fieldUpdate.valueReturn();
+			}
+			if (Boolean.TRUE.equals(fieldUpdate.search())) {
+				searchServiceName = fieldUpdate.valueServiceName();
+				searchType = fieldUpdate.valueType();
+				searchReturn = fieldUpdate.valueReturn();
+			}
+
+			setFieldValues(
+					fieldUpdate.description(),
+					fieldUpdate.fieldType() == null ? FieldType.text : fieldUpdate.fieldType(),
+					Boolean.TRUE.equals(fieldUpdate.favorisable()),
+					Boolean.TRUE.equals(fieldUpdate.required()),
+					Boolean.TRUE.equals(fieldUpdate.readOnly()),
+					extValueServiceName,
+					extValueType,
+					extValueReturn,
+					searchServiceName,
+					searchType,
+					searchReturn,
+					Boolean.TRUE.equals(fieldUpdate.stepZero()),
+					workflowSteps,
+					field
+			);
+		}
 	}
 
 	public void setFieldValues(String description, FieldType fieldType, Boolean favorisable, Boolean required, Boolean readOnly, String extValueServiceName, String extValueType, String extValueReturn, String searchServiceName, String searchType, String searchReturn, Boolean stepZero, List<WorkflowStep>workflowSteps, Field field) {

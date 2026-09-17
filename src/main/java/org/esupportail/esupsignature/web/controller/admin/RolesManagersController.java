@@ -7,10 +7,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 @RequestMapping({"/manager/roles-managers", "/admin/roles-managers"})
 @Controller
@@ -26,19 +24,12 @@ public class RolesManagersController {
 
     @GetMapping
     public String getRoles(@ModelAttribute("authUserEppn") String authUserEppn, Model model) {
-        Map<String, List<User>> roleManagers = new HashMap<>();
-        User authUser = userService.getByEppn(authUserEppn);
+        Map<String, List<User>> roleManagers;
         if(userService.getRoles(authUserEppn).contains("ROLE_ADMIN")) {
-            List<User> users = userService.getByManagersRolesUsers();
-            for (String role : users.stream().flatMap(user -> user.getManagersRoles().stream().map(String::new)).toList()) {
-                roleManagers.put(role, userService.getByManagersRoles(role));
-            }
+            roleManagers = userService.getRoleManagersMap();
             model.addAttribute("roles", userService.getAllRoles());
         } else {
-            Set<String> allRoles =  authUser.getManagersRoles();
-            for (String role : allRoles) {
-                roleManagers.put(role, userService.getByManagersRoles(role));
-            }
+            roleManagers = userService.getRoleManagersMap(userService.getManagersRoles(authUserEppn));
         }
         model.addAttribute("roleManagers", roleManagers);
         return "admin/roles-managers";

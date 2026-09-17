@@ -1,8 +1,9 @@
 package org.esupportail.esupsignature.web.controller.otp;
 
 import jakarta.servlet.http.HttpServletRequest;
-import org.esupportail.esupsignature.dto.js.JsMessage;
+import org.esupportail.esupsignature.dto.ui.global.UiMessageDto;
 import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
+import org.esupportail.esupsignature.service.MobileSignTokenService;
 import org.esupportail.esupsignature.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,9 +23,11 @@ public class OtpUserController {
     private static final Logger logger = LoggerFactory.getLogger(OtpUserController.class);
 
     private final UserService userService;
+    private final MobileSignTokenService mobileSignTokenService;
 
-    public OtpUserController(UserService userService) {
+    public OtpUserController(UserService userService, MobileSignTokenService mobileSignTokenService) {
         this.userService = userService;
+        this.mobileSignTokenService = mobileSignTokenService;
     }
 
     @PostMapping
@@ -35,9 +38,11 @@ public class OtpUserController {
                          @RequestParam(value = "emailAlertHour", required=false) Integer emailAlertHour,
                          @RequestParam(value = "emailAlertDay", required=false) DayOfWeek emailAlertDay,
                          @RequestParam(value = "multipartKeystore", required=false) MultipartFile multipartKeystore,
+                         @RequestParam(value = "mobileSignToken", required=false) String mobileSignToken,
                          RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) throws Exception {
         userService.updateUser(authUserEppn, name, firstname, signImageBase64, emailAlertFrequency, emailAlertHour, emailAlertDay, multipartKeystore, null, false);
-        redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Vos paramètres ont été enregistrés"));
+        mobileSignTokenService.consumePendingSignaturePreview(mobileSignToken, authUserEppn, signImageBase64);
+        redirectAttributes.addFlashAttribute("message", new UiMessageDto("success", "Vos paramètres ont été enregistrés"));
         String referer = httpServletRequest.getHeader(HttpHeaders.REFERER);
         return "redirect:" + referer;
     }
@@ -45,7 +50,7 @@ public class OtpUserController {
     @DeleteMapping("/delete-sign/{id}")
     public String deleteSign(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable long id, RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) {
         userService.deleteSign(authUserEppn, id);
-        redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Signature supprimée"));
+        redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "Signature supprimée"));
         String referer = httpServletRequest.getHeader(HttpHeaders.REFERER);
         return "redirect:" + referer;
     }
@@ -63,5 +68,6 @@ public class OtpUserController {
         String referer = httpServletRequest.getHeader(HttpHeaders.REFERER);
         return "redirect:" + referer;
     }
+
 
 }

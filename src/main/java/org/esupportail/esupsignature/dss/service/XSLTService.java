@@ -41,14 +41,14 @@ public class XSLTService {
 			logger.error("Error while generating simple report : " + e.getMessage(), e);
 		}
 		if(StringUtils.hasText(writer.toString())) {
-			return writer.toString();
+			return adaptBootstrap5DataAttributes(writer.toString());
 		}
 		return null;
 	}
 
 	public String generateSimpleReport(String xmlSimpleReport) {
 		try {
-			return SimpleReportFacade.newFacade().generateHtmlReport(xmlSimpleReport);
+			return adaptBootstrap5DataAttributes(SimpleReportFacade.newFacade().generateHtmlReport(xmlSimpleReport));
 		} catch (IOException | TransformerException e) {
 			throw new RuntimeException(e);
 		}
@@ -56,10 +56,17 @@ public class XSLTService {
 
 	public String generateDetailedReport(String xmlDetailedReportReport) {
 		try {
-			return DetailedReportFacade.newFacade().generateHtmlReport(xmlDetailedReportReport);
+			return adaptBootstrap5DataAttributes(DetailedReportFacade.newFacade().generateHtmlReport(xmlDetailedReportReport));
 		} catch (IOException | TransformerException e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	private String adaptBootstrap5DataAttributes(String htmlReport) {
+		return htmlReport
+				.replace("data-toggle=", "data-bs-toggle=")
+				.replace("data-target=", "data-bs-target=")
+				.replace("data-placement=", "data-bs-placement=");
 	}
 
 	public String generateSVG(String diagnosticDataXml) {

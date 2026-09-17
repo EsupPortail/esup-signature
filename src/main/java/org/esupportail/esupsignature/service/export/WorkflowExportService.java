@@ -1,6 +1,6 @@
 package org.esupportail.esupsignature.service.export;
 
-import org.esupportail.esupsignature.dto.export.WorkflowDatasCsvDto;
+import org.esupportail.esupsignature.dto.projection.export.WorkflowDatasCsvProjectionDto;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.repository.WorkflowRepository;
 import org.esupportail.esupsignature.service.WorkflowService;
@@ -45,8 +45,8 @@ public class WorkflowExportService {
     }
 
     public List<LinkedHashMap<String, String>> getDatasToExport(Workflow workflow) {
-        List<WorkflowDatasCsvDto> workflowDatasCsvDtos = workflowRepository.findWorkflowDatas(workflow.getId());
-        return getToExportDatas(workflowDatasCsvDtos);
+        List<WorkflowDatasCsvProjectionDto> workflowDatasCsvProjectionDtos = workflowRepository.findWorkflowDatas(workflow.getId());
+        return getToExportDatas(workflowDatasCsvProjectionDtos);
     }
 
     @Transactional(readOnly = true)
@@ -60,29 +60,56 @@ public class WorkflowExportService {
         }
     }
 
-    private List<LinkedHashMap<String, String>> getToExportDatas(List<WorkflowDatasCsvDto> workflowDatasCsvDtos) {
+    private List<LinkedHashMap<String, String>> getToExportDatas(List<WorkflowDatasCsvProjectionDto> workflowDatasCsvProjectionDtos) {
         List<LinkedHashMap<String, String>> dataDatas = new ArrayList<>();
-        for(WorkflowDatasCsvDto workflowDatasCsvDto : workflowDatasCsvDtos) {
+        for(WorkflowDatasCsvProjectionDto workflowDatasCsvProjectionDto : workflowDatasCsvProjectionDtos) {
             LinkedHashMap<String, String> toExportDatas = new LinkedHashMap<>();
-            toExportDatas.put("sign_book_id", workflowDatasCsvDto.getSignBookId());
-            toExportDatas.put("sign_request_ids", workflowDatasCsvDto.getWorkflowDatasSignRequestIds());
-            toExportDatas.put("sign_request_titles", workflowDatasCsvDto.getWorkflowDatasSignRequestTitles());
-            toExportDatas.put("sign_book_statut", workflowDatasCsvDto.getSignBookStatus());
-            toExportDatas.put("sign_book_create_by", workflowDatasCsvDto.getSignBookCreateBy());
-            toExportDatas.put("sign_book_create_date", workflowDatasCsvDto.getSignBookCreateDate());
-            toExportDatas.put("completed_date", workflowDatasCsvDto.getCompletedDate());
-            toExportDatas.put("completed_by", workflowDatasCsvDto.getCompletedBy());
-            toExportDatas.put("current_step_number", (Arrays.stream(workflowDatasCsvDto.getWorkflowDatasStepsActionsTypes().split(",")).filter(s -> !s.equals("none")).count() + 1) + "");
-            toExportDatas.put("current_step_id", workflowDatasCsvDto.getCurrentStepId());
-            toExportDatas.put("current_step_description", workflowDatasCsvDto.getCurrentStepDescription());
-            for(int i = 0; i < workflowDatasCsvDto.getWorkflowDatasStepsActionsTypes().split(",").length; i++) {
-                toExportDatas.put("sign_step_" + (i + 1) + "_email", workflowDatasCsvDto.getWorkflowDatasStepsRecipientsEmails().split(",")[i]);
-                toExportDatas.put("sign_step_" + (i + 1) + "_type", workflowDatasCsvDto.getWorkflowDatasStepsActionsTypes().split(",")[i]);
-                toExportDatas.put("sign_step_" + (i + 1) + "_date", workflowDatasCsvDto.getWorkflowDatasStepsActionsDates().split(",")[i]);
+            String[] stepEmails = splitCsvValues(workflowDatasCsvProjectionDto.getWorkflowDatasStepsRecipientsEmails());
+            String[] stepTypes = splitCsvValues(workflowDatasCsvProjectionDto.getWorkflowDatasStepsActionsTypes());
+            String[] stepDates = splitCsvValues(workflowDatasCsvProjectionDto.getWorkflowDatasStepsActionsDates());
+            int stepCount = Math.max(stepEmails.length, Math.max(stepTypes.length, stepDates.length));
+
+            if(stepEmails.length != stepTypes.length || stepTypes.length != stepDates.length) {
+                logger.warn("Workflow export inconsistent step data for signBook {}: emails={}, types={}, dates={}",
+                        workflowDatasCsvProjectionDto.getSignBookId(),
+                        stepEmails.length,
+                        stepTypes.length,
+                        stepDates.length);
+            }
+
+            toExportDatas.put("sign_book_id", workflowDatasCsvProjectionDto.getSignBookId());
+            toExportDatas.put("sign_request_ids", workflowDatasCsvProjectionDto.getWorkflowDatasSignRequestIds());
+            toExportDatas.put("sign_request_titles", workflowDatasCsvProjectionDto.getWorkflowDatasSignRequestTitles());
+            toExportDatas.put("sign_book_statut", workflowDatasCsvProjectionDto.getSignBookStatus());
+            toExportDatas.put("sign_book_create_by", workflowDatasCsvProjectionDto.getSignBookCreateBy());
+            toExportDatas.put("sign_book_create_date", workflowDatasCsvProjectionDto.getSignBookCreateDate());
+            toExportDatas.put("completed_date", workflowDatasCsvProjectionDto.getCompletedDate());
+            toExportDatas.put("completed_by", workflowDatasCsvProjectionDto.getCompletedBy());
+            toExportDatas.put("current_step_number", (Arrays.stream(stepTypes).filter(s -> !s.isBlank() && !s.equals("none")).count() + 1) + "");
+            toExportDatas.put("current_step_id", workflowDatasCsvProjectionDto.getCurrentStepId());
+            toExportDatas.put("current_step_description", workflowDatasCsvProjectionDto.getCurrentStepDescription());
+            for(int i = 0; i < stepCount; i++) {
+                toExportDatas.put("sign_step_" + (i + 1) + "_email", getCsvValue(stepEmails, i));
+                toExportDatas.put("sign_step_" + (i + 1) + "_type", getCsvValue(stepTypes, i));
+                toExportDatas.put("sign_step_" + (i + 1) + "_date", getCsvValue(stepDates, i));
             }
             dataDatas.add(toExportDatas);
         }
         return dataDatas;
+    }
+
+    private String[] splitCsvValues(String values) {
+        if(values == null || values.isBlank()) {
+            return new String[0];
+        }
+        return values.split(",", -1);
+    }
+
+    private String getCsvValue(String[] values, int index) {
+        if(index < 0 || index >= values.length) {
+            return "";
+        }
+        return values[index];
     }
 
 }

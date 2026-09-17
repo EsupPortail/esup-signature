@@ -2,8 +2,8 @@ package org.esupportail.esupsignature.web.controller.user;
 
 import eu.europa.esig.dss.model.ToBeSigned;
 import jakarta.validation.Valid;
+import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.dss.model.*;
-import org.esupportail.esupsignature.entity.NexuSignature;
 import org.esupportail.esupsignature.entity.Report;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.ReportStatus;
@@ -22,6 +22,12 @@ import org.esupportail.esupsignature.service.utils.sign.NexuService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
+import eu.europa.esig.dss.alert.exception.AlertException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.HashMap;
+import java.util.Map;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -39,36 +45,46 @@ public class NexuProcessController implements Serializable {
 
 	private static final Logger logger = LoggerFactory.getLogger(NexuProcessController.class);
 
-    public NexuProcessController(PreAuthorizeService preAuthorizeService, NexuService nexuService, UserService userService, SignBookService signBookService, SignRequestService signRequestService, ReportService reportService) {
+	@ModelAttribute("activeMenu")
+	public String getActiveMenu() {
+		return "signrequests";
+	}
+
+	private final PreAuthorizeService preAuthorizeService;
+	private final NexuService nexuService;
+	private final UserService userService;
+	private final SignBookService signBookService;
+	private final SignRequestService signRequestService;
+	private final ReportService reportService;
+	private final GlobalProperties globalProperties;
+
+    public NexuProcessController(PreAuthorizeService preAuthorizeService, NexuService nexuService, UserService userService, SignBookService signBookService, SignRequestService signRequestService, ReportService reportService, GlobalProperties globalProperties) {
         this.preAuthorizeService = preAuthorizeService;
         this.nexuService = nexuService;
         this.userService = userService;
         this.signBookService = signBookService;
         this.signRequestService = signRequestService;
         this.reportService = reportService;
+        this.globalProperties = globalProperties;
     }
-
-    @ModelAttribute("activeMenu")
-	public String getActiveMenu() {
-		return "signrequests";
-	}
-
-	private final PreAuthorizeService preAuthorizeService;
-
-	private final NexuService nexuService;
-
-	private final UserService userService;
-
-	private final SignBookService signBookService;
-
-	private final SignRequestService signRequestService;
-
-	private final ReportService reportService;
-
 
 	@GetMapping(value = "/start", produces = "text/html")
 	public String startNexuProcess(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
 								   @RequestParam("ids") List<Long> ids, Model model) {
+		populateNexuStartModel(userEppn, authUserEppn, ids, model);
+		model.addAttribute("fullScreen", true);
+		return "user/signrequests/nexu-signature-process";
+	}
+
+	@GetMapping(value = "/start-fragment", produces = "text/html")
+	public String startNexuProcessFragment(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
+									 @RequestParam("ids") List<Long> ids, Model model) {
+		populateNexuStartModel(userEppn, authUserEppn, ids, model);
+		model.addAttribute("fullScreen", false);
+		return "user/signrequests/nexu-signature-process-content";
+	}
+
+	private void populateNexuStartModel(String userEppn, String authUserEppn, List<Long> ids, Model model) {
 		for(Long id : ids) {
 			if(!preAuthorizeService.signRequestSign(id, userEppn, authUserEppn)) throw new EsupSignatureRuntimeException("Vous n'avez pas les droits pour signer ce document");
 			signRequestService.deleteNexu(id);
@@ -88,17 +104,18 @@ public class NexuProcessController implements Serializable {
 		} else {
 			model.addAttribute("urlProfil", "user");
 		}
-		return "user/signrequests/nexu-signature-process";
+		model.addAttribute("rootUrl", globalProperties.getRootUrl());
+		model.addAttribute("addExtra", false);
 	}
 
 	@PreAuthorize("@preAuthorizeService.signRequestSign(#id, #userEppn, #authUserEppn)")
 	@PostMapping(value = "/get-data-to-sign")
 	@ResponseBody
-	public GetDataToSignResponse getDataToSign(@ModelAttribute("userEppn") String userEppn,
-											   @ModelAttribute("authUserEppn") String authUserEppn,
-											   @RequestBody @Valid DataToSignParams dataToSignParams,
-											   @RequestParam(value = "massSignReportId", required = false) Long massSignReportId,
-											   @RequestParam("id") Long id) throws EsupSignatureRuntimeException, IOException {
+	public ResponseEntity<?> getDataToSign(@ModelAttribute("userEppn") String userEppn,
+										   @ModelAttribute("authUserEppn") String authUserEppn,
+										   @RequestBody @Valid DataToSignParams dataToSignParams,
+										   @RequestParam(value = "massSignReportId", required = false) Long massSignReportId,
+										   @RequestParam("id") Long id) throws IOException {
 		logger.info("get data to sign for signRequest: " + id);
 		try {
 			SignatureDocumentForm abstractSignatureForm = nexuService.getSignatureForm(id, userEppn, new Date());
@@ -109,14 +126,30 @@ public class NexuProcessController implements Serializable {
 			ToBeSigned dataToSign = nexuService.getDataToSign(id, userEppn, abstractSignatureForm);
 			responseJson.setDataToSign(dataToSign.getBytes());
 			nexuService.saveNexuSignature(id, abstractSignatureForm, userEppn);
-			return responseJson;
+			return ResponseEntity.ok(responseJson);
 		} catch (Exception e) {
-			logger.error(e.getMessage(), e);
+			// build stacktrace string
+			StringWriter sw = new StringWriter();
+			e.printStackTrace(new PrintWriter(sw));
+			String trace = sw.toString();
+
+			// Log as WARN for DSS alert exceptions or expired certificate messages, otherwise as ERROR
+			if (e instanceof AlertException || (e.getMessage() != null && e.getMessage().toLowerCase().contains("expired"))) {
+				logger.warn("Error on signature creation (alert): {}", e.getMessage());
+			} else {
+				logger.error(e.getMessage(), e);
+			}
+
 			if(massSignReportId != null) {
 				reportService.addSignRequestToReport(massSignReportId, id, ReportStatus.nexuError);
 			}
 			signRequestService.cleanSignRequestParams(id);
-			throw new EsupSignatureRuntimeException(e.getMessage());
+
+			Map<String, Object> body = new HashMap<>();
+			body.put("errorMessage", e.getMessage());
+			body.put("trace", trace);
+
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
 		}
 	}
 
@@ -126,9 +159,8 @@ public class NexuProcessController implements Serializable {
 	public ResponseEntity<?> signDocument(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
 										  @RequestBody @Valid SignResponse signatureValue,
 										  @RequestParam(value = "massSignReportId", required = false) Long massSignReportId,
-										  @RequestParam("id") Long id) throws EsupSignatureRuntimeException, IOException, EsupSignatureException {
-		NexuSignature nexuSignature = nexuService.getNexuSignature(id);
-		AbstractSignatureForm abstractSignatureForm = nexuService.getAbstractSignatureFormFromNexuSignature(nexuSignature);
+									  @RequestParam("id") Long id) throws EsupSignatureRuntimeException, EsupSignatureException {
+		AbstractSignatureForm abstractSignatureForm = nexuService.getAbstractSignatureForm(id);
 		abstractSignatureForm.setSignatureValue(signatureValue.getSignatureValue());
         SignDocumentResponse responseJson = nexuService.getSignDocumentResponse(id, signatureValue, abstractSignatureForm, userEppn);
 		signRequestService.updateStatus(id, SignRequestStatus.signed, "Signature", null, "SUCCESS", null,null,null,null, userEppn, authUserEppn);

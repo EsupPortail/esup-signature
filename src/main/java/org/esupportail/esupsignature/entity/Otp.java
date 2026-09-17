@@ -27,7 +27,6 @@ public class Otp {
     @ManyToOne(cascade = CascadeType.DETACH)
     private SignBook signBook;
 
-    @Temporal(TemporalType.TIMESTAMP)
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
     private Date createDate;
 

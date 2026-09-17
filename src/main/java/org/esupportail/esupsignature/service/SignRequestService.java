@@ -11,10 +11,14 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.dss.service.FOPService;
-import org.esupportail.esupsignature.dto.js.JsMessage;
-import org.esupportail.esupsignature.dto.json.RecipientWsDto;
-import org.esupportail.esupsignature.dto.json.RecipientsActionsDto;
-import org.esupportail.esupsignature.dto.json.SignRequestStepsDto;
+import org.esupportail.esupsignature.dto.projection.jpa.AttachmentProjectionDto;
+import org.esupportail.esupsignature.dto.projection.jpa.DocumentProjectionDto;
+import org.esupportail.esupsignature.dto.projection.jpa.SignRequestLightProjectionDto;
+import org.esupportail.esupsignature.dto.projection.jpa.SignRequestTabProjectionDto;
+import org.esupportail.esupsignature.dto.page.user.signrequest.AttachmentValidationStateDto;
+import org.esupportail.esupsignature.dto.ws.RecipientWsDto;
+import org.esupportail.esupsignature.dto.ws.RecipientsActionsWsDto;
+import org.esupportail.esupsignature.dto.ws.SignRequestStepsWsDto;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.*;
 import org.esupportail.esupsignature.exception.*;
@@ -31,6 +35,7 @@ import org.esupportail.esupsignature.service.security.otp.OtpService;
 import org.esupportail.esupsignature.service.utils.StepStatus;
 import org.esupportail.esupsignature.service.utils.WebUtilsService;
 import org.esupportail.esupsignature.service.utils.file.FileService;
+import org.esupportail.esupsignature.service.utils.pdf.PdfParameters;
 import org.esupportail.esupsignature.service.utils.metric.CustomMetricsService;
 import org.esupportail.esupsignature.service.utils.pdf.PdfService;
 import org.esupportail.esupsignature.service.utils.sign.SignService;
@@ -44,7 +49,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -96,54 +100,54 @@ public class SignRequestService {
 	private final ObjectMapper objectMapper;
 	private final SignBookRepository signBookRepository;
 	private final NexuSignatureRepository nexuSignatureRepository;
-    private final OtpService otpService;
-    private final SignService signService;
+	private final OtpService otpService;
+	private final SignService signService;
 
-    public SignRequestService(GlobalProperties globalProperties, TargetService targetService, WebUtilsService webUtilsService, SignRequestRepository signRequestRepository, ActionService actionService, PdfService pdfService, DocumentService documentService, CustomMetricsService customMetricsService, UserService userService, DataService dataService, CommentService commentService, MailService mailService, AuditTrailService auditTrailService, UserShareService userShareService, RecipientService recipientService, FsAccessFactoryService fsAccessFactoryService, WsAccessTokenRepository wsAccessTokenRepository, FileService fileService, PreFillService preFillService, LogService logService, SignRequestParamsService signRequestParamsService, ValidationService validationService, FOPService fopService, ObjectMapper objectMapper, SignBookRepository signBookRepository, NexuSignatureRepository nexuSignatureRepository, OtpService otpService, SignService signService) {
-        this.globalProperties = globalProperties;
-        this.targetService = targetService;
-        this.webUtilsService = webUtilsService;
-        this.signRequestRepository = signRequestRepository;
-        this.actionService = actionService;
-        this.pdfService = pdfService;
-        this.documentService = documentService;
-        this.customMetricsService = customMetricsService;
-        this.userService = userService;
-        this.dataService = dataService;
-        this.commentService = commentService;
-        this.mailService = mailService;
-        this.auditTrailService = auditTrailService;
-        this.userShareService = userShareService;
-        this.recipientService = recipientService;
-        this.fsAccessFactoryService = fsAccessFactoryService;
-        this.wsAccessTokenRepository = wsAccessTokenRepository;
-        this.fileService = fileService;
-        this.preFillService = preFillService;
-        this.logService = logService;
-        this.signRequestParamsService = signRequestParamsService;
-        this.validationService = validationService;
-        this.fopService = fopService;
-        this.objectMapper = objectMapper;
-        this.signBookRepository = signBookRepository;
+	public SignRequestService(GlobalProperties globalProperties, TargetService targetService, WebUtilsService webUtilsService, SignRequestRepository signRequestRepository, ActionService actionService, PdfService pdfService, DocumentService documentService, CustomMetricsService customMetricsService, UserService userService, DataService dataService, CommentService commentService, MailService mailService, AuditTrailService auditTrailService, UserShareService userShareService, RecipientService recipientService, FsAccessFactoryService fsAccessFactoryService, WsAccessTokenRepository wsAccessTokenRepository, FileService fileService, PreFillService preFillService, LogService logService, SignRequestParamsService signRequestParamsService, ValidationService validationService, FOPService fopService, ObjectMapper objectMapper, SignBookRepository signBookRepository, NexuSignatureRepository nexuSignatureRepository, OtpService otpService, SignService signService) {
+		this.globalProperties = globalProperties;
+		this.targetService = targetService;
+		this.webUtilsService = webUtilsService;
+		this.signRequestRepository = signRequestRepository;
+		this.actionService = actionService;
+		this.pdfService = pdfService;
+		this.documentService = documentService;
+		this.customMetricsService = customMetricsService;
+		this.userService = userService;
+		this.dataService = dataService;
+		this.commentService = commentService;
+		this.mailService = mailService;
+		this.auditTrailService = auditTrailService;
+		this.userShareService = userShareService;
+		this.recipientService = recipientService;
+		this.fsAccessFactoryService = fsAccessFactoryService;
+		this.wsAccessTokenRepository = wsAccessTokenRepository;
+		this.fileService = fileService;
+		this.preFillService = preFillService;
+		this.logService = logService;
+		this.signRequestParamsService = signRequestParamsService;
+		this.validationService = validationService;
+		this.fopService = fopService;
+		this.objectMapper = objectMapper;
+		this.signBookRepository = signBookRepository;
 		this.nexuSignatureRepository = nexuSignatureRepository;
-        this.otpService = otpService;
-        this.signService = signService;
-    }
+		this.otpService = otpService;
+		this.signService = signService;
+	}
 
-    @PostConstruct
+	@PostConstruct
 	public void initSignrequestMetrics() {
 		customMetricsService.registerValue("esup-signature.signrequests", "new");
 		customMetricsService.registerValue("esup-signature.signrequests", "signed");
 	}
 
 	/**
-     * Récupère une instance de SignRequest en fonction de son identifiant unique.
-     *
-     * @param id l'identifiant unique de la demande de signature à récupérer
-     * @return l'objet SignRequest correspondant à l'identifiant spécifié,
-     *         ou null si aucun objet n'est trouvé
-     */
-    public SignRequest getById(long id) {
+	 * Récupère une instance de SignRequest en fonction de son identifiant unique.
+	 *
+	 * @param id l'identifiant unique de la demande de signature à récupérer
+	 * @return l'objet SignRequest correspondant à l'identifiant spécifié,
+	 *         ou null si aucun objet n'est trouvé
+	 */
+	public SignRequest getById(long id) {
 		Optional<SignRequest> signRequest = signRequestRepository.findById(id);
 		if(signRequest.isPresent()) {
 			Data data = dataService.getBySignBook(signRequest.get().getParentSignBook());
@@ -155,20 +159,99 @@ public class SignRequestService {
 		return null;
 	}
 
-    @Transactional
-    public List<SignRequest> getSignRequests(long id) {
-        return new ArrayList<>(getById(id).getParentSignBook().getSignRequests());
-    }
+	public SignRequest getByIdWithShowContext(long id) {
+		Optional<SignRequest> signRequest = signRequestRepository.findByIdWithShowContext(id);
+		if(signRequest.isPresent()) {
+			Data data = dataService.getBySignBook(signRequest.get().getParentSignBook());
+			if (data != null) {
+				signRequest.get().setData(data);
+			}
+			return signRequest.get();
+		}
+		return null;
+	}
+
+	@Transactional(readOnly = true)
+	public List<String> getLinks(Long id) {
+		return signRequestRepository.findLinksById(id);
+	}
+
+	@Transactional(readOnly = true)
+	public List<DocumentProjectionDto> getOriginalDocumentProjections(Long signRequestId) {
+		return signRequestRepository.findOriginalDocumentProjectionsById(signRequestId);
+	}
+
+	@Transactional(readOnly = true)
+	public List<DocumentProjectionDto> getSignedDocumentProjections(Long signRequestId) {
+		return signRequestRepository.findSignedDocumentProjectionsById(signRequestId);
+	}
+
+	@Transactional(readOnly = true)
+	public List<DocumentProjectionDto> getDocumentsHistoryProjections(Long signRequestId) {
+		return signRequestRepository.findDocumentsHistoryProjectionById(signRequestId).stream().toList();
+	}
+
+	@Transactional(readOnly = true)
+	public List<AttachmentProjectionDto> getAttachmentProjections(Long signRequestId) {
+		return signRequestRepository.findAttachmentProjectionsById(signRequestId);
+	}
+
+	@Transactional(readOnly = true)
+	public List<SignRequestTabProjectionDto> getSignRequestTabProjections(Long signBookId, String userEppn) {
+		return signRequestRepository.findTabProjectionsBySignBookId(signBookId, userEppn);
+	}
+
+	@Transactional(readOnly = true)
+	public int countPendingBySignBookId(Long signBookId) {
+		if (signBookId == null) {
+			return 0;
+		}
+		return signRequestRepository.countPendingBySignBookId(signBookId);
+	}
+
+	@Transactional(readOnly = true)
+	public Long getNextPendingIdBySignBookId(Long signBookId, Long signRequestId) {
+		if (signBookId == null || signRequestId == null) {
+			return null;
+		}
+		return signRequestRepository.findNextPendingIdBySignBookId(signBookId, signRequestId);
+	}
+
+	@Transactional(readOnly = true)
+	public Long getFirstPendingIdBySignBookId(Long signBookId) {
+		if (signBookId == null) {
+			return null;
+		}
+		return signRequestRepository.findFirstPendingIdBySignBookId(signBookId);
+	}
+
+	@Transactional(readOnly = true)
+	public Integer getOrderInSignBook(Long signBookId, Long signRequestId) {
+		if (signBookId == null || signRequestId == null) {
+			return null;
+		}
+		return signRequestRepository.findOrderBySignBookIdAndSignRequestId(signBookId, signRequestId);
+	}
+
+	@Transactional(readOnly = true)
+	public List<SignRequestLightProjectionDto> getCloneSignRequestLightProjections(Long signRequestId) {
+		return signRequestRepository.findCloneLightProjectionsBySignRequestId(signRequestId);
+	}
+
+	@Transactional
+	public List<SignRequest> getSignRequests(long id) {
+		return new ArrayList<>(getById(id).getParentSignBook().getSignRequests());
+	}
 
 	/**
-     * Récupère le statut associé à l'identifiant donné.
-     *
-     * @param id l'identifiant du SignRequest ou des Logs associés
-     * @return une chaîne de caractères représentant le statut du SignRequest si trouvé,
-     *         "fully-deleted" si des Logs existent pour cet identifiant mais aucun SignRequest correspondant,
-     *         ou null si rien n'est trouvé
-     */
-    public String getStatus(long id) {
+	 * Récupère le statut associé à l'identifiant donné.
+	 *
+	 * @param id l'identifiant du SignRequest ou des Logs associés
+	 * @return une chaîne de caractères représentant le statut du SignRequest si trouvé,
+	 *         "fully-deleted" si des Logs existent pour cet identifiant mais aucun SignRequest correspondant,
+	 *         ou null si rien n'est trouvé
+	 */
+	public String getStatus(long id) {
 		SignRequest signRequest = getById(id);
 		if (signRequest != null) {
 			return signRequest.getStatus().name();
@@ -182,65 +265,56 @@ public class SignRequestService {
 	}
 
 	/**
-     * Récupère une demande de signature en fonction de son token.
-     *
-     * @param token le token utilisé pour rechercher une demande de signature
-     * @return un objet Optional contenant la demande de signature si elle existe, sinon un Optional vide
-     */
-    public Optional<SignRequest> getSignRequestByToken(String token) {
+	 * Récupère une demande de signature en fonction de son token.
+	 *
+	 * @param token le token utilisé pour rechercher une demande de signature
+	 * @return un objet Optional contenant la demande de signature si elle existe, sinon un Optional vide
+	 */
+	public Optional<SignRequest> getSignRequestByToken(String token) {
 		return signRequestRepository.findByToken(token);
 	}
 
 	/**
-     * Détermine si une requête de signature est éditable par l'utilisateur spécifié.
-     *
-     * Une requête de signature est considérée comme éditable si elle respecte les critères suivants :
-     * 1. Elle n'est pas supprimée, a un statut "pending" (en attente), et :
-     *    - L'utilisateur n'est pas de type "externe" ou,
-     *    - Le workflow associé permet l'édition pour les utilisateurs externes ou,
-     *    - Si aucun workflow n'est défini, les propriétés globales permettent l'édition pour les utilisateurs externes.
-     * 2. L'utilisateur est impliqué dans les destinataires, ou a créé la requête, ou est un viewer du dossier de signatures.
-     * 3. Alternativement, une requête en statut "draft" (brouillon) est éditable par son créateur.
-     *
-     * @param id Identifiant unique de la requête de signature à vérifier.
-     * @param userEppn Identifiant eppn de l'utilisateur pour lequel vérifier les droits d'édition.
-     * @return true si la requête est éditable par l'utilisateur, false sinon.
-     */
-    @Transactional
+	 * Détermine si une requête de signature est éditable par l'utilisateur spécifié.
+	 *
+	 * Une requête de signature est considérée comme éditable si elle respecte les critères suivants :
+	 * 1. Elle n'est pas supprimée, a un statut "pending" (en attente), et :
+	 *    - L'utilisateur n'est pas de type "externe" ou,
+	 *    - Le workflow associé permet l'édition pour les utilisateurs externes ou,
+	 *    - Si aucun workflow n'est défini, les propriétés globales permettent l'édition pour les utilisateurs externes.
+	 * 2. L'utilisateur est impliqué dans les destinataires, ou a créé la requête, ou est un viewer du dossier de signatures.
+	 * 3. Alternativement, une requête en statut "draft" (brouillon) est éditable par son créateur.
+	 *
+	 * @param id Identifiant unique de la requête de signature à vérifier.
+	 * @param userEppn Identifiant eppn de l'utilisateur pour lequel vérifier les droits d'édition.
+	 * @return true si la requête est éditable par l'utilisateur, false sinon.
+	 */
+	@Transactional
 	public boolean isEditable(long id, String userEppn) {
 		SignRequest signRequest = getById(id);
 		User user = userService.getByEppn(userEppn);
 		SignBook signBook = signRequest.getParentSignBook();
-		if (
-			(
-				!signRequest.getDeleted() && signRequest.getStatus().equals(SignRequestStatus.pending)
-				&&
-				(!user.getUserType().equals(UserType.external) || (signBook.getLiveWorkflow().getWorkflow() != null && signBook.getLiveWorkflow().getWorkflow().getExternalCanEdit()) || (signBook.getLiveWorkflow().getWorkflow() == null && globalProperties.getExternalCanEdit()))
-				&&
-				(
-					isUserInRecipients(signRequest, userEppn)
-					|| signRequest.getCreateBy().getEppn().equals(userEppn)
-					|| signBook.getViewers().contains(user)
-				)
-			)
-			||
-			(signRequest.getStatus().equals(SignRequestStatus.draft) && signRequest.getCreateBy().getEppn().equals(user.getEppn()))
-			||
-			(signBook.getLiveWorkflow().getWorkflow() != null && signBook.getLiveWorkflow().getWorkflow().getManagers().contains(user.getEmail()))
-		) {
-			return true;
-		}
-		return false;
+		boolean editablePending = !signRequest.getDeleted()
+				&& signRequest.getStatus().equals(SignRequestStatus.pending)
+				&& (!user.getUserType().equals(UserType.external)
+				|| (signBook.getLiveWorkflow().getWorkflow() != null && signBook.getLiveWorkflow().getWorkflow().getExternalCanEdit())
+				|| (signBook.getLiveWorkflow().getWorkflow() == null && globalProperties.getExternalCanEdit()))
+				&& (isUserInRecipients(signRequest, userEppn)
+				|| signRequest.getCreateBy().getEppn().equals(userEppn)
+				|| signBook.getViewers().contains(user));
+		boolean editableDraft = signRequest.getStatus().equals(SignRequestStatus.draft)
+				&& signRequest.getCreateBy().getEppn().equals(user.getEppn());
+		return editablePending || editableDraft;
 	}
 
 	/**
-     * Vérifie si un utilisateur est présent dans la liste des destinataires d'une demande de signature.
-     *
-     * @param signRequest l'objet SignRequest représentant la demande de signature
-     * @param userEppn l'identifiant EPPN de l'utilisateur à vérifier
-     * @return true si l'utilisateur est présent dans la liste des destinataires, sinon false
-     */
-    public boolean isUserInRecipients(SignRequest signRequest, String userEppn) {
+	 * Vérifie si un utilisateur est présent dans la liste des destinataires d'une demande de signature.
+	 *
+	 * @param signRequest l'objet SignRequest représentant la demande de signature
+	 * @param userEppn l'identifiant EPPN de l'utilisateur à vérifier
+	 * @return true si l'utilisateur est présent dans la liste des destinataires, sinon false
+	 */
+	public boolean isUserInRecipients(SignRequest signRequest, String userEppn) {
 		boolean isInRecipients = false;
 		Set<Recipient> recipients = signRequest.getRecipientHasSigned().keySet();
 		for(Recipient recipient : recipients) {
@@ -253,14 +327,14 @@ public class SignRequestService {
 	}
 
 	/**
-     * Récupère la liste des documents à signer ou signés associés à une demande de signature.
-     * Si des documents signés existent, retourne le dernier document signé.
-     * Sinon, retourne tous les documents originaux de la demande.
-     *
-     * @param signRequestId l'identifiant de la demande de signature
-     * @return une liste des documents à signer ou déjà signés
-     */
-    @Transactional
+	 * Récupère la liste des documents à signer ou signés associés à une demande de signature.
+	 * Si des documents signés existent, retourne le dernier document signé.
+	 * Sinon, retourne tous les documents originaux de la demande.
+	 *
+	 * @param signRequestId l'identifiant de la demande de signature
+	 * @return une liste des documents à signer ou déjà signés
+	 */
+	@Transactional
 	public List<Document> getToSignDocuments(Long signRequestId) {
 		SignRequest signRequest = signRequestRepository.findById(signRequestId).get();
 		List<Document> documents = new ArrayList<>();
@@ -273,22 +347,22 @@ public class SignRequestService {
 	}
 
 	/**
-     * Signe une requête de signature en tenant compte de divers paramètres tels que l'utilisateur,
-     * les documents à signer, et les informations de formulaire.
-     *
-     * @param signRequest L'objet représentant la requête de signature à traiter.
-     * @param password Le mot de passe de l'utilisateur nécessaire pour effectuer la signature.
-     * @param signWith Le type d'élément utilisé pour effectuer la signature (image, certificat, etc.).
-     * @param data Les données associées à la signature, incluant des informations de formulaire.
-     * @param formDataMap Une carte représentant les données des champs de formulaire à remplir ou à valider.
-     * @param userEppn L'identifiant de l'utilisateur effectuant la signature.
-     * @param authUserEppn L'identifiant de l'utilisateur authentifié utilisé pour des cas spécifiques de délégation ou de partage.
-     * @param userShareId L'identifiant d'un partage utilisateur si applicable, pour déterminer si une délégation est utilisée.
-     * @param comment Un commentaire libre que l'utilisateur peut ajouter à l'action de signature.
-     * @return Le statut de l'étape courante après la signature, incluant des informations sur l'état de la progression dans le processus.
-     * @throws EsupSignatureRuntimeException En cas d'erreur critique lors de la signature ou de la génération de métadonnées.
-     * @throws IOException En cas de problème lors de la lecture ou de l'écriture de contenu lié aux documents.
-     */
+	 * Signe une requête de signature en tenant compte de divers paramètres tels que l'utilisateur,
+	 * les documents à signer, et les informations de formulaire.
+	 *
+	 * @param signRequest L'objet représentant la requête de signature à traiter.
+	 * @param password Le mot de passe de l'utilisateur nécessaire pour effectuer la signature.
+	 * @param signWith Le type d'élément utilisé pour effectuer la signature (image, certificat, etc.).
+	 * @param data Les données associées à la signature, incluant des informations de formulaire.
+	 * @param formDataMap Une carte représentant les données des champs de formulaire à remplir ou à valider.
+	 * @param userEppn L'identifiant de l'utilisateur effectuant la signature.
+	 * @param authUserEppn L'identifiant de l'utilisateur authentifié utilisé pour des cas spécifiques de délégation ou de partage.
+	 * @param userShareId L'identifiant d'un partage utilisateur si applicable, pour déterminer si une délégation est utilisée.
+	 * @param comment Un commentaire libre que l'utilisateur peut ajouter à l'action de signature.
+	 * @return Le statut de l'étape courante après la signature, incluant des informations sur l'état de la progression dans le processus.
+	 * @throws EsupSignatureRuntimeException En cas d'erreur critique lors de la signature ou de la génération de métadonnées.
+	 * @throws IOException En cas de problème lors de la lecture ou de l'écriture de contenu lié aux documents.
+	 */
 	@Transactional
 	public StepStatus sign(SignRequest signRequest, String password, String signWith, String sealCertificat, Data data, Map<String, String> formDataMap, String userEppn, String authUserEppn, Long userShareId, String comment, boolean keepSignFields) throws EsupSignatureRuntimeException, IOException {
 		User user = userService.getByEppn(userEppn);
@@ -299,20 +373,15 @@ public class SignRequestService {
 		StepStatus stepStatus;
 		Date date = new Date();
 		List<Log> lastSignLogs = new ArrayList<>();
-		User signerUser = user;
-		if(userShareId != null) {
-			UserShare userShare = userShareService.getById(userShareId);
-			if (userShare.getUser().getEppn().equals(userEppn) && userShare.getSignWithOwnSign() != null && userShare.getSignWithOwnSign()) {
-				signerUser = userService.getByEppn(authUserEppn);
-			}
-		}
+		String signatureUserEppn = userShareService.resolveSignatureUserEppn(userEppn, authUserEppn, userShareId);
+		User signerUser = userService.getByEppn(signatureUserEppn);
 		List<Document> toSignDocuments = getToSignDocuments(signRequest.getId());
 		SignType signType = signRequest.getCurrentSignType();
 		byte[] filledInputStream;
-		boolean isForm = false;
+		Form form = null;
 		if(!isNextWorkFlowStep(signRequest.getParentSignBook())) {
 			if(data != null && data.getForm() != null) {
-				Form form = data.getForm();
+				form = data.getForm();
 				for (Field field : form.getFields()) {
 					if ("default".equals(field.getExtValueServiceName()) && "system".equals(field.getExtValueType())) {
 						if (field.getExtValueReturn().equals("id")) {
@@ -321,17 +390,18 @@ public class SignRequestService {
 						}
 					}
 				}
-				isForm = true;
 			}
-		}
-		byte[] bytes = toSignDocuments.get(0).getInputStream().readAllBytes();
-		Reports reports = validationService.validate(new ByteArrayInputStream(bytes), null);
-		if(formDataMap != null && !formDataMap.isEmpty() && toSignDocuments.get(0).isPdf()
-				&& (reports == null || reports.getSimpleReport().getSignatureIdList().isEmpty())) {
-			filledInputStream = pdfService.fill(toSignDocuments.get(0).getInputStream(), formDataMap, isStepAllSignDone(signRequest.getParentSignBook()), isForm);
-		} else {
-			filledInputStream = toSignDocuments.get(0).getInputStream().readAllBytes();
-		}
+			}
+			byte[] bytes = toSignDocuments.get(0).getInputStream().readAllBytes();
+			Reports reports = toSignDocuments.get(0).isPdf()
+					? validationService.validatePdf(new ByteArrayInputStream(bytes))
+					: validationService.validate(new ByteArrayInputStream(bytes), null);
+			if(formDataMap != null && !formDataMap.isEmpty() && toSignDocuments.get(0).isPdf()
+					&& reports != null && reports.getSimpleReport() != null && reports.getSimpleReport().getSignatureIdList().isEmpty()) {
+				filledInputStream = pdfService.fill(toSignDocuments.get(0).getInputStream(), formDataMap, isStepAllSignDone(signRequest.getParentSignBook()), form);
+			} else {
+				filledInputStream = toSignDocuments.get(0).getInputStream().readAllBytes();
+			}
 		if(toSignDocuments.get(0).isPdf() && !isMoreWorkflowStep(signRequest.getParentSignBook()) && !keepSignFields) {
 			filledInputStream = pdfService.normalizePDF(filledInputStream, signRequest.getSignRequestParams().stream().anyMatch(srp -> srp.getRotate().equals(0)), true);
 		}
@@ -343,9 +413,7 @@ public class SignRequestService {
 			if(signRequest.getSignRequestParams().isEmpty() && visual) {
 				throw new EsupSignatureRuntimeException("Il faut apposer au moins un élément visuel");
 			}
-			String textDate = java.time.ZonedDateTime.now()
-					.format(java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME);
-			String ocgName = "sign_" + signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getId() + "_" + authUserEppn + "_" + textDate;
+			String ocgName = getCurrentStepLayerId(signRequest);
 			int nbSign = 0;
 			if (toSignDocuments.size() == 1 && toSignDocuments.get(0).isPdf() && visual) {
 				for(SignRequestParams signRequestParams : signRequest.getSignRequestParams()) {
@@ -381,7 +449,7 @@ public class SignRequestService {
 			SignRequestParams lastSignRequestParams = signService.findLastSignRequestParams(signRequest);
 			reports = validationService.validate(getToValidateFile(signRequest.getId()), null);
 			if (reports == null || reports.getDiagnosticData().getAllSignatures().isEmpty()) {
-				filledInputStream = stampImagesOnFirstSign(signRequest, signRequest.getSignRequestParams(), userEppn, authUserEppn, filledInputStream, date, lastSignLogs, lastSignRequestParams);
+				filledInputStream = stampImagesOnFirstSign(signRequest, signRequest.getSignRequestParams(), signerUser, userEppn, authUserEppn, filledInputStream, date, lastSignLogs, lastSignRequestParams);
 			} else {
 				logger.warn("skip add visuals because document already signed");
 			}
@@ -400,22 +468,25 @@ public class SignRequestService {
 
 
 	/**
-     * Ajoute des images aux emplacements spécifiés lors de la première signature d'une demande.
-     *
-     * @param signRequest La demande de signature contenant les informations nécessaires au processus.
-     * @param signRequestParamses Liste des paramètres de signature définissant les emplacements et options des signatures.
-     * @param userEppn L'identifiant eppn de l'utilisateur effectuant la demande de signature.
-     * @param authUserEppn L'identifiant eppn de l'utilisateur authentifié actuellement.
-     * @param filledInputStream Le tableau d'octets représentant le flux PDF déjà rempli et modifiable.
-     * @param date La date actuelle pour l'horodatage du processus de signature.
-     * @param lastSignLogs Liste des journaux des opérations de signature précédentes, si disponible.
-     * @param lastSignRequestParams Le dernier paramètre de signature utilisé dans le processus, permettant d'éviter des doublons.
-     * @return Le flux PDF représenté comme un tableau d'octets, contenant les images supplémentaires insérées.
-     */
+	 * Ajoute des images aux emplacements spécifiés lors de la première signature d'une demande.
+	 *
+	 * @param signRequest La demande de signature contenant les informations nécessaires au processus.
+	 * @param signRequestParamses Liste des paramètres de signature définissant les emplacements et options des signatures.
+	 * @param userEppn L'identifiant eppn de l'utilisateur effectuant la demande de signature.
+	 * @param authUserEppn L'identifiant eppn de l'utilisateur authentifié actuellement.
+	 * @param filledInputStream Le tableau d'octets représentant le flux PDF déjà rempli et modifiable.
+	 * @param date La date actuelle pour l'horodatage du processus de signature.
+	 * @param lastSignLogs Liste des journaux des opérations de signature précédentes, si disponible.
+	 * @param lastSignRequestParams Le dernier paramètre de signature utilisé dans le processus, permettant d'éviter des doublons.
+	 * @return Le flux PDF représenté comme un tableau d'octets, contenant les images supplémentaires insérées.
+	 */
 	public byte[] stampImagesOnFirstSign(SignRequest signRequest, List<SignRequestParams> signRequestParamses, String userEppn, String authUserEppn, byte[] filledInputStream, Date date, List<Log> lastSignLogs, SignRequestParams lastSignRequestParams) {
-		User signerUser = userService.getByEppn(userEppn);
-		boolean isViewed = signRequest.getViewedBy().contains(signerUser);
-		String ocgName = "SignStep_" + signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber() + "_" + System.currentTimeMillis();
+		return stampImagesOnFirstSign(signRequest, signRequestParamses, userService.getByEppn(userEppn), userEppn, authUserEppn, filledInputStream, date, lastSignLogs, lastSignRequestParams);
+	}
+
+	private byte[] stampImagesOnFirstSign(SignRequest signRequest, List<SignRequestParams> signRequestParamses, User signerUser, String userEppn, String authUserEppn, byte[] filledInputStream, Date date, List<Log> lastSignLogs, SignRequestParams lastSignRequestParams) {
+		boolean isViewed = signRequest.getViewedBy().contains(userService.getByEppn(userEppn));
+		String ocgName = getCurrentStepLayerId(signRequest);
 		if (signRequestParamses.size() > 1) {
 			for (SignRequestParams signRequestParams : signRequestParamses) {
 				if(signRequestParams.equals(lastSignRequestParams)) continue;
@@ -430,19 +501,30 @@ public class SignRequestService {
 		return filledInputStream;
 	}
 
+	private String getCurrentStepLayerId(SignRequest signRequest) {
+		LiveWorkflowStep currentStep = signRequest.getParentSignBook() != null
+				&& signRequest.getParentSignBook().getLiveWorkflow() != null
+				? signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep()
+				: null;
+		if (currentStep == null || currentStep.getId() == null) {
+			throw new EsupSignatureRuntimeException("Impossible de déterminer l'identifiant de calque pour l'étape courante");
+		}
+		return "layer_" + currentStep.getId();
+	}
+
 	/**
-     * Applique les règles de fin de signature pour une demande de signature donnée. La méthode gère les mises à jour
-     * des statuts de la requête, les commentaires, la validation des destinataires, ainsi que les étapes du flux de travail.
-     *
-     * @param signRequestId Identifiant de la requête de signature à traiter.
-     * @param userEppn EPPN (eduPersonPrincipalName) de l'utilisateur effectuant l'action.
-     * @param authUserEppn EPPN de l'utilisateur authentifié.
-     * @param signType Type de signature (Visa, Signature, etc.).
-     * @param comment Commentaire à ajouter à la requête de signature.
-     * @return Le statut final de l'étape (StepStatus) après application des règles : completed, last_end ou not_completed.
-     * @throws EsupSignatureRuntimeException Exception levée en cas d'erreur pendant le traitement.
-     */
-    @Transactional
+	 * Applique les règles de fin de signature pour une demande de signature donnée. La méthode gère les mises à jour
+	 * des statuts de la requête, les commentaires, la validation des destinataires, ainsi que les étapes du flux de travail.
+	 *
+	 * @param signRequestId Identifiant de la requête de signature à traiter.
+	 * @param userEppn EPPN (eduPersonPrincipalName) de l'utilisateur effectuant l'action.
+	 * @param authUserEppn EPPN de l'utilisateur authentifié.
+	 * @param signType Type de signature (Visa, Signature, etc.).
+	 * @param comment Commentaire à ajouter à la requête de signature.
+	 * @return Le statut final de l'étape (StepStatus) après application des règles : completed, last_end ou not_completed.
+	 * @throws EsupSignatureRuntimeException Exception levée en cas d'erreur pendant le traitement.
+	 */
+	@Transactional
 	public StepStatus applyEndOfSignRules(Long signRequestId, String userEppn, String authUserEppn, SignType signType, String comment) throws EsupSignatureRuntimeException {
 		SignRequest signRequest = getById(signRequestId);
 		if (signType.equals(SignType.visa) || signType.equals(SignType.hiddenVisa)) {
@@ -476,22 +558,22 @@ public class SignRequestService {
 	}
 
 	/**
-     * Retourne le nombre de SignBooks suivis par un utilisateur spécifique.
-     *
-     * @param userEppn l'identifiant unique de l'utilisateur (EPPN) pour lequel le compte des SignBooks suivis est calculé.
-     * @return le nombre total de SignBooks où l'utilisateur identifié par userEppn est un spectateur.
-     */
-    public Long nbFollowedByMe(String userEppn) {
+	 * Retourne le nombre de SignBooks suivis par un utilisateur spécifique.
+	 *
+	 * @param userEppn l'identifiant unique de l'utilisateur (EPPN) pour lequel le compte des SignBooks suivis est calculé.
+	 * @return le nombre total de SignBooks où l'utilisateur identifié par userEppn est un spectateur.
+	 */
+	public Long nbFollowedByMe(String userEppn) {
 		return signBookRepository.countByViewersContaining(userEppn);
 	}
 
 	/**
-     * Récupère la liste des demandes de signature à signer pour un utilisateur donné.
-     *
-     * @param userEppn l'identifiant unique (EPPN) de l'utilisateur pour lequel les demandes de signature doivent être récupérées
-     * @return une liste de SignRequest contenant toutes les demandes de signature à signer, triées par date de création dans un ordre décroissant
-     */
-    @Transactional
+	 * Récupère la liste des demandes de signature à signer pour un utilisateur donné.
+	 *
+	 * @param userEppn l'identifiant unique (EPPN) de l'utilisateur pour lequel les demandes de signature doivent être récupérées
+	 * @return une liste de SignRequest contenant toutes les demandes de signature à signer, triées par date de création dans un ordre décroissant
+	 */
+	@Transactional
 	public List<SignRequest> getToSignRequests(String userEppn) {
 		User user = userService.getByEppn(userEppn);
 		List<SignRequest> signRequestsToSign = signBookRepository.findToSign(user, null, null, null, new Date(0), new Date(), Pageable.unpaged()).getContent()
@@ -501,15 +583,15 @@ public class SignRequestService {
 	}
 
 	/**
-     * Crée une nouvelle requête de signature et l'associe à un SignBook.
-     *
-     * @param name le nom de la requête de signature. Peut être nul ou vide, auquel cas un nom généré automatiquement sera utilisé.
-     * @param signBook l'objet SignBook auquel la requête de signature doit être associée.
-     * @param userEppn l'identifiant unique EPPN de l'utilisateur créant la requête.
-     * @param authUserEppn l'identifiant unique EPPN de l'utilisateur authentifié.
-     * @return Une instance de SignRequest représentant la nouvelle requête de signature créée.
-     */
-    @Transactional
+	 * Crée une nouvelle requête de signature et l'associe à un SignBook.
+	 *
+	 * @param name le nom de la requête de signature. Peut être nul ou vide, auquel cas un nom généré automatiquement sera utilisé.
+	 * @param signBook l'objet SignBook auquel la requête de signature doit être associée.
+	 * @param userEppn l'identifiant unique EPPN de l'utilisateur créant la requête.
+	 * @param authUserEppn l'identifiant unique EPPN de l'utilisateur authentifié.
+	 * @return Une instance de SignRequest représentant la nouvelle requête de signature créée.
+	 */
+	@Transactional
 	public SignRequest createSignRequest(String name, SignBook signBook, String userEppn, String authUserEppn) {
 		String token = UUID.randomUUID().toString();
 		while (signRequestRepository.findByToken(token).isPresent()) {
@@ -538,47 +620,48 @@ public class SignRequestService {
 	}
 
 	/**
-     * Ajoute des documents à une demande de signature.
-     *
-     * @param signRequest La demande de signature à laquelle les documents doivent être ajoutés.
-     * @param scanSignatureFields Indique si les champs de signature doivent être scannés dans le document.
-     * @param docNumber Numéro de document pour l'indexation.
-     * @param signRequestParamses Liste des paramètres de champ de signature.
-     * @param multipartFiles Liste des fichiers à ajouter sous forme de fichiers multipart.
-     * @throws EsupSignatureIOException Si une erreur survient lors de l'ajout ou de la conversion des fichiers.
-     */
-    @Transactional
-	public void addDocsToSignRequest(SignRequest signRequest, boolean scanSignatureFields, boolean orderSignsByName, int docNumber, List<SignRequestParams> signRequestParamses, String signRequestParamsDetectionPattern, boolean keepSignFields, MultipartFile... multipartFiles) throws EsupSignatureIOException {
+	 * Ajoute des documents à une demande de signature.
+	 *
+	 * @param signRequest La demande de signature à laquelle les documents doivent être ajoutés.
+	 * @param scanSignatureFields Indique si les champs de signature doivent être scannés dans le document.
+	 * @param docNumber Numéro de document pour l'indexation.
+	 * @param signRequestParamses Liste des paramètres de champ de signature.
+	 * @param multipartFiles Liste des fichiers à ajouter sous forme de fichiers multipart.
+	 * @throws EsupSignatureIOException Si une erreur survient lors de l'ajout ou de la conversion des fichiers.
+	 */
+	@Transactional
+	public List<Document> addDocsToSignRequest(SignRequest signRequest, boolean scanSignatureFields, boolean orderSignsByName, int docNumber, List<SignRequestParams> signRequestParamses, String signRequestParamsDetectionPattern, boolean keepSignFields, MultipartFile... multipartFiles) throws EsupSignatureIOException {
 		if(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null && StringUtils.hasText(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getSignRequestParamsDetectionPattern()) && !StringUtils.hasText(signRequestParamsDetectionPattern)) {
 			signRequestParamsDetectionPattern = signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getSignRequestParamsDetectionPattern();
 		}
+		List<Document> createdDocuments = new ArrayList<>();
 		for(MultipartFile multipartFile : multipartFiles) {
 			try {
 				byte[] bytes = multipartFile.getInputStream().readAllBytes();
 				String contentType = multipartFile.getContentType();
-                String pdfaCheck = null;
+				String pdfaCheck = null;
 				InputStream inputStream = new ByteArrayInputStream(bytes);
 				if (multipartFiles.length == 1 && bytes.length > 0) {
 					if("application/pdf".equals(multipartFiles[0].getContentType()) && (scanSignatureFields || StringUtils.hasText(signRequestParamsDetectionPattern))) {
 						if(!keepSignFields) {
 							bytes = pdfService.normalizePDF(bytes, true, false);
 						}
-                        pdfaCheck = smallCheckPDFA(bytes);
-                        List<SignRequestParams> toAddSignRequestParams = new ArrayList<>();
+						pdfaCheck = smallCheckPDFA(bytes);
+						List<SignRequestParams> toAddSignRequestParams = new ArrayList<>();
 						if(signRequestParamses.isEmpty()) {
 							ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 							toAddSignRequestParams = signRequestParamsService.scanSignatureFields(new ByteArrayInputStream(bytes), outputStream, docNumber, signRequestParamsDetectionPattern, true, orderSignsByName);
 							bytes = outputStream.toByteArray();
-						} else {
-							for (SignRequestParams signRequestParams : signRequestParamses) {
-								toAddSignRequestParams.add(signRequestParamsService.createSignRequestParams(signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos()));
+							} else {
+								for (SignRequestParams signRequestParams : signRequestParamses) {
+									toAddSignRequestParams.add(createSignRequestParamsForDocument(signRequestParams));
+								}
 							}
-						}
-						signRequest.getSignRequestParams().addAll(toAddSignRequestParams);
-						Reports reports = validationService.validate(new ByteArrayInputStream(bytes), null);
-						if(reports == null || reports.getSimpleReport().getSignatureIdList().isEmpty()) {
-							inputStream = pdfService.removeSignField(new ByteArrayInputStream(bytes), signRequest.getParentSignBook().getLiveWorkflow().getWorkflow(), keepSignFields);
-						}
+							signRequest.getSignRequestParams().addAll(toAddSignRequestParams);
+							Reports reports = validationService.validatePdf(new ByteArrayInputStream(bytes));
+							if(reports != null && reports.getSimpleReport() != null && reports.getSimpleReport().getSignatureIdList().isEmpty()) {
+								inputStream = pdfService.removeSignField(new ByteArrayInputStream(bytes), signRequest.getParentSignBook().getLiveWorkflow().getWorkflow(), keepSignFields);
+							}
 					} else if(contentType != null && contentType.contains("image")){
 						bytes = pdfService.jpegToPdf(multipartFile.getInputStream(), multipartFile.getName()).readAllBytes();
 						contentType = "application/pdf";
@@ -588,6 +671,7 @@ public class SignRequestService {
 					document.setPdfaCheck(pdfaCheck);
 					signRequest.getOriginalDocuments().add(document);
 					document.setParentId(signRequest.getId());
+					createdDocuments.add(document);
 				} else {
 					logger.warn("file size is 0");
 					throw new EsupSignatureIOException("Erreur lors de l'ajout des fichiers");
@@ -600,22 +684,116 @@ public class SignRequestService {
 				throw new EsupSignatureIOException("Erreur lors de la conversion du document", e);
 			}
 		}
+		return createdDocuments;
+	}
+
+	@Transactional
+	public void deleteByOriginalDocument(Long documentId, String authUserEppn) {
+		Document document = documentService.getById(documentId);
+		deleteDefinitive(document.getParentId(), authUserEppn, false);
+	}
+
+	@Transactional
+	public void deleteDraftByOriginalDocument(Long documentId, String authUserEppn) {
+		Document document = documentService.getById(documentId);
+		SignRequest signRequest = getById(document.getParentId());
+		if (!SignRequestStatus.draft.equals(signRequest.getStatus())) {
+			throw new EsupSignatureRuntimeException("Le document n'est pas un brouillon supprimable");
+		}
+		boolean documentBelongsToSignRequest = signRequest.getOriginalDocuments().stream()
+				.anyMatch(originalDocument -> Objects.equals(originalDocument.getId(), documentId));
+		if (!documentBelongsToSignRequest) {
+			throw new EsupSignatureRuntimeException("Le document ne correspond pas à un document original de la demande");
+		}
+		deleteDefinitive(signRequest.getId(), authUserEppn, false);
+	}
+
+
+	/**
+	 * Ajoute un document à une demande de signature à partir d'un tableau de bytes.
+	 */
+	@Transactional
+	public void addDocToSignRequestFromBytes(SignRequest signRequest, byte[] bytes, String fileName, String contentType, boolean scanSignatureFields, boolean orderSignsByName, int docNumber, List<SignRequestParams> signRequestParamses, String signRequestParamsDetectionPattern, boolean keepSignFields) throws EsupSignatureIOException {
+		if(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null && StringUtils.hasText(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getSignRequestParamsDetectionPattern()) && !StringUtils.hasText(signRequestParamsDetectionPattern)) {
+			signRequestParamsDetectionPattern = signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getSignRequestParamsDetectionPattern();
+		}
+		try {
+			if(bytes != null && bytes.length > 0) {
+				String pdfaCheck = null;
+				InputStream inputStream = new ByteArrayInputStream(bytes);
+				if (contentType != null && contentType.toLowerCase(Locale.ROOT).contains("pdf") && (scanSignatureFields || StringUtils.hasText(signRequestParamsDetectionPattern))) {
+					if(!keepSignFields) {
+						bytes = pdfService.normalizePDF(bytes, true, false);
+					}
+					pdfaCheck = smallCheckPDFA(bytes);
+					List<SignRequestParams> toAddSignRequestParams = new ArrayList<>();
+					if(signRequestParamses == null || signRequestParamses.isEmpty()) {
+						ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+						toAddSignRequestParams = signRequestParamsService.scanSignatureFields(new ByteArrayInputStream(bytes), outputStream, docNumber, signRequestParamsDetectionPattern, true, orderSignsByName);
+						bytes = outputStream.toByteArray();
+					} else {
+						for (SignRequestParams signRequestParams : signRequestParamses) {
+							toAddSignRequestParams.add(createSignRequestParamsForDocument(signRequestParams));
+						}
+					}
+					signRequest.getSignRequestParams().addAll(toAddSignRequestParams);
+					Reports reports = validationService.validatePdf(new ByteArrayInputStream(bytes));
+					if(reports != null && reports.getSimpleReport() != null && reports.getSimpleReport().getSignatureIdList().isEmpty()) {
+						inputStream = pdfService.removeSignField(new ByteArrayInputStream(bytes), signRequest.getParentSignBook().getLiveWorkflow().getWorkflow(), keepSignFields);
+					}
+				} else if(contentType != null && contentType.contains("image")) {
+					bytes = pdfService.jpegToPdf(new ByteArrayInputStream(bytes), fileName).readAllBytes();
+					contentType = "application/pdf";
+					inputStream = new ByteArrayInputStream(bytes);
+				}
+				Document document = documentService.createDocument(inputStream, signRequest.getCreateBy(), fileName, contentType);
+				document.setPdfaCheck(pdfaCheck);
+				signRequest.getOriginalDocuments().add(document);
+				document.setParentId(signRequest.getId());
+			} else {
+				logger.warn("file size is 0");
+				throw new EsupSignatureIOException("Erreur lors de l'ajout des fichiers");
+			}
+		} catch (IOException e) {
+			logger.warn("error on adding files", e);
+			throw new EsupSignatureIOException("Erreur lors de l'ajout des fichiers", e);
+		} catch (EsupSignatureRuntimeException e) {
+			logger.warn("error on converting files", e);
+			throw new EsupSignatureIOException("Erreur lors de la conversion du document", e);
+		}
+	}
+
+	private SignRequestParams createSignRequestParamsForDocument(SignRequestParams source) {
+		SignRequestParams signRequestParams = signRequestParamsService.createSignRequestParams(source.getSignPageNumber(), source.getxPos(), source.getyPos());
+		signRequestParams.setSignDocumentNumber(source.getSignDocumentNumber());
+		signRequestParams.setSignWidth(source.getSignWidth());
+		signRequestParams.setSignHeight(source.getSignHeight());
+		signRequestParams.setSignScale(source.getSignScale());
+		signRequestParams.setPdSignatureFieldName(source.getPdSignatureFieldName());
+		signRequestParams.setRotate(source.getRotate());
+		return signRequestParams;
 	}
 
 	/**
-     * Met à jour une demande de signature en la définissant comme en attente de signature.
-     * Affecte une action vide à chaque destinataire de l'étape courante.
-     * Vérifie le type de signature et ajuste si nécessaire pour inclure la signature visible.
-     * Met également à jour le statut de la demande et enregistre une métrique personnalisée.
-     * Envoie les informations d'attente pour les cibles REST, si applicable.
-     *
-     * @param signRequest Demande de signature à mettre à jour en tant qu'attente de signature.
-     * @param authUserEppn Identifiant unique de l'utilisateur authentifié exécutant l'action.
-     */
-    @Transactional
-	public void pendingSignRequest(SignRequest signRequest, String authUserEppn) {
-		for (Recipient recipient : signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients()) {
-			signRequest.getRecipientHasSigned().put(recipient, actionService.getEmptyAction());
+	 * Met à jour une demande de signature en la définissant comme en attente de signature.
+	 * Affecte une action vide à chaque destinataire de l'étape courante.
+	 * Vérifie le type de signature et ajuste si nécessaire pour inclure la signature visible.
+	 * Met également à jour le statut de la demande et enregistre une métrique personnalisée.
+	 * Envoie les informations d'attente pour les cibles REST, si applicable.
+	 *
+	 * @param signRequest Demande de signature à mettre à jour en tant qu'attente de signature.
+	 * @param authUserEppn Identifiant unique de l'utilisateur authentifié exécutant l'action.
+	 */
+	@Transactional
+	public boolean pendingSignRequest(SignRequest signRequest, String authUserEppn) {
+		List<Recipient> currentStepRecipients = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients();
+		if (isAlreadyPendingForCurrentStep(signRequest, currentStepRecipients)) {
+			return false;
+		}
+		for (Recipient recipient : currentStepRecipients) {
+			if (!signRequest.getRecipientHasSigned().containsKey(recipient)) {
+				signRequest.getRecipientHasSigned().put(recipient, actionService.getEmptyAction());
+			}
 			if (isSigned(signRequest, null) && !signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.hiddenVisa)) {
 				if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().getValue() < 3) {
 					signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().setSignType(SignType.signature);
@@ -627,6 +805,13 @@ public class SignRequestService {
 		for (Target target : signRequest.getParentSignBook().getLiveWorkflow().getTargets().stream().filter(t -> t != null && fsAccessFactoryService.getPathIOType(t.getTargetUri()).equals(DocumentIOType.rest)).toList()) {
 			targetService.sendRest(target.getTargetUri(), signRequest.getId().toString(), "pending", signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber().toString(), authUserEppn, "");
 		}
+		return true;
+	}
+
+	private boolean isAlreadyPendingForCurrentStep(SignRequest signRequest, List<Recipient> currentStepRecipients) {
+		return SignRequestStatus.pending.equals(signRequest.getStatus())
+				&& !currentStepRecipients.isEmpty()
+				&& currentStepRecipients.stream().allMatch(recipient -> signRequest.getRecipientHasSigned().containsKey(recipient));
 	}
 
 	private boolean isNextWorkFlowStep(SignBook signBook) {
@@ -634,12 +819,12 @@ public class SignRequestService {
 	}
 
 	/**
-     * Vérifie si le SignBook possède davantage d'étapes dans le workflow actuel.
-     *
-     * @param signBook l'objet SignBook contenant le workflow et ses étapes.
-     * @return vrai si le workflow du SignBook actuel contient des étapes supplémentaires à celle en cours, faux sinon.
-     */
-    public boolean isMoreWorkflowStep(SignBook signBook) {
+	 * Vérifie si le SignBook possède davantage d'étapes dans le workflow actuel.
+	 *
+	 * @param signBook l'objet SignBook contenant le workflow et ses étapes.
+	 * @return vrai si le workflow du SignBook actuel contient des étapes supplémentaires à celle en cours, faux sinon.
+	 */
+	public boolean isMoreWorkflowStep(SignBook signBook) {
 		return signBook.getLiveWorkflow().getLiveWorkflowSteps().size() >= signBook.getLiveWorkflow().getCurrentStepNumber() + 1 && signBook.getLiveWorkflow().getCurrentStepNumber() > -1;
 	}
 
@@ -658,12 +843,12 @@ public class SignRequestService {
 	}
 
 	/**
-     * Avance à l'étape suivante du flux de travail pour un SignBook donné, si des étapes supplémentaires existent.
-     *
-     * @param signBook l'objet SignBook contenant le flux de travail en cours (LiveWorkflow) et ses étapes.
-     * @return true si le flux de travail a avancé vers une nouvelle étape, false si aucune étape supplémentaire n'existe.
-     */
-    public boolean nextWorkFlowStep(SignBook signBook) {
+	 * Avance à l'étape suivante du flux de travail pour un SignBook donné, si des étapes supplémentaires existent.
+	 *
+	 * @param signBook l'objet SignBook contenant le flux de travail en cours (LiveWorkflow) et ses étapes.
+	 * @return true si le flux de travail a avancé vers une nouvelle étape, false si aucune étape supplémentaire n'existe.
+	 */
+	public boolean nextWorkFlowStep(SignBook signBook) {
 		if (isMoreWorkflowStep(signBook)) {
 			signBook.getLiveWorkflow().setCurrentStep(signBook.getLiveWorkflow().getLiveWorkflowSteps().get(signBook.getLiveWorkflow().getCurrentStepNumber()));
 			return signBook.getLiveWorkflow().getCurrentStepNumber() > -1;
@@ -672,15 +857,15 @@ public class SignRequestService {
 	}
 
 	/**
-     * Vérifie si l'étape actuelle de la demande de signature est terminée.
-     *
-     * L'étape est considérée comme terminée si toutes les demandes de signature associées
-     * sont dans le statut "terminée" ou "refusée".
-     *
-     * @param signRequest une instance de SignRequest représentant la demande de signature à évaluer
-     * @return true si l'étape actuelle est terminée, false sinon
-     */
-    public boolean isCurrentStepCompleted(SignRequest signRequest) {
+	 * Vérifie si l'étape actuelle de la demande de signature est terminée.
+	 *
+	 * L'étape est considérée comme terminée si toutes les demandes de signature associées
+	 * sont dans le statut "terminée" ou "refusée".
+	 *
+	 * @param signRequest une instance de SignRequest représentant la demande de signature à évaluer
+	 * @return true si l'étape actuelle est terminée, false sinon
+	 */
+	public boolean isCurrentStepCompleted(SignRequest signRequest) {
 		return signRequest.getParentSignBook().getSignRequests().stream().allMatch(sr -> sr.getStatus().equals(SignRequestStatus.completed) || sr.getStatus().equals(SignRequestStatus.refused));
 	}
 
@@ -693,12 +878,12 @@ public class SignRequestService {
 	}
 
 	/**
-     * Complète les demandes de signature en attribuant le statut "Terminé" si elles ne sont pas refusées.
-     *
-     * @param signRequests liste des demandes de signature à compléter
-     * @param authUserEppn 'EPPN' de l'utilisateur authentifié effectuant cette action
-     */
-    @Transactional
+	 * Complète les demandes de signature en attribuant le statut "Terminé" si elles ne sont pas refusées.
+	 *
+	 * @param signRequests liste des demandes de signature à compléter
+	 * @param authUserEppn 'EPPN' de l'utilisateur authentifié effectuant cette action
+	 */
+	@Transactional
 	public void completeSignRequests(List<SignRequest> signRequests, String authUserEppn) {
 		for(SignRequest signRequest : signRequests) {
 			if(!signRequest.getStatus().equals(SignRequestStatus.refused)) {
@@ -707,15 +892,15 @@ public class SignRequestService {
 		}
 	}
 
-    /**
-     * Ajoute un post-it à un SignBook identifié par son identifiant.
-     *
-     * @param signBookId L'identifiant du SignBook auquel ajouter un post-it.
-     * @param comment Le commentaire à ajouter sous forme de post-it.
-     * @param userEppn L'identifiant EPPN de l'utilisateur effectuant l'action.
-     * @param authUserEppn L'identifiant EPPN de l'utilisateur authentifié.
-     */
-    @Transactional
+	/**
+	 * Ajoute un post-it à un SignBook identifié par son identifiant.
+	 *
+	 * @param signBookId L'identifiant du SignBook auquel ajouter un post-it.
+	 * @param comment Le commentaire à ajouter sous forme de post-it.
+	 * @param userEppn L'identifiant EPPN de l'utilisateur effectuant l'action.
+	 * @param authUserEppn L'identifiant EPPN de l'utilisateur authentifié.
+	 */
+	@Transactional
 	public void addPostit(Long signBookId, String comment, String userEppn, String authUserEppn) {
 		SignBook signBook = signBookRepository.findById(signBookId).orElseThrow();
 		for(SignRequest signRequest : signBook.getSignRequests()) {
@@ -764,11 +949,11 @@ public class SignRequestService {
 	}
 
 	/**
-     * Supprime les paramètres Nexu et ses signatures associées d'une demande signature.
-     *
-     * @param id L'identifiant de SignRequest à supprimer.
-     */
-    @Transactional
+	 * Supprime les paramètres Nexu et ses signatures associées d'une demande signature.
+	 *
+	 * @param id L'identifiant de SignRequest à supprimer.
+	 */
+	@Transactional
 	public void deleteNexu(Long id) {
 		SignRequest signRequest = signRequestRepository.findById(id).orElseThrow();
 		List<NexuSignature> nexuSignatures = nexuSignatureRepository.findBySignRequestId(id);
@@ -779,62 +964,62 @@ public class SignRequestService {
 	}
 
 	/**
-     * Récupère le dernier fichier signé dans le cadre d'une demande de signature.
-     *
-     * @param signRequest la demande de signature contenant les informations nécessaires pour identifier le fichier
-     *                    à récupérer. Elle doit inclure des informations sur le statut de la demande et l'URI
-     *                    du document exporté, le cas échéant.
-     * @return un objet FsFile représentant le dernier fichier signé. Dans le cas où la demande de signature a été
-     *         exportée et que l'URI du document exporté est valide, le fichier correspondant est retourné.
-     *         Si l'URI n'est pas valide, ou si la demande n'est pas marquée comme "exportée", le dernier document
-     *         "à signer" est utilisé pour générer un FsFile.
-     * @throws EsupSignatureFsException si une erreur survient lors de l'accès au service de fichiers ou du
-     *                                  traitement de l'URI du document exporté.
-     */
-    @Transactional
-    public FsFile getLastSignedFsFile(SignRequest signRequest) throws EsupSignatureFsException {
-      if (!signRequest.getParentSignBook().getArchiveStatus().equals(ArchiveStatus.none)) {
-        if (signRequest.getExportedDocumentURI() != null && !signRequest.getExportedDocumentURI().startsWith("mail")) {
-          FsAccessService fsAccessService = fsAccessFactoryService.getFsAccessService(signRequest.getExportedDocumentURI());
-          return fsAccessService.getFileFromURI(signRequest.getExportedDocumentURI());
-        }
-      }
-      Document lastSignedDocument = getToSignDocuments(signRequest.getId()).get(0);
-      return new FsFile(lastSignedDocument.getInputStream(), lastSignedDocument.getFileName(), lastSignedDocument.getContentType());
-    }
+	 * Récupère le dernier fichier signé dans le cadre d'une demande de signature.
+	 *
+	 * @param signRequest la demande de signature contenant les informations nécessaires pour identifier le fichier
+	 *                    à récupérer. Elle doit inclure des informations sur le statut de la demande et l'URI
+	 *                    du document exporté, le cas échéant.
+	 * @return un objet FsFile représentant le dernier fichier signé. Dans le cas où la demande de signature a été
+	 *         exportée et que l'URI du document exporté est valide, le fichier correspondant est retourné.
+	 *         Si l'URI n'est pas valide, ou si la demande n'est pas marquée comme "exportée", le dernier document
+	 *         "à signer" est utilisé pour générer un FsFile.
+	 * @throws EsupSignatureFsException si une erreur survient lors de l'accès au service de fichiers ou du
+	 *                                  traitement de l'URI du document exporté.
+	 */
+	@Transactional
+	public FsFile getLastSignedFsFile(SignRequest signRequest) throws EsupSignatureFsException {
+		if (!signRequest.getParentSignBook().getArchiveStatus().equals(ArchiveStatus.none)) {
+			if (signRequest.getExportedDocumentURI() != null && !signRequest.getExportedDocumentURI().startsWith("mail")) {
+				FsAccessService fsAccessService = fsAccessFactoryService.getFsAccessService(signRequest.getExportedDocumentURI());
+				return fsAccessService.getFileFromURI(signRequest.getExportedDocumentURI());
+			}
+		}
+		Document lastSignedDocument = getToSignDocuments(signRequest.getId()).get(0);
+		return new FsFile(lastSignedDocument.getInputStream(), lastSignedDocument.getFileName(), lastSignedDocument.getContentType());
+	}
 
-    /**
-     * Met à jour le statut d'une demande de signature et crée un log associé.
-     *
-     * @param signRequestId L'identifiant de la demande de signature.
-     * @param signRequestStatus Le nouveau statut de la demande de signature.
-     * @param action L'action effectuée sur la demande.
-     * @param comment Un commentaire associé à l'action.
-     * @param returnCode Le code de retour associé à l'action.
-     * @param pageNumber Le numéro de la page concernée.
-     * @param posX La position horizontale associée à l'action.
-     * @param posY La position verticale associée à l'action.
-     * @param stepNumber Le numéro de l'étape du processus.
-     * @param userEppn L'identifiant unique de l'utilisateur principal.
-     * @param authUserEppn L'identifiant unique de l'utilisateur authentifié.
-     * @return Un objet Log représentant le log créé associé à la mise à jour du statut.
-     */
-    @Transactional
+	/**
+	 * Met à jour le statut d'une demande de signature et crée un log associé.
+	 *
+	 * @param signRequestId L'identifiant de la demande de signature.
+	 * @param signRequestStatus Le nouveau statut de la demande de signature.
+	 * @param action L'action effectuée sur la demande.
+	 * @param comment Un commentaire associé à l'action.
+	 * @param returnCode Le code de retour associé à l'action.
+	 * @param pageNumber Le numéro de la page concernée.
+	 * @param posX La position horizontale associée à l'action.
+	 * @param posY La position verticale associée à l'action.
+	 * @param stepNumber Le numéro de l'étape du processus.
+	 * @param userEppn L'identifiant unique de l'utilisateur principal.
+	 * @param authUserEppn L'identifiant unique de l'utilisateur authentifié.
+	 * @return Un objet Log représentant le log créé associé à la mise à jour du statut.
+	 */
+	@Transactional
 	public Log updateStatus(Long signRequestId, SignRequestStatus signRequestStatus, String action, String comment, String returnCode, Integer pageNumber, Integer posX, Integer posY, Integer stepNumber, String userEppn, String authUserEppn) {
 		SignBook signBook = getById(signRequestId).getParentSignBook();
 		return logService.create(signRequestId, signBook.getSubject(), signBook.getWorkflowName(), signRequestStatus, action, comment, returnCode, pageNumber, posX, posY, stepNumber, userEppn, authUserEppn);
 	}
 
 	/**
-     * Supprime une demande de signature en fonction de son identifiant et de l'utilisateur spécifié.
-     * La suppression peut être définitive ou non, en fonction de l'état actuel de la demande.
-     *
-     * @param signRequestId L'identifiant de la demande de signature à supprimer.
-     * @param userEppn L'identifiant de l'utilisateur effectuant l'opération de suppression.
-     * @return L'identifiant de la demande parent (SignBook) si la suppression s'est effectuée correctement.
-     * @throws EsupSignatureRuntimeException Si la demande de signature ne peut pas être supprimée.
-     */
-  @Transactional
+	 * Supprime une demande de signature en fonction de son identifiant et de l'utilisateur spécifié.
+	 * La suppression peut être définitive ou non, en fonction de l'état actuel de la demande.
+	 *
+	 * @param signRequestId L'identifiant de la demande de signature à supprimer.
+	 * @param userEppn L'identifiant de l'utilisateur effectuant l'opération de suppression.
+	 * @return L'identifiant de la demande parent (SignBook) si la suppression s'est effectuée correctement.
+	 * @throws EsupSignatureRuntimeException Si la demande de signature ne peut pas être supprimée.
+	 */
+	@Transactional
 	public Long delete(Long signRequestId, String userEppn) {
 		logger.info("start delete of signrequest " + signRequestId);
 		SignRequest signRequest = getById(signRequestId);
@@ -871,22 +1056,27 @@ public class SignRequestService {
 	}
 
 	/**
-     * Supprime définitivement une demande de signature ainsi que ses données associées, ses commentaires et ses paramètres,
-     * tout en effectuant le nettoyage approprié sur les objets liés et en notifiant éventuellement les cibles avec des
-     * informations mises à jour sur l'état de la suppression.
-     *
-     * @param signRequestId L'identifiant de la demande de signature à supprimer définitivement.
-     * @param userEppn Le nom principal de l'utilisateur (EPPN) effectuant l'opération de suppression.
-     * @return L'identifiant du livre de signatures parent si celui-ci n'est pas supprimé ou 0 si le livre de signatures
-     *         a été supprimé.
-     */
-  @Transactional
+	 * Supprime définitivement une demande de signature ainsi que ses données associées, ses commentaires et ses paramètres,
+	 * tout en effectuant le nettoyage approprié sur les objets liés et en notifiant éventuellement les cibles avec des
+	 * informations mises à jour sur l'état de la suppression.
+	 *
+	 * @param signRequestId L'identifiant de la demande de signature à supprimer définitivement.
+	 * @param userEppn Le nom principal de l'utilisateur (EPPN) effectuant l'opération de suppression.
+	 * @return L'identifiant du livre de signatures parent si celui-ci n'est pas supprimé ou 0 si le livre de signatures
+	 *         a été supprimé.
+	 */
+	@Transactional
 	public Long deleteDefinitive(Long signRequestId, String userEppn) {
+		return deleteDefinitive(signRequestId, userEppn, true);
+	}
+
+	@Transactional
+	Long deleteDefinitive(Long signRequestId, String userEppn, boolean deleteEmptySignBook) {
 		logger.info("start definitive delete of signrequest " + signRequestId);
 		SignRequest signRequest = getById(signRequestId);
 		SignBook signBook = signRequest.getParentSignBook();
 //		boolean testAllNone = signRequest.getRecipientHasSigned().values().stream().allMatch(a -> a.getActionType().equals(ActionType.none));
-//		int step = signBook.getLiveWorkflow().getLiveWorkflowSteps().indexOf(signBook.getLiveWorkflow().getCurrentStep());
+//		int step = signBookLight.getLiveWorkflow().getLiveWorkflowSteps().indexOf(signBookLight.getLiveWorkflow().getCurrentStep());
 //		if(testAllNone && !signRequest.getDeleted() && step > 0) {
 //			return -1L;
 //		}
@@ -903,7 +1093,15 @@ public class SignRequestService {
 		for (Long commentId : commentsIds) {
 			commentService.deleteComment(commentId, signRequest);
 		}
+		List<SignRequest> clonedSignRequests = signRequestRepository.findByClonedFromId(signRequestId);
+		if(!clonedSignRequests.isEmpty()) {
+			for (SignRequest clonedSignRequest : clonedSignRequests) {
+				clonedSignRequest.setClonedFrom(null);
+			}
+			signRequestRepository.saveAll(clonedSignRequests);
+		}
 		signBook.getSignRequests().remove(signRequest);
+		signBook.getSignRequests().removeIf(Objects::isNull);
 		for(SignRequestParams signRequestParams : signRequest.getSignRequestParams()) {
 			for(LiveWorkflowStep liveWorkflowStep : signBook.getLiveWorkflow().getLiveWorkflowSteps()) {
 				liveWorkflowStep.getSignRequestParams().remove(signRequestParams);
@@ -920,10 +1118,12 @@ public class SignRequestService {
 		long signBookId = 0;
 		if(!signBook.getSignRequests().isEmpty()) {
 			signBookId = signBook.getId();
-		} else {
+		} else if(deleteEmptySignBook) {
 			signBookRepository.delete(signBook);
+		} else {
+			signBookId = signBook.getId();
 		}
-		if(!signBook.getDeleted() && signBook.getStatus().equals(SignRequestStatus.pending) && signBook.getSignRequests().stream().allMatch(s -> s.getStatus().equals(SignRequestStatus.signed) || s.getStatus().equals(SignRequestStatus.completed) || s.getStatus().equals(SignRequestStatus.exported) || s.getStatus().equals(SignRequestStatus.refused))) {
+		if(!signBook.getSignRequests().isEmpty() && !signBook.getDeleted() && signBook.getStatus().equals(SignRequestStatus.pending) && signBook.getSignRequests().stream().filter(Objects::nonNull).allMatch(s -> s.getStatus().equals(SignRequestStatus.signed) || s.getStatus().equals(SignRequestStatus.completed) || s.getStatus().equals(SignRequestStatus.exported) || s.getStatus().equals(SignRequestStatus.refused))) {
 			boolean isNextWorkflow = nextWorkFlowStep(signBook);
 			if(isNextWorkflow) {
 				for(SignRequest signRequest1 : signRequest.getParentSignBook().getSignRequests()) {
@@ -932,14 +1132,14 @@ public class SignRequestService {
 					}
 				}
 			} else {
-				if(signBook.getSignRequests().stream().allMatch(s -> s.getStatus().equals(SignRequestStatus.refused))) {
+				if(signBook.getSignRequests().stream().filter(Objects::nonNull).allMatch(s -> s.getStatus().equals(SignRequestStatus.refused))) {
 					signBook.setStatus(SignRequestStatus.refused);
 				} else {
 					signBook.setStatus(SignRequestStatus.completed);
 				}
 			}
 		}
-		if(signRequest.getParentSignBook().getSignRequests().stream().allMatch(s -> s.getStatus().equals(SignRequestStatus.refused))) {
+		if(!signRequest.getParentSignBook().getSignRequests().isEmpty() && signRequest.getParentSignBook().getSignRequests().stream().filter(Objects::nonNull).allMatch(s -> s.getStatus().equals(SignRequestStatus.refused))) {
 			signRequest.getParentSignBook().setStatus(SignRequestStatus.refused);
 		}
 		return signBookId;
@@ -954,13 +1154,13 @@ public class SignRequestService {
 	}
 
 	/**
-     * Vérifie si une demande de signature peut être supprimée.
-     *
-     * @param signRequest la demande de signature à évaluer.
-     * @param userEppn l'identifiant unique (eppn) de l'utilisateur effectuant l'action.
-     * @return true si la demande de signature est supprimable, false sinon.
-     */
-    public boolean isDeletetable(SignRequest signRequest, String userEppn) {
+	 * Vérifie si une demande de signature peut être supprimée.
+	 *
+	 * @param signRequest la demande de signature à évaluer.
+	 * @param userEppn l'identifiant unique (eppn) de l'utilisateur effectuant l'action.
+	 * @return true si la demande de signature est supprimable, false sinon.
+	 */
+	public boolean isDeletetable(SignRequest signRequest, String userEppn) {
 		User user = userService.getByEppn(userEppn);
 		return signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() == null
 				||
@@ -974,15 +1174,15 @@ public class SignRequestService {
 	}
 
 	/**
-     * Vérifie les utilisateurs temporaires associés à un SignBook basé sur son identifiant et une liste de destinataires.
-     * Si des utilisateurs temporaires sont trouvés et correspondent aux destinataires fournis, effectue des actions spécifiques
-     * comme l'envoi d'email ou la mise à jour des informations d'utilisateur. Retourne true si la vérification échoue, sinon false.
-     *
-     * @param id l'identifiant du SignBook à vérifier
-     * @param recipients la liste des destinataires (RecipientWsDto) à comparer avec les utilisateurs temporaires
-     * @throws EsupSignatureRuntimeException en cas d'erreur lors de l'opération
-     */
-    @Transactional
+	 * Vérifie les utilisateurs temporaires associés à un SignBook basé sur son identifiant et une liste de destinataires.
+	 * Si des utilisateurs temporaires sont trouvés et correspondent aux destinataires fournis, effectue des actions spécifiques
+	 * comme l'envoi d'email ou la mise à jour des informations d'utilisateur. Retourne true si la vérification échoue, sinon false.
+	 *
+	 * @param id l'identifiant du SignBook à vérifier
+	 * @param recipients la liste des destinataires (RecipientWsDto) à comparer avec les utilisateurs temporaires
+	 * @throws EsupSignatureRuntimeException en cas d'erreur lors de l'opération
+	 */
+	@Transactional
 	public void checkTempUsers(Long id, List<RecipientWsDto> recipients) throws EsupSignatureRuntimeException {
 		SignBook signBook = signBookRepository.findById(id).get();
 		List<User> tempUsers = userService.getTempUsers(signBook, recipients);
@@ -994,12 +1194,12 @@ public class SignRequestService {
 						//TODO envoi mail spécifique
 					} else if (tempUser.getUserType().equals(UserType.external)) {
 						RecipientWsDto recipientWsDto = recipients.stream().filter(recipientWsDto1 -> recipientWsDto1.getEmail().toLowerCase().equals(tempUser.getEmail().toLowerCase(Locale.ROOT))).findFirst().get();
-                        if(StringUtils.hasText(recipientWsDto.getFirstName())) {
-                            tempUser.setFirstname(recipientWsDto.getFirstName());
-                        }
-                        if(StringUtils.hasText(recipientWsDto.getName())) {
-                            tempUser.setName(recipientWsDto.getName());
-                        }
+						if(StringUtils.hasText(recipientWsDto.getFirstName())) {
+							tempUser.setFirstname(recipientWsDto.getFirstName());
+						}
+						if(StringUtils.hasText(recipientWsDto.getName())) {
+							tempUser.setName(recipientWsDto.getName());
+						}
 						if(StringUtils.hasText(recipientWsDto.getPhone())) {
 							userService.updatePhone(tempUser.getEppn(), recipientWsDto.getPhone());
 						}
@@ -1010,17 +1210,17 @@ public class SignRequestService {
 	}
 
 	/**
-     * Pré-remplit les champs d'une demande de signature en fonction des données disponibles,
-     * du formulaire associé et des étapes du workflow actives.
-     * Les valeurs par défaut sont définies à partir des données existantes.
-     * Les autorisations d'édition des champs sont déterminées en fonction de l'utilisateur
-     * et de l'étape active actuelle dans le workflow.
-     *
-     * @param signRequestId l'identifiant de la demande de signature à traiter
-     * @param userEppn le nom principal (EPPN) de l'utilisateur actuel
-     * @return une liste de champs (`Field`) avec les valeurs pré-remplies et leurs statuts d'édition mis à jour
-     */
-    @Transactional
+	 * Pré-remplit les champs d'une demande de signature en fonction des données disponibles,
+	 * du formulaire associé et des étapes du workflow actives.
+	 * Les valeurs par défaut sont définies à partir des données existantes.
+	 * Les autorisations d'édition des champs sont déterminées en fonction de l'utilisateur
+	 * et de l'étape active actuelle dans le workflow.
+	 *
+	 * @param signRequestId l'identifiant de la demande de signature à traiter
+	 * @param userEppn le nom principal (EPPN) de l'utilisateur actuel
+	 * @return une liste de champs (`Field`) avec les valeurs pré-remplies et leurs statuts d'édition mis à jour
+	 */
+	@Transactional
 	public List<Field> prefillSignRequestFields(Long signRequestId, String userEppn) {
 		User user = userService.getByEppn(userEppn);
 		SignRequest signRequest = getById(signRequestId);
@@ -1032,8 +1232,11 @@ public class SignRequestService {
 				if (!"".equals(data.getForm().getPreFillType()) && signRequest.getParentSignBook().getLiveWorkflow() != null && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() != null && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getUsers().contains(user)) {
 					prefilledFields = preFillService.getPreFilledFieldsByServiceName(data.getForm().getPreFillType(), fields, user, signRequest);
 					for (Field field : prefilledFields) {
+						WorkflowStep currentWorkflowStep = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() != null
+								? signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep()
+								: null;
 						if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() == null
-								|| !field.getWorkflowSteps().contains(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep())) {
+								|| !containsWorkflowStep(field.getWorkflowSteps(), currentWorkflowStep)) {
 							field.setDefaultValue("");
 						}
 					}
@@ -1044,16 +1247,16 @@ public class SignRequestService {
 		}
 		for (Field field : prefilledFields) {
 			if (field.getName() != null
-				&& !data.getDatas().isEmpty()
-				&& data.getDatas().get(field.getName()) != null
-				&& !data.getDatas().get(field.getName()).isEmpty()) {
+					&& !data.getDatas().isEmpty()
+					&& data.getDatas().get(field.getName()) != null
+					&& !data.getDatas().get(field.getName()).isEmpty()) {
 				field.setDefaultValue(data.getDatas().get(field.getName()));
 			}
 			for(WorkflowStep workflowStep : field.getWorkflowSteps()) {
-				Optional<LiveWorkflowStep> liveWorkflowStep = signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().stream().filter(l -> workflowStep.equals(l.getWorkflowStep())).findFirst();
+				Optional<LiveWorkflowStep> liveWorkflowStep = signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().stream().filter(l -> sameWorkflowStep(workflowStep, l.getWorkflowStep())).findFirst();
 				if(liveWorkflowStep.isPresent()) {
 					if(liveWorkflowStep.get().getRecipients().stream().anyMatch(recipient -> recipient.getUser().getEppn().equals(userEppn))
-						&& liveWorkflowStep.get().equals(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep())) {
+							&& liveWorkflowStep.get().equals(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep())) {
 						field.setEditable(true);
 						break;
 					} else{
@@ -1067,15 +1270,32 @@ public class SignRequestService {
 		return prefilledFields;
 	}
 
+	private boolean containsWorkflowStep(List<WorkflowStep> workflowSteps, WorkflowStep targetWorkflowStep) {
+		if (workflowSteps == null || workflowSteps.isEmpty() || targetWorkflowStep == null) {
+			return false;
+		}
+		return workflowSteps.stream().anyMatch(workflowStep -> sameWorkflowStep(workflowStep, targetWorkflowStep));
+	}
+
+	private boolean sameWorkflowStep(WorkflowStep workflowStep1, WorkflowStep workflowStep2) {
+		if (workflowStep1 == null || workflowStep2 == null) {
+			return false;
+		}
+		if (workflowStep1.getId() != null && workflowStep2.getId() != null) {
+			return workflowStep1.getId().equals(workflowStep2.getId());
+		}
+		return workflowStep1.equals(workflowStep2);
+	}
+
 	/**
-     * Vérifie si une demande de signature est signée en fonction des rapports et
-     * des documents associés.
-     *
-     * @param signRequest l'objet contenant les informations sur la demande de signature
-     * @param reports l'objet contenant les rapports connexes, peut être null
-     * @return true si la demande de signature est signée, false sinon
-     */
-    @Transactional
+	 * Vérifie si une demande de signature est signée en fonction des rapports et
+	 * des documents associés.
+	 *
+	 * @param signRequest l'objet contenant les informations sur la demande de signature
+	 * @param reports l'objet contenant les rapports connexes, peut être null
+	 * @return true si la demande de signature est signée, false sinon
+	 */
+	@Transactional
 	public boolean isSigned(SignRequest signRequest, Reports reports) {
 		try {
 			if(reports == null) {
@@ -1092,13 +1312,13 @@ public class SignRequestService {
 	}
 
 	/**
-     * Vérifie si un document dans un classeur de signatures est signé.
-     *
-     * @param signBook le classeur de signatures contenant différentes demandes de signature
-     * @param reports l'objet de rapports utilisé pour suivre les actions ou les états des signatures
-     * @return true si au moins une des demandes de signature dans le classeur est signée, sinon false
-     */
-    @Transactional
+	 * Vérifie si un document dans un classeur de signatures est signé.
+	 *
+	 * @param signBook le classeur de signatures contenant différentes demandes de signature
+	 * @param reports l'objet de rapports utilisé pour suivre les actions ou les états des signatures
+	 * @return true si au moins une des demandes de signature dans le classeur est signée, sinon false
+	 */
+	@Transactional
 	public boolean isSigned(SignBook signBook, Reports reports) {
 		for (SignRequest signRequest : signBook.getSignRequests()) {
 			if (isSigned(signRequest, reports)) {
@@ -1109,14 +1329,14 @@ public class SignRequestService {
 	}
 
 	/**
-     * Validation DSS d'une requête de signature en fonction de son identifiant.
-     *
-     * @param signRequestId L'identifiant de la requête de signature à valider.
-     * @return Un objet Reports contenant les informations de validation si des documents à signer existent,
-     *         sinon retourne null.
-     * @throws IOException Si une erreur d'entrée/sortie se produit lors de la lecture des documents.
-     */
-    @Transactional
+	 * Validation DSS d'une requête de signature en fonction de son identifiant.
+	 *
+	 * @param signRequestId L'identifiant de la requête de signature à valider.
+	 * @return Un objet Reports contenant les informations de validation si des documents à signer existent,
+	 *         sinon retourne null.
+	 * @throws IOException Si une erreur d'entrée/sortie se produit lors de la lecture des documents.
+	 */
+	@Transactional
 	public Reports validate(long signRequestId) throws IOException {
 		List<Document> documents = getToSignDocuments(signRequestId);
 		if(!documents.isEmpty()) {
@@ -1128,24 +1348,24 @@ public class SignRequestService {
 	}
 
 	/**
-     * Ajoute des pièces jointes à une demande de signature. Les fichiers fournis sont
-     * ajoutés à la demande de signature ainsi qu'un éventuel lien fourni.
-     * Les pièces jointes sont ajoutées uniquement si elles contiennent des données.
-     *
-     * @param multipartFiles un tableau de fichiers à ajouter en tant que pièces jointes
-     *                       à la demande de signature, peut être null
-     * @param link un lien à associer à la demande de signature, peut être null ou vide
-     * @param signRequestId l'identifiant de la demande de signature à laquelle les fichiers
-     *                      et/ou le lien seront ajoutés
-     * @param authUserEppn l'identifiant de l'utilisateur authentifié effectuant l'ajout
-     * @return true si au moins une pièce jointe ou un lien a été ajouté avec succès,
-     *         false sinon
-     * @throws EsupSignatureIOException si une erreur liée à l'ajout des pièces jointes se produit
-     */
-    @Transactional
+	 * Ajoute des pièces jointes à une demande de signature. Les fichiers fournis sont
+	 * ajoutés à la demande de signature ainsi qu'un éventuel lien fourni.
+	 * Les pièces jointes sont ajoutées uniquement si elles contiennent des données.
+	 *
+	 * @param multipartFiles un tableau de fichiers à ajouter en tant que pièces jointes
+	 *                       à la demande de signature, peut être null
+	 * @param link un lien à associer à la demande de signature, peut être null ou vide
+	 * @param signRequestId l'identifiant de la demande de signature à laquelle les fichiers
+	 *                      et/ou le lien seront ajoutés
+	 * @param authUserEppn l'identifiant de l'utilisateur authentifié effectuant l'ajout
+	 * @return true si au moins une pièce jointe ou un lien a été ajouté avec succès,
+	 *         false sinon
+	 * @throws EsupSignatureIOException si une erreur liée à l'ajout des pièces jointes se produit
+	 */
+	@Transactional
 	public boolean addAttachement(MultipartFile[] multipartFiles, String link, Long signRequestId, String authUserEppn) throws EsupSignatureIOException {
 		SignRequest signRequest = getById(signRequestId);
-		if(isEditable(signRequestId, authUserEppn) || (isUserInRecipients(signRequest, authUserEppn) && signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null && signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getExternalCanEditAttachments())) {
+		if(canAddAttachment(signRequest, authUserEppn)) {
 			int nbAttachmentAdded = 0;
 			if (multipartFiles != null) {
 				for (MultipartFile multipartFile : multipartFiles) {
@@ -1156,8 +1376,7 @@ public class SignRequestService {
 					}
 				}
 			}
-			if (link != null && !link.isEmpty()) {
-				signRequest.getLinks().add(link);
+			if (link != null && !link.isEmpty() && signRequest.getLinks().add(link)) {
 				nbAttachmentAdded++;
 			}
 			return nbAttachmentAdded > 0;
@@ -1166,33 +1385,59 @@ public class SignRequestService {
 		}
 	}
 
-    private void addAttachmentToSignRequest(SignRequest signRequest, String authUserEppn, MultipartFile... multipartFiles) throws EsupSignatureIOException {
-        User user = userService.getByEppn(authUserEppn);
-        for(MultipartFile multipartFile : multipartFiles) {
-            try {
-                Document document = documentService.createDocument(multipartFile.getInputStream(), user, "attachement_" + signRequest.getAttachments().size() + "_" + multipartFile.getOriginalFilename(), multipartFile.getContentType());
-                signRequest.getAttachments().add(document);
-                document.setParentId(signRequest.getId());
-            } catch (IOException e) {
-                throw new EsupSignatureIOException(e.getMessage(), e);
-            }
-        }
-    }
+	@Transactional(readOnly = true)
+	public boolean canAddAttachment(Long signRequestId, String userEppn) {
+		return canAddAttachment(getById(signRequestId), userEppn);
+	}
 
-    /**
-     * Supprime une pièce jointe associée à une demande de signature.
-     *
-     * @param id l'identifiant de la demande de signature
-     * @param attachementId l'identifiant de la pièce jointe à supprimer
-     * @param redirectAttributes les attributs utilisés pour transmettre des informations supplémentaires
-     *        après la redirection, comme les messages d'erreur ou de succès
-     */
-    @Transactional
-	public void removeAttachement(Long id, Long attachementId, RedirectAttributes redirectAttributes) {
+	private boolean canAddAttachment(SignRequest signRequest, String userEppn) {
+		if (signRequest == null || userEppn == null) {
+			return false;
+		}
+		if (isEditable(signRequest.getId(), userEppn)) {
+			return true;
+		}
+		SignBook signBook = signRequest.getParentSignBook();
+		Workflow workflow = signBook != null && signBook.getLiveWorkflow() != null
+				? signBook.getLiveWorkflow().getWorkflow()
+				: null;
+		if (workflow == null || Boolean.TRUE.equals(signRequest.getDeleted()) || signRequest.getStatus() != SignRequestStatus.pending) {
+			return false;
+		}
+		User user = userService.getByEppn(userEppn);
+		boolean workflowManager = user != null
+				&& (workflow.getManagers().contains(user.getEmail())
+				|| workflow.getDashboardRoles().stream().anyMatch(user.getRoles()::contains));
+		boolean recipientCanEditAttachments = isUserInRecipients(signRequest, userEppn)
+				&& workflow.getExternalCanEditAttachments();
+		return workflowManager || recipientCanEditAttachments;
+	}
+
+	private void addAttachmentToSignRequest(SignRequest signRequest, String authUserEppn, MultipartFile... multipartFiles) throws EsupSignatureIOException {
+		User user = userService.getByEppn(authUserEppn);
+		for(MultipartFile multipartFile : multipartFiles) {
+			try {
+				Document document = documentService.createDocument(multipartFile.getInputStream(), user, "attachement_" + signRequest.getAttachments().size() + "_" + multipartFile.getOriginalFilename(), multipartFile.getContentType());
+				signRequest.getAttachments().add(document);
+				document.setParentId(signRequest.getId());
+			} catch (IOException e) {
+				throw new EsupSignatureIOException(e.getMessage(), e);
+			}
+		}
+	}
+
+	/**
+	 * Supprime une pièce jointe associée à une demande de signature.
+	 *
+	 * @param id l'identifiant de la demande de signature
+	 * @param attachementId l'identifiant de la pièce jointe à supprimer
+	 */
+	@Transactional
+	public void removeAttachement(Long id, Long attachementId) {
 		SignRequest signRequest = getById(id);
 		Document attachement = documentService.getById(attachementId);
 		if (!attachement.getParentId().equals(signRequest.getId())) {
-			redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Pièce jointe non trouvée ..."));
+			throw new EsupSignatureRuntimeException("Pièce jointe non trouvée ...");
 		} else {
 			signRequest.getAttachments().remove(attachement);
 			documentService.delete(attachement);
@@ -1200,53 +1445,134 @@ public class SignRequestService {
 	}
 
 	/**
-     * Supprime un lien spécifique d'une requête de signature donnée.
-     *
-     * @param id L'identifiant unique de la requête de signature à partir de laquelle le lien sera supprimé.
-     * @param linkId L'identifiant unique du lien à supprimer dans la liste des liens de la requête.
-     */
-    @Transactional
+	 * Supprime un lien spécifique d'une requête de signature donnée.
+	 *
+	 * @param id L'identifiant unique de la requête de signature à partir de laquelle le lien sera supprimé.
+	 * @param linkId L'identifiant unique du lien à supprimer dans la liste des liens de la requête.
+	 */
+	@Transactional
 	public void removeLink(Long id, Integer linkId) {
 		SignRequest signRequest = getById(id);
-		String toRemove = new ArrayList<>(signRequest.getLinks()).get(linkId);
+		List<String> links = new ArrayList<>(signRequest.getLinks());
+		if (linkId == null || linkId < 0 || linkId >= links.size()) {
+			throw new EsupSignatureRuntimeException("Lien non trouvé ...");
+		}
+		String toRemove = links.get(linkId);
 		signRequest.getLinks().remove(toRemove);
 	}
 
 	@Transactional
 	public Long addSpot(Long id, Integer pageNumber, Integer posX, Integer posY, Integer signWidth, Integer signHeight, Integer spotStepNumber) throws EsupSignatureException {
+		return addSpot(id, pageNumber, posX, posY, signWidth, signHeight, spotStepNumber, null);
+	}
+
+	@Transactional
+	public Long addSpot(Long id, Integer pageNumber, Integer posX, Integer posY, Integer signWidth, Integer signHeight, Integer spotStepNumber, Long recipientId) throws EsupSignatureException {
 		SignRequest signRequest = getById(id);
-		if(signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().get(spotStepNumber - 1).getRecipients().size() > 1 && signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().get(spotStepNumber - 1).getAllSignToComplete()) {
-			throw new EsupSignatureException("Impossible d'ajouter un champ signature s'il y plusieurs participants dans l'étape");
+		LiveWorkflowStep liveWorkflowStep = signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().get(spotStepNumber - 1);
+		Recipient recipient = resolveSpotRecipient(liveWorkflowStep, recipientId);
+		if(recipient == null && liveWorkflowStep.getRecipients().size() > 1 && Boolean.TRUE.equals(liveWorkflowStep.getAllSignToComplete())) {
+			throw new EsupSignatureException("Impossible d'ajouter un champ signature générique s'il y a plusieurs participants dans l'étape ; merci de cibler un destinataire");
 		}
+		validateSpotBounds(signRequest, pageNumber, posX, posY, signWidth, signHeight);
 		SignRequestParams signRequestParams = signRequestParamsService.createSignRequestParams(pageNumber, posX, posY);
 		if(signWidth != null && signHeight != null) {
 			signRequestParams.setSignWidth(signWidth);
 			signRequestParams.setSignHeight(signHeight);
 		}
-		int docNumber = signRequest.getParentSignBook().getSignRequests().indexOf(signRequest);
+		int docNumber = getOrderInSignBookOrFallback(signRequest);
 		signRequestParams.setSignDocumentNumber(docNumber);
-		signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().get(spotStepNumber - 1).getSignRequestParams().add(signRequestParams);
+		signRequestParams.setRecipient(recipient);
+		liveWorkflowStep.getSignRequestParams().add(signRequestParams);
 		return signRequestParams.getId();
 	}
 
-    /**
-     * Ajoute un commentaire ou un emplacement de signature à une demande de signature.
-     *
-     * @param id l'identifiant de la demande de signature
-     * @param commentText le texte du commentaire
-     * @param commentPageNumber le numéro de page où le commentaire doit être placé
-     * @param commentPosX la position horizontale du commentaire (X)
-     * @param commentPosY la position verticale du commentaire (Y)
-     * @param commentWidth la largeur du commentaire (optionnel)
-     * @param commentHeight la hauteur du commentaire (optionnel)
-     * @param postit indique si le commentaire est un post-it ("on") ou non
-     * @param spotStepNumber le numéro de l'étape du processus de signature à laquelle l'emplacement se réfère (optionnel)
-     * @param authUserEppn le eppn de l'utilisateur authentifié qui effectue l'opération
-     * @param userEppn le eppn de l'utilisateur pour lequel le post-it doit être envoyé
-     * @param forceSend indique s'il faut forcer l'envoi du post-it par email, même si la configuration globale ne l'exige pas
-     * @return l'identifiant du commentaire créé, ou null si l'opération n'est pas autorisée
-     */
-    @Transactional
+	private void validateSpotBounds(SignRequest signRequest, Integer pageNumber, Integer posX, Integer posY, Integer signWidth, Integer signHeight) throws EsupSignatureException {
+		if(signRequest.getOriginalDocuments().isEmpty()) {
+			return;
+		}
+		Document document = signRequest.getOriginalDocuments().get(0);
+		if(!document.isPdf()) {
+			return;
+		}
+		int resolvedPageNumber = pageNumber == null || pageNumber < 1 ? 1 : pageNumber;
+		int resolvedX = posX == null ? 0 : posX;
+		int resolvedY = posY == null ? 0 : posY;
+		int resolvedWidth = signWidth == null ? 200 : signWidth;
+		int resolvedHeight = signHeight == null ? 100 : signHeight;
+		PdfParameters pdfParameters = pdfService.getPdfParameters(document.getInputStream(), resolvedPageNumber);
+		if(pdfParameters == null) {
+			return;
+		}
+		boolean outOfBounds = resolvedWidth <= 0
+				|| resolvedHeight <= 0
+				|| resolvedX < 0
+				|| resolvedY < 0
+				|| resolvedX + resolvedWidth > pdfParameters.getWidth()
+				|| resolvedY + resolvedHeight > pdfParameters.getHeight();
+		if(outOfBounds) {
+			throw new EsupSignatureException("L'emplacement de signature doit etre entierement dans une page");
+		}
+	}
+
+	private Recipient resolveSpotRecipient(LiveWorkflowStep liveWorkflowStep, Long recipientId) throws EsupSignatureException {
+		if(recipientId == null) {
+			return null;
+		}
+		Recipient recipient = recipientService.getById(recipientId);
+		if(recipient == null || liveWorkflowStep.getRecipients().stream().noneMatch(stepRecipient -> Objects.equals(stepRecipient.getId(), recipient.getId()))) {
+			throw new EsupSignatureException("Le destinataire cible n'appartient pas à l'étape sélectionnée");
+		}
+		return recipient;
+	}
+
+	private boolean canUseSpot(SignRequestParams signRequestParams, Set<Long> recipientIds) {
+		return signRequestParams.getRecipient() == null
+				|| signRequestParams.getRecipient().getId() != null && recipientIds.contains(signRequestParams.getRecipient().getId());
+	}
+
+	public List<SignRequestParams> getCurrentStepSignRequestParams(SignRequest signRequest, String userEppn) {
+		LiveWorkflowStep currentStep = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep();
+		if(currentStep == null) {
+			return List.of();
+		}
+		User user = userService.getByEppn(userEppn);
+		Set<Long> recipientIds = currentStep.getRecipients().stream()
+				.filter(recipient -> recipient.getUser().equals(user))
+				.filter(recipient -> signRequest.getRecipientHasSigned().isEmpty()
+						|| signRequest.getRecipientHasSigned().get(recipient) == null
+						|| signRequest.getRecipientHasSigned().get(recipient).getActionType().equals(ActionType.none))
+				.map(Recipient::getId)
+				.filter(Objects::nonNull)
+				.collect(Collectors.toSet());
+		if(recipientIds.isEmpty()) {
+			return List.of();
+		}
+		int signOrderNumber = getOrderInSignBookOrFallback(signRequest);
+		return currentStep.getSignRequestParams().stream()
+				.filter(signRequestParams -> signRequestParams.getSignDocumentNumber().equals(signOrderNumber))
+				.filter(signRequestParams -> canUseSpot(signRequestParams, recipientIds))
+				.toList();
+	}
+
+	/**
+	 * Ajoute un commentaire ou un emplacement de signature à une demande de signature.
+	 *
+	 * @param id l'identifiant de la demande de signature
+	 * @param commentText le texte du commentaire
+	 * @param commentPageNumber le numéro de page où le commentaire doit être placé
+	 * @param commentPosX la position horizontale du commentaire (X)
+	 * @param commentPosY la position verticale du commentaire (Y)
+	 * @param commentWidth la largeur du commentaire (optionnel)
+	 * @param commentHeight la hauteur du commentaire (optionnel)
+	 * @param postit indique si le commentaire est un post-it ("on") ou non
+	 * @param spotStepNumber le numéro de l'étape du processus de signature à laquelle l'emplacement se réfère (optionnel)
+	 * @param authUserEppn le eppn de l'utilisateur authentifié qui effectue l'opération
+	 * @param userEppn le eppn de l'utilisateur pour lequel le post-it doit être envoyé
+	 * @param forceSend indique s'il faut forcer l'envoi du post-it par email, même si la configuration globale ne l'exige pas
+	 * @return l'identifiant du commentaire créé, ou null si l'opération n'est pas autorisée
+	 */
+	@Transactional
 	public Long addComment(Long id, String commentText, Integer commentPageNumber, Integer commentPosX, Integer commentPosY, Integer commentWidth, Integer commentHeight, String postit, Integer spotStepNumber, String authUserEppn, String userEppn, boolean forceSend) throws EsupSignatureException {
 		SignRequest signRequest = getById(id);
 		User user = userService.getByEppn(userEppn);
@@ -1274,49 +1600,49 @@ public class SignRequestService {
 	}
 
 	/**
-     * Retourne le nombre de demandes de signature en attente pour un utilisateur donné.
-     *
-     * @param userEppn l'identifiant EPPN de l'utilisateur
-     * @return le nombre de demandes de signature en attente
-     */
-    public Long getNbPendingSignRequests(String userEppn) {
+	 * Retourne le nombre de demandes de signature en attente pour un utilisateur donné.
+	 *
+	 * @param userEppn l'identifiant EPPN de l'utilisateur
+	 * @return le nombre de demandes de signature en attente
+	 */
+	public Long getNbPendingSignRequests(String userEppn) {
 		User user = userService.getByEppn(userEppn);
 		return signBookRepository.countByCreateByEppnAndStatus(user, SignRequestStatus.pending);
 	}
 
 	/**
-     * Renvoie le nombre de demandes de signature ayant le statut "brouillon" pour un utilisateur donné.
-     *
-     * @param userEppn le eppn de l'utilisateur dont les demandes de signature doivent être comptées
-     * @return le nombre de demandes de signature avec le statut "brouillon" associées à l'utilisateur donné
-     */
-    public Long getNbDraftSignRequests(String userEppn) {
+	 * Renvoie le nombre de demandes de signature ayant le statut "brouillon" pour un utilisateur donné.
+	 *
+	 * @param userEppn le eppn de l'utilisateur dont les demandes de signature doivent être comptées
+	 * @return le nombre de demandes de signature avec le statut "brouillon" associées à l'utilisateur donné
+	 */
+	public Long getNbDraftSignRequests(String userEppn) {
 		return signRequestRepository.countByCreateByEppnAndStatus(userEppn, SignRequestStatus.draft);
 	}
 
 	/**
-     * Fournit le fichier original associé à une requête de signature donnée.
-     *
-     * @param signRequestId l'identifiant de la requête de signature pour laquelle le fichier original est demandé.
-     * @param httpServletResponse l'objet HttpServletResponse dans lequel le fichier sera écrit.
-     * @throws IOException si une erreur d'entrée/sortie survient pendant l'écriture du fichier dans la réponse.
-     */
-    @Transactional
+	 * Fournit le fichier original associé à une requête de signature donnée.
+	 *
+	 * @param signRequestId l'identifiant de la requête de signature pour laquelle le fichier original est demandé.
+	 * @param httpServletResponse l'objet HttpServletResponse dans lequel le fichier sera écrit.
+	 * @throws IOException si une erreur d'entrée/sortie survient pendant l'écriture du fichier dans la réponse.
+	 */
+	@Transactional
 	public void getOriginalFileResponse(Long signRequestId, HttpServletResponse httpServletResponse) throws IOException {
 		SignRequest signRequest = getById(signRequestId);
 		webUtilsService.copyFileStreamToHttpResponse(signRequest.getOriginalDocuments().get(0).getFileName(), signRequest.getOriginalDocuments().get(0).getContentType(), "attachment", signRequest.getOriginalDocuments().get(0).getInputStream(), httpServletResponse);
-    }
+	}
 
 	/**
-     * Récupère une pièce jointe associée à une requête de signature et écrit son contenu dans la réponse HTTP.
-     *
-     * @param signRequestId l'identifiant de la requête de signature
-     * @param attachementId l'identifiant de la pièce jointe à récupérer
-     * @param httpServletResponse la réponse HTTP dans laquelle le contenu de la pièce jointe sera écrit
-     * @return true si la pièce jointe est trouvée et correctement copiée dans la réponse, false sinon
-     * @throws IOException si une erreur d'entrée/sortie survient lors de l'écriture du fichier dans la réponse HTTP
-     */
-    @Transactional
+	 * Récupère une pièce jointe associée à une requête de signature et écrit son contenu dans la réponse HTTP.
+	 *
+	 * @param signRequestId l'identifiant de la requête de signature
+	 * @param attachementId l'identifiant de la pièce jointe à récupérer
+	 * @param httpServletResponse la réponse HTTP dans laquelle le contenu de la pièce jointe sera écrit
+	 * @return true si la pièce jointe est trouvée et correctement copiée dans la réponse, false sinon
+	 * @throws IOException si une erreur d'entrée/sortie survient lors de l'écriture du fichier dans la réponse HTTP
+	 */
+	@Transactional
 	public boolean getAttachmentResponse(Long signRequestId, Long attachementId, HttpServletResponse httpServletResponse) throws IOException {
 		SignRequest signRequest = getById(signRequestId);
 		Document attachement = documentService.getById(attachementId);
@@ -1348,17 +1674,17 @@ public class SignRequestService {
 	}
 
 	/**
-     * Fournit un fichier à signer, en fonction de l'état de la requête de signature et des paramètres fournis.
-     *
-     * @param signRequestId L'identifiant unique de la requête de signature.
-     * @param disposition La disposition de contenu HTTP (par exemple, "inline" ou "attachment").
-     * @param httpServletResponse La réponse HTTP dans laquelle le fichier sera injecté.
-     * @param force Indique si l'action doit être forcée, même si certaines restrictions sont imposées (par exemple, le téléchargement avant la fin du circuit).
-     * @throws IOException Si une erreur d'entrée/sortie survient lors de la copie du fichier dans la réponse.
-     * @throws EsupSignatureRuntimeException Si une erreur non contrôlée spécifique à l'application survient.
-     * @throws EsupSignatureException Si une exception liée à la logique métier survient, comme une interdiction de téléchargement.
-     */
-    @Transactional(readOnly = true)
+	 * Fournit un fichier à signer, en fonction de l'état de la requête de signature et des paramètres fournis.
+	 *
+	 * @param signRequestId L'identifiant unique de la requête de signature.
+	 * @param disposition La disposition de contenu HTTP (par exemple, "inline" ou "attachment").
+	 * @param httpServletResponse La réponse HTTP dans laquelle le fichier sera injecté.
+	 * @param force Indique si l'action doit être forcée, même si certaines restrictions sont imposées (par exemple, le téléchargement avant la fin du circuit).
+	 * @throws IOException Si une erreur d'entrée/sortie survient lors de la copie du fichier dans la réponse.
+	 * @throws EsupSignatureRuntimeException Si une erreur non contrôlée spécifique à l'application survient.
+	 * @throws EsupSignatureException Si une exception liée à la logique métier survient, comme une interdiction de téléchargement.
+	 */
+	@Transactional(readOnly = true)
 	public void getToSignFileResponse(Long signRequestId, String disposition, HttpServletResponse httpServletResponse, boolean force) throws IOException, EsupSignatureRuntimeException, EsupSignatureException {
 		SignRequest signRequest = getById(signRequestId);
 		if(!force && !disposition.equals("inline")
@@ -1369,7 +1695,7 @@ public class SignRequestService {
 				&& !signRequest.getStatus().equals(SignRequestStatus.refused)
 				&& !signRequest.getArchiveStatus().equals(ArchiveStatus.archived)
 				&& !signRequest.getArchiveStatus().equals(ArchiveStatus.cleaned)
-				) {
+		) {
 			throw new EsupSignatureException("Téléchargement interdit avant la fin du circuit pour : " + signRequestId);
 		}
 		if (!signRequest.getParentSignBook().getArchiveStatus().equals(ArchiveStatus.cleaned)) {
@@ -1387,20 +1713,87 @@ public class SignRequestService {
 		}
 	}
 
+	@Transactional(readOnly = true)
+	public byte[] getLayeredPdfAtStep(Long signRequestId, int stepNumber) throws IOException, EsupSignatureException {
+		if (stepNumber < 0) {
+			throw new EsupSignatureException("Étape invalide : " + stepNumber);
+		}
+		SignRequest signRequest = getById(signRequestId);
+		if (!canDownloadLayeredPdfAtStep(signRequest, stepNumber)) {
+			throw new EsupSignatureException("Téléchargement interdit pour cette étape pour : " + signRequestId);
+		}
+
+		if (stepNumber == 0 && signRequest.getOriginalDocuments() != null && !signRequest.getOriginalDocuments().isEmpty()) {
+			return signRequest.getOriginalDocuments().get(0).getInputStream().readAllBytes();
+		}
+
+		InputStream inputStream;
+		String contentType;
+		if (!signRequest.getParentSignBook().getArchiveStatus().equals(ArchiveStatus.cleaned)) {
+			List<Document> documents = getToSignDocuments(signRequest.getId());
+			Document document;
+			if(!documents.isEmpty()) {
+				document = documents.get(0);
+			} else {
+				document = signRequest.getOriginalDocuments().get(0);
+			}
+			inputStream = document.getInputStream();
+			contentType = document.getContentType();
+		} else {
+			FsFile fsFile = getLastSignedFsFile(signRequest);
+			inputStream = fsFile.getInputStream();
+			contentType = fsFile.getContentType();
+		}
+
+		if (contentType == null || !contentType.toLowerCase(Locale.ROOT).contains("pdf")) {
+			// Pas de gestion des calques si ce n'est pas un PDF
+			return inputStream.readAllBytes();
+		}
+
+		byte[] pdfBytes = inputStream.readAllBytes();
+		return pdfService.removeOptionalContentAfterStep(pdfBytes, stepNumber);
+	}
+
+	public boolean canDownloadLayeredPdfAtStep(SignRequest signRequest, int stepNumber) {
+		if (signRequest == null || signRequest.getStatus() == null || stepNumber < 0) {
+			return false;
+		}
+		if (signRequest.getStatus().equals(SignRequestStatus.completed)
+				|| signRequest.getStatus().equals(SignRequestStatus.exported)
+				|| signRequest.getStatus().equals(SignRequestStatus.refused)
+				|| signRequest.getArchiveStatus().equals(ArchiveStatus.archived)
+				|| signRequest.getArchiveStatus().equals(ArchiveStatus.cleaned)) {
+			return true;
+		}
+		if (stepNumber == 0) {
+			return false;
+		}
+		if (signRequest.getParentSignBook() == null
+				|| signRequest.getParentSignBook().getLiveWorkflow() == null
+				|| signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber() == null) {
+			return false;
+		}
+		if (signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps() != null
+				&& stepNumber > signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().size()) {
+			return false;
+		}
+		return stepNumber < signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber();
+	}
+
 	/**
-     * Génère une réponse contenant un document prêt à être signé, ou un fichier signé avec un QR code,
-     * et l'écrit dans la réponse HTTP fournie.
-     *
-     * @param signRequestId l'identifiant de la requête de signature
-     * @param httpServletResponse l'objet HttpServletResponse dans lequel le fichier sera écrit
-     * @throws IOException si une erreur d'entrée/sortie se produit
-     * @throws EsupSignatureRuntimeException si une erreur spécifique à l'application survient pendant le traitement
-     * @throws WriterException si une erreur survient lors de la génération du QR code
-     */
-    @Transactional(readOnly = true)
+	 * Génère une réponse contenant un document prêt à être signé, ou un fichier signé avec un QR code,
+	 * et l'écrit dans la réponse HTTP fournie.
+	 *
+	 * @param signRequestId l'identifiant de la requête de signature
+	 * @param httpServletResponse l'objet HttpServletResponse dans lequel le fichier sera écrit
+	 * @throws IOException si une erreur d'entrée/sortie se produit
+	 * @throws EsupSignatureRuntimeException si une erreur spécifique à l'application survient pendant le traitement
+	 * @throws WriterException si une erreur survient lors de la génération du QR code
+	 */
+	@Transactional(readOnly = true)
 	public void getToSignFileResponseWithCode(Long signRequestId, HttpServletResponse httpServletResponse) throws IOException, EsupSignatureRuntimeException, WriterException {
 		SignRequest signRequest = getById(signRequestId);
-    if (signRequest.getParentSignBook().getArchiveStatus().equals(ArchiveStatus.none)) {
+		if (signRequest.getParentSignBook().getArchiveStatus().equals(ArchiveStatus.none)) {
 			List<Document> documents = getToSignDocuments(signRequest.getId());
 			Document document;
 			if(!documents.isEmpty()) {
@@ -1419,39 +1812,39 @@ public class SignRequestService {
 
 
 	/**
-     * Fournit un fichier signé accompagné de son rapport.
-     *
-     * @param signRequestId l'identifiant de la requête de signature.
-     * @param httpServletRequest la requête HTTP d'origine.
-     * @param httpServletResponse la réponse HTTP dans laquelle le fichier est transmis.
-     * @param force un indicateur permettant de forcer le téléchargement même si certaines restrictions sont en place.
-     * @throws Exception si une erreur survient durant le traitement, notamment si les restrictions de téléchargement ne sont pas respectées.
-     */
-    @Transactional
+	 * Fournit un fichier signé accompagné de son rapport.
+	 *
+	 * @param signRequestId l'identifiant de la requête de signature.
+	 * @param httpServletRequest la requête HTTP d'origine.
+	 * @param httpServletResponse la réponse HTTP dans laquelle le fichier est transmis.
+	 * @param force un indicateur permettant de forcer le téléchargement même si certaines restrictions sont en place.
+	 * @throws Exception si une erreur survient durant le traitement, notamment si les restrictions de téléchargement ne sont pas respectées.
+	 */
+	@Transactional
 	public void getSignedFileAndReportResponse(Long signRequestId, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, boolean force) throws Exception {
 		SignRequest signRequest = getById(signRequestId);
 		if(!force
-			&& signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null
-			&& BooleanUtils.isTrue(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getForbidDownloadsBeforeEnd())
-			&& (!signRequest.getStatus().equals(SignRequestStatus.completed) && !signRequest.getStatus().equals(SignRequestStatus.exported)
-			&& !signRequest.getStatus().equals(SignRequestStatus.refused)
-			&& !signRequest.getArchiveStatus().equals(ArchiveStatus.archived)
-			&& !signRequest.getArchiveStatus().equals(ArchiveStatus.cleaned))) {
+				&& signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null
+				&& BooleanUtils.isTrue(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getForbidDownloadsBeforeEnd())
+				&& (!signRequest.getStatus().equals(SignRequestStatus.completed) && !signRequest.getStatus().equals(SignRequestStatus.exported)
+				&& !signRequest.getStatus().equals(SignRequestStatus.refused)
+				&& !signRequest.getArchiveStatus().equals(ArchiveStatus.archived)
+				&& !signRequest.getArchiveStatus().equals(ArchiveStatus.cleaned))) {
 			throw new EsupSignatureException("Téléchargement interdit avant la fin du circuit");
 		}
 		webUtilsService.copyFileStreamToHttpResponse(signRequest.getParentSignBook().getSubject() + "-avec_rapport.zip", "application/zip; charset=utf-8", "attachment", new ByteArrayInputStream(getZipWithDocAndReport(signRequest, httpServletRequest, httpServletResponse)), httpServletResponse);
 	}
 
 	/**
-     * Génère et retourne un fichier ZIP contenant les documents et un rapport associés à une demande de signature.
-     *
-     * @param signRequest la demande de signature pour laquelle les documents et le rapport doivent être générés
-     * @param httpServletRequest l'objet HttpServletRequest lié à la requête HTTP actuelle
-     * @param httpServletResponse l'objet HttpServletResponse lié à la réponse HTTP actuelle
-     * @return un tableau d'octets représentant le fichier ZIP généré
-     * @throws Exception si une erreur survient lors de la génération du fichier ZIP
-     */
-    @Transactional
+	 * Génère et retourne un fichier ZIP contenant les documents et un rapport associés à une demande de signature.
+	 *
+	 * @param signRequest la demande de signature pour laquelle les documents et le rapport doivent être générés
+	 * @param httpServletRequest l'objet HttpServletRequest lié à la requête HTTP actuelle
+	 * @param httpServletResponse l'objet HttpServletResponse lié à la réponse HTTP actuelle
+	 * @return un tableau d'octets représentant le fichier ZIP généré
+	 * @throws Exception si une erreur survient lors de la génération du fichier ZIP
+	 */
+	@Transactional
 	public byte[] getZipWithDocAndReport(SignRequest signRequest, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) throws Exception {
 		Map<InputStream, String> inputStreams = new HashMap<>();
 		String name = "";
@@ -1494,50 +1887,59 @@ public class SignRequestService {
 	}
 
 	/**
-     * Fournit document donné via son id.
-     *
-     * @param documentId L'identifiant du document à télécharger.
-     * @param httpServletResponse L'objet HttpServletResponse dans lequel le contenu du fichier doit être écrit.
-     * @throws IOException Si une erreur d'entrée/sortie se produit lors de l'écriture dans la réponse HTTP.
-     * @throws EsupSignatureRuntimeException Si le téléchargement du fichier est interdit en fonction des règles métier (par exemple : workflow interdit les téléchargements avant sa
-     *  fin).
-     */
-    @Transactional
+	 * Fournit document donné via son id.
+	 *
+	 * @param documentId L'identifiant du document à télécharger.
+	 * @param httpServletResponse L'objet HttpServletResponse dans lequel le contenu du fichier doit être écrit.
+	 * @throws IOException Si une erreur d'entrée/sortie se produit lors de l'écriture dans la réponse HTTP.
+	 * @throws EsupSignatureRuntimeException Si le téléchargement du fichier est interdit en fonction des règles métier (par exemple : workflow interdit les téléchargements avant sa
+	 *  fin).
+	 */
+	@Transactional
 	public void getFileResponse(Long documentId, HttpServletResponse httpServletResponse) throws IOException {
+		getFileResponse(documentId, "attachment", httpServletResponse);
+	}
+
+	@Transactional
+	public void getFileInlineResponse(Long documentId, HttpServletResponse httpServletResponse) throws IOException {
+		getFileResponse(documentId, "inline", httpServletResponse);
+	}
+
+	private void getFileResponse(Long documentId, String disposition, HttpServletResponse httpServletResponse) throws IOException {
 		Document document = documentService.getById(documentId);
 		SignRequest signRequest = getById(document.getParentId());
 		if(SecurityContextHolder.getContext().getAuthentication().getAuthorities()
 				.stream()
 				.noneMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_ADMIN"))
-			&&
+				&&
 				signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null && BooleanUtils.isTrue(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getForbidDownloadsBeforeEnd())
 				&& !(signRequest.getStatus().equals(SignRequestStatus.completed) || signRequest.getStatus().equals(SignRequestStatus.exported))) {
 			throw new EsupSignatureRuntimeException("Téléchargement interdit avant la fin du circuit");
 		}
-		webUtilsService.copyFileStreamToHttpResponse(document.getFileName(), document.getContentType(), "attachment", document.getInputStream(), httpServletResponse);
+		webUtilsService.copyFileStreamToHttpResponse(document.getFileName(), document.getContentType(), disposition, document.getInputStream(), httpServletResponse);
 	}
 
 	/**
-     * Récupère la liste des pièces jointes associées à une demande de signature donnée.
-     *
-     * @param signRequestId l'identifiant de la demande de signature pour laquelle récupérer les pièces jointes
-     * @return une liste de documents représentant les pièces jointes associées à la demande de signature
-     */
-    @Transactional
+	 * Récupère la liste des pièces jointes associées à une demande de signature donnée.
+	 *
+	 * @param signRequestId l'identifiant de la demande de signature pour laquelle récupérer les pièces jointes
+	 * @return une liste de documents représentant les pièces jointes associées à la demande de signature
+	 */
+	@Transactional
 	public List<Document> getAttachments(Long signRequestId) {
 		SignRequest signRequest = getById(signRequestId);
 		return new ArrayList<>(signRequest.getAttachments());
 	}
 
 	/**
-     * Relance une notification pour une demande de signature si les conditions sont remplies.
-     *
-     * @param id l'identifiant de la demande de signature
-     * @param userEppn l'identifiant eppn de l'utilisateur demandant la relance
-     * @return un booléen indiquant si la notification a été relancée avec succès
-     * @throws EsupSignatureMailException si une erreur survient lors de l'envoi de l'email
-     */
-    @Transactional
+	 * Relance une notification pour une demande de signature si les conditions sont remplies.
+	 *
+	 * @param id l'identifiant de la demande de signature
+	 * @param userEppn l'identifiant eppn de l'utilisateur demandant la relance
+	 * @return un booléen indiquant si la notification a été relancée avec succès
+	 * @throws EsupSignatureMailException si une erreur survient lors de l'envoi de l'email
+	 */
+	@Transactional
 	public boolean replayNotif(Long id, String userEppn) throws EsupSignatureMailException {
 		SignRequest signRequest = this.getById(id);
 		if (isDisplayNotif(signRequest, userEppn)) {
@@ -1553,14 +1955,14 @@ public class SignRequestService {
 				notifTime = Duration.between(signRequest.getParentSignBook().getLastNotifDate().toInstant(), new Date().toInstant()).toHours();
 			}
 			if (!recipientEmails.isEmpty() && notifTime >= globalProperties.getHoursBeforeRefreshNotif() && signRequest.getStatus().equals(SignRequestStatus.pending)) {
-                logger.info("sending replay for signRequest : " + signRequest.getId());
-                for(Recipient recipient : recipients) {
-                    if(recipient.getUser().getUserType().equals(UserType.external)) {
-                        mailService.sendSignRequestReplayAlertOtp(otpService.generateOtpForSignRequest(signRequest.getParentSignBook().getId(), recipient.getUser().getId(), recipient.getUser().getPhone(), true), signRequest.getParentSignBook());
-                    } else {
-                        mailService.sendSignRequestReplayAlert(Collections.singletonList(recipient.getUser().getEmail()), signRequest.getParentSignBook());
-                    }
-                }
+				logger.info("sending replay for signRequest : " + signRequest.getId());
+				for(Recipient recipient : recipients) {
+					if(recipient.getUser().getUserType().equals(UserType.external)) {
+						mailService.sendSignRequestReplayAlertOtp(otpService.generateOtpForSignRequest(signRequest.getParentSignBook().getId(), recipient.getUser().getId(), recipient.getUser().getPhone(), true), signRequest.getParentSignBook());
+					} else {
+						mailService.sendSignRequestReplayAlert(Collections.singletonList(recipient.getUser().getEmail()), signRequest);
+					}
+				}
 				return true;
 			}
 		}
@@ -1568,28 +1970,48 @@ public class SignRequestService {
 	}
 
 	/**
-     * Détermine si une notification doit être affichée pour une demande de signature donnée
-     * et un utilisateur spécifique.
-     *
-     * @param signRequest un objet SignRequest représentant la demande de signature à évaluer
-     * @param userEppn le eppn (entitlement principal name) de l'utilisateur concerné
-     * @return true si une notification doit être affichée, false sinon
-     */
-    public boolean isDisplayNotif(SignRequest signRequest, String userEppn) {
-		User user = userService.getByEppn(userEppn);
-		boolean displayNotif = false;
-		if (signRequest.getParentSignBook().getStatus().equals(SignRequestStatus.pending) &&
-				(signRequest.getCreateBy().getEppn().equals(userEppn)
-						|| (signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null &&
-						(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getManagers().contains(user.getEmail())
-						|| !Collections.disjoint(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getDashboardRoles(), user.getRoles())))
-				)
-				&&
-				((signRequest.getParentSignBook().getLastNotifDate() == null && Duration.between(signRequest.getParentSignBook().getCreateDate().toInstant(), new Date().toInstant()).toHours() >= globalProperties.getHoursBeforeRefreshNotif()) ||
-						(signRequest.getParentSignBook().getLastNotifDate() != null && Duration.between(signRequest.getParentSignBook().getLastNotifDate().toInstant(), new Date().toInstant()).toHours() >= globalProperties.getHoursBeforeRefreshNotif()))) {
-			displayNotif = true;
+	 * Détermine si une notification doit être affichée pour une demande de signature donnée
+	 * et un utilisateur spécifique.
+	 *
+	 * @param signRequest un objet SignRequest représentant la demande de signature à évaluer
+	 * @param userEppn le eppn (entitlement principal name) de l'utilisateur concerné
+	 * @return true si une notification doit être affichée, false sinon
+	 */
+	public boolean isDisplayNotif(SignRequest signRequest, String userEppn) {
+		if (signRequest == null || userEppn == null || signRequest.getParentSignBook() == null) {
+			return false;
 		}
-		return displayNotif;
+		User user = userService.getByEppn(userEppn);
+		Workflow workflow = getWorkflow(signRequest);
+		boolean managerCanReplay = workflow != null
+				&& user != null
+				&& (workflow.getManagers().contains(user.getEmail())
+				|| !Collections.disjoint(workflow.getDashboardRoles(), user.getRoles()));
+		boolean replayAllowed = userEppn.equals("system") || canCreatorReplayNotif(signRequest, userEppn) || managerCanReplay;
+		boolean refreshDelayReached = (signRequest.getParentSignBook().getLastNotifDate() == null && Duration.between(signRequest.getParentSignBook().getCreateDate().toInstant(), new Date().toInstant()).toHours() >= globalProperties.getHoursBeforeRefreshNotif()) ||
+				(signRequest.getParentSignBook().getLastNotifDate() != null && Duration.between(signRequest.getParentSignBook().getLastNotifDate().toInstant(), new Date().toInstant()).toHours() >= globalProperties.getHoursBeforeRefreshNotif());
+		return signRequest.getParentSignBook().getStatus().equals(SignRequestStatus.pending) && replayAllowed && refreshDelayReached;
+	}
+
+	private boolean canCreatorReplayNotif(SignRequest signRequest, String userEppn) {
+		if (signRequest == null || signRequest.getCreateBy() == null || !userEppn.equals(signRequest.getCreateBy().getEppn())) {
+			return false;
+		}
+		Workflow workflow = getWorkflow(signRequest);
+		if (workflow == null) {
+			return true;
+		}
+		if (workflow.getCreateBy() != null && userEppn.equals(workflow.getCreateBy().getEppn())) {
+			return true;
+		}
+		return BooleanUtils.isTrue(workflow.getAuthorizeReplayByCreator());
+	}
+
+	private Workflow getWorkflow(SignRequest signRequest) {
+		if (signRequest == null || signRequest.getParentSignBook() == null || signRequest.getParentSignBook().getLiveWorkflow() == null) {
+			return null;
+		}
+		return signRequest.getParentSignBook().getLiveWorkflow().getWorkflow();
 	}
 
 	private List<Recipient> getCurrentRecipients(SignRequest signRequest) {
@@ -1597,13 +2019,13 @@ public class SignRequestService {
 	}
 
 	/**
-     * Récupère une liste de demandes de signature pour lesquelles le destinataire n'est pas présent
-     * dans le système de gestion d'annuaire (LDAP) ou possède un type d'utilisateur externe ou Shibboleth.
-     *
-     * @param eppn L'identifiant unique de la personne (EPPN) ayant créé les demandes de signature.
-     * @return Une liste de demandes de signature (SignRequest) correspondant aux critères de filtrage.
-     */
-    @Transactional
+	 * Récupère une liste de demandes de signature pour lesquelles le destinataire n'est pas présent
+	 * dans le système de gestion d'annuaire (LDAP) ou possède un type d'utilisateur externe ou Shibboleth.
+	 *
+	 * @param eppn L'identifiant unique de la personne (EPPN) ayant créé les demandes de signature.
+	 * @return Une liste de demandes de signature (SignRequest) correspondant aux critères de filtrage.
+	 */
+	@Transactional
 	public List<SignRequest> getRecipientNotPresentSignRequests(String eppn) {
 		List<SignRequest> signRequests = signRequestRepository.findByCreateByEppnAndStatus(eppn, SignRequestStatus.pending);
 		List<SignRequest> recipientNotPresentsignRequests = new ArrayList<>(signRequests);
@@ -1622,45 +2044,39 @@ public class SignRequestService {
 	}
 
 	/**
-     * Retourne une liste de paramètres de demande de signature pour l'utilisateur spécifié et l'identifiant donné.
-     *
-     * @param id L'identifiant de la demande de signature.
-     * @param userEppn L'identifiant EPPN de l'utilisateur pour lequel les paramètres de signature sont à récupérer.
-     * @return Une liste de paramètres de demande de signature (SignRequestParams) que l'utilisateur peut utiliser, en se basant sur l'état actuel du flux de travail et de la demande
-     *  de signature.
-     */
-    @Transactional
+	 * Retourne une liste de paramètres de demande de signature pour l'utilisateur spécifié et l'identifiant donné.
+	 *
+	 * @param id L'identifiant de la demande de signature.
+	 * @param userEppn L'identifiant EPPN de l'utilisateur pour lequel les paramètres de signature sont à récupérer.
+	 * @return Une liste de paramètres de demande de signature (SignRequestParams) que l'utilisateur peut utiliser, en se basant sur l'état actuel du flux de travail et de la demande
+	 *  de signature.
+	 */
+	@Transactional
 	public List<SignRequestParams> getToUseSignRequestParams(Long id, String userEppn) {
 		User user = userService.getByEppn(userEppn);
 		List<SignRequestParams> toUserSignRequestParams = new ArrayList<>();
 		SignRequest signRequest = getById(id);
-		int signOrderNumber = signRequest.getParentSignBook().getSignRequests().indexOf(signRequest);
 		if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() != null) {
-			if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getAllSignToComplete()) {
-				for (Recipient recipient : signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients()) {
-					if (!signRequest.getRecipientHasSigned().isEmpty() && signRequest.getRecipientHasSigned().get(recipient) != null && !signRequest.getRecipientHasSigned().get(recipient).getActionType().equals(ActionType.none)) {
-						return toUserSignRequestParams;
-					}
-				}
-			}
-			List<SignRequestParams> signRequestParamsForCurrentStep = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().stream().filter(signRequestParams -> signRequestParams.getSignDocumentNumber().equals(signOrderNumber)).toList();
-			for(SignRequestParams signRequestParams : signRequestParamsForCurrentStep) {
-				if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().stream().anyMatch(recipient -> recipient.getUser().equals(user))) {
-					toUserSignRequestParams.add(signRequestParams);
-				}
+			boolean currentUserCanUseCurrentStep = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().stream()
+					.filter(recipient -> recipient.getUser().equals(user))
+					.anyMatch(recipient -> signRequest.getRecipientHasSigned().isEmpty()
+							|| signRequest.getRecipientHasSigned().get(recipient) == null
+							|| signRequest.getRecipientHasSigned().get(recipient).getActionType().equals(ActionType.none));
+			if(currentUserCanUseCurrentStep) {
+				toUserSignRequestParams.addAll(getCurrentStepSignRequestParams(signRequest, userEppn));
 			}
 		}
 		return toUserSignRequestParams;
 	}
 
 	/**
-     * Récupère un fichier à valider associé à une demande de signature.
-     *
-     * @param id l'identifiant de la demande de signature (SignRequest) à traiter
-     * @return un flux d'entrée (`InputStream`) du fichier à valider, ou `null` si aucun fichier n'est disponible
-     * @throws IOException si une erreur d'entrée/sortie se produit lors de la manipulation du fichier
-     */
-    @Transactional
+	 * Récupère un fichier à valider associé à une demande de signature.
+	 *
+	 * @param id l'identifiant de la demande de signature (SignRequest) à traiter
+	 * @return un flux d'entrée (`InputStream`) du fichier à valider, ou `null` si aucun fichier n'est disponible
+	 * @throws IOException si une erreur d'entrée/sortie se produit lors de la manipulation du fichier
+	 */
+	@Transactional
 	public InputStream getToValidateFile(long id) throws IOException {
 		SignRequest signRequest = getById(id);
 		if(signRequest != null) {
@@ -1676,13 +2092,13 @@ public class SignRequestService {
 	}
 
 	/**
-     * Récupère et transforme toutes les données disponibles en format JSON en fonction de l'access token fourni.
-     *
-     * @param xApikey Le token d'accès utilisé pour déterminer les workflows accessibles ou pour récupérer l'ensemble des données.
-     * @return Une chaîne de caractères représentant les données récupérées en format JSON.
-     * @throws JsonProcessingException Si une erreur se produit lors de la conversion des données en JSON.
-     */
-    @Transactional
+	 * Récupère et transforme toutes les données disponibles en format JSON en fonction de l'access token fourni.
+	 *
+	 * @param xApikey Le token d'accès utilisé pour déterminer les workflows accessibles ou pour récupérer l'ensemble des données.
+	 * @return Une chaîne de caractères représentant les données récupérées en format JSON.
+	 * @throws JsonProcessingException Si une erreur se produit lors de la conversion des données en JSON.
+	 */
+	@Transactional
 	public String getAllToJSon(String xApikey) throws JsonProcessingException {
 		WsAccessToken wsAccessToken = wsAccessTokenRepository.findByToken(xApikey);
 		if(wsAccessToken == null || wsAccessToken.getWorkflows().isEmpty()) {
@@ -1692,65 +2108,74 @@ public class SignRequestService {
 	}
 
 	/**
-     * Vérifie si une alerte de pièce jointe doit être déclenchée pour une demande de signature donnée.
-     *
-     * Cette méthode évalue si la demande de signature possède des alertes de pièce jointe actives dans
-     * l'étape actuelle de son workflow, tout en n'ayant aucune pièce jointe associée.
-     *
-     * @param signRequest l'objet SignRequest pour lequel l'alerte de pièce jointe doit être vérifiée
-     * @return true si une alerte de pièce jointe doit être déclenchée, false sinon
-     */
-    public boolean isAttachmentAlert(SignRequest signRequest) {
+	 * Vérifie si une alerte de pièce jointe doit être déclenchée pour une demande de signature donnée.
+	 *
+	 * Cette méthode évalue si la demande de signature possède des alertes de pièce jointe actives dans
+	 * l'étape actuelle de son workflow, tout en n'ayant aucune pièce jointe associée.
+	 *
+	 * @param signRequest l'objet SignRequest pour lequel l'alerte de pièce jointe doit être vérifiée
+	 * @return true si une alerte de pièce jointe doit être déclenchée, false sinon
+	 */
+	public boolean isAttachmentAlert(SignRequest signRequest) {
 		boolean attachmentAlert = false;
 		if (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() != null
-			&& (
-			(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep() != null
-				&& signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep().getAttachmentAlert() != null
-				&& signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep().getAttachmentAlert())
-				||
-				(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getAttachmentAlert() != null
-				&& signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getAttachmentAlert())
-			)
-		&& signRequest.getAttachments().isEmpty()) {
+				&& (
+				(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep() != null
+						&& signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep().getAttachmentAlert() != null
+						&& signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep().getAttachmentAlert())
+						||
+						(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getAttachmentAlert() != null
+								&& signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getAttachmentAlert())
+		)
+				&& signRequest.getAttachments().isEmpty()) {
 			attachmentAlert = true;
 		}
 		return attachmentAlert;
 	}
 
 	/**
-     * Vérifie si une pièce jointe est requise pour une demande de signature donnée.
-     *
-     * Cette méthode détermine si une pièce jointe est requise en fonction des paramètres du flux de travail associé
-     * et de l'étape actuelle du processus. Une pièce jointe est considérée comme requise si elle est nécessaire
-     * soit au niveau de l'étape de workflow, soit au niveau de l'étape actuelle de traitement,
-     * et si aucune pièce jointe n'est actuellement associée à cette demande de signature.
-     *
-     * @param signRequest La demande de signature pour laquelle la vérification est effectuée
-     * @return true si une pièce jointe est requise ; false sinon
-     */
-    public boolean isAttachmentRequire(SignRequest signRequest) {
+	 * Vérifie si une pièce jointe est requise pour une demande de signature donnée.
+	 *
+	 * Cette méthode détermine si une pièce jointe est requise en fonction des paramètres du flux de travail associé
+	 * et de l'étape actuelle du processus. Une pièce jointe est considérée comme requise si elle est nécessaire
+	 * soit au niveau de l'étape de workflow, soit au niveau de l'étape actuelle de traitement,
+	 * et si aucune pièce jointe n'est actuellement associée à cette demande de signature.
+	 *
+	 * @param signRequest La demande de signature pour laquelle la vérification est effectuée
+	 * @return true si une pièce jointe est requise ; false sinon
+	 */
+	public boolean isAttachmentRequire(SignRequest signRequest) {
 		boolean attachmentRequire = false;
 		if (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() != null
-			&& (
-			(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep() != null
-				&& signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep().getAttachmentRequire() != null
-				&& signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep().getAttachmentRequire())
-				||
-				(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getAttachmentRequire() != null
-				&& signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getAttachmentRequire())
-			)
-		&& signRequest.getAttachments().isEmpty() && signRequest.getLinks().isEmpty()) {
+				&& (
+				(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep() != null
+						&& signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep().getAttachmentRequire() != null
+						&& signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep().getAttachmentRequire())
+						||
+						(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getAttachmentRequire() != null
+								&& signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getAttachmentRequire())
+		)
+				&& signRequest.getAttachments().isEmpty() && signRequest.getLinks().isEmpty()) {
 			attachmentRequire = true;
 		}
 		return attachmentRequire;
 	}
 
+	@Transactional(readOnly = true)
+	public AttachmentValidationStateDto getAttachmentValidationState(Long signRequestId) {
+		SignRequest signRequest = getById(signRequestId);
+		return new AttachmentValidationStateDto(
+				isAttachmentRequire(signRequest),
+				isAttachmentAlert(signRequest)
+		);
+	}
+
 	/**
-     * Marque les avertissements de requêtes de signature comme lus pour un utilisateur authentifié.
-     *
-     * @param authUserEppn l'identifiant EPPN de l'utilisateur authentifié
-     */
-    @Transactional
+	 * Marque les avertissements de requêtes de signature comme lus pour un utilisateur authentifié.
+	 *
+	 * @param authUserEppn l'identifiant EPPN de l'utilisateur authentifié
+	 */
+	@Transactional
 	public void warningReaded(String authUserEppn) {
 		User authUser = userService.getByEppn(authUserEppn);
 		List<SignRequest> oldSignRequests = signRequestRepository.findByCreateByEppnAndOlderPending(authUser.getId(), globalProperties.getNbDaysBeforeWarning());
@@ -1760,13 +2185,13 @@ public class SignRequestService {
 	}
 
 	/**
-     * Anonymise les demandes de signature créées par un utilisateur en remplaçant
-     * l'utilisateur d'origine par un utilisateur anonyme.
-     *
-     * @param userEppn le eppn de l'utilisateur dont les données doivent être anonymisées
-     * @param anonymous l'utilisateur anonyme utilisé pour remplacer l'utilisateur d'origine
-     */
-    @Transactional
+	 * Anonymise les demandes de signature créées par un utilisateur en remplaçant
+	 * l'utilisateur d'origine par un utilisateur anonyme.
+	 *
+	 * @param userEppn le eppn de l'utilisateur dont les données doivent être anonymisées
+	 * @param anonymous l'utilisateur anonyme utilisé pour remplacer l'utilisateur d'origine
+	 */
+	@Transactional
 	public void anonymize(String userEppn, User anonymous) {
 		for(SignRequest signRequest : signRequestRepository.findByCreateByEppn(userEppn)) {
 			signRequest.setCreateBy(anonymous);
@@ -1774,45 +2199,46 @@ public class SignRequestService {
 	}
 
 	/**
-     * Récupère une liste de commentaires de type Post-it pour un SignRequest donné.
-     *
-     * @param id l'identifiant du SignRequest à partir duquel les commentaires de type Post-it seront récupérés
-     * @return une liste de commentaires de type Post-it associés au SignRequest spécifié
-     */
-    @Transactional
+	 * Récupère une liste de commentaires de type Post-it pour un SignRequest donné.
+	 *
+	 * @param id l'identifiant du SignRequest à partir duquel les commentaires de type Post-it seront récupérés
+	 * @return une liste de commentaires de type Post-it associés au SignRequest spécifié
+	 */
+	@Transactional
 	public List<Comment> getPostits(Long id) {
 		SignRequest signRequest = getById(id);
 		return signRequest.getComments().stream().filter(Comment::getPostit).collect(Collectors.toList());
 	}
 
 	/**
-     * Récupère la liste des commentaires associés à une demande de signature,
-     * en excluant les commentaires type "post-it" et ceux ayant un numéro d'étape.
-     *
-     * @param id l'identifiant de la demande de signature associée
-     * @return une liste de commentaires filtrée, excluant les commentaires "post-it"
-     * et ceux ayant un numéro d'étape
-     */
-    @Transactional
+	 * Récupère la liste des commentaires associés à une demande de signature,
+	 * en excluant les commentaires type "post-it" et ceux ayant un numéro d'étape.
+	 *
+	 * @param id l'identifiant de la demande de signature associée
+	 * @return une liste de commentaires filtrée, excluant les commentaires "post-it"
+	 * et ceux ayant un numéro d'étape
+	 */
+	@Transactional
 	public List<Comment> getComments(Long id) {
 		SignRequest signRequest = getById(id);
 		return signRequest.getComments().stream().filter(comment -> !comment.getPostit() && comment.getStepNumber() == null).collect(Collectors.toList());
 	}
 
 	/**
-     * Récupère une liste d'emplacements associés à l'identifiant spécifié,
-     * en filtrant ceux qui possèdent un numéro d'étape défini.
-     *
-     * @param id l'identifiant de la demande de signature dont les commentaires doivent être récupérés
-     * @return une liste de commentaires contenant uniquement ceux avec un numéro d'étape défini
-     */
-    @Transactional
+	 * Récupère une liste d'emplacements associés à l'identifiant spécifié,
+	 * en filtrant ceux qui possèdent un numéro d'étape défini.
+	 *
+	 * @param id l'identifiant de la demande de signature dont les commentaires doivent être récupérés
+	 * @return une liste de commentaires contenant uniquement ceux avec un numéro d'étape défini
+	 */
+	@Transactional
 	public List<SignRequestParams> getSpots(Long id) {
 		SignRequest signRequest = getById(id);
 		List<SignRequestParams> result = new ArrayList<>();
 		List<LiveWorkflowStep> steps = signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps();
+		int signOrderNumber = getOrderInSignBookOrFallback(signRequest);
 		for (int i = 0; i < steps.size(); i++) {
-			List<SignRequestParams> params = steps.get(i).getSignRequestParams().stream().filter(srp -> srp.getSignDocumentNumber().equals(signRequest.getParentSignBook().getSignRequests().indexOf(signRequest))).toList();
+			List<SignRequestParams> params = steps.get(i).getSignRequestParams().stream().filter(srp -> srp.getSignDocumentNumber().equals(signOrderNumber)).toList();
 			int finalI = i;
 			params.forEach(param -> param.setStepNumber(finalI + 1));
 			result.addAll(params);
@@ -1830,26 +2256,26 @@ public class SignRequestService {
 	}
 
 	/**
-     * Récupère une représentation JSON d'une entité SignRequest à partir de son identifiant.
-     *
-     * @param id l'identifiant unique de l'entité SignRequest
-     * @return une chaîne de caractères représentant l'objet SignRequest sous forme de JSON
-     * @throws JsonProcessingException si une erreur survient lors de la conversion de l'objet en JSON
-     */
-    @Transactional
+	 * Récupère une représentation JSON d'une entité SignRequest à partir de son identifiant.
+	 *
+	 * @param id l'identifiant unique de l'entité SignRequest
+	 * @return une chaîne de caractères représentant l'objet SignRequest sous forme de JSON
+	 * @throws JsonProcessingException si une erreur survient lors de la conversion de l'objet en JSON
+	 */
+	@Transactional
 	public String getJson(Long id) throws JsonProcessingException {
 		SignRequest signRequest = getById(id);
 		return objectMapper.writeValueAsString(signRequest);
 	}
 
 	/**
-     * Récupère l'identifiant du parent d'une requête de signature si elle est unique dans son SignBook parent.
-     *
-     * @param id l'identifiant de la requête de signature pour laquelle on veut récupérer l'identifiant du parent
-     * @return l'identifiant du parent si la requête de signature est la seule dans son livre de signatures parent,
-     *         sinon retourne null
-     */
-    @Transactional
+	 * Récupère l'identifiant du parent d'une requête de signature si elle est unique dans son SignBook parent.
+	 *
+	 * @param id l'identifiant de la requête de signature pour laquelle on veut récupérer l'identifiant du parent
+	 * @return l'identifiant du parent si la requête de signature est la seule dans son livre de signatures parent,
+	 *         sinon retourne null
+	 */
+	@Transactional
 	public Long getParentIdIfSignRequestUnique(Long id) {
 		SignRequest signRequest = getById(id);
 		if(signRequest.getParentSignBook().getSignRequests().size() == 1) {
@@ -1859,15 +2285,26 @@ public class SignRequestService {
 		}
 	}
 
+	private int getOrderInSignBookOrFallback(SignRequest signRequest) {
+		if (signRequest == null || signRequest.getId() == null || signRequest.getParentSignBook() == null) {
+			return 0;
+		}
+		Integer order = getOrderInSignBook(signRequest.getParentSignBook().getId(), signRequest.getId());
+		if (order != null) {
+			return order;
+		}
+		return signRequest.getParentSignBook().getSignRequests().indexOf(signRequest);
+	}
+
 	/**
-     * Récupère le dossier de preuve sous forme de chaîne JSON pour une demande de signature donnée.
-     *
-     * @param id l'identifiant de la demande de signature dont on souhaite récupérer l'audit trail
-     * @return une chaîne JSON représentant l'audit trail de la demande de signature si elle existe,
-     *         sinon une chaîne vide
-     * @throws JsonProcessingException si une erreur survient lors de la conversion en JSON
-     */
-    @Transactional
+	 * Récupère le dossier de preuve sous forme de chaîne JSON pour une demande de signature donnée.
+	 *
+	 * @param id l'identifiant de la demande de signature dont on souhaite récupérer l'audit trail
+	 * @return une chaîne JSON représentant l'audit trail de la demande de signature si elle existe,
+	 *         sinon une chaîne vide
+	 * @throws JsonProcessingException si une erreur survient lors de la conversion en JSON
+	 */
+	@Transactional
 	public String getAuditTrailJson(Long id) throws JsonProcessingException {
 		SignRequest signRequest = getById(id);
 		if(signRequest != null) {
@@ -1879,23 +2316,23 @@ public class SignRequestService {
 	}
 
 	/**
-     * Récupère une liste de demandes de signature associées à un ID spécifique et un destinataire donné.
-     *
-     * @param id L'identifiant unique de la demande de signature à rechercher.
-     * @param userEppn Le nom principal utilisateur (userEppn) du destinataire associé à la demande.
-     * @return Une liste d'objets SignRequest correspondant aux critères de recherche, ou une liste vide si aucun résultat n'est trouvé.
-     */
-    public List<SignRequest> getByIdAndRecipient(Long id, String userEppn) {
+	 * Récupère une liste de demandes de signature associées à un ID spécifique et un destinataire donné.
+	 *
+	 * @param id L'identifiant unique de la demande de signature à rechercher.
+	 * @param userEppn Le nom principal utilisateur (userEppn) du destinataire associé à la demande.
+	 * @return Une liste d'objets SignRequest correspondant aux critères de recherche, ou une liste vide si aucun résultat n'est trouvé.
+	 */
+	public List<SignRequest> getByIdAndRecipient(Long id, String userEppn) {
 		return signRequestRepository.findByIdAndRecipient(id, userEppn);
 	}
 
 	/**
-     * Marque une demande de signature comme "vue" par un utilisateur spécifique.
-     *
-     * @param signRequestId l'identifiant unique de la demande de signature à marquer comme vue
-     * @param userEppn l'identifiant ePPN (eduPersonPrincipalName) de l'utilisateur qui a vu la demande de signature
-     */
-    @Transactional
+	 * Marque une demande de signature comme "vue" par un utilisateur spécifique.
+	 *
+	 * @param signRequestId l'identifiant unique de la demande de signature à marquer comme vue
+	 * @param userEppn l'identifiant ePPN (eduPersonPrincipalName) de l'utilisateur qui a vu la demande de signature
+	 */
+	@Transactional
 	public void viewedBy(Long signRequestId, String userEppn) {
 		User user = userService.getByEppn(userEppn);
 		SignRequest signRequest = getById(signRequestId);
@@ -1906,46 +2343,46 @@ public class SignRequestService {
 		List<String> results = pdfService.checkPDFA(bytes, true);
 		StringBuilder pdfaCheck = new StringBuilder();
 		for(String result : results) {
-			if(result.startsWith("6") && !pdfaCheck.toString().contains(result.substring(0, 5))) {
+			if(result != null && result.length() >= 5 && result.startsWith("6") && !pdfaCheck.toString().contains(result.substring(0, 5))) {
 				pdfaCheck.append(result, 0, 5).append(",");
 			}
 		}
 		return pdfaCheck.toString();
 	}
 
-    /**
-     * Récupère les destinataires externes associés à une requête de signature.
-     *
-     * @param signRequestId L'identifiant de la requête de signature pour laquelle
-     *                      les destinataires externes doivent être récupérés.
-     * @return Une liste d'objets RecipientWsDto contenant des informations sur les
-     *         destinataires externes, notamment leur identifiant et leur email.
-     */
-    @Transactional
-    public List<RecipientWsDto> getExternalRecipients(Long signRequestId) {
+	/**
+	 * Récupère les destinataires externes associés à une requête de signature.
+	 *
+	 * @param signRequestId L'identifiant de la requête de signature pour laquelle
+	 *                      les destinataires externes doivent être récupérés.
+	 * @return Une liste d'objets RecipientWsDto contenant des informations sur les
+	 *         destinataires externes, notamment leur identifiant et leur email.
+	 */
+	@Transactional
+	public List<RecipientWsDto> getExternalRecipients(Long signRequestId) {
 		SignRequest signRequest = getById(signRequestId);
 		return signRequest.getParentSignBook().getTeam().stream().filter(user -> user.getUserType().equals(UserType.external)).map(user -> new RecipientWsDto(user.getId(), user.getEmail(), user.getPhone())).collect(Collectors.toList());
-    }
+	}
 
 	/**
-     * Récupère une liste des étapes d'une demande de signature sous forme d'objets SignRequestStepsDto.
-     *
-     * @param id L'identifiant unique de la demande de signature (SignRequest).
-     * @return Une liste de {@code SignRequestStepsDto} qui représentent les étapes de la demande de signature,
-     *         avec les informations sur les actions des destinataires et les métadonnées associées.
-     */
-    @Transactional
-	public List<SignRequestStepsDto> getStepsDto(Long id) {
-		List<SignRequestStepsDto> signRequestStepsDtos = new ArrayList<>();
+	 * Récupère une liste des étapes d'une demande de signature sous forme d'objets SignRequestStepsDto.
+	 *
+	 * @param id L'identifiant unique de la demande de signature (SignRequest).
+	 * @return Une liste de {@code SignRequestStepsDto} qui représentent les étapes de la demande de signature,
+	 *         avec les informations sur les actions des destinataires et les métadonnées associées.
+	 */
+	@Transactional
+	public List<SignRequestStepsWsDto> getStepsDto(Long id) {
+		List<SignRequestStepsWsDto> signRequestStepsWsDtos = new ArrayList<>();
 		SignRequest signRequest = getById(id);
 		int i = 1;
 		for(LiveWorkflowStep liveWorkflowStep : signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps()) {
-			SignRequestStepsDto signRequestStepsDto = new SignRequestStepsDto();
-			signRequestStepsDto.setStepNumber(i);
-			signRequestStepsDto.setSignType(liveWorkflowStep.getSignType().name());
-			signRequestStepsDto.setAllSignToComplete(liveWorkflowStep.getAllSignToComplete());
+			SignRequestStepsWsDto signRequestStepsWsDto = new SignRequestStepsWsDto();
+			signRequestStepsWsDto.setStepNumber(i);
+			signRequestStepsWsDto.setSignType(liveWorkflowStep.getSignType().name());
+			signRequestStepsWsDto.setAllSignToComplete(liveWorkflowStep.getAllSignToComplete());
 			for(Recipient recipient : liveWorkflowStep.getRecipients()) {
-				RecipientsActionsDto recipientsActionsDto = new RecipientsActionsDto();
+				RecipientsActionsWsDto recipientsActionsDto = new RecipientsActionsWsDto();
 				recipientsActionsDto.setStepNumber(i);
 				Action action = signRequest.getRecipientHasSigned().get(recipient);
 				if(action != null) {
@@ -1968,26 +2405,26 @@ public class SignRequestService {
 					recipientsActionsDto.setSignPosX(auditStep.getPosX());
 					recipientsActionsDto.setSignPosY(auditStep.getPosY());
 				}
-				signRequestStepsDto.getRecipientsActions().add(recipientsActionsDto);
+				signRequestStepsWsDto.getRecipientsActions().add(recipientsActionsDto);
 			}
-			signRequestStepsDtos.add(signRequestStepsDto);
+			signRequestStepsWsDtos.add(signRequestStepsWsDto);
 			i++;
 		}
-		return signRequestStepsDtos;
+		return signRequestStepsWsDtos;
 	}
 
 	/**
-     * Nettoie les paramètres de requêtes de signature associés à un identifiant donné.
+	 * Nettoie les paramètres de requêtes de signature associés à un identifiant donné.
 	 *
-     * Cette méthode supprime les paramètres de requêtes de signature si les conditions
-     * définies sont remplies. Elle vérifie si la liste des identifiants de signature
-     * dans le rapport simple est vide et si le workflow associé est nul,
-     * avant de vider les listes correspondantes de paramètres.
-     *
-     * @param id l'identifiant unique de la requête de signature à traiter
-     * @throws IOException si une erreur d'entrée/sortie survient durant le traitement
-     */
-    @Transactional
+	 * Cette méthode supprime les paramètres de requêtes de signature si les conditions
+	 * définies sont remplies. Elle vérifie si la liste des identifiants de signature
+	 * dans le rapport simple est vide et si le workflow associé est nul,
+	 * avant de vider les listes correspondantes de paramètres.
+	 *
+	 * @param id l'identifiant unique de la requête de signature à traiter
+	 * @throws IOException si une erreur d'entrée/sortie survient durant le traitement
+	 */
+	@Transactional
 	public void cleanSignRequestParams(Long id) throws IOException {
 		SignRequest signRequest = getById(id);
 		Reports reports = signService.validate(signRequest.getId());
@@ -1998,13 +2435,13 @@ public class SignRequestService {
 	}
 
 	/**
-     * Vérifie si l'utilisateur actuel a signé la demande de signature.
-     *
-     * @param signRequest la demande de signature à vérifier
-     * @param userEppn l'identifiant EPPN de l'utilisateur pour vérifier l'état de signature
-     * @return true si l'utilisateur identifié par le EPPN a signé la demande, false sinon
-     */
-    public boolean isCurrentUserAsSigned(SignRequest signRequest, String userEppn) {
+	 * Vérifie si l'utilisateur actuel a signé la demande de signature.
+	 *
+	 * @param signRequest la demande de signature à vérifier
+	 * @param userEppn l'identifiant EPPN de l'utilisateur pour vérifier l'état de signature
+	 * @return true si l'utilisateur identifié par le EPPN a signé la demande, false sinon
+	 */
+	public boolean isCurrentUserAsSigned(SignRequest signRequest, String userEppn) {
 		User user = userService.getByEppn(userEppn);
 		return signRequest.getRecipientHasSigned().entrySet().stream().anyMatch(rhs -> rhs.getValue().getActionType().equals(ActionType.signed) && rhs.getKey().getUser().getEppn().equals(user.getEppn()));
 	}
@@ -2012,10 +2449,10 @@ public class SignRequestService {
 	@Transactional
 	public void cleanSignRequestDocumentsHistory(Long signRequestId) throws IOException {
 		SignRequest signRequest = getById(signRequestId);
-		if(signRequest.getParentSignBook().getEndDate()
+		logger.info("try cleaning documents history : " + signRequestId);
+		if(signRequest.getParentSignBook().getEndDate() != null && signRequest.getParentSignBook().getEndDate()
 				.before(Date.from(Instant.now().minus(globalProperties.getDocumentsHistoryDelay(), ChronoUnit.DAYS)))
 		) {
-			logger.info("cleaning signRequest documents history : " + signRequestId);
 			signRequest.getOriginalDocuments().clear();
 			Document lastSignedDocument = signRequest.getLastSignedDocument();
 			if(signRequest.getSignedDocuments().size() > 1) {
@@ -2035,6 +2472,7 @@ public class SignRequestService {
 				signRequest.getSignedDocuments().add(lastSignedDocument);
 			}
 			signRequest.setCleanDocumentsHistoryDate(new Date());
+			logger.info("cleaning documents history ok : " + signRequestId);
 		}
 	}
 
@@ -2056,10 +2494,10 @@ public class SignRequestService {
 				previousContent = currentContent;
 			}
 		} catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+			throw new RuntimeException(e);
+		}
 
-        return zipOutput.toByteArray();
+		return zipOutput.toByteArray();
 	}
 
 	private byte[] createDelta(byte[] oldContent, byte[] newContent) throws IOException, InterruptedException {

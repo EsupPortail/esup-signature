@@ -3,6 +3,7 @@ package org.esupportail.esupsignature.config.security;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -13,10 +14,12 @@ public class WebSecurityProperties {
     private String[] actuatorsAccessAuthorizeIps;
     private String csvAccessAuthorizeMask = "127.0.0.1";
     private String groupToRoleFilterPattern = "";
-    private Map<String, String> mappingGroupsRoles;
+    private Map<String, String> mappingGroupsRoles = new HashMap<>();
     private Map<String, String> groupMappingSpel;
     private List<String> excludedEmails = new ArrayList<>();
     private List<String> jwtWsAuthorizedAudiences = new ArrayList<>();
+    private boolean contentSecurityPolicyEnabled = false;
+    private boolean contentSecurityPolicyReportOnly = true;
 
     public String[] getWsAccessAuthorizeIps() {
         return wsAccessAuthorizeIps;
@@ -56,7 +59,7 @@ public class WebSecurityProperties {
     }
 
     public void setMappingGroupsRoles(Map<String, String> mappingGroupsRoles) {
-        this.mappingGroupsRoles = mappingGroupsRoles;
+        this.mappingGroupsRoles = mappingGroupsRoles != null ? mappingGroupsRoles : new HashMap<>();
     }
 
     public Map<String, String> getGroupMappingSpel() {
@@ -81,5 +84,21 @@ public class WebSecurityProperties {
 
     public void setJwtWsAuthorizedAudiences(List<String> jwtWsAuthorizedAudiences) {
         this.jwtWsAuthorizedAudiences = jwtWsAuthorizedAudiences;
+    }
+
+    public boolean isContentSecurityPolicyEnabled() {
+        return contentSecurityPolicyEnabled;
+    }
+
+    public void setContentSecurityPolicyEnabled(boolean contentSecurityPolicyEnabled) {
+        this.contentSecurityPolicyEnabled = contentSecurityPolicyEnabled;
+    }
+
+    public boolean isContentSecurityPolicyReportOnly() {
+        return contentSecurityPolicyReportOnly;
+    }
+
+    public void setContentSecurityPolicyReportOnly(boolean contentSecurityPolicyReportOnly) {
+        this.contentSecurityPolicyReportOnly = contentSecurityPolicyReportOnly;
     }
 }

@@ -7,23 +7,21 @@ import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.esupportail.esupsignature.config.GlobalProperties;
-import org.esupportail.esupsignature.config.sms.SmsProperties;
-import org.esupportail.esupsignature.dto.FrontendGlobalProperties;
+import org.esupportail.esupsignature.dto.ui.global.UiDataDto;
+import org.esupportail.esupsignature.dto.ui.global.UiGlobalPropertiesDto;
+import org.esupportail.esupsignature.dto.ui.global.UiCountersDto;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.entity.enums.SignLevel;
 import org.esupportail.esupsignature.entity.enums.SignType;
-import org.esupportail.esupsignature.service.*;
-import org.esupportail.esupsignature.service.security.PreAuthorizeService;
-import org.esupportail.esupsignature.service.utils.sign.ValidationService;
+import org.esupportail.esupsignature.entity.enums.UiParams;
+import org.esupportail.esupsignature.service.UserService;
+import org.esupportail.esupsignature.service.UserShareService;
+import org.esupportail.esupsignature.service.ui.UiFetchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.boot.info.BuildProperties;
-import org.springframework.core.env.Environment;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -31,7 +29,6 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.HashMap;
 
 @ControllerAdvice(basePackages = {"org.esupportail.esupsignature.web.controller"})
 @EnableConfigurationProperties(GlobalProperties.class)
@@ -40,40 +37,21 @@ public class GlobalAttributsControllerAdvice {
     private static final Logger logger = LoggerFactory.getLogger(GlobalAttributsControllerAdvice.class);
 
     private final GlobalProperties globalProperties;
-    private final SmsProperties smsProperties;
-    private final SignRequestService signRequestService;
-    private final SignBookService signBookService;
-    private final WorkflowService workflowService;
     private final UserShareService userShareService;
     private final UserService userService;
-    private final ReportService reportService;
-    private final PreAuthorizeService preAuthorizeService;
     private final ObjectMapper objectMapper;
-    private final Environment environment;
-    private final BuildProperties buildProperties;
-    private final ValidationService validationService;
-    private final CertificatService certificatService;
     private final ServletContext servletContext;
+    private final UiFetchService uiFetchService;
 
-    public GlobalAttributsControllerAdvice(GlobalProperties globalProperties, SmsProperties smsProperties, SignRequestService signRequestService, SignBookService signBookService, WorkflowService workflowService, UserShareService userShareService, UserService userService, ReportService reportService, PreAuthorizeService preAuthorizeService, ObjectMapper objectMapper,
-                                           @Autowired(required = false) BuildProperties buildProperties,
-                                           ValidationService validationService,
-                                           Environment environment, CertificatService certificatService, ServletContext servletContext) {
+    public GlobalAttributsControllerAdvice(GlobalProperties globalProperties, UserShareService userShareService, UserService userService, ObjectMapper objectMapper,
+                                           ServletContext servletContext,
+                                           UiFetchService uiFetchService) {
         this.globalProperties = globalProperties;
-        this.smsProperties = smsProperties;
-        this.signRequestService = signRequestService;
-        this.signBookService = signBookService;
-        this.workflowService = workflowService;
         this.userShareService = userShareService;
         this.userService = userService;
-        this.reportService = reportService;
-        this.preAuthorizeService = preAuthorizeService;
         this.objectMapper = objectMapper;
-        this.buildProperties = buildProperties;
-        this.validationService = validationService;
-        this.environment = environment;
-        this.certificatService = certificatService;
         this.servletContext = servletContext;
+        this.uiFetchService = uiFetchService;
     }
 
     @Value("${spring.session.timeout:#{null}}")
@@ -91,6 +69,8 @@ public class GlobalAttributsControllerAdvice {
     @ModelAttribute
     public void globalAttributes(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, Model model, HttpServletRequest httpServletRequest) throws JsonProcessingException {
         model.addAttribute("currentUri", httpServletRequest.getRequestURI());
+        model.addAttribute("favoriteWorkflowIds", authUserEppn != null ? userService.getFavoriteIds(authUserEppn, UiParams.favoriteWorkflows) : java.util.List.of());
+        model.addAttribute("favoriteFormIds", authUserEppn != null ? userService.getFavoriteIds(authUserEppn, UiParams.favoriteForms) : java.util.List.of());
         HttpSession httpSession = httpServletRequest.getSession();
         httpSession.setMaxInactiveInterval((int) sessionTimeout.toSeconds());
         if(userEppn != null) {
@@ -99,8 +79,9 @@ public class GlobalAttributsControllerAdvice {
                 logger.error("user {} not found", userEppn);
                 return;
             }
-            FrontendGlobalProperties myGlobalProperties = generateMyProperties(userEppn);
-            model.addAttribute("securityServiceName", httpServletRequest.getSession().getAttribute("securityServiceName"));
+            UiGlobalPropertiesDto myGlobalProperties = uiFetchService.buildUiGlobalProperties(userEppn);
+            UiCountersDto uiCounters = uiFetchService.buildUiCounters(userEppn, authUserEppn);
+            UiDataDto.UiConfigDto uiConfig = uiFetchService.buildUiConfig(userEppn, httpSession.getMaxInactiveInterval());
             model.addAttribute("user", user);
             model.addAttribute("authUser", userService.getByEppn(authUserEppn));
             model.addAttribute("keystoreFileName", user.getKeystoreFileName());
@@ -108,42 +89,30 @@ public class GlobalAttributsControllerAdvice {
             model.addAttribute("suUsers", userShareService.getSuUsers(authUserEppn));
             model.addAttribute("isOneSignShare", userShareService.isOneShareByType(userEppn, authUserEppn, ShareType.sign));
             model.addAttribute("isOneReadShare", userShareService.isOneShareByType(userEppn, authUserEppn, ShareType.read));
-            model.addAttribute("managedWorkflowsSize",  workflowService.getWorkflowByManagersContains(authUserEppn).size());
-            model.addAttribute("isRoleManager", preAuthorizeService.isManager(authUserEppn));
-            model.addAttribute("infiniteScrolling", globalProperties.getInfiniteScrolling());
-            model.addAttribute("validationToolsEnabled", validationService != null);
+            model.addAttribute("managedWorkflowsSize",  uiCounters.managedWorkflowsSize());
+            model.addAttribute("isRoleManager", uiCounters.isRoleManager());
+            model.addAttribute("infiniteScrolling", uiConfig.infiniteScrolling());
+            model.addAttribute("validationToolsEnabled", uiConfig.validationToolsEnabled());
             model.addAttribute("globalProperties", myGlobalProperties);
             model.addAttribute("globalPropertiesJson", objectMapper.writer().writeValueAsString(myGlobalProperties));
-            model.addAttribute("enableSms", smsProperties.getEnableSms());
-            model.addAttribute("reportNumber", reportService.countByUser(authUserEppn));
-            model.addAttribute("hoursBeforeRefreshNotif", globalProperties.getHoursBeforeRefreshNotif());
-            model.addAttribute("myUiParams", userService.getUiParams(authUserEppn));
-            if (environment.getActiveProfiles().length > 0 && environment.getActiveProfiles()[0].equals("dev")) {
-                model.addAttribute("profile", environment.getActiveProfiles()[0]);
+            model.addAttribute("enableSms", uiConfig.enableSms());
+            model.addAttribute("smsRequired", uiConfig.smsRequired());
+            model.addAttribute("reportNumber", uiCounters.reportNumber());
+            if (uiConfig.profile() != null) {
+                model.addAttribute("profile", uiConfig.profile());
             }
-            if (buildProperties != null) {
-                model.addAttribute("versionApp", buildProperties.getVersion());
-            } else {
-                model.addAttribute("versionApp", "dev");
-            }
+            model.addAttribute("versionApp", uiConfig.versionApp());
             model.addAttribute("signTypes", Arrays.stream(SignType.values()).sorted(Comparator.comparingInt(SignType::getValue).reversed()).toList());
             model.addAttribute("signLevels", Arrays.stream(SignLevel.values()).sorted(Comparator.comparingInt(SignLevel::getValue)).toList());
 
-            model.addAttribute("nbSignRequests", signRequestService.getNbPendingSignRequests(userEppn));
-            model.addAttribute("nbToSign", signBookService.nbToSignSignBooks(userEppn));
-            model.addAttribute("nbDeleted", signBookService.nbDeleted(userEppn));
-            model.addAttribute("certificatProblem", certificatService.checkCertificatProblem(userService.getRoles(userEppn)));
+            model.addAttribute("nbSignRequests", uiCounters.nbSignRequests());
+            model.addAttribute("nbToSign", uiCounters.nbToSign());
+            model.addAttribute("nbDeleted", uiCounters.nbDeleted());
+            model.addAttribute("certificatProblem", uiCounters.certificatProblem());
         }
         model.addAttribute("maxInactiveInterval", httpSession.getMaxInactiveInterval());
         model.addAttribute("applicationEmail", globalProperties.getApplicationEmail());
     }
 
-    private FrontendGlobalProperties generateMyProperties(String userEppn) {
-        GlobalProperties myGlobalProperties = new GlobalProperties();
-        BeanUtils.copyProperties(globalProperties, myGlobalProperties);
-        userService.parseRoles(userEppn, myGlobalProperties);
-        myGlobalProperties.newVersion = globalProperties.newVersion;
-        return FrontendGlobalProperties.fromGlobalProperties(myGlobalProperties);
-    }
 
 }

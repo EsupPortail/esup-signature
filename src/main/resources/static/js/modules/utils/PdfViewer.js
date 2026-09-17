@@ -1,31 +1,32 @@
 import {EventBus} from "../../customs/ui_utils.js?version=@version@";
 import {EventFactory} from "./EventFactory.js?version=@version@";
 import {DataField} from "../../prototypes/DataField.js?version=@version@";
-import { LayerHighlighter } from './LayerHighlighter.js';
+import {LayerHighlighter} from "./pdf/LayerHighlighter.js?version=@version@";
+import {PdfHandPanController} from "./pdf/PdfHandPanController.js?version=@version@";
+import {PdfLayerController} from "./pdf/PdfLayerController.js?version=@version@";
+import {PdfLinkFieldValidator} from "./pdf/PdfLinkFieldValidator.js?version=@version@";
+import {PdfFormManager} from "./pdf/PdfFormManager.js?version=@version@";
+import {PdfNavigationController} from "./pdf/PdfNavigationController.js?version=@version@";
+import {PdfProgressController} from "./pdf/PdfProgressController.js?version=@version@";
+import {PdfRendererController} from "./pdf/PdfRendererController.js?version=@version@";
 
 export class PdfViewer extends EventFactory {
 
-    constructor(url, signable, editable, currentStepNumber, forcePageNum, fields, disableAllFields) {
+    constructor(url, signable, editable, currentStepNumber, forcePageNum, fields, disableAllFields, options = {}) {
         super();
         console.info("Starting PDF Viewer, signable : " + signable);
         this.highlighter = new LayerHighlighter(this);
         this.timer = null;
         this.viewed = false;
         this.url = url;
-        this.interval = null;
-        this.initialOffset = 0;
         this.pages = [];
         this.signable = signable;
         this.editable = editable;
         this.currentStepNumber = currentStepNumber;
         this.saveScrolling = 0;
         this.pageNum = 1;
-        this.annotationDisplay = null;
         this.eventBus = new EventBus({dispatchToDOM: false});
         this._optionalContentConfigPromise = null;
-        this._isRefreshingOCG = false;
-        const testUrl = new URL(window.location.href);
-        const hasAnnotation = testUrl.searchParams.has("annotation");
         if(forcePageNum != null) {
             this.pageNum = forcePageNum;
         }
@@ -41,39 +42,125 @@ export class PdfViewer extends EventFactory {
         this.pdfDiv = $("#pdf");
         this.pdfDoc = null;
         this.numPages = 1;
-        this.page = null;
         this.dataFields = jsFields;
         this.savedFields = new Map();
-        this.events = {};
-        this.rotation = null;
-        this.pageRotation = 0;
+        this.linkValidationStates = new Map();
+        this.linkValidationTimers = new Map();
+        this.linkValidationControllers = new Map();
+        this.linkValidationSeq = new Map();
+        this.rotationOverride = null;
         this.renderedPages = 0;
         this.renderQueue = [];
         this.activeRenders = 0;
-        this.maxConcurrentRenders = 5;
-        this.renderedPagesMap = new Map();
-        this.displayedPagesMap = new Map();
+        this.maxConcurrentRenders = Number.isFinite(options.maxConcurrentRenders)
+            ? Math.max(1, Math.floor(options.maxConcurrentRenders))
+            : 2;
+        this.maxRenderScale = Number.isFinite(options.maxRenderScale) ? options.maxRenderScale : 2;
+        this.renderBufferPages = Number.isFinite(options.renderBufferPages) ? Math.max(0, Math.floor(options.renderBufferPages)) : 2;
+        this.maxRenderedPages = Number.isFinite(options.maxRenderedPages) ? Math.max(1, Math.floor(options.maxRenderedPages)) : 12;
+        this.renderCycleId = 0;
+        this.isRendering = false;
+        this.pendingRender = false;
+        this.pendingRenderPdf = null;
+        this.renderComplete = false;
+        this.renderFailed = false;
+        this.loadStarted = false;
+        this.loadPromise = null;
+        this.renderedScale = this.scale;
+        this.renderScale = this.scale;
+        this.renderFinishedFired = false;
+        this.renderedPageNums = new Set();
+        this.renderingPageNums = new Set();
+        this.queuedPageNums = new Set();
+        this.textLayerPageNums = new Set();
+        this.textLayerRenderingPageNums = new Set();
+        this.textLayerRenderPromise = null;
+        this.pageViewports = new Map();
+        this.handPanState = null;
+        this.handPanEnabled = options.handPanEnabled === true;
         this.lastWidth = window.innerWidth;
         this.lastHeight = window.innerHeight;
-        this.currentOptionalContentConfig = null;
-        let self = this;
-        $(document).ready(function() {
-            if (!globalThis.pdfjsLib || !Promise.withResolvers) {
-                bootbox.alert("Votre navigateur ne support pas pdfJs pour l'affichage des PDF.<br>Version minimales : Firefox 121, Chrome 119, Safari 17.4", function () {
-                    document.location = "https://www.mozilla.org/fr/firefox/new/"
-                });
-            } else {
-                self.annotationDisplay = globalThis.pdfjsLib.AnnotationMode.DISABLE;
-                if(hasAnnotation) {
-                    self.annotationDisplay = globalThis.pdfjsLib.AnnotationMode.ENABLE_FORMS;
-                }
-                let loadingTask = globalThis.pdfjsLib.getDocument(self.url);
-                loadingTask.promise.then(function(pdf) {
-                    self.startRender(pdf)
-                });
-            }
-        });
+        this._activeLayerView = null; // { stepNumber: number, solo: boolean } | null
+        this.navigationController = new PdfNavigationController(this);
+        this.handPanController = new PdfHandPanController(this);
+        this.layerController = new PdfLayerController(this);
+        this.linkFieldValidator = new PdfLinkFieldValidator(this);
+        this.formManager = new PdfFormManager(this);
+        this.progressController = new PdfProgressController(this);
+        this.rendererController = new PdfRendererController(this);
         this.initListeners();
+        if (options.autoStart !== false) {
+            this.loadDocumentWhenReady();
+        }
+    }
+
+    whenDocumentReady() {
+        if (document.readyState === "loading") {
+            return new Promise(resolve => $(document).ready(resolve));
+        }
+        return Promise.resolve();
+    }
+
+    loadDocumentWhenReady() {
+        if (this.loadStarted) {
+            return this.loadPromise;
+        }
+        this.loadStarted = true;
+        this.loadPromise = this.whenDocumentReady().then(() => this.loadDocument());
+        return this.loadPromise;
+    }
+
+    async loadDocument() {
+        try {
+            if (!globalThis.pdfjsLib || !Promise.withResolvers) {
+                const message = "Votre navigateur ne supporte pas pdfJs pour l'affichage des PDF.";
+                const error = new Error(message);
+                this.failRender(error, message);
+                bootbox.alert(message + "<br>Versions prises en charge par PDF.js 6 : Firefox 140 ESR, Chrome 125, Safari 18", function () {
+                    document.location = "https://www.mozilla.org/fr/firefox/new/";
+                });
+                return null;
+            }
+            if (!this.url) {
+                throw new Error("PdfViewer: url est vide");
+            }
+            if (globalThis.pdfjsLib.GlobalWorkerOptions) {
+                globalThis.pdfjsLib.GlobalWorkerOptions.workerSrc = '/webjars/pdfjs-dist/legacy/build/pdf.worker.min.mjs';
+            }
+            $("#pdf-progress-bar").addClass("es-progress-visible");
+            this.startProgress();
+            const loadingTask = globalThis.pdfjsLib.getDocument({
+                verbosity: 0,
+                url: this.url,
+                useWasm: true,
+                wasmUrl: `/webjars/pdfjs-dist/wasm/`
+            });
+            const pdf = await loadingTask.promise;
+            await this.startRender(pdf);
+            return pdf;
+        } catch (error) {
+            this.failRender(error, "Impossible de charger le document PDF.");
+            return null;
+        }
+    }
+
+    failRender(error, message = "Impossible d’afficher le document PDF.") {
+        if (this.renderFailed) {
+            return;
+        }
+        this.renderFailed = true;
+        this.isRendering = false;
+        this.pendingRender = false;
+        this.pendingRenderPdf = null;
+        this.renderQueue = [];
+        this.activeRenders = 0;
+        this.renderCycleId++;
+        this.renderComplete = false;
+        this.pdfDiv.css('opacity', 1);
+        console.error(message, error);
+        this.progressController.failProgress(message);
+        this.fireEvent("renderFailed", [error]);
+        $(document).trigger("renderFailed", [error]);
     }
 
     initListeners() {
@@ -83,35 +170,46 @@ export class PdfViewer extends EventFactory {
         $('#zoomout').on('click', e => this.zoomOut());
         $('#fullwidth').on('click', e => this.fullWidth());
         $('#fullheight').on('click', e => this.fullHeight());
-        $('#autototate').on('click', e => this.autoRotate());
+        $('#autoRotate').on('click', e => this.autoRotate());
+        $(document).on('click', '.display-layer-btn', (e) => {
+            const stepNumber = parseInt($(e.currentTarget).data('step'));
+            const layerId = $(e.currentTarget).data('layer-id');
+            self.toggleLayerByStep(stepNumber, false, layerId);
+        });
+
         $(document).on('click', '.toggle-layer-btn', (e) => {
             const stepNumber = parseInt($(e.currentTarget).data('step'));
-
-            $('.toggle-layer-btn').each(function() {
-                const btnStep = parseInt($(this).data('step'));
-                const $icon = $(this).find('i');
-
-                if (btnStep <= stepNumber) {
-                    // Niveaux inférieurs et courant : fi-rr-eye + noir
-                    $(this).css('opacity', '1');
-                    $icon.removeClass('fi-rr-eye-crossed').addClass('fi-rr-eye');
-                } else {
-                    // Niveaux supérieurs : fi-rr-eye-crossed + gris
-                    $(this).css('opacity', '0.5');
-                    $icon.removeClass('fi-rr-eye').addClass('fi-rr-eye-crossed');
-                }
-            });
-
-            self.showLayerByStep(stepNumber);
+            const layerId = $(e.currentTarget).data('layer-id');
+            self.toggleLayerByStep(stepNumber, true, layerId);
         });
+
         $(document).on('mouseenter', '.toggle-layer-btn', (e) => {
             const stepNumber = parseInt($(e.currentTarget).data('step'));
-            self.highlightStep(stepNumber);
+            const layerId = $(e.currentTarget).data('layer-id');
+            self.highlightStep(stepNumber, layerId);
         });
 
         $(document).on('mouseleave', '.toggle-layer-btn', (e) => {
             self.clearHighlight();
         });
+
+        $(document).on('mouseenter', '.toggle-layer-div', (e) => {
+            const stepNumber = parseInt($(e.currentTarget).data('step'));
+            const layerId = $(e.currentTarget).find('[data-layer-id]').first().data('layer-id');
+            if (layerId == null) {
+                return;
+            }
+            self.highlightStep(stepNumber, layerId);
+        });
+
+        $(document).on('mouseleave', '.toggle-layer-div', (e) => {
+            const layerId = $(e.currentTarget).find('[data-layer-id]').first().data('layer-id');
+            if (layerId == null) {
+                return;
+            }
+            self.clearHighlight();
+        });
+
         const THRESHOLD = 100;
         const DEBOUNCE_DELAY = 100;
         let resizeTimer = null;
@@ -128,12 +226,69 @@ export class PdfViewer extends EventFactory {
                 self.lastHeight = h;
             }, DEBOUNCE_DELAY);
         });
+        const scrollTarget = this.getWorkspaceElement() || window;
+        $(scrollTarget).on('scroll.pdfViewerLazyRender', () => {
+            if (!this.pdfDoc || this.renderFailed) {
+                return;
+            }
+            clearTimeout(this.lazyRenderTimer);
+            this.lazyRenderTimer = setTimeout(() => {
+                this.rendererController.queueVisiblePages();
+                this.rendererController.releaseDistantPages();
+            }, 80);
+        });
         $('#page_num').on('change', e => this.scrollToPage(e.target.value));
         if(localStorage.getItem("scale")) {
             this.scale = parseFloat(localStorage.getItem("scale"));
         } else {
             this.adjustZoom();
         }
+        this.initHandPan();
+    }
+
+    getWorkspaceElement() {
+        return this.navigationController.getWorkspaceElement();
+    }
+
+    getScrollTop() {
+        return this.navigationController.getScrollTop();
+    }
+
+    getViewportHeight() {
+        return this.navigationController.getViewportHeight();
+    }
+
+    getScrollLeft() {
+        return this.navigationController.getScrollLeft();
+    }
+
+    scrollToPosition(top, behavior = 'auto') {
+        return this.navigationController.scrollToPosition(top, behavior);
+    }
+
+    animateScrollToPosition(top) {
+        return this.navigationController.animateScrollToPosition(top);
+    }
+
+    initHandPan() {
+        return this.handPanController.initHandPan();
+    }
+
+    setHandPanEnabled(enabled) {
+        this.handPanEnabled = enabled === true;
+        if (this.handPanEnabled) {
+            this.initHandPan();
+        } else {
+            this.handPanController.stopHandPan?.();
+        }
+    }
+
+    getPageTopInPdf(pageNum) {
+        return this.navigationController.getPageTopInPdf(pageNum);
+    }
+
+    getPageLeftInPdf(pageNum) {
+        return this.navigationController.getPageLeftInPdf(pageNum);
     }
 
     set optionalContentConfigPromise(promise) {
@@ -169,118 +324,73 @@ export class PdfViewer extends EventFactory {
         this.processRenderQueue();
     }
 
-    getVisiblePages() {
-        const visiblePages = [];
-        const scrollTop = window.scrollY;
-        const scrollBottom = scrollTop + window.innerHeight;
+    applyScaleWithoutRerender() {
+        if (!Number.isFinite(this.renderedScale) || this.renderedScale <= 0) {
+            return false;
+        }
+        const scaleRatio = this.scale / this.renderedScale;
+        if (!Number.isFinite(scaleRatio) || scaleRatio <= 0) {
+            return false;
+        }
 
         for (let i = 1; i <= this.numPages; i++) {
-            const pageElement = document.getElementById(`page_${i}`);
-            if (pageElement) {
-                const rect = pageElement.getBoundingClientRect();
-                const elementTop = rect.top + scrollTop;
-                const elementBottom = elementTop + rect.height;
-                if (elementBottom > scrollTop && elementTop < scrollBottom) {
-                    visiblePages.push(i);
-                }
+            const container = document.getElementById(`page_${i}`);
+            if (!container) {
+                continue;
+            }
+            const renderedWidth = Number.parseFloat(container.dataset.renderedWidth || '0');
+            const renderedHeight = Number.parseFloat(container.dataset.renderedHeight || '0');
+            if (!Number.isFinite(renderedWidth) || !Number.isFinite(renderedHeight) || renderedWidth <= 0 || renderedHeight <= 0) {
+                continue;
+            }
+
+            container.style.width = `${Math.floor(renderedWidth * scaleRatio)}px`;
+            container.style.height = `${Math.floor(renderedHeight * scaleRatio)}px`;
+            container.style.marginBottom = `${10 * this.scale}px`;
+
+            const pageDiv = container.querySelector('.page');
+            if (pageDiv) {
+                pageDiv.style.transformOrigin = 'top left';
+                pageDiv.style.transform = scaleRatio === 1 ? '' : `scale(${scaleRatio})`;
             }
         }
-        return visiblePages;
+
+        this.refreshTools();
+        this.restoreScrolling();
+        this.updateHorizontalOverflowState();
+        return true;
+    }
+
+    getVisiblePages() {
+        return this.navigationController.getVisiblePages();
     }
 
     restoreScrolling() {
-        let newScrolling = Math.round(this.saveScrolling * this.scale);
-        window.scrollTo({
-            top: newScrolling,
-            left: 0,
-            behavior: 'auto',
-        });
+        return this.navigationController.restoreScrolling();
     }
 
     listenToSearchCompletion() {
-        let controller = new AbortController();
-        let signal = controller.signal;
-        console.info("listen to search autocompletion");
-        $(".search-completion").each(function () {
-            let serviceName = $(this).attr("search-completion-service-name");
-            let searchType = $(this).attr("search-completion-type");
-            let searchReturn = $(this).attr("search-completion-return");
-            $(this).autocomplete({
-                delay: 500,
-                source: function( request, response ) {
-                    if(request.term.length > 2) {
-                        controller.abort();
-                        controller = new AbortController()
-                        signal = controller.signal;
-                        $.ajax({
-                            url: "/ws-secure/users/search-extvalue?searchType=" + searchType + "&searchString=" + request.term + "&serviceName=" + serviceName + "&searchReturn=" + searchReturn,
-                            dataType: "json",
-                            signal: signal,
-                            data: {
-                                q: request.term
-                            },
-                            success: function (data) {
-                                console.debug("debug - " + "search user " + request.term);
-                                response($.map(data, function (item) {
-                                    return {
-                                        label: item.text,
-                                        value: item.value
-                                    };
-                                }));
-                            }
-                        });
-                    }
-                }
-            });
-        });
+        return this.formManager.listenToSearchCompletion();
     }
 
     annotationLinkTargetBlank() {
-        $('.linkAnnotation').each(function (){
-            $(this).children().attr('target', '_blank');
-            $(this).droppable({
-                tolerance: "touch",
-                drop: function( event, ui ) {
-                    if($(ui.draggable).attr("id") != null && ($(ui.draggable).attr("id").includes("cross_") || $($(ui.draggable).attr("id").includes("border_")))) {
-                        $("#border_" + $(ui.draggable).attr("id").split("_")[1]).addClass("cross-warning");
-                    }
-                },
-                over: function( event, ui ) {
-                    if($(ui.draggable).attr("id") != null && ($(ui.draggable).attr("id").includes("cross_") || $($(ui.draggable).attr("id").includes("border_")))) {
-                        $("#border_" + $(ui.draggable).attr("id").split("_")[1]).addClass("cross-warning");
-                    }
-                },
-                out: function( event, ui ) {
-                    if($(ui.draggable).attr("id") != null && ($(ui.draggable).attr("id").includes("cross_") || $($(ui.draggable).attr("id").includes("border_")))) {
-                        $("#border_" + $(ui.draggable).attr("id").split("_")[1]).removeClass("cross-warning");
-                    }
-                }
-            });
-        });
+        return this.formManager.annotationLinkTargetBlank();
     }
 
     annotationLinkRemove() {
-        $('.linkAnnotation').each(function (){
-            $(this).css("opacity", 0);
-            $(this).click(function(e) {
-                e.preventDefault();
-            });
-        });
+        return this.formManager.annotationLinkRemove();
+    }
+
+    async applyLinkAnnotationsVisibility() {
+        return this.layerController.applyLinkAnnotationsVisibility();
+    }
+
+    async applyLinkAnnotationsVisibilityForPage(pageNum, visibleLayerNames) {
+        return this.layerController.applyLinkAnnotationsVisibilityForPage(pageNum, visibleLayerNames);
     }
 
     checkCurrentPage(e) {
-        if(this.renderedPages < this.numPages) return;
-        let numPages = this.pdfDoc.numPages;
-        for(let i = 1; i < numPages + 1; i++) {
-            if(e > $("#page_" + i).offset().top - 250) {
-                this.pageNum = i;
-                document.getElementById('page_num').value = this.pageNum;
-                if((this.pageNum === this.numPages || this.numPages === 1) && !this.viewed) {
-                    this.viewed = true;
-                    this.fireEvent("reachEnd", ['ok'])
-                }
-            }
-        }
+        return this.navigationController.checkCurrentPage(e);
     }
 
     adjustZoom() {
@@ -293,83 +403,27 @@ export class PdfViewer extends EventFactory {
         this.fireEvent("scaleChange", ['in']);
     }
 
-    startRender(pdf) {
-        this.pdfDiv.css('opacity', 0);
-        if(this.pdfDoc == null) {
-            this.pdfDoc = pdf;
-        }
-        this.numPages = this.pdfDoc.numPages;
-        document.getElementById('page_count').textContent = this.pdfDoc.numPages;
-        this.renderedPages = 0;
-        this.pages = [];
-        this.renderQueue = [];
-        this.activeRenders = 0;
-        this.disableScrollBtn();
-        this.resetProgress();
-        $("#pdf-progress-bar").css("opacity", 1);
-        this.startProgress();
-
-        this._optionalContentConfigPromise = this.pdfDoc.getOptionalContentConfig();
-
-        for (let i = 1; i <= this.numPages; i++) {
-            this.renderQueue.push(i);
-        }
-        this.processRenderQueue();
-
-        this.refreshTools();
-        this.fireEvent("ready", ['ok']);
+    getMaxZoomLimit() {
+        const workspaceDiv = document.getElementById('workspace');
+        const workspaceWidth = workspaceDiv ? workspaceDiv.offsetWidth : window.innerWidth;
+        const baseLimit = Math.round(workspaceWidth / 600 * 10) / 10 - 0.1;
+        // On small screens, allow controlled overflow so text stays readable.
+        const overflowBonus = workspaceWidth < 1200
+            ? ((1200 - workspaceWidth) / 1200) * 1.2
+            : 0;
+        return Math.min(3.2, Math.max(baseLimit + overflowBonus, 1.8));
     }
 
-    processRenderQueue() {
-        while (this.activeRenders < this.maxConcurrentRenders && this.renderQueue.length > 0) {
-            const pageNum = this.renderQueue.shift();
-            this.activeRenders++;
+    async startRender(pdf) {
+        return this.rendererController.startRender(pdf);
+    }
 
-            let self = this;
-            this.pdfDoc.getPage(pageNum).then(page => {
-                return self.renderTask(page, pageNum, self._optionalContentConfigPromise);
-            }).then(function() {
-                self.activeRenders--;
-                self.renderedPages++;
-
-                if(self.renderQueue.length === 0 && self.activeRenders === 0) {
-                    // Si c'est un refresh OCG, ne pas lancer postRenderAll
-                    if (self._isRefreshingOCG) {
-                        self._isRefreshingOCG = false;
-                    } else {
-                        self.initialOffset = parseInt($("#page_1").offset().top);
-                        self.fireEvent("renderFinished", ['ok']);
-                        $(document).trigger("renderFinished");
-                        if(self.pages.length === self.numPages) {
-                            self.stopProgress();
-                            self.postRenderAll();
-                            $("#pdf-progress-bar").css("opacity", 0);
-                            self.enableScrollBtn();
-                        }
-                    }
-                } else {
-                    self.processRenderQueue();
-                }
-            })
-                .catch(err => {
-                    console.error(`Erreur rendu page ${pageNum}:`, err);
-                    self.activeRenders--;
-                    self._isRefreshingOCG = false;
-                    self.processRenderQueue();
-                });
-        }
+    processRenderQueue(renderCycleId = this.renderCycleId) {
+        return this.rendererController.processRenderQueue(renderCycleId);
     }
 
     scrollToPage(num) {
-        let self = this;
-        let page = $("#page_" + num);
-        if(page.length) {
-            let scrollTo = page.offset().top - self.initialOffset;
-            $([document.documentElement, document.body]).animate({
-                scrollTop: scrollTo
-            }, 100, function (){
-            });
-        }
+        return this.navigationController.scrollToPage(num);
     }
 
     enableScrollBtn() {
@@ -396,663 +450,120 @@ export class PdfViewer extends EventFactory {
         }
     }
 
-    async renderTask(page, i, configPromise) {
-        return new Promise((resolve, reject) => {
-            let container = document.getElementById(`page_${i}`);
-            if (!container) {
-                container = document.createElement("div");
-                container.id = `page_${i}`;
-                container.setAttribute("page-num", i);
-                container.className = "drop-shadows pdf-page";
-                container.style.marginBottom = `${10 * this.scale}px`;
-                this.insertPageAtCorrectPosition(container, i);
-            } else {
-                container.innerHTML = "";
-                container.style.marginBottom = `${10 * this.scale}px`;
-            }
-            $(container).droppable({
-                drop: (event, ui) => ui.helper.attr("page", i)
-            });
-
-            const browserZoom = this.getBrowserZoom();
-            this.pageRotation = page.rotate;
-
-            if(this.rotation == null) {
-                this.rotation = this.pageRotation;
-            }
-
-            const viewport = page.getViewport({
-                scale: this.scale,
-                rotation: this.rotation
-            });
-
-            const dispatchToDOM = false;
-            const pdfPageView = new pdfjsViewer.PDFPageView({
-                eventBus: this.eventBus,
-                container: container,
-                id: this.pageNum,
-                scale: this.scale,
-                defaultViewport: viewport,
-                useOnlyCssZoom: true,
-                defaultZoomDelay: 0,
-                textLayerMode: 0,
-                annotationMode: pdfjsLib.AnnotationMode.ENABLE_FORMS,
-                // CORRECTIF CRUCIAL: Passer la config OCG ici
-                optionalContentConfigPromise: configPromise
-            });
-
-            pdfPageView.setPdfPage(page);
-
-            let self = this;
-            pdfPageView.draw().then(() => {
-                const container = document.getElementById(`page_${i}`);
-                if (!container) {
-                    reject(new Error("Container disparu"));
-                    return;
-                }
-                const canvas = container.querySelector('canvas');
-                if (!canvas) {
-                    reject(new Error("Pas de canvas"));
-                    return;
-                }
-                canvas.style.width = `${Math.floor(viewport.width)}px`;
-                canvas.style.height = `${Math.floor(viewport.height)}px`;
-                const canvasWrapper = container.querySelector('.canvasWrapper');
-                if (canvasWrapper) {
-                    canvasWrapper.style.width = `${Math.floor(viewport.width)}px`;
-                    canvasWrapper.style.height = `${Math.floor(viewport.height)}px`;
-                    canvasWrapper.style.padding = '0';
-                    canvasWrapper.style.margin = '0';
-                    canvasWrapper.style.overflow = 'hidden';
-                }
-                const pageDiv = container.querySelector('.page');
-                if (pageDiv) {
-                    pageDiv.style.width = `${Math.floor(viewport.width)}px`;
-                    pageDiv.style.height = `${Math.floor(viewport.height)}px`;
-                    pageDiv.style.padding = '0';
-                    pageDiv.style.margin = '0';
-                }
-                container.style.width = `${Math.floor(viewport.width)}px`;
-                container.style.height = `${Math.floor(viewport.height)}px`;
-                container.style.overflow = 'hidden';
-                const annotationLayer = container.querySelector('.annotationLayer');
-                if (annotationLayer) {
-                    annotationLayer.setAttribute("data-main-rotation", this.rotation);
-                    const isPortrait = viewport.width < viewport.height;
-                    if (!isPortrait) {
-                        annotationLayer.style.width = `${Math.floor(viewport.height)}px`;
-                        annotationLayer.style.height = `${Math.floor(viewport.width)}px`;
-                    } else {
-                        annotationLayer.style.width = `${Math.floor(viewport.width)}px`;
-                        annotationLayer.style.height = `${Math.floor(viewport.height)}px`;
-                    }
-                }
-                this.pages.push(page);
-                resolve("ok");
-            }).catch(err => {
-                console.error("Erreur dans pdfPageView.draw() page", i, ":", err);
-                reject(err);
-            });
-        });
+    getPageRotation(page) {
+        if (this.rotationOverride == null) {
+            return page.rotate;
+        }
+        return this.rotationOverride;
     }
 
-    insertPageAtCorrectPosition(container, pageNum) {
-        const pdfDivElement = this.pdfDiv[0];
-        const allPages = pdfDivElement.querySelectorAll('.pdf-page');
-        let inserted = false;
-        for (let page of allPages) {
-            const currentPageNum = parseInt(page.getAttribute('page-num'));
-            if (currentPageNum > pageNum) {
-                pdfDivElement.insertBefore(container, page);
-                inserted = true;
-                break;
-            }
-        }
-        if (!inserted) {
-            pdfDivElement.appendChild(container);
-        }
-    }
-
-    postRenderAll() {
-        for(let i = 0; i < this.numPages; i++) {
-            this.postRender(this.pages[i]);
-        }
-        this.restoreScrolling();
-    }
-
-    postRender(page) {
-        this.promiseRenderForm(false, page).then(e => this.promiseRestoreValue());
-        console.groupEnd();
-        this.annotationLinkTargetBlank();
+    updateHorizontalOverflowState() {
+        return this.rendererController.updateHorizontalOverflowState();
     }
 
     promiseRenderForm(isField, page) {
-        return new Promise((resolve, reject) => {
-            page.getAnnotations().then(items => this.renderPdfFormWithFields(items));
-            resolve("Réussite");
-        });
+        return this.formManager.promiseRenderForm(isField, page);
     }
 
-    promiseToggleFields(enable) {
-        if(this.pdfDoc != null) {
-            for (let i = 1; i < this.pdfDoc.numPages + 1; i++) {
-                this.pdfDoc.getPage(i).then(page => page.getAnnotations().then(items => this.toggleItems(items, enable)));
-            }
-        }
-    }
-
-    toggleItems(items, enable) {
-        console.info("toggle fields " + items.length);
-        for (let i = 0; i < items.length; i++) {
-            if(items[i].fieldName != null) {
-                let inputField = $('input[name=\'' + items[i].fieldName.split(/\$|#|!/)[0] + '\'], textarea[name=\'' + items[i].fieldName.split(/\$|#|!/)[0] + '\']');
-                inputField.prop("disabled", !enable);
-            }
-        }
-    }
-
-    promiseSaveValues() {
-        console.log("save");
-        return new Promise((resolve, reject) => {
-            console.info("launch save values");
-            for (let i = 1; i < this.pdfDoc.numPages + 1; i++) {
-                this.pdfDoc.getPage(i).then(page => page.getAnnotations().then(items => this.saveValues(items)));
-            }
-            resolve();
-        });
+    async promiseSaveValues() {
+        return this.formManager.promiseSaveValues();
     }
 
     saveValues(items) {
-        console.log("saving " + items.length + " fields");
-        if(this.dataFields.length > 0) {
-            for (let i = 0; i < this.dataFields.length; i++) {
-                let dataField = this.dataFields[i];
-                let item = items.filter(function (e) {
-                    return e.fieldName != null && e.fieldName === dataField.name
-                })[0];
-                if (item != null && item.fieldName != null) {
-                    this.saveValue(item);
-                } else {
-                    if(this.savedFields.get(dataField.name) == null) {
-                        this.savedFields.set(dataField.name, dataField.defaultValue);
-                    }
-                }
-            }
-        } else {
-            for (let i = 0; i < items.length; i++) {
-                this.saveValue(items[i]);
-            }
-        }
+        return this.formManager.saveValues(items);
     }
 
     saveValue(item) {
-        if(item != null && item.fieldName != null) {
-            let inputName = item.fieldName;
-            let inputField = $("[name='" + $.escapeSelector(inputName) + "']");
-            if (inputField.length > 0) {
-                if (inputField.val() != null) {
-                    if (inputField.is(':checkbox')) {
-                        if (!inputField[0].checked) {
-                            this.savedFields.set(item.fieldName, 'off');
-                        } else {
-                            this.savedFields.set(item.fieldName, 'on');
-                        }
-                        return;
-                    }
-                    if (inputField.is(':radio')) {
-                        let radio = $('input[name=\'' + inputField.attr("name") + '\']');
-                        let self = this;
-                        radio.each(function() {
-                            if ($(this).prop("checked")) {
-                                self.savedFields.set(item.fieldName, $(this).val());
-                            }
-                        });
-                        return;
-                    }
-                    if (inputField.is('select')) {
-                        let value = inputField.val();
-                        this.savedFields.set(item.fieldName, value);
-                        return;
-                    }
-                    let value = inputField.val();
-                    this.savedFields.set(item.fieldName, value);
-                }
-            }
-        }
+        return this.formManager.saveValue(item);
     }
 
-    promiseRestoreValue() {
-        if(this.savedFields.size === 0) {
-            this.promiseSaveValues();
-        }
-        for(let i = 1; i < this.pdfDoc.numPages + 1; i++) {
-            this.pdfDoc.getPage(i).then(page => page.getAnnotations().then(items => this.restoreValues(items)));
-        }
-        this.fireEvent("render", ['end']);
+    async promiseRestoreValue() {
+        return this.formManager.promiseRestoreValue();
     }
 
     restoreValues(items) {
-        console.log("set fields " + items.length);
-        for (let i = 0; i < items.length; i++) {
-            if(items[i].fieldName != null) {
-                let inputName = items[i].fieldName.split(/\$|#|!/)[0];
-                let savedValue = this.savedFields.get(items[i].fieldName);
-                let inputField = $('[name="' + inputName + '"]');
-                if (inputField.val() != null) {
-                    if(savedValue != null) {
-                        if (inputField.is(':checkbox')) {
-                            if (savedValue === 'on') {
-                                inputField.prop("checked", true);
-                            } else {
-                                inputField.prop("checked", false);
-                            }
-                            continue;
-                        }
-                        if (inputField.is(':radio')) {
-                            let radio = $('input[name=\'' + inputName + '\'][value=\'' + items[i].buttonValue + '\']');
-                            if (savedValue === radio.val()) {
-                                radio.prop("checked", true);
-                            }
-                            continue;
-                        }
-                        inputField.val(savedValue);
-                        continue;
-                    }
-                }
-                let textareaField = $('textarea[name=\'' + inputName + '\']');
-                if (textareaField.val() != null) {
-                    if (savedValue != null) {
-                        textareaField.val(savedValue);
-                        continue;
-                    }
-                }
-                if (inputField.is('select')) {
-                    $("#" + inputName + " option[value='" + savedValue + "']").prop('selected', true);
-                    inputField.val(savedValue);
-                    continue;
-                }
-                let selectField = $('select[name=\'' + inputName + '\']');
-                if (selectField.val() != null) {
-                    let savedFields = this.savedFields;
-                    $('#' + inputName + ' option').each(function() {
-                        let fieldName = items[i].fieldName;
-                        let value = $(this).val();
-                        if(savedFields.get(fieldName) === value) {
-                            $(this).prop("selected", true);
-                        }
-                    });
-                }
-            }
-        }
+        return this.formManager.restoreValues(items);
     }
 
     renderPdfFormWithFields(items) {
-        let self = this;
-        let datePickerIndex = 40;
-        console.debug("debug - " + "rending pdfForm items");
-        let signFieldNumber = 0;
-        for (let i = 0; i < items.length; i++) {
-            if(items[i].fieldType === undefined) {
-                if(items[i].title && items[i].title.toLowerCase().includes('sign')) {
-                    signFieldNumber = signFieldNumber + 1;
-                    $('.popupWrapper').remove();
-                }
-                continue;
-            }
-            let inputName = items[i].fieldName.split(/\$|#|!/)[0];
-            let dataField;
-            if(this.dataFields != null && items[i].fieldName != null) {
-                dataField = this.dataFields.filter(obj => {
-                    return obj.name === inputName
-                })[0];
-            }
-            let canvasField = $('section[data-annotation-id=' + items[i].id + '] > canvas');
-            if (canvasField.length) {
-                canvasField.remove();
-            }
-            let inputField = $('section[data-annotation-id=' + items[i].id + '] > input');
-            if (inputField.length) {
-                inputField.addClass("field-type-text");
-                inputField.on('input', function (e) {
-                    clearTimeout(self.timer);
-                    self.timer = setTimeout(e => self.fireEvent("change", ['checked']), 500);
-                });
-                inputField.removeAttr("hidden");
-                if (dataField == null) continue;
-                this.disableInput(inputField, dataField, items[i].readOnly);
-                if (this.disableAllFields) continue;
-                let section = $('section[data-annotation-id=' + items[i].id + ']');
-                inputField.attr('name', inputName);
-                inputField.attr('placeholder', " ");
-                inputField.removeAttr("maxlength");
-                inputField.attr('id', inputName);
-                inputField.attr('title', dataField.description);
-                if (dataField.favorisable && !$("#div_" + inputField.attr('id')).length) {
-                    let sendField = inputField;
-                    $.ajax({
-                        type: "GET",
-                        url: '/ws-secure/users/get-favorites/' + dataField.id,
-                        success: response => this.autocomplete(response, sendField)
-                    });
-                }
-                if (dataField.editable) {
-                    inputField.val(items[i].fieldValue);
-                    if (dataField.defaultValue != null) {
-                        inputField.val(dataField.defaultValue);
-                    }
-                    this.enableInputField(inputField, dataField)
-                } else {
-                    inputField.val(items[i].fieldValue);
-                }
+        return this.formManager.renderPdfFormWithFields(items);
+    }
 
-                if (dataField.searchServiceName) {
-                    inputField.addClass("search-completion");
-                    inputField.attr("search-completion-service-name", dataField.searchServiceName);
-                    inputField.attr("search-completion-return", dataField.searchReturn);
-                    inputField.attr("search-completion-type", dataField.searchType);
-                }
+    ensureLinkFieldStyles() {
+        return this.linkFieldValidator.ensureLinkFieldStyles();
+    }
 
-                if (dataField.type === "number") {
-                    inputField.get(0).type = "number";
-                }
+    normalizeLinkValue(value) {
+        return this.linkFieldValidator.normalizeLinkValue(value);
+    }
 
-                if (dataField.type === "radio") {
-                    inputField.addClass("field-type-radio");
-                    if (this.isFieldEnable(dataField)) {
-                        if (dataField.required) {
-                            inputField.parent().addClass('required-field');
-                        }
-                    }
-                    inputField.val(items[i].buttonValue);
-                    inputField.attr("id", dataField.name + items[i].buttonValue);
-                    if (dataField.defaultValue === items[i].buttonValue) {
-                        inputField.attr("checked", "checked");
-                        inputField.prop("checked", true);
-                    }
-                    inputField.unbind();
-                    inputField.on('click', e => this.fireEvent("change", ['checked']));
-                }
-                if (dataField.type === 'checkbox') {
-                    inputField.addClass("field-type-checkbox");
-                    inputField.val('on');
-                    if (dataField.defaultValue === 'on') {
-                        inputField.attr("checked", "checked");
-                        inputField.prop("checked", true);
-                    }
-                    inputField.unbind();
-                    inputField.on('click', e => this.fireEvent("change", ['checked']));
-                }
+    isValidLinkValue(value) {
+        return this.linkFieldValidator.isValidLinkValue(value);
+    }
 
-                if (dataField.type === "date") {
-                    datePickerIndex--;
-                    const inputElement = inputField[0];
+    clearLinkReachabilityCheck(fieldName) {
+        return this.linkFieldValidator.clearLinkReachabilityCheck(fieldName);
+    }
 
-                    const picker = new tempusDominus.TempusDominus(inputElement, {
-                        localization: {
-                            today: 'Aller à aujourd\'hui',
-                            clear: 'Effacer la sélection',
-                            close: 'Fermer le sélecteur',
-                            selectMonth: 'Sélectionner le mois',
-                            previousMonth: 'Mois précédent',
-                            nextMonth: 'Mois suivant',
-                            selectYear: 'Sélectionner l\'année',
-                            previousYear: 'Année précédente',
-                            nextYear: 'Année suivante',
-                            selectDecade: 'Sélectionner la décennie',
-                            previousDecade: 'Décennie précédente',
-                            nextDecade: 'Décennie suivante',
-                            previousCentury: 'Siècle précédent',
-                            nextCentury: 'Siècle suivant',
-                            pickHour: 'Choisir l\'heure',
-                            incrementHour: 'Augmenter l\'heure',
-                            decrementHour: 'Diminuer l\'heure',
-                            pickMinute: 'Choisir les minutes',
-                            incrementMinute: 'Augmenter les minutes',
-                            decrementMinute: 'Diminuer les minutes',
-                            pickSecond: 'Choisir les secondes',
-                            incrementSecond: 'Augmenter les secondes',
-                            decrementSecond: 'Diminuer les secondes',
-                            toggleMeridiem: 'Basculer AM/PM',
-                            selectTime: 'Sélectionner l\'heure',
-                            selectDate: 'Sélectionner la date',
-                            locale: 'fr',
-                            startOfTheWeek: 1,
-                            format: 'dd/MM/yyyy',
-                            toggleAriaLabel: 'Modifier la date',
-                        },
-                        display: {
-                            icons: {
-                                time: 'fi fi-rr-clock',
-                                date: 'fi fi-rr-calendar-day',
-                                up: 'fi fi-rr-angle-small-up',
-                                down: 'fi fi-rr-angle-small-down',
-                                previous: 'fi fi-rr-angle-small-left',
-                                next: 'fi fi-rr-angle-small-right',
-                                today: 'fi fi-rr-calendar-check',
-                                clear: 'fi fi-rr-empty-set',
-                                close: 'fi fi-rr-check'
-                            },
-                            components: {
-                                calendar: true,
-                                date: true,
-                                month: true,
-                                year: true,
-                                decades: false,
-                                clock: false,
-                                hours: false,
-                                minutes: false,
-                                seconds: false
-                            },
-                            toolbarPlacement: 'bottom',
-                            buttons: {
-                                today: true,
-                                clear: true,
-                                close: true
-                            }
-                        }
-                    });
+    async checkLinkReachability(url, signal) {
+        return this.linkFieldValidator.checkLinkReachability(url, signal);
+    }
 
-                    inputField.on("focus", function () {
-                        section.css("z-index", datePickerIndex + 2000);
-                    });
-                    inputField.on("focusout", function () {
-                        section.css("z-index", 4);
-                    });
-
-                    inputElement.addEventListener('change', (e) => {
-                        this.fireEvent("change", ['date']);
-                    });
-                }
-
-                if (dataField.type === "time") {
-                    datePickerIndex--;
-                    const inputElement = inputField[0];
-
-                    const picker = new tempusDominus.TempusDominus(inputElement, {
-                        localization: {
-                            locale: 'fr',
-                            format: 'HH:mm',
-                        },
-                        stepping: 5,
-                        display: {
-                            viewMode: 'clock',
-                            icons: {
-                                time: 'fa fa-clock',
-                                date: 'fi fi-rr-calendar-day',
-                                up: 'fa fa-chevron-up',
-                                down: 'fa fa-chevron-down',
-                                previous: 'fa fa-chevron-left',
-                                next: 'fa fa-chevron-right',
-                                today: 'fi fi-rr-calendar-check',
-                                clear: 'fa fa-trash-alt',
-                                close: 'fa fa-check'
-                            },
-                            components: {
-                                calendar: false,
-                                date: false,
-                                month: false,
-                                year: false,
-                                decades: false,
-                                clock: true,
-                                hours: true,
-                                minutes: true,
-                                seconds: false
-                            },
-                            toolbarPlacement: 'bottom',
-                            buttons: {
-                                today: true,
-                                clear: true,
-                                close: true
-                            }
-                        }
-                    });
-
-                    inputField.on("focus", function () {
-                        section.css("z-index", datePickerIndex + 2000);
-                    });
-                    inputField.on("focusout", function () {
-                        section.css("z-index", datePickerIndex);
-                    });
-
-                    inputElement.addEventListener('change', (e) => {
-                        this.fireEvent("change", ['time']);
-                    });
-                }
-            }
-
-            inputField = $('section[data-annotation-id=' + items[i].id + '] > textarea');
-            if (inputField.length) {
-                inputField.addClass("field-type-textarea");
-                inputField.on('input', function(e) {
-                    clearTimeout(self.timer);
-                    self.timer = setTimeout(e => self.fireEvent("change", ['checked']), 500);
-                });
-                inputField.removeAttr("hidden");
-                if(dataField == null) continue;
-                this.disableInput(inputField, dataField, items[i].readOnly);
-                if(this.disableAllFields) continue;
-                let sendField = inputField;
-                if (dataField.favorisable) {
-                    $.ajax({
-                        type: "GET",
-                        url: '/ws-secure/users/get-favorites/' + dataField.id,
-                        success: response => this.autocomplete(response, sendField)
-                    });
-                }
-                inputField.attr('name', inputName);
-                inputField.attr('placeholder', " ");
-                inputField.removeAttr("maxlength");
-                inputField.attr('id', inputName);
-                if (this.isFieldEnable(dataField)) {
-                    if(dataField.defaultValue != null) {
-                        inputField.val(dataField.defaultValue);
-                    }
-                    this.enableInputField(inputField, dataField)
-                }
-            }
-
-            inputField = $('section[data-annotation-id=' + items[i].id + '] > select');
-            if (inputField.length) {
-                inputField.addClass("field-type-select");
-                inputField.on('change', e => this.fireEvent("change", ['checked']));
-                if(dataField == null) continue;
-                this.disableInput(inputField, dataField, items[i].readOnly);
-                inputField.removeAttr("hidden");
-                if(this.disableAllFields) continue;
-                inputField.removeAttr('size');
-                inputField.attr('name', inputName);
-                inputField.attr('id', inputName);
-                if (dataField.editable) {
-                    inputField.val(dataField.defaultValue);
-                    this.enableInputField(inputField, dataField)
-                }
-            }
-        }
-        console.debug("debug - " + ">>End compute field");
-        $(".annotationLayer").each(function() {
-            $(this).removeClass("d-none");
-        });
-        this.listenToSearchCompletion();
+    scheduleLinkReachabilityCheck(fieldName, value, onStateChange) {
+        return this.linkFieldValidator.scheduleLinkReachabilityCheck(fieldName, value, onStateChange);
     }
 
     isFieldEnable(dataField) {
-        return dataField.editable && !dataField.readOnly;
+        return this.formManager.isFieldEnable(dataField);
     }
 
     enableInputField(inputField, dataField) {
-        if (!dataField.required) {
-            inputField.prop('required', false);
-            inputField.removeClass('required-field');
-        } else {
-            inputField.prop('required', true);
-            inputField.addClass('required-field');
-        }
-        if (!dataField.readOnly) {
-            inputField.prop('disabled', false);
-            inputField.removeClass('disabled-field disable-selection');
-        }
-        inputField.attr('title', dataField.description);
+        return this.formManager.enableInputField(inputField, dataField);
     }
 
     disableInput(inputField, dataField, readOnly) {
-        if (readOnly || dataField == null || dataField.readOnly || this.disableAllFields || !this.isFieldEnable(dataField)) {
-            inputField.addClass('disabled-field disable-selection');
-            inputField.prop('disabled', true);
-            inputField.prop('required', false);
-            inputField.parent().addClass('disable-div-selection');
-        }
+        return this.formManager.disableInput(inputField, dataField, readOnly);
     }
 
     prevPage() {
-        this.fireEvent("beforeChange", ['prev']);
-        if (!this.isFirstPage()) {
-            this.pageNum--;
-        }
-        this.scrollToPage(this.pageNum);
-        return true;
+        return this.navigationController.prevPage();
     }
 
     nextPage() {
-        if (this.isLastPage()) {
-            return false;
-        }
-        this.pageNum++;
-        this.scrollToPage(this.pageNum);
-        return true;
-    }
-
-    isFirstPage() {
-        return this.pageNum <= 1;
-    }
-
-    isLastPage() {
-        return this.pageNum >= this.numPages;
+        return this.navigationController.nextPage();
     }
 
     zoomInit(e) {
+        this.saveScrolling = Math.round(this.getScrollTop() / this.scale);
         this.scale = 1.2;
         console.info('zoom in, scale = ' + this.scale);
         this.fireEvent("scaleChange", ['in']);
     }
 
     zoomIn(e) {
-        const workspaceDiv = document.getElementById('workspace');
-        const workspaceWidth = workspaceDiv ? workspaceDiv.offsetWidth : window.innerWidth;
-        let newScale = Math.round(workspaceWidth / 600 * 10) / 10 - .1;
-        if (this.scale >= newScale) {
+        const maxZoomLimit = this.getMaxZoomLimit();
+        if (this.scale >= maxZoomLimit) {
             return;
         }
-        this.saveScrolling = Math.round(window.scrollY / this.scale);
-        this.scale = Math.round((this.scale + this.zoomStep) * 1000) / 1000;
+        this.saveScrolling = Math.round(this.getScrollTop() / this.scale);
+        this.scale = Math.min(maxZoomLimit, Math.round((this.scale + this.zoomStep) * 1000) / 1000);
         console.info('zoom in, scale = ' + this.scale);
         this.fireEvent("scaleChange", ['in']);
     }
 
     zoomOut(e) {
-        if (this.scale <= 0.2) {
+        const workspaceDiv = document.getElementById('workspace');
+        const workspaceWidth = workspaceDiv ? workspaceDiv.offsetWidth : window.innerWidth;
+        // On small screens, keep a higher minimum zoom to preserve readability.
+        const smallScreenPenalty = workspaceWidth < 1200
+            ? ((1200 - workspaceWidth) / 1200) * 0.5
+            : 0;
+        const minZoomLimit = Math.min(0.9, Math.max(0.2 + smallScreenPenalty, 0.2));
+        if (this.scale <= minZoomLimit) {
             return;
         }
-        this.scale = Math.round((this.scale - this.zoomStep) * 1000) / 1000;
+        this.saveScrolling = Math.round(this.getScrollTop() / this.scale);
+        this.scale = Math.max(minZoomLimit, Math.round((this.scale - this.zoomStep) * 1000) / 1000);
         console.info('zoom out, scale = ' + this.scale);
         this.fireEvent("scaleChange", ['out']);
     }
@@ -1063,6 +574,7 @@ export class PdfViewer extends EventFactory {
         let newScale = Math.round(workspaceWidth / 600 * 10) / 10 - .1;
         console.info("full width " + newScale);
         if (newScale !== this.scale) {
+            this.saveScrolling = Math.round(this.getScrollTop() / this.scale);
             this.scale = newScale;
             console.info('zoom in, scale = ' + this.scale);
             this.fireEvent("scaleChange", ['in']);
@@ -1073,6 +585,7 @@ export class PdfViewer extends EventFactory {
         console.info("full height " + window.innerHeight);
         let newScale = (Math.round((window.innerHeight - 200) / 100) / 10) - 0.1;
         if (newScale !== this.scale) {
+            this.saveScrolling = Math.round(this.getScrollTop() / this.scale);
             this.scale = newScale;
             console.info('zoom in, scale = ' + this.scale);
             this.fireEvent("scaleChange", ['in']);
@@ -1081,12 +594,8 @@ export class PdfViewer extends EventFactory {
 
     autoRotate() {
         console.info('rotate left');
-        if (this.rotation === 0) {
-            this.rotation = this.pageRotation;
-        } else {
-            this.rotation = 0;
-        }
-        let autorotatebtn = $("#autototate");
+        this.rotationOverride = this.rotationOverride === 0 ? null : 0;
+        let autorotatebtn = $("#autoRotate");
         autorotatebtn.toggleClass("btn-light btn-dark");
         autorotatebtn.toggleClass("btn-outline-dark border-dark");
         autorotatebtn.children().toggleClass("fi-rr-navigation fi-rr-compass-north")
@@ -1095,196 +604,42 @@ export class PdfViewer extends EventFactory {
     }
 
     autocomplete(response, inputField) {
-        let id = inputField.attr('id');
-        let div = "<div class='custom-autocompletion' id='div_" + id +"'></div>";
-        $(div).insertAfter(inputField);
-        inputField.autocomplete({
-            delay: 500,
-            source: response,
-            appendTo: "#div_" + id,
-            minLength:0
-        }).bind('focus', function(){ $(this).autocomplete("search"); } );
+        return this.formManager.autocomplete(response, inputField);
     }
 
     checkForm() {
-        return new Promise((resolve, reject) => {
-            let formData = new Map();
-            console.info("check data name");
-            let self = this;
-            let resolveOk = "ok";
-            let warningFields = [];
-            $(self.dataFields).each(function (e, item) {
-                let savedField = self.savedFields.get(item.name)
-                formData[item.name] = savedField;
-                if (item.required && self.isFieldEnable(item) &&
-                    (!savedField || (savedField === "off" && item.type === "checkbox"))) {
-                    let addWarning = true;
-                    for(let i = 0; i < warningFields.length; i++) {
-                        if(warningFields[i].name === item.name) {
-                            addWarning = false;
-                        }
-                    }
-                    if(addWarning) {
-                        warningFields.push($(this)[0]);
-                    }
-                }
-            });
-            if (warningFields.length > 0) {
-                warningFields.sort((a, b) => a.compareByPage(b))
-                let text = "Certain champs requis n'ont pas été remplis dans ce formulaire<ul>";
-                if (warningFields.length < 2 && warningFields[0].name != null) {
-                    if (warningFields[0].description != null && warningFields[0].description !== "") {
-                        text = "Le champ " + warningFields[0].description + " n'est pas rempli en page " + warningFields[0].page;
-                    } else {
-                        text = "Le champ " + warningFields[0].name + " n'est pas rempli en page " + warningFields[0].page;
-                    }
-                } else {
-                    warningFields.forEach(function (field) {
-                        if (field.description != null && field.description !== "") {
-                            text += "<li>" + field.description;
-                            if(field.page != null) {
-                                text += " (en page " + (field.page + 1) + ")";
-                            }
-                            text +="</li>";
-                        } else {
-                            text += "<li>" + field.name;
-                            if(field.page != null) {
-                                text += " (en page " + (field.page + 1) + ")";
-                            }
-                            text +="</li>";
-                        }
-                    });
-                }
-                text += "</ul>"
-                bootbox.alert(text, function () {
-                    let field = $('#' + warningFields[0].name);
-                    setTimeout(function () {
-                        self.focusField(field)
-                    }, 100);
-                });
-                resolveOk = $(this)[0].name;
-                $('#sendModal').modal('hide');
-            }
-            resolve(resolveOk);
-        });
+        return this.formManager.checkForm();
     }
 
     focusField(field) {
-        if(field.attr("type") === "radio") {
-            this.highlightRadio(field);
-        }
-        field.focus();
-        let offset = field.offset();
-        if(offset != null) {
-            $('html, body').animate({
-                scrollTop: offset.top - 170,
-                scrollLeft: offset.left
-            });
-        }
-    }
-
-    highlightRadio(field) {
-        $("[name='" + field.attr('name') + "']").each(function() {
-            let radio = $(this);
-            let i = 0;
-            let flashInterval = setInterval(
-                function() {
-                    radio.toggleClass('highlight');
-                    if(i > 4) {
-                        clearInterval(flashInterval);
-                        radio.removeClass('highlight');
-                    }
-                    i++;
-                },
-                1000
-            );
-        });
+        return this.navigationController.focusField(field);
     }
 
     startProgress() {
-        let self = this;
-        this.interval = setInterval(function() {
-            let progress = Math.round(self.renderedPages / self.numPages * 100)
-            $(".progress-bar")
-                .css("width", progress + "%")
-                .attr("aria-valuenow", progress)
-                .text("Chargement de la page " + self.renderedPages + "/" + self.numPages);
-
-        }, 100);
+        return this.progressController.startProgress();
     }
 
     stopProgress(){
-        $(".progress-bar").css("width","100%").attr("aria-valuenow", 100).text("Chargement terminé");
-        clearInterval(this.interval);
+        return this.progressController.stopProgress();
     }
 
     resetProgress() {
-        $(".progress-bar").css("width","0%").attr("aria-valuenow", 0);
-        clearInterval(this.interval);
+        return this.progressController.resetProgress();
     }
 
-    getBrowserZoom() {
-        return window.devicePixelRatio || 1;
+    updateRenderProgress() {
+        return this.progressController.updateRenderProgress();
     }
 
-    async showLayerByStep(stepNumber) {
-        if (!this.pdfDoc) {
-            return;
-        }
-        try {
-            const config = await this.pdfDoc.getOptionalContentConfig();
-            if (!config) {
-                return;
-            }
-            const allGroups = [];
-            for (const [id, group] of config) {
-                allGroups.push({ id, name: group.name });
-            }
-
-            allGroups.forEach((group, index) => {
-                const shouldBeVisible = (index + 1) <= stepNumber;
-                config.setVisibility(group.id, shouldBeVisible);
-            });
-            this.optionalContentConfigPromise = Promise.resolve(config);
-        } catch(err) {
-            console.error('Erreur showLayerByStep:', err);
-        }
+    async toggleLayerByStep(stepNumber, solo, layerId = null) {
+        return this.layerController.toggleLayerByStep(stepNumber, solo, layerId);
     }
 
-    async highlightStep(stepNumber) {
-        if (!this.highlighter) {
-            console.error('highlightStep: LayerHighlighter non initialisé');
-            return;
-        }
-
-        try {
-            const config = await Promise.resolve(this._optionalContentConfigPromise);
-            if (!config) {
-                console.warn('highlightStep: Aucun calque disponible');
-                return;
-            }
-            const allGroups = [];
-            for (const [id, group] of config) {
-                allGroups.push({ id, name: group.name });
-            }
-
-            if (stepNumber < 1 || stepNumber > allGroups.length) {
-                console.warn(`highlightStep: Step ${stepNumber} hors limites (1-${allGroups.length})`);
-                return;
-            }
-            const targetGroup = allGroups[stepNumber - 1];
-            this.highlighter.clearHighlights();
-            await this.highlighter.highlightLayer(targetGroup.id);
-            console.log(`highlightStep(${stepNumber}): Calque "${targetGroup.name}" en ${highlightColor}`);
-        } catch(err) {
-            console.error('highlightStep error:', err);
-        }
+    async highlightStep(stepNumber, layerId = null) {
+        return this.layerController.highlightStep(stepNumber, layerId);
     }
 
     clearHighlight() {
-        if (this.highlighter) {
-            this.highlighter.clearHighlights();
-            console.log('Highlight effacé');
-        }
+        return this.layerController.clearHighlight();
     }
 }

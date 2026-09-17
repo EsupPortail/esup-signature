@@ -18,7 +18,7 @@
 package org.esupportail.esupsignature.web.controller.admin;
 
 import jakarta.annotation.Resource;
-import org.esupportail.esupsignature.dto.js.JsMessage;
+import org.esupportail.esupsignature.dto.ui.global.UiMessageDto;
 import org.esupportail.esupsignature.service.MessageService;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -62,7 +62,7 @@ public class MessageAdminController {
 	@DeleteMapping("{id}")
 	public String messages(@PathVariable Long id, RedirectAttributes redirectAttributes) {
 		messageService.deleteMessage(id);
-		redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Message supprimé"));
+		redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", "Message supprimé"));
 		return "redirect:/admin/messages";
 	}
 

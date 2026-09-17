@@ -17,7 +17,7 @@
  */
 package org.esupportail.esupsignature.web.controller.admin;
 
-import org.esupportail.esupsignature.dto.view.HttpSessionViewDto;
+import org.esupportail.esupsignature.dto.page.admin.HttpSessionViewDto;
 import org.esupportail.esupsignature.repository.custom.SessionRepositoryCustom;
 import org.esupportail.esupsignature.service.security.SessionTrackingFilter;
 import org.springframework.security.access.prepost.PreAuthorize;

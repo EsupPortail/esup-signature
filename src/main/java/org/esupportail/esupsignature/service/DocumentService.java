@@ -63,12 +63,12 @@ public class DocumentService {
 
 	@Transactional
 	public Document createDocument(InputStream inputStream, User createBy, String name, String contentType) throws IOException {
-		long size = inputStream.available();
+		byte[] bytes = inputStream.readAllBytes();
+		long size = bytes.length;
 		if(size == 0) {
 			logger.warn("upload aborted cause file size is 0");
 			throw new EsupSignatureRuntimeException("File size is 0");
 		}
-		byte[] bytes = inputStream.readAllBytes();
 		Document document = new Document();
 		document.setCreateBy(createBy);
 		document.setCreateDate(new Date());

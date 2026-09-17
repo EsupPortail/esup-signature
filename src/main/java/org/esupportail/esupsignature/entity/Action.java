@@ -7,6 +7,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import java.util.Date;
 
 @Entity
+@Table(indexes = @Index(name = "idx_action_action_type", columnList = "action_type"))
 public class Action {
 
     public Action() {
@@ -25,7 +26,6 @@ public class Action {
     @Enumerated(EnumType.STRING)
     private ActionType actionType = ActionType.none;
 
-    @Temporal(TemporalType.TIMESTAMP)
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
     private Date date;
 

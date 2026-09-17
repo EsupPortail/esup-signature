@@ -18,7 +18,6 @@ public class NexuSignature {
 	@OneToOne(cascade = CascadeType.DETACH)
 	private SignRequest signRequest;
 
-	@Temporal(TemporalType.TIMESTAMP)
 	private Date signingDate;
 
 	@Enumerated(EnumType.STRING)

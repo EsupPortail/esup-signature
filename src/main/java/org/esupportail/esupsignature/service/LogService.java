@@ -2,6 +2,7 @@ package org.esupportail.esupsignature.service;
 
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
+import org.esupportail.esupsignature.dto.projection.jpa.AdminLogProjectionDto;
 import org.esupportail.esupsignature.entity.Log;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.SignRequest;
@@ -70,44 +71,51 @@ public class LogService {
         return logRepository.findBySignRequestId(id);
     }
 
-    public List<Log> getLogs(Long id) {
-        List<Log> logs = logRepository.findBySignRequestIdAndPageNumberIsNotNullAndStepNumberIsNullAndCommentIsNotNull(id);
-        return setUsers(logs);
-    }
-
     private List<Log> setUsers(List<Log> logs) {
         for (Log log :logs) {
-            log.setUser(userService.getByEppn(log.getEppn()));
-            log.setUserFor(userService.getByEppn(log.getEppnFor()));
+            log.setUser(toLogUserSnapshot(log.getEppn()));
+            log.setUserFor(toLogUserSnapshot(log.getEppnFor()));
         }
         return logs;
+    }
+
+    private User toLogUserSnapshot(String eppn) {
+        if (eppn == null) {
+            return null;
+        }
+        User source = userService.getByEppn(eppn);
+        if (source == null) {
+            return null;
+        }
+        User snapshot = new User();
+        snapshot.setId(source.getId());
+        snapshot.setEppn(source.getEppn());
+        snapshot.setFirstname(source.getFirstname());
+        snapshot.setName(source.getName());
+        snapshot.setEmail(source.getEmail());
+        return snapshot;
     }
 
     public List<Log> getBySignRequest(Long id) {
         return logRepository.findBySignRequestId(id);
     }
 
+    @Transactional(readOnly = true)
+    public List<AdminLogProjectionDto> getAdminLogsBySignRequest(Long id) {
+        return logRepository.findAdminLogsBySignRequestId(id);
+    }
+
     @Transactional
     public List<Log> getFullBySignRequest(Long id) {
         List<Log> logs = logRepository.findBySignRequestId(id);
-        for (Log log : logs) {
-            if(log.getEppn() != null) {
-                log.setUser(userService.getByEppn(log.getEppn()));
-                log.setUserFor(userService.getByEppn(log.getEppnFor()));
-            }
-        }
-        return logs.stream().sorted(Comparator.comparing(Log::getLogDate)).toList();
+        setUsers(logs);
+        return logs.stream().sorted(Comparator.comparing(Log::getLogDate).reversed()).toList();
     }
 
     @Transactional
     public List<Log> getFullByToken(String token) {
         List<Log> logs = logRepository.findBySignRequestToken(token);
-        for (Log log : logs) {
-            if(log.getEppn() != null) {
-                User user = userService.getByEppn(log.getEppn());
-                log.setUser(user);
-            }
-        }
+        setUsers(logs);
         return logs.stream().sorted(Comparator.comparing(Log::getLogDate)).toList();
     }
 
@@ -127,7 +135,7 @@ public class LogService {
                 log.setFinalStatus(signRequest.get().getStatus().name());
             }
         } else  {
-            action = "signBook : " + action;
+            action = "signBookLight : " + action;
             SignBook signBook = signBookRepository.findById(id).get();
             log.setInitialStatus(signBook.getStatus().name());
         }

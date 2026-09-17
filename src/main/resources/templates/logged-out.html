@@ -5,10 +5,32 @@
 <body>
 <header th:replace="~{fragments/nav-empty :: nav-empty}"></header>
 <main role="main">
-    <div class="card col-lg-10 mx-auto" style="top: 60px;">
-        <div class="card-body text-center">
-            <h1>Vous êtes bien déconnecté(e)</h1>
-            <h5>Vous pouvez fermer cet onglet</h5>
+    <div class="es-wrapper">
+        <div id="content" class="es-content-full">
+            <div class="es-auth-page">
+                <div class="alert alert-light es-auth-card">
+                    <div class="es-auth-illustration es-auth-illustration--timeout"></div>
+
+                    <h4>Vous êtes bien déconnecté(e)</h4>
+
+                    <p class="es-auth-description" th:if="${otpLoggedOut}">
+                        Votre session a été fermée. Pour signer un autre document, utilisez le lien d'accès reçu par email.
+                    </p>
+                    <p class="es-auth-description" th:unless="${otpLoggedOut}">
+                        Votre session a été fermée. Vous pouvez vous reconnecter pour reprendre votre activité.
+                    </p>
+
+                    <div class="es-auth-form" th:unless="${otpLoggedOut}">
+                        <a href="/" class="es-auth-button">
+                            Se reconnecter
+                        </a>
+                    </div>
+
+                    <div class="es-auth-panel es-auth-panel--primary">
+                        <p>Si vous n’avez plus besoin de cette session, vous pouvez aussi fermer cet onglet.</p>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </main>

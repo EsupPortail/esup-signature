@@ -1,11 +1,9 @@
 package org.esupportail.esupsignature.web.controller.otp;
 
 import org.esupportail.esupsignature.config.GlobalProperties;
-import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.SignBookService;
-import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
 import org.slf4j.Logger;
@@ -34,32 +32,35 @@ public class OtpSignRequestController {
 
     private final UserService userService;
     private final PreAuthorizeService preAuthorizeService;
-    private final SignRequestService signRequestService;
     private final SignBookService signBookService;
 
-    public OtpSignRequestController(UserService userService, PreAuthorizeService preAuthorizeService, SignRequestService signRequestService, SignBookService signBookService) {
+    public OtpSignRequestController(UserService userService, PreAuthorizeService preAuthorizeService, SignBookService signBookService) {
         this.userService = userService;
         this.preAuthorizeService = preAuthorizeService;
-        this.signRequestService = signRequestService;
         this.signBookService = signBookService;
     }
 
     @GetMapping(value = "/signbook-redirect/{id}")
     public String redirect(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) throws IOException, EsupSignatureRuntimeException {
-        SignBook signBook = signBookService.getById(id);
         if(!preAuthorizeService.signBookView(id, userEppn, authUserEppn)) {
             User user = userService.getByEppn(userEppn);
             redirectAttributes.addFlashAttribute("errorMsg", "Access non autorisé");
-            if (signBook.getLiveWorkflow().getCurrentStep().getRecipients().stream().noneMatch(r -> r.getUser().getEmail().equals(user.getEmail()))) {
+            String userEmail = user != null ? user.getEmail() : null;
+            if (userEmail != null && !signBookService.isUserEmailInCurrentStepRecipients(id, userEmail)) {
                 redirectAttributes.addFlashAttribute("errorMsg",
                         "<p>L'adresse email liée à votre authentification ne correspond pas à celle indiquée dans la demande initiale.<br>\n" +
                                 "Voici l'adresse transmise par votre fournisseur d'identité :"
-                                + user.getEmail() +
+                                + userEmail +
                                 "</p><p>Vous pouvez soit modifier votre adresse de contact auprès de votre fournisseur d'identité, soit contacter le gestionnaire de la demande afin qu’il mette à jour l’email de contact dans la demande de signature.</p>");
             }
             return "redirect:/otp-access/error";
         }
-        return "redirect:/otp/signrequests/" + signBook.getSignRequests().get(0).getId();
+        Long signRequestId = signBookService.getRedirectSignRequestId(id);
+        if (signRequestId == null) {
+            redirectAttributes.addFlashAttribute("errorMsg", "Demande de signature introuvable");
+            return "redirect:/otp-access/error";
+        }
+        return "redirect:/otp/signrequests/" + signRequestId;
     }
 
 }

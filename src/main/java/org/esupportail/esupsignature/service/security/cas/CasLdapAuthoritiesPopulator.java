@@ -1,9 +1,5 @@
 package org.esupportail.esupsignature.service.security.cas;
 
-import org.esupportail.esupsignature.entity.MappingFiltersGroups;
-import org.esupportail.esupsignature.entity.MappingGroupsRoles;
-import org.esupportail.esupsignature.repository.MappingFiltersGroupsRepository;
-import org.esupportail.esupsignature.repository.MappingGroupsRolesRepository;
 import org.esupportail.esupsignature.service.ldap.LdapGroupService;
 import org.esupportail.esupsignature.service.security.Group2UserRoleService;
 import org.slf4j.Logger;
@@ -17,10 +13,6 @@ import org.springframework.security.ldap.userdetails.DefaultLdapAuthoritiesPopul
 import java.util.*;
 
 public class CasLdapAuthoritiesPopulator extends DefaultLdapAuthoritiesPopulator {
-
-	private MappingFiltersGroupsRepository mappingFiltersGroupsRepository;
-
-	private MappingGroupsRolesRepository mappingGroupsRolesRepository;
 
 	private static final Logger logger = LoggerFactory.getLogger(CasLdapAuthoritiesPopulator.class);
 
@@ -52,23 +44,9 @@ public class CasLdapAuthoritiesPopulator extends DefaultLdapAuthoritiesPopulator
 		super(contextSource, groupSearchBase);
 	}
 
-	public void setMappingFiltersGroupsRepository(MappingFiltersGroupsRepository mappingFiltersGroupsRepository) {
-		this.mappingFiltersGroupsRepository = mappingFiltersGroupsRepository;
-	}
-
-	public void setMappingGroupsRolesRepository(MappingGroupsRolesRepository mappingGroupsRolesRepository) {
-		this.mappingGroupsRolesRepository = mappingGroupsRolesRepository;
-	}
-
 	@Override
 	protected Set<GrantedAuthority> getAdditionalRoles(DirContextOperations user, String username) {
 		Set<GrantedAuthority> grantedAuthorities = new HashSet<>();
-		for(MappingFiltersGroups mappingFiltersGroups : mappingFiltersGroupsRepository.findAll()) {
-			ldapGroupService.getLdapFiltersGroups().put(mappingFiltersGroups.getGroupe(), mappingFiltersGroups.getQuery());
-		}
-		for(MappingGroupsRoles mappingGroupsRoles : mappingGroupsRolesRepository.findAll()) {
-			ldapGroupService.getLdapFiltersGroups().put(mappingGroupsRoles.getGroupe(), mappingGroupsRoles.getRole());
-		}
 		List<String> ldapGroups = ldapGroupService.getGroupsOfUser(username.toLowerCase());
 		List<String> roles = new ArrayList<>(group2UserRoleService.getRoles(username.toLowerCase()));
 		for (String role : roles) {

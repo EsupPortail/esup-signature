@@ -2,13 +2,15 @@ package org.esupportail.esupsignature.web.controller.user;
 
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
-import org.esupportail.esupsignature.dto.js.JsMessage;
+import org.esupportail.esupsignature.dto.page.user.signbook.SignBookFullDto;
+import org.esupportail.esupsignature.dto.ui.global.UiMessageDto;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.export.DataExportService;
 import org.esupportail.esupsignature.service.export.WorkflowExportService;
+import org.esupportail.esupsignature.service.security.PreAuthorizeService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -53,8 +55,9 @@ public class ManageController {
     private final WorkflowExportService workflowExportService;
     private final SignRequestService signRequestService;
     private final ChartsService chartsService;
+    private final PreAuthorizeService preAuthorizeService;
 
-    public ManageController(DataExportService dataExportService, DataService dataService, SignBookService signBookService, FormService formService, UserService userService, WorkflowService workflowService, WorkflowExportService workflowExportService, SignRequestService signRequestService, ChartsService chartsService) {
+    public ManageController(DataExportService dataExportService, DataService dataService, SignBookService signBookService, FormService formService, UserService userService, WorkflowService workflowService, WorkflowExportService workflowExportService, SignRequestService signRequestService, ChartsService chartsService, PreAuthorizeService preAuthorizeService) {
         this.dataExportService = dataExportService;
         this.dataService = dataService;
         this.signBookService = signBookService;
@@ -64,6 +67,7 @@ public class ManageController {
         this.workflowExportService = workflowExportService;
         this.signRequestService = signRequestService;
         this.chartsService = chartsService;
+        this.preAuthorizeService = preAuthorizeService;
     }
 
 
@@ -112,8 +116,9 @@ public class ManageController {
         model.addAttribute("creatorFilter", creatorFilter);
         model.addAttribute("statusFilter", statusFilter);
         model.addAttribute("workflow", workflow);
+        model.addAttribute("form", formService.getActiveFormByWorkflowId(id));
         model.addAttribute("hided", hided);
-        Page<SignBook> signBooks = signBookService.getSignBooksForManagers(signRequestStatus, recipientsFilter, workflow.getId(), docTitleFilter, creatorFilter, dateFilter, pageable, authUserEppn, hided);
+        Page<SignBookFullDto> signBooks = signBookService.getSignBooksForManagersListItems(signRequestStatus, recipientsFilter, workflow.getId(), docTitleFilter, creatorFilter, dateFilter, pageable, authUserEppn, hided);
         model.addAttribute("signBooks", signBooks);
         return "user/manage/details";
     }
@@ -126,15 +131,22 @@ public class ManageController {
         return signBookService.getSignBooksForManagersSubjects(id, searchString);
     }
 
-    @PreAuthorize("@preAuthorizeService.workflowManage(#id, #authUserEppn)")
     @GetMapping(value = "/form/{id}/datas/csv", produces="text/csv")
     public ResponseEntity<Void> getFormDatasCsv(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable Long id, HttpServletResponse response) {
-        Workflow workflow = workflowService.getById(id);
+        Form form;
+        try {
+            form = formService.getById(id);
+        } catch (NoSuchElementException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        if(form.getWorkflow() == null || !preAuthorizeService.workflowManage(form.getWorkflow().getId(), authUserEppn)) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
         try {
             response.setContentType("text/csv; charset=utf-8");
-            response.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode(workflow.getName().replace(" ", "-"), StandardCharsets.UTF_8.toString()) + ".csv");
+            response.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode(form.getName().replace(" ", "-"), StandardCharsets.UTF_8.toString()) + ".csv");
             response.getOutputStream().write(EXCEL_UTF8_HACK);
-            InputStream csvInputStream = dataExportService.getCsvDatasFromForms(Collections.singletonList(workflow));
+            InputStream csvInputStream = dataExportService.getCsvDatasFromForm(form);
             IOUtils.copy(csvInputStream, response.getOutputStream());
             return new ResponseEntity<>(HttpStatus.OK);
         } catch (Exception e) {
@@ -161,7 +173,7 @@ public class ManageController {
     }
 
     @GetMapping("/form/{id}/start")
-    @PreAuthorize("@preAuthorizeService.workflowManage(#id, #authUserEppn)")
+    @PreAuthorize("@preAuthorizeService.formManager(#id, #authUserEppn)")
     public String show(@PathVariable("id") Long id, @ModelAttribute("authUserEppn") String authUserEppn, @RequestParam String createByEmail, RedirectAttributes redirectAttributes) {
         User creator = userService.getUserByEmail(createByEmail);
         Data data = dataService.addData(id, creator.getEppn());
@@ -171,7 +183,7 @@ public class ManageController {
         } catch (EsupSignatureException e) {
             logger.error("error on create form instance", e);
         }
-        redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Nouveau formulaire envoyé"));
+        redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "Nouveau formulaire envoyé"));
         return "redirect:/user/manage";
     }
 

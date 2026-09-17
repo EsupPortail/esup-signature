@@ -7,8 +7,8 @@ export default class SelectUser {
         if(selectName.split("-").length > 0) {
             this.stepNumber = selectName.split("-")[1];
         }
-        this.globalProperties = JSON.parse(sessionStorage.getItem("globalProperties"));
-        this.enableSms = JSON.parse(sessionStorage.getItem("enableSms"));
+        this.enableSms = this.getSessionStorageValue("enableSms");
+        this.smsRequired = this.getSessionStorageValue("smsRequired");
         this.slimSelect = null;
         this.checkList = this.selectField.attr("data-es-check-list");
         this.signRequestId = signRequestId;
@@ -16,10 +16,6 @@ export default class SelectUser {
         this.valuePrefix = "";
         this.limit = 99;
         this.flag = false;
-        // let selectNameSplit = selectName.split("_");
-        // if(selectNameSplit.length === 2) {
-        //     this.valuePrefix = selectNameSplit[1] + "*";
-        // }
         let defaultValues = [];
         $("#" + selectName + " > option").each(function() {
             if($(this).text() !== "") {
@@ -28,7 +24,6 @@ export default class SelectUser {
                     value: $(this).attr("value"),
                     selected: true
                 });
-                // $(this).remove();
             }
         });
         this.favorites = defaultValues;
@@ -36,9 +31,7 @@ export default class SelectUser {
             this.limit = limit;
         }
         this.createUserSelect(selectName,  this.valuePrefix);
-        // this.selectField.addClass("slim-select-hack");
         $("." + this.slimSelect.settings.id).each(function() {
-        // $("." + this.slimSelect.config.id).each(function() {
            $(this).removeAttr("style");
         });
         this.selectField.slim = this.slimSelect;
@@ -47,6 +40,22 @@ export default class SelectUser {
     }
 
     initListeners() {
+    }
+
+    getSessionStorageValue(key) {
+        const value = sessionStorage.getItem(key);
+        if (value == null) {
+            return null;
+        }
+        const trimmedValue = value.trim();
+        if (trimmedValue === "") {
+            return null;
+        }
+        try {
+            return JSON.parse(trimmedValue);
+        } catch (error) {
+            return trimmedValue;
+        }
     }
 
     bindEnterKeyPress() {
@@ -70,21 +79,21 @@ export default class SelectUser {
     createUserSelect(selectName, valuePrefix) {
         let controller = new AbortController();
         let signal = controller.signal;
-        let placeHolder;
-        if(this.limit > 1) {
-            placeHolder = "Choisir une ou plusieurs personnes";
-        } else {
-            placeHolder = "Choisir une personne";
+        let placeHolder = $("#" + selectName).attr("data-placeholder");
+        if (placeHolder === undefined || placeHolder === "" || placeHolder == null || placeHolder === "undefined") {
+            if (this.limit > 1) {
+                placeHolder = "Choisir une ou plusieurs personnes";
+            } else {
+                placeHolder = "Choisir une personne";
+            }
         }
+
         let self = this;
-        let position = "absolute";
-        if(this.selectField.attr("data-es-relative")) {
-            position = "relative";
-        }
         this.slimSelect = new SlimSelect({
             select: "#" + selectName,
             settings: {
                 placeholderText: placeHolder,
+                addableText: "Cliquer sur '+' pour ajouter un utilisateur externe",
                 searchText: 'Aucun résultat',
                 searchingText: 'Recherche en cours',
                 searchPlaceholder: 'Rechercher',
@@ -210,7 +219,7 @@ export default class SelectUser {
                 if (this.csrf) {
                     let csrf = this.csrf;
                     $.ajax({
-                        url: "/ws-secure/users/check-temp-users?" + csrf.parameterName + "=" + csrf.token,
+                        url: "/ws-secure/ui/temp-users/check?" + csrf.parameterName + "=" + csrf.token,
                         type: 'POST',
                         contentType: "application/json",
                         dataType: 'json',
@@ -308,43 +317,54 @@ export default class SelectUser {
         datas.forEach(data => this.appendTempUser(data));
     }
 
+    escapeHtml(value) {
+        return String(value ?? "")
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#39;");
+    }
+
     appendTempUser(data) {
         console.warn(data);
-        let id = data.email.replaceAll("@", "_").replaceAll(".", "_")
+        if (data == null || data.email == null) {
+            return;
+        }
+        const email = data.email;
+        const escapedEmail = this.escapeHtml(email);
+        const escapedName = this.escapeHtml(data.name);
+        const escapedFirstname = this.escapeHtml(data.firstname);
+        const escapedPhone = this.escapeHtml(data.hidedPhone || "");
+        let id = email.replaceAll("@", "_").replaceAll(".", "_")
         let name = "#tempUsers-" + this.selectField.attr("id");
         let tempUsersDiv = $(name);
-        if (data.phone == null) {
-            data.phone = "";
-        }
+        const hidedPhone = data.hidedPhone || "";
         let html = "<div class='alert alert-primary' id='recipient_" + id + "'>";
-        if(this.globalProperties.smsRequired) {
-            html +=
-                "<p>Destinataire externe : <span><b>" + data.email + "</b>, merci de saisir/vérifier les informations complémentaires si besoin</span></p>" +
-                "<input id=\"email\" class=\"form-control \" type=\"hidden\" name=\"emails\" value=\"" + id + "\">" +
-                "<div class=\"d-flex col-12\"><label for=\"name\" class='col-3'>Nom</label>" +
-                "<input id=\"name_" + id + "\" class=\"form-control \" type=\"text\" name=\"names\" value=\"" + data.name + "\" required></div>" +
-                "<div class=\"d-flex col-12\"><label for=\"firstname\" class='col-3'>Prénom</label>" +
-                "<input id=\"firstname_" + id + "\" class=\"form-control \" type=\"text\" name=\"firstnames\" value=\"" + data.firstname + "\" required></div>" +
-                "<div class=\"d-flex col-12\"><label for=\"phones\" class='col-3'>Mobile</label>" +
-                "<input id=\"phone_" + id + "\" class=\"form-control \" type=\"text\" name=\"phones\" value=\"" + data.hidedPhone + "\">" +
-                "<span id=\"valid-msg_" + id + "\" class=\"text-success my-auto d-none\">✓ Ok</span>\n" +
-                "<span id=\"error-msg_" + id + "\" class=\"text-danger my-auto d-none\"></span>";
-        } else {
-            html +=
-                "<p>Destinataire externe : <span><b>" + data.email + "</b>, merci de saisir/vérifier les informations complémentaires si besoin</span></p>" +
-                "<input id=\"email\" class=\"form-control \" type=\"hidden\" name=\"emails\" value=\"" + id + "\">" +
-                "<div class=\"d-flex col-12\"><label for=\"name\" class='col-3'>Nom</label>" +
-                "<input id=\"name_" + id + "\" class=\"form-control \" type=\"text\" name=\"names\" value=\"" + data.name + "\" required></div>" +
-                "<div class=\"d-flex col-12\"><label for=\"firstname\" class='col-3'>Prénom</label>" +
-                "<input id=\"firstname_" + id + "\" class=\"form-control \" type=\"text\" name=\"firstnames\" value=\"" + data.firstname + "\" required></div>";
-            if (this.enableSms) {
-                html += "<div class=\"d-flex col-12\"><label for=\"phones\" class='col-3'>Mobile</label>" +
-                    "<input id=\"phone_" + id + "\" class=\"form-control \" type=\"text\" name=\"phones\" value=\"" + data.hidedPhone + "\">" +
+        html +=
+            "<p>Destinataire externe : <span><b>" + escapedEmail + "</b>, merci de saisir/vérifier les informations complémentaires si besoin</span></p>" +
+            "<input id=\"email_" + id + "\" class=\"form-control \" type=\"hidden\" name=\"emails\" value=\"" + escapedEmail + "\">" +
+            "<div class=\"d-flex col-12\"><label for=\"name_" + id + "\" class='col-3'>Nom</label>" +
+            "<input id=\"name_" + id + "\" class=\"form-control \" type=\"text\" name=\"names\" value=\"" + escapedName + "\" required></div>" +
+            "<div class=\"d-flex col-12\"><label for=\"firstname_" + id + "\" class='col-3'>Prénom</label>" +
+            "<input id=\"firstname_" + id + "\" class=\"form-control \" type=\"text\" name=\"firstnames\" value=\"" + escapedFirstname + "\" required></div>";
+        if (this.enableSms != null && this.enableSms !== "EMAIL") {
+            if (!this.smsRequired) {
+                html +=
+                    "<div class=\"d-flex col-12\"><label for=\"phone_" + id + "\" class='col-3'>Mobile</label>" +
+                    "<input id=\"phone_" + id + "\" class=\"form-control \" type=\"text\" name=\"phones\" value=\"" + escapedPhone + "\">" +
                     "<span id=\"valid-msg_" + id + "\" class=\"text-success my-auto d-none\">✓ Ok</span>\n" +
                     "<span id=\"error-msg_" + id + "\" class=\"text-danger my-auto d-none\"></span>" +
                     "</div>" +
-                    "<div class=\"d-flex col-12\"><label for=\"forcesms\" class='col-3'>Autentification SMS obligatoire</label>" +
-                    "<input id=\"forcesms_" + id + "\" class=\"form-check-input \" type=\"checkbox\" name=\"forcesmses\" value='1'></div>";
+                    "<div class=\"d-flex col-12\"><label for=\"forcesms_" + id + "\" class='col-3'>Authentification SMS obligatoire</label>" +
+                    "<input id=\"forcesms_" + id + "\" class=\"form-check-input \" type=\"checkbox\" name=\"forcesmses\" value=\"true\"></div>";
+            } else {
+                html +=
+                    "<div class=\"d-flex col-12\"><label for=\"phone_" + id + "\" class='col-3'>Mobile</label>" +
+                    "<input id=\"phone_" + id + "\" class=\"form-control \" type=\"text\" name=\"phones\" value=\"" + escapedPhone + "\" required>" +
+                    "<span id=\"valid-msg_" + id + "\" class=\"text-success my-auto d-none\">✓ Ok</span>\n" +
+                    "<span id=\"error-msg_" + id + "\" class=\"text-danger my-auto d-none\"></span>" +
+                    "</div>"
             }
         }
         html += "</div>";
@@ -364,7 +384,7 @@ export default class SelectUser {
                 customPlaceholder: (selectedCountryPlaceholder, selectedCountryData) => "Saisir un numéro",
                 searchPlaceholder: "Rechercher",
             });
-            if (data.phone == null || data.phone === "") {
+            if (hidedPhone === "") {
                 iti.setCountry("fr");
             }
             this.validatePhone(iti, id)
@@ -422,20 +442,11 @@ export default class SelectUser {
             }
         }
         this.bindEnterKeyPress();
-        // if(this.favorites.length > 0) {
-        //     this.slimSelect.setData(this.favorites);
-        //     let selectedFavorites = this.favorites.filter(f => f.selected).map(f => f.value);
-        //     // if (selectedFavorites.length > 0) {
-        //     //     this.slimSelect.set(selectedFavorites);
-        //     // } else {
-        //     //     this.slimSelect.set();
-        //     // }
-        // }
     }
 
     populateWithFavorites() {
         $.ajax({
-            url: "/ws-secure/users/get-favorites",
+            url: "/ws-secure/ui/favorites/users",
             type: 'GET',
             dataType: 'json',
             contentType: "application/json",

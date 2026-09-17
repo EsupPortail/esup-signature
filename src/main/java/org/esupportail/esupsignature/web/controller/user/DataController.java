@@ -5,8 +5,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
-import org.esupportail.esupsignature.dto.js.JsMessage;
-import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
+import org.esupportail.esupsignature.dto.ui.global.UiMessageDto;
+import org.esupportail.esupsignature.dto.ws.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.Data;
 import org.esupportail.esupsignature.entity.Form;
 import org.esupportail.esupsignature.entity.SignBook;
@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
@@ -56,14 +57,15 @@ public class DataController {
 	@PostMapping("/send-form/{id}")
 	@ResponseBody
 	public ResponseEntity<String> sendForm(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
-						   @RequestBody List<WorkflowStepDto> steps,
-						   @PathVariable("id") Long id) {
+					    @RequestParam(value = "title", required = false)  String title,
+						@RequestBody List<WorkflowStepDto> steps,
+						@PathVariable("id") Long id) {
 		logger.info("create form " + id);
         try {
             if(formService.isFormAuthorized(userEppn, authUserEppn, id)) {
                 Data data = dataService.addData(id, userEppn);
                 List<String> targetEmails = steps.stream().flatMap(step -> step.getTargetEmails().stream()).distinct().toList();
-                SignBook signBook = signBookService.sendForSign(data.getId(), steps, targetEmails, null, userEppn, authUserEppn, false, null, null, null, true, true, null, false, null);
+                SignBook signBook = signBookService.sendForSign(data.getId(), steps, targetEmails, null, userEppn, authUserEppn, false, null, null, title, true, true, null, false, null);
                 return ResponseEntity.ok().body(signBook.getId().toString());
             }
         } catch (Exception e) {
@@ -76,6 +78,7 @@ public class DataController {
 
 	@PostMapping("/form/{id}")
 	@ResponseBody
+	@PreAuthorize("@formService.isFormAuthorized(#userEppn, #authUserEppn, #id)")
 	public String addData(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
 						  @PathVariable("id") Long id,
 						  @RequestParam String dataId,
@@ -90,12 +93,14 @@ public class DataController {
 			logger.debug("dataId is null");
 		}
 		Data data = dataService.addData(id, dataLongId , datas, userEppn, authUserEppn);
-		redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Données enregistrées"));
+		redirectAttributes.addFlashAttribute("message", new UiMessageDto("success", "Données enregistrées"));
 		return data.getId().toString();
 	}
 
+	@PreAuthorize("@formService.isFormAuthorized(#userEppn, #authUserEppn, #id)")
 	@GetMapping("/forms/{id}/get-image")
-	public ResponseEntity<Void> getImagePdfAsByteArray(@PathVariable("id") Long id, HttpServletResponse httpServletResponse) throws Exception {
+	public ResponseEntity<Void> getImagePdfAsByteArray(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
+										  @PathVariable("id") Long id, HttpServletResponse httpServletResponse) throws Exception {
 		Form form = formService.getById(id);
 		InputStream in = pdfService.pageAsInputStream(form.getDocument().getInputStream(), 0);
 		httpServletResponse.setContentType(MediaType.IMAGE_PNG_VALUE);

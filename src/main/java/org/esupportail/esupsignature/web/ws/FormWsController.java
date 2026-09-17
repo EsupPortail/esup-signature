@@ -10,10 +10,10 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import org.esupportail.esupsignature.dto.json.RecipientWsDto;
-import org.esupportail.esupsignature.dto.json.SignRequestParamsWsDto;
-import org.esupportail.esupsignature.dto.json.WorkflowDto;
-import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
+import org.esupportail.esupsignature.dto.ws.RecipientWsDto;
+import org.esupportail.esupsignature.dto.ws.SignRequestParamsWsDto;
+import org.esupportail.esupsignature.dto.projection.jpa.WorkflowDto;
+import org.esupportail.esupsignature.dto.ws.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.Data;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
@@ -156,7 +156,7 @@ public class FormWsController {
             createByEppn = eppn;
         }
         if(createByEppn == null) {
-            return ResponseEntity.badRequest().body("Required request parameter 'createByEppn' for method parameter type String is not present");
+            return ResponseEntity.badRequest().body("Required signRequestLight parameter 'createByEppn' for method parameter type String is not present");
         }
         Data data = dataService.addData(id, createByEppn);
         TypeReference<Map<String, String>> type = new TypeReference<>(){};

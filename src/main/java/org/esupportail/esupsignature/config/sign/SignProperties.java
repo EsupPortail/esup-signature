@@ -24,7 +24,7 @@ public class SignProperties {
     private ASiCContainerType containerType = ASiCContainerType.ASiC_E;
 
     /**
-     * Définit la méthode d'emballage de la signature à utiliser pour les documents non PDF
+     * Définit la méthode de packaging de la signature à utiliser pour les documents non PDF
      *
      * SignaturePackaging représente une norme décrivant comment la signature est intégrée
      * par rapport aux données. Les options possibles incluent notamment :
@@ -39,9 +39,9 @@ public class SignProperties {
     private Long passwordTimeout;
     private String aesKey;      // 16 chars, legacy ECB
     private String aes256Key;   // 32 chars, nouveau GCM
-    private String openscCommandSign = "pkcs11-tool --sign -v --id {0} -p {1} --mechanism SHA256-RSA-PKCS --input-file {2} --output-file {3}";
+    private String openscCommandSign = "pkcs11-tool --sign -v --id ''{0}'' -p {1} --mechanism SHA256-RSA-PKCS --input-file {2} --output-file {3}";
     private String openscCommandGetId = "pkcs11-tool -O --type pubkey";
-    private String openscCommandGetKey = "pkcs11-tool -r --id {0} --type cert";
+    private String openscCommandGetKey = "pkcs11-tool -r --id ''{0}'' --type cert";
     private String openscCommandCertId;
     private String openscPathLinux = "";
 

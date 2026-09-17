@@ -1,9 +1,11 @@
 package org.esupportail.esupsignature.repository;
 
+import jakarta.persistence.LockModeType;
 import org.esupportail.esupsignature.entity.Data;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.PagingAndSortingRepository;
@@ -11,6 +13,14 @@ import org.springframework.data.repository.PagingAndSortingRepository;
 import java.util.List;
 
 public interface DataRepository extends CrudRepository<Data, Long>, PagingAndSortingRepository<Data, Long> {
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select d from Data d where d.id = :id")
+    Data findByIdForUpdate(Long id);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select d from Data d where d.signBook = :signBook")
+    Data findBySignBookForUpdate(SignBook signBook);
 
     @Query("""
         select d from Data d
@@ -21,6 +31,17 @@ public interface DataRepository extends CrudRepository<Data, Long>, PagingAndSor
         where d.id = :id
         """)
     Data findByIdWithWorkflowFull(Long id);
+
+    @Query("""
+        select coalesce(f.action, '')
+        from SignRequest sr
+         join sr.parentSignBook sb
+         join Data d on d.signBook = sb
+         join d.form f
+        where sr.id = :signRequestId
+        """)
+    String findFormActionBySignRequestId(Long signRequestId);
+
     List<Data> findByFormId(Long formId);
     List<Data> findByCreateByAndStatus(User createBy, SignRequestStatus status);
     List<Data> findByCreateBy(User createBy);

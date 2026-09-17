@@ -17,7 +17,7 @@
     </span>
     <span th:if="${liveWorkflowStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa}">
         <span class="text-secondary-emphasis" title="Visa">
-            <i class="fa-solid fa-check" title="Visa"></i><i th:if="${liveWorkflowStep.sealVisa}" class="fa-solid fa-certificate"  title="avec cachet établissement"></i>
+            <i class="fi fi-rr-check" title="Visa"></i><i th:if="${liveWorkflowStep.sealVisa}" class="fi fi-rr-seal"  title="avec cachet établissement"></i>
         </span>
     </span>
     <span th:if="${liveWorkflowStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">

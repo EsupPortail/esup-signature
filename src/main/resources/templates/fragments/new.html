@@ -3,23 +3,7 @@
 <!--/*@thymesVar id="workflow" type="org.esupportail.esupsignature.entity.Workflow"*/-->
 <!--/*@thymesVar id="forms" type="java.util.List<org.esupportail.esupsignature.entity.Form>"*/-->
 <div id="new-fragment" th:fragment="new" class="clear" th:with="isUserOnSu = ${userEppn != authUserEppn}">
-    <script>
-        function toggleSignLevel() {
-            const signType = document.getElementById("signType-1").value;
-            const minSignLevelDiv = $("#minSignLevel");
-            const sealOptions = $("#seal-options")
-            if (signType === "visa") {
-                minSignLevelDiv.hide();
-                sealOptions.show();
-            } else if (signType === "signature") {
-                minSignLevelDiv.show();
-                sealOptions.hide();
-            } else {
-                minSignLevelDiv.hide();
-                sealOptions.hide();
-            }
-        }
-    </script>
+    <script type="module" th:src="'/js/modules/bootstrap/NewFragmentBootstrap.js?version=' + ${versionApp}"></script>
     <div class="card border-0 w-100 h-100">
         <div class="card-body">
             <div id="new-scroll" class="text-nowrap text-wrap">

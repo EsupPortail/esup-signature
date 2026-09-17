@@ -8,6 +8,13 @@
 		<meta name="robots" content="noindex" />
         <meta name="_csrf" th:content="${_csrf.token}">
         <meta name="_csrf_header" th:content="${_csrf.headerName}">
+        <meta name="_csrf_parameter" th:content="${_csrf.parameterName}">
+		<meta name="esup-auth-user-eppn" th:content="${authUserEppn}">
+		<meta name="esup-application-email" th:content="${applicationEmail}">
+		<meta name="esup-max-upload-size" th:content="${globalProperties.maxUploadSize}">
+		<meta name="esup-max-inactive-interval" th:content="${maxInactiveInterval}">
+		<meta name="esup-enable-sms" th:content="${enableSms}">
+		<meta name="esup-sms-required" th:content="${smsRequired}">
 		<base href="/">
 		<link rel="stylesheet" th:href="@{/webjars/pdfjs-dist/legacy/web/pdf_viewer.css}" />
 		<link rel="stylesheet" th:href="@{/webjars/jquery-ui/dist/themes/vader/jquery-ui.css}" />
@@ -16,14 +23,15 @@
 		<link rel="stylesheet" th:href="@{/webjars/croppie/croppie.css}" />
 		<link rel="stylesheet" th:href="@{/webjars/bootstrap-fileinput/css/fileinput.css}" />
 		<link rel="stylesheet" th:href="@{/webjars/bootstrap-fileinput/themes/explorer-fa6/theme.css}" />
+		<link rel="stylesheet" th:href="@{/webjars/filepond/4.32.12/dist/filepond.min.css}" />
         <link rel="preload" th:href="@{/webjars/flaticon__flaticon-uicons/css/uicons-regular-rounded-J3WOUERV.woff2}" as="font" type="font/woff2" crossorigin>
         <link rel="preload" th:href="@{/webjars/flaticon__flaticon-uicons/css/uicons-thin-rounded-HOOVQNVT.woff2}" as="font" type="font/woff2" crossorigin>
         <link rel="stylesheet" th:href="@{/webjars/flaticon__flaticon-uicons/css/thin/rounded.css}" />
+		<link rel="stylesheet" th:href="@{/webjars/flaticon__flaticon-uicons/css/solid/rounded.css}" />
         <link rel="stylesheet" th:href="@{/webjars/flaticon__flaticon-uicons/css/regular/rounded.css}" />
 		<link rel="stylesheet" th:href="@{/webjars/eonasdan__tempus-dominus/dist/css/tempus-dominus.css}" />
 		<link rel="stylesheet" th:href="@{/webjars/slim-select/dist/slimselect.css}" />
 		<link rel="stylesheet" th:href="@{/webjars/intro.js/minified/introjs.min.css}" />
-		<link rel="stylesheet" th:href="@{/webjars/bs-stepper/dist/css/bs-stepper.css}" />
 		<link rel="stylesheet" th:href="@{/webjars/intl-tel-input/build/css/intlTelInput.css}" />
 		<link rel="stylesheet" th:href="'/css/app.css?version=' + ${versionApp}" />
 
@@ -42,22 +50,16 @@
 		<script th:src="@{/webjars/popperjs__core/dist/umd/popper.js}"></script>
 		<script th:src="@{/webjars/eonasdan__tempus-dominus/dist/js/tempus-dominus.js}"></script>
 		<script type="module" th:src="@{/webjars/pdfjs-dist/legacy/build/pdf.min.mjs}"></script>
-		<script type="module" th:src="@{/webjars/pdfjs-dist/legacy/build/pdf.worker.min.mjs}"></script>
+		<script type="module" th:src="'/js/modules/bootstrap/PdfJsBootstrap.js?version=' + ${versionApp}"></script>
 		<script type="module" th:src="@{/webjars/pdfjs-dist/legacy/web/pdf_viewer.mjs}"></script>
 		<script th:src="@{/webjars/slim-select/dist/slimselect.js}"></script>
 		<script th:src="@{/js/customs/jquery.simulate.js}"></script>
 		<script th:src="@{/webjars/intro.js/minified/intro.min.js}"></script>
 		<script th:src="@{/webjars/signature_pad/dist/signature_pad.umd.js}"></script>
-		<script th:src="@{/webjars/bs-stepper/dist/js/bs-stepper.js}"></script>
 <!--		<script th:src="@{/webjars/flatted/es.js}"></script>-->
 		<script type="module" th:src="@{/webjars/intl-tel-input/build/js/intlTelInputWithUtils.js}"></script>
 
-		<script th:inline="javascript" type="module" th:if="${versionApp != null}">
-			sessionStorage.setItem("globalProperties", [[${globalPropertiesJson}]]);
-			sessionStorage.setItem("enableSms", [[${enableSms}]]);
-			import {GlobalUi} from '/js/modules/ui/GlobalUi.js?version=@[(${versionApp})]@';
-			new GlobalUi([[${authUserEppn}]], [[${_csrf}]], [[${applicationEmail}]], [[${globalProperties.maxUploadSize}]], [[${maxInactiveInterval}]]);
-		</script>
+		<script type="module" th:if="${versionApp != null}" th:src="'/js/modules/bootstrap/GlobalBootstrap.js?version=' + ${versionApp}"></script>
 
 		<link rel="icon" type="image/png" th:href="@{/images/favicon.ico}" />
 

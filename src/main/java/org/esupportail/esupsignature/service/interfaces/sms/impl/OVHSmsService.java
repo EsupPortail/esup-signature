@@ -35,7 +35,7 @@ public class OVHSmsService implements SmsService {
     }
 
     @Override
-    public void sendSms(String phoneNumber, String message) throws EsupSignatureRuntimeException {
+    public void sendSms(String userEmail, String phoneNumber, String message) throws EsupSignatureRuntimeException {
         String METHOD = "POST";
         try {
             String ServiceName = objectMapper.readValue(getSmsAccount(), String[].class)[0];

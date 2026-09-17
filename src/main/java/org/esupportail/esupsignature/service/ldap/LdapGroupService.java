@@ -10,6 +10,9 @@ import org.esupportail.esupsignature.service.security.GroupService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
+import org.springframework.ldap.InvalidSearchFilterException;
 import org.springframework.ldap.core.ContextMapper;
 import org.springframework.ldap.core.DirContextAdapter;
 import org.springframework.ldap.core.LdapTemplate;
@@ -49,16 +52,31 @@ public class LdapGroupService implements GroupService {
     }
 
     @Transactional
+    @EventListener(ApplicationReadyEvent.class)
     public void loadLdapFiltersGroups() {
+        ldapFiltersGroups.clear();
         for(Map.Entry<String, String> entry : ldapProperties.getMappingFiltersGroups().entrySet()) {
-            ldapFiltersGroups.put(entry.getValue(), entry.getKey());
+            if(validateGroupName(entry.getKey(), "ldap.mapping-filters-groups")) {
+                ldapFiltersGroups.put(entry.getValue(), entry.getKey());
+            }
         }
         Iterator<Config> configs = configRepository.findAll().iterator();
         if(configs.hasNext()) {
             for(Map.Entry<String, String> entry : configs.next().getMappingFiltersGroups().entrySet()) {
-                ldapFiltersGroups.put(entry.getValue(), entry.getKey());
+                if(validateGroupName(entry.getKey(), "config_mapping_filters_groups")) {
+                    ldapFiltersGroups.put(entry.getValue(), entry.getKey());
+                }
             }
         }
+    }
+
+    private boolean validateGroupName(String groupName, String source) {
+        if(groupName != null && groupName.trim().endsWith(":")) {
+            logger.error("Invalid group name [{}] in {}: the trailing ':' is YAML syntax and must not be part of the group name",
+                    groupName, source);
+            return false;
+        }
+        return true;
     }
 
     public Map<String, String> getLdapFiltersGroups() {
@@ -81,11 +99,13 @@ public class LdapGroupService implements GroupService {
                 logger.debug("no allGroupsSearchFilter found");
             }
             logger.debug(formattedFilter);
+            if(ldapProperties.getGroupSearchBase() != null) {
             groups = ldapTemplate.search(LdapQueryBuilder.query().attributes("cn", "description").base(ldapProperties.getGroupSearchBase()).filter(formattedFilter),
                     (ContextMapper<Map.Entry<String, String>>) ctx -> {
                         DirContextAdapter searchResultContext = (DirContextAdapter) ctx;
                         return new AbstractMap.SimpleEntry<>(searchResultContext.getStringAttribute("cn"), searchResultContext.getStringAttribute("description"));
                     });
+            }
         }
         return groups;
     }
@@ -103,13 +123,24 @@ public class LdapGroupService implements GroupService {
     public List<String> getGroupsOfUser(String username) {
         String formattedFilter = MessageFormat.format(ldapProperties.getEppnLeftPartSearchFilter(), (Object[]) new String[] { username });
         logger.debug("search GroupLdap with : " + formattedFilter);
-        List<String> dns = ldapTemplate.search((LdapQueryBuilder.query().base(ldapProperties.getSearchBase()))
-                .attributes("dn")
-                .filter(formattedFilter),
-        (ContextMapper<String>) ctx -> {
-            DirContextAdapter searchResultContext = (DirContextAdapter) ctx;
-            return searchResultContext.getNameInNamespace();
-        });
+        List<String> dns;
+        try {
+            dns = ldapTemplate.search((LdapQueryBuilder.query().base(ldapProperties.getSearchBase()))
+                    .attributes("dn")
+                    .filter(formattedFilter),
+            (ContextMapper<String>) ctx -> {
+                DirContextAdapter searchResultContext = (DirContextAdapter) ctx;
+                return searchResultContext.getNameInNamespace();
+            });
+        } catch (InvalidSearchFilterException e) {
+            throw invalidLdapFilterException(
+                    "ldap.eppn-left-part-search-filter",
+                    ldapProperties.getEppnLeftPartSearchFilter(),
+                    formattedFilter,
+                    username,
+                    "Ce filtre sert a retrouver le DN de l'utilisateur avant la recherche de ses groupes.",
+                    e);
+        }
         List<String> groups = new ArrayList<>();
         if(!dns.isEmpty()) {
             LdapQuery groupSearchQuery;
@@ -122,6 +153,16 @@ public class LdapGroupService implements GroupService {
                     DirContextAdapter searchResultContext = (DirContextAdapter) ctx;
                     return searchResultContext.getStringAttribute("cn");
                 });
+            } catch (InvalidSearchFilterException e) {
+                String userDn = dns.get(0);
+                String formattedGroupSearchFilter = MessageFormat.format(ldapProperties.getGroupSearchFilter(), userDn, username);
+                throw invalidLdapFilterException(
+                        "ldap.group-search-filter",
+                        ldapProperties.getGroupSearchFilter(),
+                        formattedGroupSearchFilter,
+                        username,
+                        "Ce filtre sert a rechercher les groupes de l'utilisateur. Le parametre {0} vaut le DN utilisateur [" + userDn + "] et {1} vaut le login.",
+                        e);
             } catch (Exception e) {
                 logger.warn(e.getMessage(), e);
             }
@@ -141,6 +182,17 @@ public class LdapGroupService implements GroupService {
                 if (!filterDns.isEmpty()) {
                     groups.add(ldapFiltersGroups.get(ldapFilter));
                 }
+            } catch (InvalidSearchFilterException e) {
+                String hardcodedFilter = MessageFormat.format(ldapProperties.getMemberSearchFilter(), username, ldapFilter);
+                throw invalidLdapFilterException(
+                        "ldap.member-search-filter / ldap.mapping-filters-groups",
+                        ldapProperties.getMemberSearchFilter(),
+                        hardcodedFilter,
+                        username,
+                        "Le mapping concerne le groupe [" + ldapFiltersGroups.get(ldapFilter) + "] avec le filtre LDAP [" + ldapFilter + "]. "
+                                + "Verifier que la valeur du mapping est bien un filtre LDAP entre parentheses, par exemple (eduPersonAffiliation=staff), "
+                                + "et non un nom de groupe ou un role.",
+                        e);
             } catch (Exception e) {
                 logger.warn(e.getMessage(), e);
             }
@@ -203,5 +255,21 @@ public class LdapGroupService implements GroupService {
                 "Filtre: " + ldapQuery.filter().encode() + ", " +
                 "Attributs: " + Arrays.toString(ldapQuery.attributes()) + ", ";
         logger.debug("group : " + queryStringBuilder);
+    }
+
+    private EsupSignatureRuntimeException invalidLdapFilterException(String configurationKey,
+                                                                     String filterTemplate,
+                                                                     String formattedFilter,
+                                                                     String username,
+                                                                     String context,
+                                                                     InvalidSearchFilterException e) {
+        return new EsupSignatureRuntimeException(
+                "Configuration LDAP invalide pour [" + configurationKey + "]. "
+                        + "Filtre genere [" + formattedFilter + "]. "
+                        + "Template configure [" + filterTemplate + "]. "
+                        + "Utilisateur [" + username + "]. "
+                        + context + " "
+                        + "Cause LDAP: " + e.getMessage(),
+                e);
     }
 }

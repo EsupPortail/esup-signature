@@ -36,7 +36,6 @@ import org.esupportail.esupsignature.dss.model.SignatureMultipleDocumentsForm;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.entity.enums.SignWith;
-import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
@@ -181,6 +180,8 @@ public class SignService {
 
     public Document certSign(AbstractSignatureForm signatureDocumentForm, SignRequest signRequest, String userEppn, String password, SignWith signWith, String sealCertificat, SignRequestParams signRequestParams) throws EsupSignatureRuntimeException {
 		User user = userService.getByEppn(userEppn);
+        boolean isAlreadyCertSign = signWith.equals(SignWith.sealCert) && hasExistingElectronicSignature(signRequest);
+        String resolvedSealCertificat = signWith.equals(SignWith.sealCert) ? resolveSealCertificat(userEppn, sealCertificat, isAlreadyCertSign) : sealCertificat;
 		logger.info("start certSign for signRequest : " + signRequest.getId());
 		SignatureForm signatureForm;
 		SignatureTokenConnection abstractKeyStoreTokenConnection = null;
@@ -195,19 +196,15 @@ public class SignService {
 				Certificat certificat = certificatService.getCertificatByUser(userEppn).get(0);
 				abstractKeyStoreTokenConnection = userKeystoreService.getPkcs12Token(certificat.getKeystore().getInputStream(), certificatService.decryptPassword(certificat));
 			} else if (signWith.equals(SignWith.sealCert)
-                    &&
-                    (userEppn.equals("system") || (user.getUserType().equals(UserType.external) && globalProperties.getSealForExternals())
-                    || (!user.getUserType().equals(UserType.external) && globalProperties.getSealAuthorizedForSignedFiles())
-                    || certificatService.getAuthorizedSealCertificatProperties(userEppn).stream().anyMatch(sc -> sc.sealCertificatName.equals(sealCertificat)
-                    || certificatService.getAuthorizedSealCertificatProperties(userEppn).stream().anyMatch(sc1 -> globalProperties.getSealCertificatProperties() != null && !globalProperties.getSealCertificatProperties().isEmpty() && globalProperties.getSealCertificatProperties().get(sealCertificat) != null && sc1.sealCertificatName.equals(globalProperties.getSealCertificatProperties().get(sealCertificat).getSealSpareOf()))))
-            ) {
+					&& isSealSigningAllowed(userEppn, resolvedSealCertificat, isAlreadyCertSign)
+			) {
 				try {
-                    abstractKeyStoreTokenConnection = certificatService.getSealToken(globalProperties.getSealCertificatProperties().get(sealCertificat));
+                    abstractKeyStoreTokenConnection = certificatService.getSealToken(globalProperties.getSealCertificatProperties().get(resolvedSealCertificat));
                     userKeystoreService.getCertificateToken(abstractKeyStoreTokenConnection);
 				} catch (Exception e) {
                     logger.warn("unable to open seal token", e);
                     // trying spares
-                    for(SealCertificatProperties sealCertificatProperties : globalProperties.getSealCertificatProperties().values().stream().filter(sc -> sc.getSealSpareOf().equals(sealCertificat)).toList()) {
+                    for(SealCertificatProperties sealCertificatProperties : globalProperties.getSealCertificatProperties().values().stream().filter(sc -> sc.getSealSpareOf().equals(resolvedSealCertificat)).toList()) {
                         try {
                             abstractKeyStoreTokenConnection = certificatService.getSealToken(sealCertificatProperties);
                             certificateToken = userKeystoreService.getCertificateToken(abstractKeyStoreTokenConnection);
@@ -275,6 +272,39 @@ public class SignService {
 		}
 	}
 
+    private String resolveSealCertificat(String userEppn, String sealCertificat, boolean isAlreadyCertSign) {
+        if (StringUtils.hasText(sealCertificat)) {
+            return sealCertificat;
+        }
+
+        List<SealCertificatProperties> authorizedSealCertificatProperties = certificatService.getAuthorizedSealCertificatProperties(userEppn, isAlreadyCertSign);
+        if (authorizedSealCertificatProperties.size() == 1) {
+            return authorizedSealCertificatProperties.get(0).getSealCertificatName();
+        }
+        if (authorizedSealCertificatProperties.isEmpty()) {
+            throw new EsupSignatureRuntimeException("Aucun certificat cachet autorisé pour cet utilisateur");
+        }
+
+        throw new EsupSignatureRuntimeException("Merci de sélectionner un certificat cachet");
+    }
+
+    private boolean isSealSigningAllowed(String userEppn, String sealCertificat, boolean isAlreadyCertSign) {
+        return userEppn.equals("system")
+                || certificatService.isSealCertificatAuthorized(userEppn, sealCertificat, isAlreadyCertSign);
+    }
+
+    private boolean hasExistingElectronicSignature(SignRequest signRequest) {
+        try {
+            Reports reports = validate(signRequest.getId());
+            return reports != null
+                    && reports.getSimpleReport() != null
+                    && !reports.getSimpleReport().getSignatureIdList().isEmpty();
+        } catch (IOException e) {
+            logger.warn("Impossible de contrôler les signatures existantes de la demande {}", signRequest.getId(), e);
+            return false;
+        }
+    }
+
     @SuppressWarnings({ "rawtypes", "unchecked" })
     private DSSDocument certSignDocument(SignatureDocumentForm signatureDocumentForm, AbstractSignatureParameters parameters, SignatureTokenConnection signingToken) throws IOException {
         logger.debug("Start signDocument with single documents");
@@ -312,12 +342,15 @@ public class SignService {
 	private PAdESSignatureParameters fillVisibleParameters(SignatureDocumentForm signatureDocumentForm, SignRequestParams signRequestParams, User user, Date date) throws IOException {
 		InputStream toSignFile = new ByteArrayInputStream(signatureDocumentForm.getDocumentToSign().getBytes());
 		PAdESSignatureParameters pAdESSignatureParameters = new PAdESSignatureParameters();
-		SignatureImageParameters imageParameters = new SignatureImageParameters();
+		SignatureImageParameters imageParameters = createSignatureImageParameters();
 		InMemoryDocument fileDocumentImage;
-		if(signRequestParams.getSignImageNumber() >= 0 && (signRequestParams.getSignImageNumber() == null || signRequestParams.getSignImageNumber() == 999998 || signRequestParams.getSignImageNumber() == 999999 || user.getSignImages().size() >= signRequestParams.getSignImageNumber() || user.getEppn().equals("system"))) {
+    Integer signImageNumber = signRequestParams.getSignImageNumber();
+    if(signImageNumber != null && signImageNumber >= 0 && (signImageNumber == 999997 || signImageNumber == 999998 || signImageNumber == 999999 || user.getSignImages().size() > signImageNumber || user.getEppn().equals("system"))) {
 			InputStream inputStream;
-			if(user.getSignImages().size() > signRequestParams.getSignImageNumber() && signRequestParams.getAddImage()) {
-				inputStream = user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream();
+      if(signImageNumber == 999997) {
+        inputStream = fileService.getDefaultParaphe(user.getName(), user.getFirstname(), user.getEmail(), true);
+      } else if(user.getSignImages().size() > signImageNumber && signRequestParams.getAddImage()) {
+        inputStream = user.getSignImages().get(signImageNumber).getInputStream();
 			} else {
 				inputStream = fileService.getDefaultImage(user.getName(), user.getFirstname(), user.getEmail(), true);
 			}
@@ -328,7 +361,6 @@ public class SignService {
 				signImage = new ByteArrayInputStream(outputStream.toByteArray());
 			}
 			SignatureFieldParameters signatureFieldParameters = imageParameters.getFieldParameters();
-			imageParameters.getFieldParameters().setRotation(VisualSignatureRotation.AUTOMATIC);
 			PdfParameters pdfParameters = pdfService.getPdfParameters(toSignFile, signRequestParams.getSignPageNumber());
 			int widthAdjusted = Math.round(signRequestParams.getSignWidth() * signRequestParams.getSignScale() * globalProperties.getFixFactor());
 			int heightAdjusted = Math.round(signRequestParams.getSignHeight() * signRequestParams.getSignScale() * globalProperties.getFixFactor());
@@ -338,19 +370,9 @@ public class SignService {
 				signatureFieldParameters.setFieldId(signRequestParams.getPdSignatureFieldName());
 			} else {
 				signatureFieldParameters.setPage(signRequestParams.getSignPageNumber());
-				if (pdfParameters.getRotation() == 0) {
-					signatureFieldParameters.setWidth(widthAdjusted);
-					signatureFieldParameters.setHeight(heightAdjusted);
-					signatureFieldParameters.setOriginX(Math.round(signRequestParams.getxPos() * globalProperties.getFixFactor()));
-				} else {
-					signatureFieldParameters.setWidth(heightAdjusted);
-					signatureFieldParameters.setHeight(widthAdjusted);
-					signatureFieldParameters.setOriginX(Math.round(signRequestParams.getxPos() - 50 * globalProperties.getFixFactor()));
-				}
+				configureSignatureFieldPosition(signatureFieldParameters, pdfParameters, signRequestParams,
+						widthAdjusted, heightAdjusted, globalProperties.getFixFactor());
 			}
-			int yPos = Math.round(signRequestParams.getyPos() * globalProperties.getFixFactor());
-			if (yPos < 0) yPos = 0;
-			signatureFieldParameters.setOriginY(yPos);
 
 			BufferedImage bufferedSignImage = ImageIO.read(signImage);
 			ByteArrayOutputStream os = new ByteArrayOutputStream();
@@ -371,6 +393,38 @@ public class SignService {
 		pAdESSignatureParameters.setContactInfo(user.getEmail());
 		fillCommonsParameters(pAdESSignatureParameters, signatureDocumentForm);
 		return pAdESSignatureParameters;
+	}
+
+	SignatureImageParameters createSignatureImageParameters() {
+		SignatureImageParameters imageParameters = new SignatureImageParameters();
+		imageParameters.getFieldParameters().setRotation(VisualSignatureRotation.AUTOMATIC);
+		imageParameters.setImageScaling(ImageScaling.ZOOM_AND_CENTER);
+		return imageParameters;
+	}
+
+	void configureSignatureFieldPosition(SignatureFieldParameters fieldParameters, PdfParameters pdfParameters,
+			SignRequestParams signRequestParams, int width, int height, float fixFactor) {
+		int rotation = Math.floorMod(pdfParameters.getRotation(), 360);
+		float x = Math.round(signRequestParams.getxPos() * fixFactor);
+		float y = Math.round(signRequestParams.getyPos() * fixFactor);
+
+		fieldParameters.setWidth(width);
+		fieldParameters.setHeight(height);
+		fieldParameters.setOriginX(x);
+		if (rotation == 270) {
+			// DSS applies the inverse page rotation to the visual appearance. Its Y origin must
+			// be expressed from the opposite edge of the unrotated PDF page. The native DSS
+			// drawer also translates the rotated appearance by its width, which has to be
+			// compensated in the opposite direction to keep the visible image at the requested
+			// top coordinate.
+			fieldParameters.setOriginY(Math.max(0, pdfParameters.getWidth() - y - height - width));
+		} else if (rotation == 90) {
+			fieldParameters.setOriginY(Math.max(0, pdfParameters.getWidth() - y - height));
+		} else if (rotation == 180) {
+			fieldParameters.setOriginY(Math.max(0, pdfParameters.getHeight() - y - height));
+		} else {
+			fieldParameters.setOriginY(Math.max(0, y));
+		}
 	}
 
 	private void fillCommonsParameters(AbstractSignatureParameters<?> parameters, AbstractSignatureForm form) {

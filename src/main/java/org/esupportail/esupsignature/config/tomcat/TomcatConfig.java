@@ -8,14 +8,16 @@ import org.esupportail.esupsignature.config.GlobalProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
+import org.springframework.boot.tomcat.servlet.TomcatServletWebServerFactory;
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 
+import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.UnknownHostException;
 import java.util.List;
 
 @Configuration
@@ -37,10 +39,11 @@ public class TomcatConfig {
 
     @Bean
     @ConditionalOnProperty(prefix = "tomcat.ajp", name = "port")
-    public TomcatServletWebServerFactory servletContainer() throws URISyntaxException {
+    public TomcatServletWebServerFactory servletContainer() throws URISyntaxException, UnknownHostException {
         TomcatServletWebServerFactory tomcat = new TomcatServletWebServerFactory();
         Connector ajpConnector = new Connector("AJP/1.3");
         ajpConnector.setPort(tomcatAjpProperties.getPort());
+        ajpConnector.setProperty("address", tomcatAjpProperties.getAddress());
         ajpConnector.setAllowTrace(false);
         ajpConnector.setScheme(new URI(globalProperties.getRootUrl()).getScheme());
         if("https".equals(ajpConnector.getScheme())) {
@@ -48,10 +51,11 @@ public class TomcatConfig {
         }
         ajpConnector.setAsyncTimeout(1200000);
         ajpConnector.setURIEncoding("UTF-8");
+        ((AbstractAjpProtocol<?>) ajpConnector.getProtocolHandler()).setAddress(InetAddress.getByName(tomcatAjpProperties.getAddress()));
         ((AbstractAjpProtocol<?>) ajpConnector.getProtocolHandler()).setSecretRequired(false);
         ((AbstractAjpProtocol<?>) ajpConnector.getProtocolHandler()).setTomcatAuthentication(false);
         ((AbstractAjpProtocol<?>) ajpConnector.getProtocolHandler()).setMaxHeaderCount(400);
-        tomcat.addAdditionalTomcatConnectors(ajpConnector);
+        tomcat.addAdditionalConnectors(ajpConnector);
         return tomcat;
     }
 

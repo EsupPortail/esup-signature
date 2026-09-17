@@ -19,11 +19,14 @@ import jakarta.annotation.PostConstruct;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.certificat.SealCertificatProperties;
 import org.esupportail.esupsignature.config.sign.SignProperties;
+import org.esupportail.esupsignature.dto.ui.global.CertificatViewDto;
 import org.esupportail.esupsignature.entity.AppliVersion;
 import org.esupportail.esupsignature.entity.Certificat;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.WorkflowStep;
+import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
+import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.repository.AppliVersionRepository;
 import org.esupportail.esupsignature.repository.CertificatRepository;
 import org.esupportail.esupsignature.repository.WorkflowStepRepository;
@@ -34,8 +37,8 @@ import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.actuate.health.Health;
-import org.springframework.boot.actuate.health.HealthIndicator;
+import org.springframework.boot.health.contributor.Health;
+import org.springframework.boot.health.contributor.HealthIndicator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -51,6 +54,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.security.KeyStore;
+import java.security.ProviderException;
 import java.security.SecureRandom;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -87,7 +91,11 @@ public class CertificatService implements HealthIndicator {
         this.workflowStepRepository = workflowStepRepository;
         this.appliVersionRepository = appliVersionRepository;
         if(!globalProperties.getSealCertificatProperties().isEmpty()) {
-            this.openSCSignatureToken = new OpenSCSignatureToken(new KeyStore.PasswordProtection(globalProperties.getSealCertificatProperties().get("default").getSealCertificatPin().toCharArray()), signProperties, globalProperties.getSealCertificatProperties().get("default").getSealCertificatDriver());
+            SealCertificatProperties defaultSeal = globalProperties.getSealCertificatProperties().get("default");
+            if(defaultSeal == null) {
+                defaultSeal = globalProperties.getSealCertificatProperties().values().iterator().next();
+            }
+            this.openSCSignatureToken = new OpenSCSignatureToken(new KeyStore.PasswordProtection(defaultSeal.getSealCertificatPin().toCharArray()), signProperties, defaultSeal.getSealCertificatDriver(), defaultSeal.getSealCertificatSlotId());
         } else {
             this.openSCSignatureToken = null;
         }
@@ -124,6 +132,87 @@ public class CertificatService implements HealthIndicator {
         List<Certificat> certificats = new ArrayList<>();
         certificatRepository.findAll().forEach(certificats::add);
         return certificats;
+    }
+
+    @Transactional(readOnly = true)
+    public List<CertificatViewDto> getAllCertificatViews() {
+        List<CertificatViewDto> certificats = new ArrayList<>();
+        certificatRepository.findAll().forEach(certificat -> certificats.add(new CertificatViewDto(
+                certificat.getId(),
+                certificat.getKeystore().getFileName(),
+                certificat.getCreateDate(),
+                certificat.getExpireDate(),
+                certificat.getRoles()
+        )));
+        return certificats;
+    }
+
+    public boolean hasConfiguredSealCertificat(String sealCertificatName) {
+        return StringUtils.hasText(sealCertificatName) && globalProperties.getSealCertificatProperties().containsKey(sealCertificatName);
+    }
+
+    public String getDefaultSealCertificatName() {
+        if(globalProperties.getSealCertificatProperties().containsKey("default")) {
+            return "default";
+        }
+        return globalProperties.getSealCertificatProperties().keySet().stream().findFirst().orElse(null);
+    }
+
+    public String resolveWorkflowStepSealCertificatName(WorkflowStep workflowStep) {
+        if(workflowStep == null || workflowStep.getCertificat() != null || globalProperties.getSealCertificatProperties().isEmpty()) {
+            return null;
+        }
+        if(hasConfiguredSealCertificat(workflowStep.getSealCertificatName())) {
+            return workflowStep.getSealCertificatName();
+        }
+        return getDefaultSealCertificatName();
+    }
+
+    public String getSealCertificatDisplayName(String sealCertificatName) {
+        if(!hasConfiguredSealCertificat(sealCertificatName)) {
+            return null;
+        }
+        SealCertificatProperties sealCertificatProperties = globalProperties.getSealCertificatProperties().get(sealCertificatName);
+        if(sealCertificatProperties != null && StringUtils.hasText(sealCertificatProperties.getSealCertificatTitle())) {
+            return sealCertificatProperties.getSealCertificatTitle();
+        }
+        return sealCertificatName;
+    }
+
+    public void applyWorkflowStepCertificateSelection(WorkflowStep workflowStep, String certificatSelection) {
+        if(workflowStep == null) {
+            return;
+        }
+        if(!StringUtils.hasText(certificatSelection)) {
+            workflowStep.setCertificat(null);
+            workflowStep.setSealCertificatName(getDefaultSealCertificatName());
+            return;
+        }
+        if(certificatSelection.startsWith("cert:")) {
+            workflowStep.setCertificat(getById(Long.parseLong(certificatSelection.substring("cert:".length()))));
+            workflowStep.setSealCertificatName(null);
+            return;
+        }
+        if(certificatSelection.startsWith("seal:")) {
+            String sealCertificatName = certificatSelection.substring("seal:".length());
+            if(!hasConfiguredSealCertificat(sealCertificatName)) {
+                throw new EsupSignatureRuntimeException("Certificat cachet inconnu : " + sealCertificatName);
+            }
+            workflowStep.setCertificat(null);
+            workflowStep.setSealCertificatName(sealCertificatName);
+            return;
+        }
+        try {
+            workflowStep.setCertificat(getById(Long.parseLong(certificatSelection)));
+            workflowStep.setSealCertificatName(null);
+        } catch (NumberFormatException e) {
+            if(hasConfiguredSealCertificat(certificatSelection)) {
+                workflowStep.setCertificat(null);
+                workflowStep.setSealCertificatName(certificatSelection);
+            } else {
+                throw new EsupSignatureRuntimeException("Sélection de certificat invalide : " + certificatSelection, e);
+            }
+        }
     }
 
     @Transactional
@@ -219,7 +308,7 @@ public class CertificatService implements HealthIndicator {
 
     public SignatureTokenConnection getSealToken(SealCertificatProperties sealCertificatProperties) {
         if((StringUtils.hasText(sealCertificatProperties.getSealCertificatDriver()) && sealCertificatProperties.getSealCertificatType().equals(SealCertificatProperties.TokenType.PKCS11)) || sealCertificatProperties.getSealCertificatType().equals(org.esupportail.esupsignature.config.certificat.SealCertificatProperties.TokenType.PKCS12)) {
-           return getPkcsToken(sealCertificatProperties);
+            return getPkcsToken(sealCertificatProperties);
         } else if(sealCertificatProperties.getSealCertificatType().equals(SealCertificatProperties.TokenType.OPENSC)){
             return openSCSignatureToken;
         }
@@ -230,16 +319,78 @@ public class CertificatService implements HealthIndicator {
         if (StringUtils.hasText(sealCertificatProperties.getSealCertificatPin())) {
             if (StringUtils.hasText(sealCertificatProperties.getSealCertificatDriver()) && sealCertificatProperties.getSealCertificatType().equals(SealCertificatProperties.TokenType.PKCS11)) {
                 KeyStore.PasswordProtection passwordProtection = new KeyStore.PasswordProtection(sealCertificatProperties.getSealCertificatPin().toCharArray());
-                return new eu.europa.esig.dss.token.Pkcs11SignatureToken(sealCertificatProperties.getSealCertificatDriver(), passwordProtection, sealCertificatProperties.getSealCertificatSlotId());
-            } else if (StringUtils.hasText(sealCertificatProperties.getSealCertificatFile()) && sealCertificatProperties.getSealCertificatType().equals(SealCertificatProperties.TokenType.PKCS12)) {
                 try {
-                    return userKeystoreService.getPkcs12Token(new FileInputStream(sealCertificatProperties.getSealCertificatFile()), sealCertificatProperties.getSealCertificatPin());
+                    return new eu.europa.esig.dss.token.Pkcs11SignatureToken(sealCertificatProperties.getSealCertificatDriver(), passwordProtection, sealCertificatProperties.getSealCertificatSlotId());
+                } catch (ProviderException | NullPointerException e) {
+                    throw new EsupSignatureKeystoreException("Impossible d'initialiser le token PKCS#11", e);
+                }
+            } else if (StringUtils.hasText(sealCertificatProperties.getSealCertificatFile()) && sealCertificatProperties.getSealCertificatType().equals(SealCertificatProperties.TokenType.PKCS12)) {
+                try (FileInputStream fileInputStream = new FileInputStream(sealCertificatProperties.getSealCertificatFile())) {
+                    return userKeystoreService.getPkcs12Token(fileInputStream, sealCertificatProperties.getSealCertificatPin());
                 } catch (FileNotFoundException e) {
                     logger.error(e.getMessage());
+                } catch (IOException e) {
+                    throw new EsupSignatureKeystoreException("Impossible de lire le fichier PKCS#12", e);
                 }
             }
         }
         throw new EsupSignatureKeystoreException("no seal certificat present (no type or no pin");
+    }
+
+    private DSSPrivateKeyEntry getFirstPrivateKeyEntry(SignatureTokenConnection tokenConnection, SealCertificatProperties sealCertificatProperties) throws EsupSignatureKeystoreException {
+        List<DSSPrivateKeyEntry> keys = tokenConnection.getKeys();
+        if (keys == null || keys.isEmpty()) {
+            throw new EsupSignatureKeystoreException("Aucune clé privée trouvée pour le certificat cachet " + getSealCertificatLogName(sealCertificatProperties));
+        }
+        return keys.get(0);
+    }
+
+    private DSSPrivateKeyEntry probePkcsPrivateKeyEntry(SealCertificatProperties sealCertificatProperties) throws EsupSignatureKeystoreException {
+        AbstractKeyStoreTokenConnection tokenConnection = null;
+        try {
+            tokenConnection = getPkcsToken(sealCertificatProperties);
+            return getFirstPrivateKeyEntry(tokenConnection, sealCertificatProperties);
+        } catch (ProviderException | NullPointerException e) {
+            logger.warn("Erreur PKCS#11 transitoire pendant la sonde du certificat cachet {}", getSealCertificatLogName(sealCertificatProperties), e);
+            throw new EsupSignatureKeystoreException("Erreur PKCS#11 transitoire pendant la lecture du certificat cachet", e);
+        } finally {
+            closeTokenQuietly(tokenConnection, sealCertificatProperties);
+        }
+    }
+
+    private void closeTokenQuietly(SignatureTokenConnection tokenConnection, SealCertificatProperties sealCertificatProperties) {
+        if (tokenConnection == null) {
+            return;
+        }
+        try {
+            tokenConnection.close();
+        } catch (Exception e) {
+            logger.debug("Impossible de fermer proprement le token pour le certificat cachet {}", getSealCertificatLogName(sealCertificatProperties), e);
+        }
+    }
+
+    private String getSealCertificatLogName(SealCertificatProperties sealCertificatProperties) {
+        if (sealCertificatProperties == null) {
+            return "inconnu";
+        }
+        if (StringUtils.hasText(sealCertificatProperties.getSealCertificatName())) {
+            return sealCertificatProperties.getSealCertificatName();
+        }
+        if (StringUtils.hasText(sealCertificatProperties.getSealCertificatTitle())) {
+            return sealCertificatProperties.getSealCertificatTitle();
+        }
+        if (StringUtils.hasText(sealCertificatProperties.getSealCertificatDriver())) {
+            return sealCertificatProperties.getSealCertificatDriver();
+        }
+        if (StringUtils.hasText(sealCertificatProperties.getSealCertificatFile())) {
+            return sealCertificatProperties.getSealCertificatFile();
+        }
+        return "inconnu";
+    }
+
+    private void invalidateSealCaches() {
+        dssPrivateKeyEntriesCache.invalidate("keys");
+        sealCertificatPropertiesCache.invalidate("keys");
     }
 
     public CertificateToken getOpenSCKey() throws DSSException {
@@ -247,6 +398,13 @@ public class CertificatService implements HealthIndicator {
             return DSSUtils.loadCertificate(openSCSignatureToken.getKey().getCertificate().getEncoded());
         } catch (Exception e) {
             logger.error(e.getMessage());
+        }
+        return null;
+    }
+
+    public String getOpenSCVersion() {
+        if(openSCSignatureToken != null) {
+            return openSCSignatureToken.getOpenSCVersion();
         }
         return null;
     }
@@ -265,7 +423,8 @@ public class CertificatService implements HealthIndicator {
                     "Après contrôle de votre installation/configuration, lancer cette requête pour débloqué la vérification : 'UPDATE appli_version set stop_check_seal_certificat = false;'");
             return new ArrayList<>();
         }
-        if(dssPrivateKeyEntriesCache.getIfPresent("keys") != null) return dssPrivateKeyEntriesCache.getIfPresent("keys");
+        List<DSSPrivateKeyEntry> cachedPrivateKeyEntries = dssPrivateKeyEntriesCache.getIfPresent("keys");
+        if(cachedPrivateKeyEntries != null) return cachedPrivateKeyEntries;
         List<DSSPrivateKeyEntry> dssPrivateKeyEntries = new ArrayList<>();
         for(SealCertificatProperties sealCertificatProperties : globalProperties.getSealCertificatProperties().values()) {
             try {
@@ -274,7 +433,7 @@ public class CertificatService implements HealthIndicator {
                                 ||
                                 (sealCertificatProperties.getSealCertificatType().equals(SealCertificatProperties.TokenType.PKCS12) && StringUtils.hasText(sealCertificatProperties.getSealCertificatFile())))
                 ) {
-                    dssPrivateKeyEntries.add(getPkcsToken(sealCertificatProperties).getKeys().get(0));
+                    dssPrivateKeyEntries.add(probePkcsPrivateKeyEntry(sealCertificatProperties));
                 } else if (sealCertificatProperties.getSealCertificatType() != null && sealCertificatProperties.getSealCertificatType().equals(SealCertificatProperties.TokenType.OPENSC)) {
                     dssPrivateKeyEntries.add(openSCSignatureToken.getKeys().get(0));
                 }
@@ -319,12 +478,17 @@ public class CertificatService implements HealthIndicator {
 
     public boolean checkCertificatProblem(Set<String> roles) {
         if(!roles.contains("ROLE_ADMIN")) return false;
+        if(globalProperties.getSealCertificatProperties() == null || globalProperties.getSealCertificatProperties().isEmpty()) return false;
         boolean certificatProblem = false;
+        List<SealCertificatProperties> cachedSealCertificatProperties = sealCertificatPropertiesCache.getIfPresent("keys");
+        if(!isCertificatWasPresent && cachedSealCertificatProperties != null && cachedSealCertificatProperties.isEmpty()) {
+            return true;
+        }
         List<DSSPrivateKeyEntry> dssPrivateKeyEntries = getSealCertificats();
         if(isCertificatWasPresent && dssPrivateKeyEntries.isEmpty()) {
             certificatProblem = true;
         }
-        Date lastDate = new DateTime().minusDays(globalProperties.getNbDaysBeforeCertifWarning()).toDate();
+        Date lastDate = new DateTime().plusDays(globalProperties.getNbDaysBeforeCertifWarning()).toDate();
         for(Certificat certificat : getAllCertificats()) {
             if(certificat.getExpireDate().before(lastDate)) {
                 certificatProblem = true;
@@ -341,7 +505,8 @@ public class CertificatService implements HealthIndicator {
     }
 
     public List<SealCertificatProperties> getCheckedSealCertificates() {
-        if(sealCertificatPropertiesCache.getIfPresent("keys") != null && !sealCertificatPropertiesCache.getIfPresent("keys").isEmpty()) return sealCertificatPropertiesCache.getIfPresent("keys");
+        List<SealCertificatProperties> cachedSealCertificatProperties = sealCertificatPropertiesCache.getIfPresent("keys");
+        if(cachedSealCertificatProperties != null && !cachedSealCertificatProperties.isEmpty()) return cachedSealCertificatProperties;
         List<SealCertificatProperties> sealCertificatPropertieses = new ArrayList<>();
         for(Map.Entry<String, SealCertificatProperties> sealCertificatProperties : globalProperties.getSealCertificatProperties().entrySet()) {
             try {
@@ -352,11 +517,17 @@ public class CertificatService implements HealthIndicator {
                                 ||
                                 (sealCertificatProperties.getValue().getSealCertificatType().equals(SealCertificatProperties.TokenType.PKCS12) && StringUtils.hasText(sealCertificatProperties.getValue().getSealCertificatFile())))
                 ) {
-                    dssPrivateKeyEntry = getPkcsToken(sealCertificatProperties.getValue()).getKeys().get(0);
+                    dssPrivateKeyEntry = probePkcsPrivateKeyEntry(sealCertificatProperties.getValue());
                 } else if (sealCertificatProperties.getValue().getSealCertificatType() != null && sealCertificatProperties.getValue().getSealCertificatType().equals(SealCertificatProperties.TokenType.OPENSC)) {
-                    dssPrivateKeyEntry = openSCSignatureToken.getKeys().get(0);
+                    List<DSSPrivateKeyEntry> keys = openSCSignatureToken.getKeys();
+                    if(keys != null && !keys.isEmpty()) {
+                        dssPrivateKeyEntry = keys.get(0);
+                    }
                 }
-                if(dssPrivateKeyEntry == null) continue;
+                if(dssPrivateKeyEntry == null) {
+                    sealCertificatPropertieses.add(sealCertificatProperties.getValue());
+                    continue;
+                }
                 CertificateValidator validator = CertificateValidator.fromCertificate(dssPrivateKeyEntry.getCertificate());
                 validator.setCertificateVerifier(certificateVerifier);
                 CertificateReports reports = validator.validate();
@@ -385,22 +556,46 @@ public class CertificatService implements HealthIndicator {
     }
 
     public List<SealCertificatProperties> getAuthorizedSealCertificatProperties(String userEppn) {
+        return getAuthorizedSealCertificatProperties(userEppn, false);
+    }
+
+    public List<SealCertificatProperties> getAuthorizedSealCertificatProperties(String userEppn, boolean isAlreadyCertSign) {
         User user = userService.getByEppn(userEppn);
-        List<SealCertificatProperties> sealCertificatProperties = new ArrayList<>();
-        try {
-            sealCertificatProperties = new ArrayList<>(getCheckedSealCertificates().stream().filter(sc -> sc.containsRole(user.getRoles().stream().toList())).toList());
-            for(SealCertificatProperties sealCertificatProperties1 : globalProperties.getSealCertificatProperties().values().stream().filter(sc -> sc.containsRole(user.getRoles().stream().toList())).toList()) {
-                if(!sealCertificatProperties.contains(sealCertificatProperties1) && globalProperties.getSealCertificatProperties().values().stream().anyMatch(sc1 -> sc1.getSealSpareOf().equals(sealCertificatProperties1.sealCertificatName))) {
-                    sealCertificatProperties.add(sealCertificatProperties1);
-                }
-            }
-        } catch (Exception e) {
-            logger.error(e.getMessage());
+        return globalProperties.getSealCertificatProperties().values().stream()
+                .filter(sc -> isSealCertificatDirectlyAuthorized(user, sc, isAlreadyCertSign))
+                .sorted(Comparator.comparing(SealCertificatProperties::getSealCertificatName))
+                .toList();
+    }
+
+    public boolean isSealCertificatAuthorized(String userEppn, String sealCertificatName, boolean isAlreadyCertSign) {
+        if (!StringUtils.hasText(sealCertificatName)) {
+            return false;
         }
-        return sealCertificatProperties;
+        List<SealCertificatProperties> authorizedSealCertificatProperties = getAuthorizedSealCertificatProperties(userEppn, isAlreadyCertSign);
+        if (authorizedSealCertificatProperties.stream()
+                .anyMatch(sc -> Objects.equals(sc.getSealCertificatName(), sealCertificatName))) {
+            return true;
+        }
+        SealCertificatProperties requestedSealCertificatProperties = globalProperties.getSealCertificatProperties().get(sealCertificatName);
+        return requestedSealCertificatProperties != null
+                && authorizedSealCertificatProperties.stream()
+                .anyMatch(sc -> Objects.equals(sc.getSealCertificatName(), requestedSealCertificatProperties.getSealSpareOf()));
+    }
+
+    private boolean isSealCertificatDirectlyAuthorized(User user, SealCertificatProperties sealCertificatProperties, boolean isAlreadyCertSign) {
+        if (sealCertificatProperties.containsRole(user.getRoles().stream().toList())) {
+            return true;
+        }
+        if (!isAlreadyCertSign) {
+            return false;
+        }
+        if (user.getUserType().equals(UserType.external)) {
+            return Boolean.TRUE.equals(sealCertificatProperties.getSealForExternals());
+        }
+        return Boolean.TRUE.equals(globalProperties.getSealAuthorizedForSignedFiles());
     }
 
     public void clearSealCertificatsCache() {
-        sealCertificatPropertiesCache.refresh("keys");
+        invalidateSealCaches();
     }
 }

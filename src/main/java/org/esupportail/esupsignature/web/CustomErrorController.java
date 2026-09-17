@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.web;
 
 import jakarta.persistence.PersistenceException;
+import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -9,12 +10,13 @@ import org.hibernate.exception.ConstraintViolationException;
 import org.postgresql.util.PSQLException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.web.servlet.error.ErrorController;
+import org.springframework.boot.webmvc.error.ErrorController;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.TransactionSystemException;
 import org.springframework.ui.Model;
 import org.springframework.web.HttpMediaTypeNotAcceptableException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -87,19 +89,47 @@ public class CustomErrorController implements ErrorController {
     @ExceptionHandler({
             DataIntegrityViolationException.class,
             ConstraintViolationException.class,
+            jakarta.validation.ConstraintViolationException.class,
+            TransactionSystemException.class,
             PersistenceException.class
     })
     public String handleConstraintViolation(Exception ex, HttpServletRequest request, HttpServletResponse response) {
         Throwable root = ex;
         while (root.getCause() != null) root = root.getCause();
-        request.setAttribute("javax.servlet.error.status_code", HttpStatus.CONFLICT.value());
-        request.setAttribute("javax.servlet.error.message",
-                (root instanceof PSQLException || root instanceof ConstraintViolationException)
-                        ? "Action déjà effectuée ou clé dupliquée"
-                        : "Erreur interne");
-        request.setAttribute("javax.servlet.error.exception", ex);
+        String errorMessage;
+        if (root instanceof jakarta.validation.ConstraintViolationException validationException) {
+            validationException.getConstraintViolations().forEach(violation -> logger.error(
+                    "Validation Bean Validation en échec [field={}, message={}, invalidValueLength={}]",
+                    violation.getPropertyPath(),
+                    violation.getMessage(),
+                    getInvalidValueLength(violation.getInvalidValue())
+            ));
+            errorMessage = "Un champ dépasse la taille maximale autorisée";
+        } else if (isValueTooLong(root)) {
+            logger.error("Dépassement de taille détecté lors d'une persistance JPA", ex);
+            errorMessage = "Un champ dépasse la taille maximale autorisée";
+        } else {
+            errorMessage = (root instanceof PSQLException || root instanceof ConstraintViolationException)
+                    ? "Action déjà effectuée ou clé dupliquée"
+                    : "Erreur interne";
+        }
+        request.setAttribute(RequestDispatcher.ERROR_STATUS_CODE, HttpStatus.CONFLICT.value());
+        request.setAttribute(RequestDispatcher.ERROR_MESSAGE, errorMessage);
+        request.setAttribute(RequestDispatcher.ERROR_EXCEPTION, ex);
         response.setStatus(HttpStatus.CONFLICT.value());
         return "forward:/error";
+    }
+
+    private boolean isValueTooLong(Throwable throwable) {
+        return throwable instanceof PSQLException psqlException
+                && "22001".equals(psqlException.getSQLState());
+    }
+
+    private Integer getInvalidValueLength(Object invalidValue) {
+        if (invalidValue instanceof String value) {
+            return value.length();
+        }
+        return null;
     }
 
 }

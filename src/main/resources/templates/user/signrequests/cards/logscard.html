@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="fr">
 <!--/*@thymesVar id="logs" type="java.util.List<org.esupportail.esupsignature.entity.Log>"*/-->
 <div th:fragment="logscard">
-    <div class="card mb-1 col-lg-10 mx-auto">
+    <div class="card col-lg-12">
         <div class="card-body">
             <h5 class="text-center"><b>Historique des évènements</b></h5>
             <table class="table table-sm table-hover">
@@ -19,7 +19,13 @@
                     <tr>
                         <td><span th:text="${#dates.format(log.logDate, 'dd/MM/yyyy HH:mm')}"></span></td>
                         <td><span th:text="${log.eppn}"></span></td>
-                        <td><span th:text="${log.action}"></span></td>
+                        <td>
+                            <span th:text="${log.action}"></span>
+                            <div th:if="${log.comment != null && !#strings.isEmpty(log.comment)}"
+                                 class="small text-muted mt-1"
+                                 style="white-space: pre-line;"
+                                 th:text="${log.comment}"></div>
+                        </td>
                         <td><span th:text="#{'signbook.status.' + ${log.finalStatus}}"></span></td>
                     </tr>
                 </th:block>

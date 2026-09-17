@@ -13,93 +13,114 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@ConfigurationProperties(prefix="global")
+    @ConfigurationProperties(prefix="global")
 public class GlobalProperties {
 
     /**
      * Chemin d’accès à l’application
      */
     private String rootUrl;
+
     /**
      * Nom de domaine ex : univ-ville.fr
      */
     private String domain;
+
     /**
      * Activer ou non l’archivage et le nettoyage automatique. false par défaut
      */
     private Boolean enableScheduledCleanup = false;
+
     /**
      * Chemin d’écoute d’Esup-DSS-Client
      */
     private String nexuUrl = "http://localhost:9795";
+
     /**
      * Masquer la tuile Créer une demande personnalisée
      */
     private Boolean hideWizard;
+
     /**
      * Masquer la tuile Créer une demande personnalisée
      */
     private Boolean hideWizardWorkflow = true;
+
     /**
      * Masquer la tuile Auto-signature
      */
     private Boolean hideAutoSign;
+
     /**
      * Masquer la tuile Demander une signature
      */
     private Boolean hideSendSignRequest;
+
     /**
      * Liste des roles faisant exception à la valeur de hideWizard
      */
     private List<String> hideWizardExceptRoles = new ArrayList<>();
+
     /**
      * Liste des roles faisant exception à la valeur de hideAutoSign
      */
     private List<String> hideAutoSignExceptRoles = new ArrayList<>();
+
     /**
      * Liste des roles faisant exception à la valeur de hideSendSignRequest
      */
     private List<String> hideSendSignExceptRoles = new ArrayList<>();
+
     /**
      * Les documents des demandes terminées seront archivées vers ce dossier
      */
     private String archiveUri;
+
     /**
      * Délai en nombre de jours avant que les documents des demandes archivées ne soient effacés de la base (-1 non actif)
      */
     private Integer delayBeforeCleaning = -1;
+
     /**
      * Délai de conservation dans la corbeille en jours (-1 conservation infinie)
      */
     private Integer trashKeepDelay = -1;
+
     /**
      * Durée de conservation des documents originaux et des documents intermediates (-1 conservation infinie)
      */
     private Integer documentsHistoryDelay= -1;
+
     /**
      * Activer la fonction Switch User pour les administrateurs
      */
     private Boolean enableSu = false;
+
     /**
      * Activer le message d’accueil pour les nouveaux utilisateurs
      */
     private Boolean enableSplash = false;
+
     /**
      * Géré automatiquement, ne pas modifier !
      */
     private String version = "";
+
     /**
      * Adresse email du contact technique de l’application
      */
     private String applicationEmail = "esup.signature@univ-ville.fr";
+
     /**
      * Nombre d'heure minimum entre deux relances manuelles
      */
     private Integer hoursBeforeRefreshNotif = 24;
+
     /**
      * Activer le scrolling infini sur le tableau de bord (sinon pagination)
      */
     private Boolean infiniteScrolling = true;
+
     /**
      * Redirection après signature. true : retour à l'accueil, false : on reste sur la demande
      */
@@ -149,6 +170,7 @@ public class GlobalProperties {
      * Suffix ajouté aux documents signés
      */
     private String signedSuffix = "_signed";
+
     /**
      * Choisir le fonctionnement des délégations :
      *  <ul>
@@ -159,22 +181,27 @@ public class GlobalProperties {
      *  </ul>
      */
     private Integer shareMode = 0;
+
     /**
      * Activer/Désactiver la possibilité de stocker des certificats utilisateurs
      */
     private Boolean disableCertStorage = false;
+
     /**
      * Activer/Désactiver la detection de robot à la connexion
      */
     private Boolean enableCaptcha = false;
+
     /**
      * Taille maximum des uploads de fichiers en bytes
      */
     private Integer maxUploadSize = 52428800;
+
     /**
      * Nombre de jours avant alerte de suppression pour les demandes en attente (-1 non actif)
      */
     private Integer nbDaysBeforeWarning = -1;
+
     /**
      * Nombre de jours après alerte pour suppression des demandes en attente (-1 non actif)
      */
@@ -194,6 +221,11 @@ public class GlobalProperties {
      *  Upload des PDF seuls
      */
     private Boolean pdfOnly = false;
+
+    /**
+     * Désactiver la normalisation des PDF.
+     */
+    private Boolean disableNormalizePdf = false;
 
     /**
      * Exporter les pièces jointes (si actif, l'export sera un dossier contenant le document signé ainsi que les PJ)
@@ -240,8 +272,11 @@ public class GlobalProperties {
     private Boolean sealAllDocs = false;
 
     /**
-     * Autoriser les externes à signer avec le cachet
+     * Autoriser les externes à signer avec le cachet par défaut.
+     *
+     * @deprecated utiliser seal-certificat-properties.&lt;nom&gt;.seal-for-externals
      */
+    @Deprecated
     private Boolean sealForExternals = false;
 
     /**
@@ -278,6 +313,11 @@ public class GlobalProperties {
      *  Imposer la double authentification par SMS pour les externes
      */
     private Boolean smsRequired = true;
+
+    /**
+     * Les utilisateurs externes peuvent modifier leur numéro de mobile
+     */
+    private Boolean userCanChangePhone = true;
 
     /**
      * The org.bouncycastle.rsa.max_mr_tests property check has been added to allow capping of MR tests done on RSA moduli.
@@ -359,7 +399,7 @@ public class GlobalProperties {
      * Configuration des signatures des externes
      */
     @JsonIgnore
-    private SignRequestParams externalSignatureParams = new SignRequestParams();
+    private SignRequestParams externalSignatureParams = null;
 
     private int nbSignOtpTries = 3;
 
@@ -370,6 +410,9 @@ public class GlobalProperties {
      */
     private Boolean enableHelp = true;
 
+    /**
+     * Activation du transfert de signature
+     */
     private Boolean enableTransfertForUsers = true;
 
     /*
@@ -393,7 +436,10 @@ public class GlobalProperties {
     private Boolean disablePdfFontAlert = false;
 
     /** Taille de police par défaut pour le texte des signatures */
-    private Integer defaultFontSize = 12;
+    private Integer defaultFontSize = 14;
+
+    /** Interligne des informations ajoutées aux signatures */
+    private Float signatureExtraLineHeightFactor = 1.5f;
 
 
     public String newVersion;
@@ -406,6 +452,13 @@ public class GlobalProperties {
             }
         } else if(!sealCertificatProperties.containsKey("default")){
             throw new IllegalStateException("La configuration 'seal-certificat-properties' doit contenir une entrée 'default' lorsqu'elle n'est pas vide.");
+        }
+        sealCertificatProperties.forEach((name, properties) -> properties.sealCertificatName = name);
+        SealCertificatProperties defaultSealCertificat = sealCertificatProperties.get("default");
+        if (defaultSealCertificat != null
+                && !defaultSealCertificat.isSealForExternalsConfigured()
+                && Boolean.TRUE.equals(sealForExternals)) {
+            defaultSealCertificat.setSealForExternals(true);
         }
     }
 
@@ -681,6 +734,14 @@ public class GlobalProperties {
         this.pdfOnly = pdfOnly;
     }
 
+    public Boolean getDisableNormalizePdf() {
+        return disableNormalizePdf;
+    }
+
+    public void setDisableNormalizePdf(Boolean disableNormalizePdf) {
+        this.disableNormalizePdf = disableNormalizePdf;
+    }
+
     public boolean getExportAttachements() {
         return exportAttachements;
     }
@@ -737,10 +798,12 @@ public class GlobalProperties {
         this.sealAllDocs = sealAllDocs;
     }
 
+    @Deprecated
     public Boolean getSealForExternals() {
         return sealForExternals;
     }
 
+    @Deprecated
     public void setSealForExternals(Boolean sealForExternals) {
         this.sealForExternals = sealForExternals;
     }
@@ -799,6 +862,14 @@ public class GlobalProperties {
 
     public void setSmsRequired(Boolean smsRequired) {
         this.smsRequired = smsRequired;
+    }
+
+    public Boolean getUserCanChangePhone() {
+        return userCanChangePhone;
+    }
+
+    public void setUserCanChangePhone(Boolean userCanChangePhone) {
+        this.userCanChangePhone = userCanChangePhone;
     }
 
     public Integer getBouncycastelMaxMrTests() {
@@ -995,5 +1066,16 @@ public class GlobalProperties {
 
     public void setDefaultFontSize(Integer defaultFontSize) {
         this.defaultFontSize = defaultFontSize;
+    }
+
+    public Float getSignatureExtraLineHeightFactor() {
+        if(signatureExtraLineHeightFactor == null || !Float.isFinite(signatureExtraLineHeightFactor) || signatureExtraLineHeightFactor <= 0) {
+            return 1.5f;
+        }
+        return signatureExtraLineHeightFactor;
+    }
+
+    public void setSignatureExtraLineHeightFactor(Float signatureExtraLineHeightFactor) {
+        this.signatureExtraLineHeightFactor = signatureExtraLineHeightFactor;
     }
 }

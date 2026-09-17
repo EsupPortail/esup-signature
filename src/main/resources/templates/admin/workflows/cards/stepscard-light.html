@@ -4,31 +4,27 @@
 <div id="stepscard" th:fragment="stepscard-light">
     <div class="alert alert-light mb-1" style="height: calc(100vh - 212px); overflow-y: scroll;">
         <h5>Etapes du circuit</h5>
-                <div id="stepper" class="bs-stepper vertical" >
-                    <div class="bs-stepper-header" role="tablist">
-                        <th:block th:each="workflowStep, iterator : ${workflow.workflowSteps}">
-                            <div class="step border border-secondary bg-white rounded p-1 border-2" th:id="'step-' + ${iterator.index}">
-                                <div class="step-trigger">
-                                    <span class="bs-stepper-circle bg-primary" th:text="${iterator.index + 1}"></span>
-                                    <div class="bs-stepper-label" style="overflow: clip;">
-                                        <span  th:text="#{'signbook.signtype.' + ${workflowStep.getSignType()}}"></span> <span title="Tous les participants doivent signer" th:if="${workflowStep.allSignToComplete}"><i class="fa-solid fa-users"></i></span>
-                                        <br/>
-                                        <span th:if="${workflowStep.name != null}" th:text="${workflowStep.name}"></span>
-                                        <ul>
-                                        <th:block th:each="user : ${workflowStep.users}">
-                                            <li>
-                                                <span th:text="${user.firstname + ' ' + user.name}"></span>
-                                            </li>
-                                        </th:block>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-                            <div th:if="${workflow.workflowSteps.size() > iterator.index + 1}" class="line"></div>
-                        </th:block>
+        <div class="steps-vertical admin-workflow-steps" th:if="${workflow.workflowSteps != null}">
+            <th:block th:each="workflowStep, iterator : ${workflow.workflowSteps}">
+                <div class="step-vertical" th:id="'liveStep-' + ${iterator.index + 1}">
+                    <div class="step-vertical-icon bg-primary border-primary text-white fw-bold" th:text="${iterator.index + 1}"></div>
+                    <div class="step-vertical-content bg-light p-2 rounded">
+                        <div class="d-flex justify-content-between align-items-start gap-2">
+                            <span class="step-type" th:text="#{'signbook.signtype.' + ${workflowStep.signType}}"></span>
+                            <span title="Tous les participants doivent signer" th:if="${workflowStep.allSignToComplete}"><i class="fi fi-rr-users-alt"></i></span>
+                            <span title="Une signature suffit" th:unless="${workflowStep.allSignToComplete}"><i class="fi fi-rr-user"></i></span>
+                        </div>
+                        <span th:if="${workflowStep.name != null && workflowStep.name != ''}" th:text="${workflowStep.name}"></span>
+                        <ul class="mb-0">
+                            <th:block th:each="user : ${workflowStep.users}">
+                                <li>
+                                    <span th:text="${user.firstname + ' ' + user.name}"></span>
+                                </li>
+                            </th:block>
+                        </ul>
                     </div>
                 </div>
-            </div>
+            </th:block>
         </div>
     </div>
 </div>

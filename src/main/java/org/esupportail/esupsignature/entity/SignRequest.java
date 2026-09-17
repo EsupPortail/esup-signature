@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 @Table(indexes =  {
         @Index(name = "sign_request_create_by_create_date", columnList = "create_by_id, createDate"),
         @Index(name = "sign_request_parent_sign_book", columnList = "parent_sign_book_id"),
+        @Index(name = "sign_request_status_idx", columnList = "status")
 
 })
 public class SignRequest {
@@ -33,7 +34,6 @@ public class SignRequest {
 
 	private String title;
 	
-    @Temporal(TemporalType.TIMESTAMP)
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
     private Date createDate;
 
@@ -67,7 +67,7 @@ public class SignRequest {
     @OrderColumn
     private List<Document> attachments = new ArrayList<>();
 
-    @ElementCollection(targetClass = String.class, fetch = FetchType.EAGER)
+    @ElementCollection(targetClass = String.class, fetch = FetchType.LAZY)
     private Set<String> links = new HashSet<>();
 
     @Enumerated(EnumType.STRING)
@@ -76,6 +76,9 @@ public class SignRequest {
     @ManyToOne(fetch = FetchType.LAZY)
     @NotNull
     private SignBook parentSignBook;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    private SignRequest clonedFrom;
 
     @OneToMany(cascade = CascadeType.REMOVE)
     @OrderColumn
@@ -96,14 +99,17 @@ public class SignRequest {
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.REMOVE, orphanRemoval = true)
     @JsonSerialize(using = RecipientActionMapSerializer.class)
     @JoinTable(
-            indexes = @Index(name = "idx_recipient_has_signed_recipient_has_signed_key", columnList = "recipient_has_signed_key")
+            indexes = {
+                    @Index(name = "idx_recipient_has_signed_recipient_has_signed_key", columnList = "recipient_has_signed_key"),
+                    @Index(name = "idx_sign_request_recipient_has_signed_sign_request_id_key", columnList = "sign_request_id, recipient_has_signed_key"),
+                    @Index(name = "idx_rhs_key_sign_request_action", columnList = "recipient_has_signed_key, sign_request_id, recipient_has_signed_id")
+            }
     )
     private Map<Recipient, Action> recipientHasSigned = new HashMap<>();
 
     @OneToOne(cascade = CascadeType.DETACH)
     private AuditTrail auditTrail;
 
-    @Temporal(TemporalType.TIMESTAMP)
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
     private Date cleanDocumentsHistoryDate;
 
@@ -245,6 +251,14 @@ public class SignRequest {
 
     public void setSignRequestParams(List<SignRequestParams> signRequestParams) {
         this.signRequestParams = signRequestParams;
+    }
+
+    public SignRequest getClonedFrom() {
+        return clonedFrom;
+    }
+
+    public void setClonedFrom(SignRequest clonedFrom) {
+        this.clonedFrom = clonedFrom;
     }
 
     public List<Comment> getComments() {
