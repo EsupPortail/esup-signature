@@ -328,7 +328,7 @@
         </div>
     </div>
 
-    <div data-bs-focus="false" class="modal fade" id="addViewersModal"  role="dialog" aria-labelledby="viewersModalLabel" aria-hidden="true">
+    <div th:if="${showSignRequest.signBookManageAllowed}" data-bs-focus="false" class="modal fade" id="addViewersModal"  role="dialog" aria-labelledby="viewersModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">

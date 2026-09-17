@@ -6,6 +6,7 @@ export class SignToolbar {
         this.priorityContainers = options.priorityContainers ?? ["#tools", ".es-nav-tools"];
         this.primaryFocusSelectors = options.primaryFocusSelectors ?? ["#addSignButton2", "#signLaunchButton", "#signAdvancedLaunchButton", "#refuseLaunchButton"];
         this.focusRetryDelay = options.focusRetryDelay ?? 80;
+        this.stepConnectorResizeObserver = null;
         this.focusableSelector = options.focusableSelector ?? [
             "a[href]",
             "button",
@@ -142,6 +143,36 @@ export class SignToolbar {
                 .off(binding.event + this.eventNamespace)
                 .on(binding.event + this.eventNamespace, binding.handler);
         });
+        this.bindStepConnector();
+    }
+
+    bindStepConnector() {
+        this.stepConnectorResizeObserver?.disconnect();
+
+        const steps = document.querySelector(`${this.rootSelector} .steps-horizontal-v2`);
+        const step1 = steps?.querySelector(":scope > #step-1");
+        const step2 = steps?.querySelector(":scope > #step-2");
+        if (steps == null || step1 == null || step2 == null) {
+            return;
+        }
+
+        const updateConnector = () => {
+            const stepsRect = steps.getBoundingClientRect();
+            const step1Rect = step1.getBoundingClientRect();
+            const step2Rect = step2.getBoundingClientRect();
+            const visible = step1Rect.width > 0 && step2Rect.width > 0;
+            steps.classList.toggle("es-tools-step-connector-visible", visible);
+            if (!visible) {
+                return;
+            }
+
+            steps.style.setProperty("--es-tools-connector-left", `${Math.max(0, step1Rect.right - stepsRect.left)}px`);
+            steps.style.setProperty("--es-tools-connector-right", `${Math.max(0, stepsRect.right - step2Rect.left)}px`);
+        };
+
+        this.stepConnectorResizeObserver = new ResizeObserver(updateConnector);
+        [steps, step1, step2].forEach(element => this.stepConnectorResizeObserver.observe(element));
+        window.requestAnimationFrame(updateConnector);
     }
 
     setToolsDisabled(disabled) {
@@ -281,6 +312,8 @@ export class SignToolbar {
     }
 
     destroy() {
+        this.stepConnectorResizeObserver?.disconnect();
+        this.stepConnectorResizeObserver = null;
         this.bindings.forEach(binding => {
             $(binding.selector).off(binding.event + this.eventNamespace);
         });

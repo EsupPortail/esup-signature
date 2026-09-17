@@ -59,6 +59,7 @@ public class ShowSignRequestDto {
     private Integer liveWorkflowStepCount;
     private Boolean viewedByCurrentUser;
     private Boolean viewRight;
+    private Boolean signBookManageAllowed;
     private List<Log> logs;
     private String pdfaCheck;
     private Boolean auditTrailChecked;
@@ -142,6 +143,8 @@ public class ShowSignRequestDto {
     public void setViewedByCurrentUser(Boolean viewedByCurrentUser) { this.viewedByCurrentUser = viewedByCurrentUser; }
     public Boolean getViewRight() { return viewRight; }
     public void setViewRight(Boolean viewRight) { this.viewRight = viewRight; }
+    public Boolean getSignBookManageAllowed() { return signBookManageAllowed; }
+    public void setSignBookManageAllowed(Boolean signBookManageAllowed) { this.signBookManageAllowed = signBookManageAllowed; }
     public List<Log> getLogs() { return logs; }
     public void setLogs(List<Log> logs) { this.logs = logs; }
     public String getPdfaCheck() { return pdfaCheck; }
@@ -190,6 +193,7 @@ public class ShowSignRequestDto {
     public Integer liveWorkflowStepCount() { return liveWorkflowStepCount; }
     public Boolean viewedByCurrentUser() { return viewedByCurrentUser; }
     public Boolean viewRight() { return viewRight; }
+    public Boolean signBookManageAllowed() { return signBookManageAllowed; }
     public List<Log> logs() { return logs; }
     public String pdfaCheck() { return pdfaCheck; }
     public Boolean auditTrailChecked() { return auditTrailChecked; }

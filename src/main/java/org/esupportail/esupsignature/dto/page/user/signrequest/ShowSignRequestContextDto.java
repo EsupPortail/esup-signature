@@ -120,6 +120,7 @@ public class ShowSignRequestContextDto {
     private boolean tempUsers;
     private boolean currentUserAsSigned;
     private boolean viewRight;
+    private boolean signBookManageAllowed;
     private boolean auditTrailChecked;
     private boolean hasNextSignBook;
     private Long nextSignRequestId;
@@ -286,6 +287,8 @@ public class ShowSignRequestContextDto {
     public void setCurrentUserAsSigned(boolean currentUserAsSigned) { this.currentUserAsSigned = currentUserAsSigned; }
     public boolean isViewRight() { return viewRight; }
     public void setViewRight(boolean viewRight) { this.viewRight = viewRight; }
+    public boolean isSignBookManageAllowed() { return signBookManageAllowed; }
+    public void setSignBookManageAllowed(boolean signBookManageAllowed) { this.signBookManageAllowed = signBookManageAllowed; }
     public boolean isAuditTrailChecked() { return auditTrailChecked; }
     public void setAuditTrailChecked(boolean auditTrailChecked) { this.auditTrailChecked = auditTrailChecked; }
     public boolean isHasNextSignBook() { return hasNextSignBook; }

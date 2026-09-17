@@ -45,7 +45,7 @@ public class UpgradeService {
     private final FileService fileService;
     private final FormService formService;
 
-    private final String[] updates = new String[] {"1.19", "1.22", "1.23", "1.29.10", "1.30.5", "1.33.7", "1.34.0", "1.34.4", "1.36.1", "1.36.7", "1.36.25", "1.36.26", "1.37.3"};
+    private final String[] updates = new String[] {"1.19", "1.22", "1.23", "1.29.10", "1.30.5", "1.33.7", "1.34.0", "1.34.4", "1.36.1", "1.36.7", "1.36.25", "1.36.26", "1.37.3", "1.37.22"};
 
     public UpgradeService(EntityManager entityManager, GlobalProperties globalProperties, SignBookRepository signBookRepository, AppliVersionRepository appliVersionRepository, @Autowired(required = false) BuildProperties buildProperties, FileService fileService, FormService formService) {
         this.entityManager = entityManager;
@@ -510,6 +510,49 @@ public class UpgradeService {
                 "alter table field drop constraint if exists field_type_check;"
         ).executeUpdate();
         logger.info("#### Legacy form_sign_request_params cleanup completed ####");
+    }
+
+    @SuppressWarnings("unused")
+    public void update_1_37_22() {
+        logger.info("#### Starting legacy group mappings migration ####");
+        entityManager.createNativeQuery("""
+                DO $$
+                DECLARE
+                    target_config_id BIGINT;
+                BEGIN
+                    IF to_regclass('public.mapping_filters_groups') IS NOT NULL
+                       OR to_regclass('public.mapping_groups_roles') IS NOT NULL THEN
+                        SELECT id INTO target_config_id
+                        FROM public.config
+                        ORDER BY id
+                        LIMIT 1;
+
+                        IF target_config_id IS NULL THEN
+                            target_config_id := nextval('public.hibernate_sequence');
+                            INSERT INTO public.config (id) VALUES (target_config_id);
+                        END IF;
+
+                        IF to_regclass('public.mapping_filters_groups') IS NOT NULL THEN
+                            INSERT INTO public.config_mapping_filters_groups
+                                (config_id, mapping_filters_groups_key, mapping_filters_groups)
+                            SELECT target_config_id, groupe, query
+                            FROM public.mapping_filters_groups
+                            WHERE groupe IS NOT NULL AND query IS NOT NULL
+                            ON CONFLICT (config_id, mapping_filters_groups_key) DO NOTHING;
+                        END IF;
+
+                        IF to_regclass('public.mapping_groups_roles') IS NOT NULL THEN
+                            INSERT INTO public.config_mapping_groups_roles
+                                (config_id, mapping_groups_roles_key, mapping_groups_roles)
+                            SELECT target_config_id, groupe, role
+                            FROM public.mapping_groups_roles
+                            WHERE groupe IS NOT NULL AND role IS NOT NULL
+                            ON CONFLICT (config_id, mapping_groups_roles_key) DO NOTHING;
+                        END IF;
+                    END IF;
+                END $$;
+                """).executeUpdate();
+        logger.info("#### Legacy group mappings migration completed ####");
     }
 
 }

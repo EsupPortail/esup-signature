@@ -103,67 +103,72 @@ body.es-signrequest-page .es-nav-tools > div {
     justify-content: center;
 }
 
-body.es-signrequest-page #tools .steps-horizontal-v2 {
-    flex-wrap: nowrap;
-    /*overflow-x: auto;*/
+body.es-signrequest-page #tools {
+    container: sign-tools / inline-size;
+}
+
+body.es-signrequest-page #tools .es-tools-actions {
+    padding-inline: clamp(.25rem, 1cqi, 1rem);
 }
 
 body.es-signrequest-page #tools .es-steps-responsive-nav {
     display: flex;
     align-items: center;
-    flex: 1 1 auto;
+    flex: 0 1 auto;
     min-width: 0;
-    position: relative;
+    max-width: 100%;
+    height: 100%;
+    padding-inline: .25rem;
+    /* Keep every action reachable on very narrow screens or with enlarged text. */
+    overflow-x: auto;
 }
 
+body.es-signrequest-page #tools .steps-horizontal-v2 {
+    --es-tools-step-gap: clamp(.625rem, 1.5cqi, 1.5rem);
+    position: relative;
+    flex: 0 0 auto;
+    flex-wrap: nowrap;
+    gap: var(--es-tools-step-gap);
+    margin-inline: auto;
+}
 
 body.es-signrequest-page #tools .step-horizontal-v2 {
-    /*flex: 1 0 auto;*/
+    flex: 0 0 auto;
+    padding: 0;
     min-width: 0;
     white-space: nowrap;
 }
 
+body.es-signrequest-page #tools .step-horizontal-v2::after {
+    display: none;
+}
+
+body.es-signrequest-page #tools .step-horizontal-v2-icon {
+    display: flex !important;
+}
+
 body.es-signrequest-page #tools .step-horizontal-v2-content {
-    /*width: 100%;*/
-    min-width: 0;
-}
-
-body.es-signrequest-page #tools #step-1 .step-horizontal-v2-content > span {
-    width: 100%;
-}
-
-body.es-signrequest-page #tools #insert-btn-div,
-body.es-signrequest-page #tools #refuseLaunchDiv {
-    flex: 1 1 0;
+    padding-left: 0;
     min-width: 0;
 }
 
 body.es-signrequest-page #tools #refuseLaunchDiv.es-refuse-slot-hidden {
-    visibility: hidden;
-    pointer-events: none;
+    display: none !important;
 }
 
-body.es-signrequest-page #tools #insert-btn-div {
-    flex-wrap: nowrap !important;
-}
-
-body.es-signrequest-page #tools #addSignButton2,
-body.es-signrequest-page #tools #refuseLaunchButton,
-body.es-signrequest-page #tools #signLaunchButton,
-body.es-signrequest-page #tools #signAdvancedLaunchButton {
-    width: 100%;
-    min-width: 0;
-    max-width: 100%;
+body.es-signrequest-page #tools .es-tools-actions .btn {
+    flex: 0 0 auto;
+    white-space: nowrap;
+    font-size: clamp(.8125rem, 1.5cqi, 1rem);
+    padding-inline: clamp(.5rem, 1.4cqi, 1rem) !important;
 }
 
 body.es-signrequest-page #tools #step-1 #addSignButton2 {
+    display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: .5rem;
     width: auto;
-    min-width: fit-content;
-    max-width: none;
-    flex: 0 0 auto;
-    white-space: nowrap;
 }
 
 body.es-signrequest-page #tools #step-1 #addSignButton2 .es-add-sign-button-count {
@@ -171,20 +176,18 @@ body.es-signrequest-page #tools #step-1 #addSignButton2 .es-add-sign-button-coun
 }
 
 body.es-signrequest-page #tools #signActionButtons {
-    /*min-width: min(100%, 34rem);*/
-    flex-wrap: nowrap !important;
+    flex-wrap: nowrap;
     width: auto;
 }
 
-body.es-signrequest-page #tools #signActionButtons > #signLaunchButton,
-body.es-signrequest-page #tools #signActionButtons > #signAdvancedLaunchButton {
+body.es-signrequest-page #tools #signActionButtons > .btn {
     width: auto;
-    min-width: fit-content;
-    max-width: none;
-    flex: 0 0 auto;
-    white-space: nowrap;
+    min-width: 0;
 }
 
+body.es-signrequest-page #tools #signTypeLabel {
+    max-width: clamp(8rem, 18cqi, 14rem);
+}
 
 body.es-signrequest-page #tools #signActionButtons > #signLaunchButton:after {
     content: "";

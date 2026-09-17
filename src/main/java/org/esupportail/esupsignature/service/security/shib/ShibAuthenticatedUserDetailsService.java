@@ -17,10 +17,6 @@
  */
 package org.esupportail.esupsignature.service.security.shib;
 
- import org.esupportail.esupsignature.entity.MappingFiltersGroups;
- import org.esupportail.esupsignature.entity.MappingGroupsRoles;
- import org.esupportail.esupsignature.repository.MappingFiltersGroupsRepository;
- import org.esupportail.esupsignature.repository.MappingGroupsRolesRepository;
  import org.esupportail.esupsignature.service.ldap.LdapGroupService;
  import org.esupportail.esupsignature.service.security.Group2UserRoleService;
  import org.slf4j.Logger;
@@ -54,10 +50,6 @@ public class ShibAuthenticatedUserDetailsService implements AuthenticationUserDe
 
 	private Group2UserRoleService group2UserRoleService;
 
-	private MappingFiltersGroupsRepository mappingFiltersGroupsRepository;
-
-	private MappingGroupsRolesRepository mappingGroupsRolesRepository;
-
 	public void setLdapGroupService(LdapGroupService ldapGroupService) {
 		this.ldapGroupService = ldapGroupService;
 	}
@@ -72,14 +64,6 @@ public class ShibAuthenticatedUserDetailsService implements AuthenticationUserDe
 	
 	public void setGroup2UserRoleService(Group2UserRoleService group2UserRoleService) {
 		this.group2UserRoleService = group2UserRoleService;
-	}
-
-	public void setMappingFiltersGroupsRepository(MappingFiltersGroupsRepository mappingFiltersGroupsRepository) {
-		this.mappingFiltersGroupsRepository = mappingFiltersGroupsRepository;
-	}
-
-	public void setMappingGroupsRolesRepository(MappingGroupsRolesRepository mappingGroupsRolesRepository) {
-		this.mappingGroupsRolesRepository = mappingGroupsRolesRepository;
 	}
 
 	public UserDetails loadUserDetails(PreAuthenticatedAuthenticationToken token) throws AuthenticationException {
@@ -102,14 +86,6 @@ public class ShibAuthenticatedUserDetailsService implements AuthenticationUserDe
 				} catch (Exception e) {
 					logger.debug("unable to find credentials", e);
 				}
-                if (ldapGroupService != null) {
-                    for(MappingFiltersGroups mappingFiltersGroups : mappingFiltersGroupsRepository.findAll()) {
-                        ldapGroupService.getLdapFiltersGroups().put(mappingFiltersGroups.getGroupe(), mappingFiltersGroups.getQuery());
-                    }
-                    for(MappingGroupsRoles mappingGroupsRoles : mappingGroupsRolesRepository.findAll()) {
-                        ldapGroupService.getLdapFiltersGroups().put(mappingGroupsRoles.getGroupe(), mappingGroupsRoles.getRole());
-                    }
-                }
 				for(String mappingGroupesRole : mappingGroupesRoles.keySet()) {
 					if (credential.contains(mappingGroupesRole)) {
 						grantedAuthorities.add(new SimpleGrantedAuthority(mappingGroupesRoles.get(mappingGroupesRole)));

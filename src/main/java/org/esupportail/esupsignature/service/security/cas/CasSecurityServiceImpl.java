@@ -5,8 +5,6 @@ import org.apereo.cas.client.validation.Cas20ServiceTicketValidator;
 import org.esupportail.esupsignature.config.ldap.LdapProperties;
 import org.esupportail.esupsignature.config.security.WebSecurityProperties;
 import org.esupportail.esupsignature.config.security.cas.CasProperties;
-import org.esupportail.esupsignature.repository.MappingFiltersGroupsRepository;
-import org.esupportail.esupsignature.repository.MappingGroupsRolesRepository;
 import org.esupportail.esupsignature.service.ldap.LdapGroupService;
 import org.esupportail.esupsignature.service.security.Group2UserRoleService;
 import org.esupportail.esupsignature.service.security.LocalSessionLogoutService;
@@ -52,14 +50,11 @@ public class CasSecurityServiceImpl implements SecurityService {
 	private final LdapProperties ldapProperties;
 	private final CasAuthenticationSuccessHandler casAuthenticationSuccessHandler;
 	private final LdapContextSource ldapContextSource;
-	private final MappingFiltersGroupsRepository mappingFiltersGroupsRepository;
-	private final MappingGroupsRolesRepository mappingGroupsRolesRepository;
 	private final RegisterSessionAuthenticationStrategy registerSessionAuthenticationStrategy;
 	private final LocalSessionLogoutService localSessionLogoutService;
-
 	private LdapUserDetailsService ldapUserDetailsService;
 
-    public CasSecurityServiceImpl(WebSecurityProperties webSecurityProperties, SpelGroupService spelGroupService, LdapGroupService ldapGroupService, CasProperties casProperties, LdapProperties ldapProperties, CasAuthenticationSuccessHandler casAuthenticationSuccessHandler, LdapContextSource ldapContextSource, MappingFiltersGroupsRepository mappingFiltersGroupsRepository, MappingGroupsRolesRepository mappingGroupsRolesRepository, RegisterSessionAuthenticationStrategy registerSessionAuthenticationStrategy, LocalSessionLogoutService localSessionLogoutService) {
+    public CasSecurityServiceImpl(WebSecurityProperties webSecurityProperties, SpelGroupService spelGroupService, LdapGroupService ldapGroupService, CasProperties casProperties, LdapProperties ldapProperties, CasAuthenticationSuccessHandler casAuthenticationSuccessHandler, LdapContextSource ldapContextSource, RegisterSessionAuthenticationStrategy registerSessionAuthenticationStrategy, LocalSessionLogoutService localSessionLogoutService) {
         this.webSecurityProperties = webSecurityProperties;
         this.spelGroupService = spelGroupService;
         this.ldapGroupService = ldapGroupService;
@@ -68,8 +63,6 @@ public class CasSecurityServiceImpl implements SecurityService {
         this.ldapProperties = ldapProperties;
         this.casAuthenticationSuccessHandler = casAuthenticationSuccessHandler;
         this.ldapContextSource = ldapContextSource;
-        this.mappingFiltersGroupsRepository = mappingFiltersGroupsRepository;
-        this.mappingGroupsRolesRepository = mappingGroupsRolesRepository;
         this.registerSessionAuthenticationStrategy = registerSessionAuthenticationStrategy;
         this.localSessionLogoutService = localSessionLogoutService;
     }
@@ -160,8 +153,6 @@ public class CasSecurityServiceImpl implements SecurityService {
 			logger.warn("no groupSearchBase found, unable to get users groups automatically");
 		}
 		CasLdapAuthoritiesPopulator casLdapAuthoritiesPopulator = new CasLdapAuthoritiesPopulator(ldapContextSource, ldapProperties.getGroupSearchBase());
-		casLdapAuthoritiesPopulator.setMappingFiltersGroupsRepository(mappingFiltersGroupsRepository);
-		casLdapAuthoritiesPopulator.setMappingGroupsRolesRepository(mappingGroupsRolesRepository);
 		casLdapAuthoritiesPopulator.setRolePrefix("");
 		casLdapAuthoritiesPopulator.setGroupPrefixRoleName(webSecurityProperties.getGroupToRoleFilterPattern());
 		casLdapAuthoritiesPopulator.setMappingGroupesRoles(webSecurityProperties.getMappingGroupsRoles());

@@ -201,7 +201,7 @@ public class LdapProperties {
     }
 
     public void setMappingFiltersGroups(Map<String, String> mappingFiltersGroups) {
-        this.mappingFiltersGroups = mappingFiltersGroups;
+        this.mappingFiltersGroups = mappingFiltersGroups != null ? mappingFiltersGroups : new HashMap<>();
     }
 
     public String getEppnLeftPartSearchFilter() {

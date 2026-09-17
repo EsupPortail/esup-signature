@@ -33,7 +33,7 @@ const resendOtpPhoneInputs = new Map();
 
 document.querySelectorAll(".js-resend-otp-phone").forEach(input => {
     if (typeof intlTelInput === "function") {
-        resendOtpPhoneInputs.set(input.id, intlTelInput(input, {
+        resendOtpPhoneInputs.set(input, intlTelInput(input, {
             validationNumberTypes: "FIXED_LINE_OR_MOBILE",
             strictMode: true,
             separateDialCode: false,
@@ -52,14 +52,11 @@ document.addEventListener("click", async event => {
     if (!button) {
         return;
     }
-    const phoneInput = document.getElementById(button.dataset.phoneTarget);
-    if (!phoneInput) {
-        return;
-    }
-    const iti = resendOtpPhoneInputs.get(phoneInput.id);
-    const fullNumber = iti != null ? iti.getNumber() : "";
-    const signBookId = phoneInput.dataset.signbookId;
-    const recipientId = phoneInput.dataset.recipientId;
+    const phoneInput = button.closest(".modal")?.querySelector(".js-resend-otp-phone") ?? null;
+    const iti = phoneInput != null ? resendOtpPhoneInputs.get(phoneInput) : null;
+    const fullNumber = iti != null ? iti.getNumber() : (phoneInput?.value ?? "");
+    const signBookId = button.dataset.signbookId;
+    const recipientId = button.dataset.recipientId;
     const csrfToken = document.querySelector('meta[name="_csrf"]')?.getAttribute("content") || "";
     const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.getAttribute("content") || "X-CSRF-TOKEN";
 
@@ -78,7 +75,7 @@ document.addEventListener("click", async event => {
             alert("Nouvelle demande OTP envoyée");
             window.location.reload();
         } else {
-            alert("Une erreur est survenue lors de l'envoi du SMS");
+            alert("Une erreur est survenue lors de l'envoi du nouveau lien");
             button.disabled = false;
             button.textContent = "Confirmer";
         }

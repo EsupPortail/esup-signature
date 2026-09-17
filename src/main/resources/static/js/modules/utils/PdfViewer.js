@@ -196,10 +196,17 @@ export class PdfViewer extends EventFactory {
         $(document).on('mouseenter', '.toggle-layer-div', (e) => {
             const stepNumber = parseInt($(e.currentTarget).data('step'));
             const layerId = $(e.currentTarget).find('[data-layer-id]').first().data('layer-id');
+            if (layerId == null) {
+                return;
+            }
             self.highlightStep(stepNumber, layerId);
         });
 
         $(document).on('mouseleave', '.toggle-layer-div', (e) => {
+            const layerId = $(e.currentTarget).find('[data-layer-id]').first().data('layer-id');
+            if (layerId == null) {
+                return;
+            }
             self.clearHighlight();
         });
 
