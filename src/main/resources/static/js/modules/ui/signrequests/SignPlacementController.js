@@ -575,7 +575,13 @@ export class SignPlacementController extends EventFactory {
         }
         const count = this.getPlacedSignatureCount();
         const hasSignature = count > 0;
-        const label = hasSignature ? "Ajouter une autre signature" : "Insérer une signature";
+        let defaultLabel = "Insérer une signature";
+        let defaultSecondaryLabel = "Signatures insérées : ";
+        if (this.signType === "visa") {
+            defaultLabel = "Insérer un visa";
+            defaultSecondaryLabel = "Visas insérés : ";
+        }
+        const label = hasSignature ? defaultSecondaryLabel : defaultLabel;
         addSignButton2.find(".es-add-sign-button-label").text(label);
         addSignButton2
             .attr("aria-label", hasSignature
