@@ -5,17 +5,17 @@
 <!--/*@thymesVar id="signRequestLight" type="org.esupportail.esupsignature.dto.page.user.signrequest.ShowSignRequestDto.SignRequestLightDto"*/-->
 <!--/*@thymesVar id="globalProperties" type="org.esupportail.esupsignature.config.GlobalProperties"*/-->
 <div th:fragment="tools" id="tools" class="es-tools position-fixed" th:classappend="${signRequestFull.signable && showSignRequest.toSignDocumentContentType == 'application/pdf'} ? ' tools-disabled' : ''" role="toolbar" aria-label="Actions principales de signature" th:if="${showSignRequest.toSignDocumentContentType != null}">
-    <div class="d-flex justify-content-center m-2 p-1 bg-white rounded-3 shadow-sm" th:if="${annotation != null}" style="min-height: 72px; height: auto;">
-        <div class="alert p-3 bg-warning-subtle d-flex align-items-center h-100" style="pointer-events: none;" th:if="${signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}">
+    <div class="d-flex flex-nowrap text-nowrap justify-content-center m-2 p-1 bg-white rounded-3 shadow-sm" th:if="${annotation != null}" style="height: 72px;">
+        <div class="alert p-3 m-0 bg-warning-subtle d-flex align-items-center h-100" style="pointer-events: none;" th:if="${signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}">
             <i class="fi fi-rr-edit"></i> Mode annotation
         </div>
     </div>
-    <div class="d-flex justify-content-around align-items-center m-2 bg-white rounded-3 shadow-sm"
+    <div class="es-tools-actions d-flex flex-nowrap text-nowrap justify-content-center gap-2 align-items-center m-2 bg-white rounded-3 shadow-sm"
         th:if="${annotation == null}"
         th:with="isCompletedRequest=${signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned},
                  isCompletedSignBook=${showSignRequest.signBookLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || showSignRequest.signBookLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || showSignRequest.signBookLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived || showSignRequest.signBookLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned}"
-        style="min-height: 72px; height: auto;">
-        <a tabindex="1" id="start-button" role="button" class="btn p-3 btn-success pulse-success" title="Démarrer le circuit" data-bs-toggle="modal" data-bs-target="#sendModal" th:if="${!signRequestFull.signable && signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}">
+        style="height: 72px;">
+        <a tabindex="1" id="start-button" role="button" class="btn p-3 btn-success pulse-success es-tools-halo" title="Démarrer le circuit" data-bs-toggle="modal" data-bs-target="#sendModal" th:if="${!signRequestFull.signable && signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}">
             <i class="fi fi-rr-play-alt" style="margin-top: 0"></i> Envoyer la demande
         </a>
         <div class="alert p-3 m-0 bg-warning-subtle d-lg-flex d-none align-items-center h-100" style="pointer-events: none;" th:if="${!signRequestFull.signable && signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
@@ -25,7 +25,7 @@
             <i class="fi fi-rr-flag"></i> Signature refusée
         </div>
         <div class="dropdown" th:if="${signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused && showSignRequest.clonedSignRequests != null && !showSignRequest.clonedSignRequests.isEmpty()}">
-            <button class="btn btn-secondary p-3 dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="fi fi-rr-clone"></i> Voir les demandes relancées</button>
+            <button class="btn btn-secondary p-3 dropdown-toggle es-tools-halo" type="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="fi fi-rr-clone"></i> Voir les demandes relancées</button>
             <ul class="dropdown-menu">
                 <li th:each="clonedSignRequest : ${showSignRequest.clonedSignRequests}">
                     <a th:href="'/' + ${showSignRequest.urlProfil} + '/signrequests/' + ${clonedSignRequest.id}"
@@ -40,28 +40,28 @@
             </ul>
         </div>
 
-        <div class="alert p-3 m-0 bg-success-subtle d-lg-flex d-none align-items-center h-100" style="pointer-events: none;" th:if="${isCompletedRequest}">
+        <div class="es-tools-completed-status alert p-3 m-0 bg-success-subtle d-flex align-items-center h-100" style="pointer-events: none;" th:if="${isCompletedRequest}">
             <i class="fi fi-rr-flag"></i> Vous avez signé ce document
         </div>
-        <a class="ms-1 d-flex justify-content-center btn btn-success p-3 d-flex h-100" th:if="${isCompletedRequest}" tabindex="1" th:href="'/ws-secure/global/get-last-file/' + ${signRequestLight.id}" target="_blank">
-            <i class="fi fi-rr-download d-flex align-items-center" style="margin-top: 0"></i> Télécharger le document signé
+        <a class="es-tools-download es-tools-halo d-flex align-items-center justify-content-center btn btn-success p-3" title="Télécharger le document signé" aria-label="Télécharger le document signé" th:if="${isCompletedRequest}" tabindex="1" th:href="'/ws-secure/global/get-last-file/' + ${signRequestLight.id}" target="_blank">
+            <i class="fi fi-rr-download d-flex align-items-center" style="margin-top: 0"></i><span class="es-tools-download-label"> Télécharger le document signé</span>
         </a>
-        <a class="ms-1 d-none d-md-flex justify-content-center btn btn-outline-success p-3 h-100"
+        <a class="es-tools-halo d-flex align-items-center justify-content-center btn btn-outline-success p-3" title="Tout télécharger" aria-label="Tout télécharger"
             th:if="${signRequestFull.nbSignRequests > 1 && isCompletedSignBook}"
             tabindex="1"
             th:href="'/ws-secure/global/get-last-files/' + ${showSignRequest.signBookLight.id}"
             target="_blank" >
-            <i class="fi fi-rr-box d-flex align-items-center" style="margin-top: 0"></i> Tout télécharger
+            <i class="fi fi-rr-box d-flex align-items-center" style="margin-top: 0"></i><span class="es-tools-secondary-label"> Tout télécharger</span>
         </a>
-        <a class="ms-1 d-none d-sm-flex justify-content-center btn btn-outline-success p-3 h-100"
+        <a class="es-tools-halo d-flex align-items-center justify-content-center btn btn-outline-success p-3" aria-label="Aller à la demande suivante"
             th:if="${isCompletedRequest && showSignRequest.nextSignRequestId != null}"
             tabindex="1"
             th:href="'/' + ${showSignRequest.urlProfil} + '/signrequests/' + ${showSignRequest.nextSignRequestId}"
             title="Aller à la demande suivante">
-            <i class="fi fi-rr-arrow-small-right d-flex align-items-center" style="margin-top: 0"></i><span class="d-none d-md-block"> Aller à la suivante<span>
+            <i class="fi fi-rr-arrow-small-right d-flex align-items-center" style="margin-top: 0"></i><span class="es-tools-secondary-label"> Aller à la suivante</span>
         </a>
-        <div class="es-steps-responsive-nav" th:if="${signRequestFull.signable}">
-            <div class="steps-horizontal-v2 d-flex justify-content-center" style="width: 100%;">
+        <div class="es-steps-responsive-nav w-100" th:if="${signRequestFull.signable}">
+            <div class="steps-horizontal-v2 d-flex justify-content-around w-100">
                 <div id="step-1" class="step-horizontal-v2 d-flex gap-2 align-items-center active" th:if="${signRequestFull.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa && showSignRequest.toSignDocumentContentType == 'application/pdf'}">
                     <div class="d-flex align-items-center gap-2">
                         <div class="step-horizontal-v2-icon">
@@ -70,7 +70,7 @@
                     </div>
                     <div class="step-horizontal-v2-content">
                         <div class="text-xs font-bold d-flex align-items-center gap-1">
-                            <div class="d-flex flex-nowrap" style="flex: 1 1 0;">
+                            <div class="es-tools-button-shell d-flex flex-nowrap rounded-3" style="flex: 1 1 0;">
                                 <button tabindex="3" id="addSignButton2" role="button" class="btn p-3 btn-success pulse-success" aria-label="Insérer une signature">
                                     <i class="fi fi-rr-file-signature"></i>
                                     <span class="es-add-sign-button-label">Insérer une signature</span>
@@ -93,9 +93,9 @@
                     <div class="step-horizontal-v2-content d-flex align-items-center gap-1"
                         th:classappend="' justify-content-center flex-grow-0 flex-nowrap'"
                         th:styleappend="'flex:0 0 auto;'">
-                        <div id="signActionButtons" class="input-group d-flex align-items-center justify-content-center p-1 bg-secondary-subtle rounded-2" aria-busy="true">
+                        <div id="signActionButtons" class="input-group d-flex align-items-center justify-content-center p-1 bg-secondary-subtle rounded-3" aria-busy="true">
                             <button tabindex="1" id="signLaunchButton" role="button"
-                                    class="btn" style="width: 230px; height: 58px;"
+                                    class="btn" style="height: 58px;"
                                     th:classappend="${(signRequestFull.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signRequestFull.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa ? ' es-quick-sign-action' : '') + (signRequestFull.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa ? ' btn-success pulse-success' : ' btn-secondary')}"
                                     th:styleappend="''">
                                 <div class="d-flex flex-column justify-content-start">
@@ -109,8 +109,8 @@
                                 </div>
                             </button>
                             <button th:if="${signRequestFull.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signRequestFull.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}" tabindex="1" id="signAdvancedLaunchButton" role="button"
-                                    class="btn p-3 btn-secondary" style="margin-left: 2px; height: 58px;">
-                                <i class="fi fi-rr-customize" style="margin-top: 0; border: 0"></i> Plus de paramètres
+                                    class="btn p-3 btn-secondary" title="Plus de paramètres" aria-label="Plus de paramètres" style="margin-left: 2px; height: 58px;">
+                                <i class="fi fi-rr-customize" style="margin-top: 0; border: 0"></i><span class="es-tools-secondary-label"> Plus de paramètres</span>
                             </button>
                         </div>
                         <div th:id="'refuseLaunchDiv'"
@@ -118,23 +118,18 @@
                             class="d-flex align-items-center gap-1"
                             th:classappend="${signRequestFull.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa} ? '' : ' es-refuse-slot-hidden'"
                             th:styleappend="'width:auto;flex:0 0 auto;'">
-                            ou
-                            <button tabindex="1" th:id="'refuseLaunchButton'" class="btn p-3 btn-danger"
-                                    th:styleappend="'width:auto;max-width:none;flex:0 0 auto;'"
-                                    th:token="${signRequestLight.token}" data-bs-toggle="modal" data-bs-target="#refuseModal">
-                                <i class="fi fi-rr-document-circle-wrong "></i> Refuser
-                            </button>
+                            <span class="es-tools-or">ou</span>
+                            <div class="es-tools-button-shell rounded-3 d-flex">
+                                <button tabindex="1" th:id="'refuseLaunchButton'" class="btn p-3 btn-danger" title="Refuser" aria-label="Refuser"
+                                        th:styleappend="'width:auto;max-width:none;flex:0 0 auto;'"
+                                        th:token="${signRequestLight.token}" data-bs-toggle="modal" data-bs-target="#refuseModal">
+                                    <i class="fi fi-rr-document-circle-wrong "></i><span class="es-tools-refuse-label"> Refuser</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-        <div id="refuseLaunchDivResponsive" class="es-tools-responsive-refuse d-xxxl-none"
-            th:if="${signRequestFull.signable && (signRequestFull.currentStepNumber > 1 || signRequestLight.createBy.eppn != userEppn)}">
-            <button tabindex="1" class="btn p-3 btn-danger" title="Refuser"
-                    th:token="${signRequestLight.token}" data-bs-toggle="modal" data-bs-target="#refuseModal">
-                <i class="fi fi-rr-document-circle-wrong "></i> Refuser
-            </button>
         </div>
     </div>
 </div>

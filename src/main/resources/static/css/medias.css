@@ -59,121 +59,8 @@
         display: none !important;
     }
 
-    body.es-signrequest-page #tools .es-steps-responsive-nav .steps-horizontal-v2 > [id^="step-"] {
-        display: none !important;
-    }
-
-    body.es-signrequest-page #tools .es-steps-responsive-nav .steps-horizontal-v2 > [id^="step-"].active {
-        display: flex !important;
-    }
-
-    body.es-signrequest-page #tools .es-steps-responsive-nav .steps-horizontal-v2 > [id^="step-"]::after {
-        display: none;
-    }
-
-    body.es-signrequest-page #tools .es-steps-responsive-nav {
-        padding-inline: 0;
-    }
-
-    body.es-signrequest-page #tools .es-steps-responsive-nav .steps-horizontal-v2 {
-        width: auto !important;
-        flex: 1 1 auto;
-        min-width: 0;
-        padding-inline: 0.5rem;
-    }
-
-    body.es-signrequest-page #tools .es-steps-responsive-nav .step-horizontal-v2 {
-        flex: 1 0 auto;
-        justify-content: center;
-    }
-
     .step-horizontal-v2-content {
         padding-left: 54px;
-    }
-
-    /*.step-horizontal-v2 {*/
-    /*    padding-right: 20px !important;*/
-    /*}*/
-
-    body.es-signrequest-page #tools #step-1 .step-horizontal-v2-content,
-    body.es-signrequest-page #tools #step-2 .step-horizontal-v2-content {
-        width: 100%;
-        flex: 1 1 auto !important;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        text-align: center;
-    }
-
-    body.es-signrequest-page #tools #step-1 .step-horizontal-v2-content {
-        justify-content: center;
-    }
-
-    body.es-signrequest-page #tools #step-1 .step-horizontal-v2-content > div,
-    body.es-signrequest-page #tools #step-1 .step-horizontal-v2-content > div > div {
-        width: 100%;
-        justify-content: center;
-    }
-
-    body.es-signrequest-page #tools #step-1 #addSignButton2 {
-        width: min(100%, 18rem);
-        min-width: 11rem;
-        max-width: 18rem;
-        flex: 0 1 auto;
-        margin-inline: auto;
-        display: inline-flex;
-        justify-content: center;
-        align-items: center;
-    }
-
-    body.es-signrequest-page #tools #step-2 #signLaunchButton,
-    body.es-signrequest-page #tools #step-2 #signAdvancedLaunchButton {
-        width: min(100%, 18rem);
-        min-width: 14rem;
-        max-width: 18rem;
-        flex: 0 1 auto;
-        margin-inline: auto;
-        display: inline-flex;
-        justify-content: center;
-        align-items: center;
-    }
-
-    body.es-signrequest-page #tools .es-steps-responsive-nav + .es-tools-responsive-refuse {
-        margin-right: 0.75rem !important;
-        margin-left: 0.75rem !important;
-        flex: 0 0 auto;
-        align-self: center;
-    }
-
-    body.es-signrequest-page #tools .es-steps-responsive-nav + .es-tools-responsive-refuse .btn {
-        width: auto;
-        max-width: none;
-        white-space: nowrap;
-    }
-
-    body.es-signrequest-page #tools #refuseLaunchDiv {
-        display: none !important;
-    }
-}
-
-@media (min-width: 768px) and (max-width: 1600px) {
-    body.es-signrequest-page #tools .step-horizontal-v2-icon {
-        display: flex !important;
-    }
-
-    body.es-signrequest-page #tools .es-steps-responsive-nav .step-horizontal-v2 {
-        gap: 0.5rem !important;
-    }
-
-    body.es-signrequest-page #tools #step-1 .step-horizontal-v2-content,
-    body.es-signrequest-page #tools #step-2 .step-horizontal-v2-content {
-        width: auto;
-        flex: 0 1 auto !important;
-    }
-
-    body.es-signrequest-page #tools #step-1 .step-horizontal-v2-content > div,
-    body.es-signrequest-page #tools #step-1 .step-horizontal-v2-content > div > div {
-        width: auto;
     }
 }
 
@@ -443,11 +330,6 @@
         margin-bottom: 0;
     }
 
-    .footer {
-        position: static !important;
-        height: auto !important;
-    }
-
     body.signbooks-list-page #signButtons {
         display: none !important;
     }
@@ -620,13 +502,9 @@
         z-index: 1031;
     }
 
-    body.es-signrequest-page #tools .step-horizontal-v2-content {
-        transform: scale(0.92);
-        /*transform-origin: center top;*/
-    }
-
-    body.es-signrequest-page #tools .es-tools-responsive-refuse {
-        transform: scale(0.92);
+    .footer{
+        display: none !important;
+        height: 0 !important;
     }
 
     #returnButton {
@@ -833,14 +711,6 @@
         display: none !important;
     }
 
-    /*body.es-signrequest-page #tools #signActionButtons > .es-quick-sign-action {*/
-    /*    display: none !important;*/
-    /*}*/
-
-    body.es-signrequest-page #tools .es-steps-responsive-nav .steps-horizontal-v2 {
-        padding-inline: 0.5rem;
-    }
-
     body.es-signrequest-page #breadcrumb {
         display: none !important;
     }
@@ -849,18 +719,9 @@
         display: none !important;
     }
 
-    body.es-signrequest-page #tools .step-horizontal-v2-content {
-        transform: scale(0.82);
-
-    }
-
     body.es-signrequest-page .modal.es-signrequest-sidepanel .modal-dialog {
         width: 100vw;
         max-width: 100vw;
-    }
-
-    body.es-signrequest-page #tools .es-tools-responsive-refuse {
-        transform: scale(0.82);
     }
 
     .nav-item-label {
@@ -981,5 +842,107 @@
         left: 0;
         visibility: visible;
         content: 'Résolution trop faible !!!';
+    }
+}
+
+body.es-signrequest-page #tools .steps-horizontal-v2::before {
+    display: none;
+    position: absolute;
+    z-index: 0;
+    top: 50%;
+    right: calc(var(--es-tools-connector-right) + 6px);
+    left: calc(var(--es-tools-connector-left) + 6px);
+    height: 2px;
+    background-color: var(--color-dee2e6);
+    content: "";
+    pointer-events: none;
+    transform: translateY(-50%);
+}
+
+body.es-signrequest-page #tools .steps-horizontal-v2.es-tools-step-connector-visible::before {
+    display: block;
+}
+
+body.es-signrequest-page #tools .es-tools-actions .btn {
+    height: 58px;
+    min-height: 58px;
+    max-height: 58px;
+}
+
+body.es-signrequest-page #tools .es-tools-halo {
+    --es-tools-halo-color: var(--bs-secondary-bg-subtle);
+    outline: .25rem solid var(--es-tools-halo-color);
+    outline-offset: 0;
+}
+
+body.es-signrequest-page #tools .es-tools-halo.btn-success,
+body.es-signrequest-page #tools .es-tools-halo.btn-outline-success {
+    --es-tools-halo-color: var(--bs-success-bg-subtle);
+}
+
+body.es-signrequest-page #tools .es-tools-halo.btn-danger,
+body.es-signrequest-page #tools .es-tools-halo.btn-outline-danger {
+    --es-tools-halo-color: var(--bs-danger-bg-subtle);
+}
+
+body.es-signrequest-page #tools .es-tools-button-shell {
+    padding: .25rem;
+    border-radius: var(--bs-border-radius-sm);
+    background-color: var(--bs-secondary-bg-subtle);
+}
+
+body.es-signrequest-page #tools .es-tools-button-shell:has(> .btn-success),
+body.es-signrequest-page #tools .es-tools-button-shell:has(> .btn-outline-success) {
+    background-color: var(--bs-success-bg-subtle);
+}
+
+body.es-signrequest-page #tools .es-tools-button-shell:has(> .btn-danger),
+body.es-signrequest-page #tools .es-tools-button-shell:has(> .btn-outline-danger) {
+    background-color: var(--bs-danger-bg-subtle);
+}
+
+body.es-signrequest-page #tools #signActionButtons:has(> .btn-success) {
+    background-color: var(--bs-success-bg-subtle) !important;
+}
+
+body.es-signrequest-page #tools #signActionButtons:has(> .btn-danger) {
+    background-color: var(--bs-danger-bg-subtle) !important;
+}
+
+/* Adapt to the space occupied by the toolbar, including when the sidebar is open. */
+@container sign-tools (max-width: 1050px) {
+    body.es-signrequest-page #tools .step-horizontal-v2-icon {
+        display: none !important;
+    }
+
+    body.es-signrequest-page #tools .step-horizontal-v2 > div:has(> .step-horizontal-v2-icon) {
+        display: none !important;
+    }
+
+    body.es-signrequest-page #tools .es-tools-completed-status {
+        display: none !important;
+    }
+}
+
+@container sign-tools (max-width: 850px) {
+    body.es-signrequest-page #tools .es-tools-secondary-label {
+        display: none;
+    }
+}
+
+@container sign-tools (max-width: 620px) {
+    body.es-signrequest-page #tools .es-add-sign-button-label {
+        display: none;
+    }
+
+    body.es-signrequest-page #tools .es-tools-download-label {
+        display: none;
+    }
+}
+
+@container sign-tools (max-width: 440px) {
+    body.es-signrequest-page #tools .es-tools-refuse-label,
+    body.es-signrequest-page #tools .es-tools-or {
+        display: none;
     }
 }
