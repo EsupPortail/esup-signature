@@ -125,7 +125,7 @@ public class WorkflowService {
             } else {
                 logger.debug("update " + classWorkflow.getName() + " on database");
                 Workflow toUpdateWorkflow = workflowRepository.findByName(classWorkflow.getName());
-                toUpdateWorkflow.setToken(generateToken(classWorkflow.getName()));
+                toUpdateWorkflow.setToken(generateToken(classWorkflow.getName(), toUpdateWorkflow));
                 toUpdateWorkflow.setDescription(classWorkflow.getDescription());
                 toUpdateWorkflow.setFromCode(true);
                 classWorkflow.setId(toUpdateWorkflow.getId());
@@ -231,7 +231,7 @@ public class WorkflowService {
             Workflow workflow = new Workflow();
             workflow.setName(name);
             workflow.setDescription(description);
-            workflow.setToken(generateToken(title));
+            workflow.setToken(generateToken(title, workflow));
             workflow.setCreateBy(user);
             workflow.setCreateDate(new Date());
             workflow.getManagers().removeAll(Collections.singleton(""));
@@ -353,7 +353,7 @@ public class WorkflowService {
         if(workflow.getCreateBy().equals(user)) {
             workflow.setName(name);
             workflow.setDescription(name);
-            workflow.setToken(generateToken(name));
+            workflow.setToken(generateToken(name, workflow));
             addViewers(id, recipientsCCEmails);
             userService.toggleFavorite(userEppn, id, UiParams.favoriteWorkflows);
         } else {
@@ -593,9 +593,9 @@ public class WorkflowService {
             userShare.getShareTypes().removeIf(shareType -> !shareTypes.contains(shareType));
         }
         workflowToUpdate.getTargets().addAll(workflow.getTargets());
-            if (StringUtils.hasText(workflow.getToken())) {
-              workflowToUpdate.setToken(generateToken(workflow.getToken()));
-            }
+        if (StringUtils.hasText(workflow.getToken())) {
+          workflowToUpdate.setToken(generateToken(workflow.getToken(), workflow));
+        }
         workflowToUpdate.setDocumentsSourceUri(workflow.getDocumentsSourceUri());
         workflowToUpdate.setUnzip(workflow.getUnzip());
         workflowToUpdate.setDescription(workflow.getDescription());
@@ -673,11 +673,12 @@ public class WorkflowService {
         return finalRoles;
     }
 
-    private String generateToken(String token) {
+    private String generateToken(String token, Workflow workflow) {
         token = token.replaceAll("[\\\\/:*?\"<>|]", "_").replace(" ", "_");
         String baseToken = token.replaceAll("_\\d+$", "");
 
         List<Workflow> workflows = workflowRepository.findByTokenStartingWith(baseToken);
+        workflows.removeIf(w -> w.getId().equals(workflow.getId()));
         if (!workflows.isEmpty()) {
             return baseToken + "_" + workflows.size();
         }
