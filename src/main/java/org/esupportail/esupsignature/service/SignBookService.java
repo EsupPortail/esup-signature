@@ -3424,6 +3424,9 @@ public class SignBookService {
             return false;
         }
 
+        if(currentStepTransferred) {
+            otpService.deleteOtp(signBook.getId(), user);
+        }
         recipientsToTransfer.forEach(recipient -> recipient.setUser(replacedByUser));
         signBook.getTeam().remove(user);
         if(signBook.getTeam().stream().noneMatch(teamUser -> teamUser.getId().equals(replacedByUser.getId()))) {
@@ -3532,17 +3535,12 @@ public class SignBookService {
         Otp otp = otpService.getOtpFromDatabase(urlId);
         if(otp != null) {
             SignBook signBook = otp.getSignBook();
-            if (signBook != null) {
-                SignRequest signRequest = signBook.getSignRequests().stream().filter(s -> s.getArchiveStatus().equals(ArchiveStatus.none) || !s.getDeleted()).findFirst().orElse(null);
-                if (signRequest != null) {
-                    List<Recipient> recipients = signRequest.getRecipientHasSigned().keySet().stream().filter(r -> r.getUser().getUserType().equals(UserType.external)).toList();
-                    for (Recipient recipient : recipients) {
-                        try {
-                            return otpService.generateOtpForSignRequest(signBook.getId(), recipient.getUser().getId(), recipient.getUser().getPhone(), otp.isSignature());
-                        } catch (EsupSignatureMailException e) {
-                            logger.error(e.getMessage());
-                        }
-                    }
+            User user = otp.getUser();
+            if (signBook != null && user != null) {
+                try {
+                    return otpService.generateOtpForSignRequest(signBook.getId(), user.getId(), user.getPhone(), otp.isSignature());
+                } catch (EsupSignatureMailException e) {
+                    logger.error(e.getMessage());
                 }
             }
         }
