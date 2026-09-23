@@ -4,7 +4,7 @@ export class SignToolbar {
         this.eventNamespace = options.eventNamespace ?? ".esupSignToolbar";
         this.rootSelector = options.rootSelector ?? "#tools";
         this.priorityContainers = options.priorityContainers ?? ["#tools", ".es-nav-tools"];
-        this.primaryFocusSelectors = options.primaryFocusSelectors ?? ["#addSignButton2", "#signLaunchButton", "#signAdvancedLaunchButton", "#refuseLaunchButton"];
+        this.primaryFocusSelectors = options.primaryFocusSelectors ?? ["#addSignButton2", "#signLaunchButton", "#refuseLaunchButton"];
         this.focusRetryDelay = options.focusRetryDelay ?? 80;
         this.stepConnectorResizeObserver = null;
         this.focusableSelector = options.focusableSelector ?? [

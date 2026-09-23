@@ -187,14 +187,6 @@ export class SignatureFlowController {
         });
     }
 
-    launchQuickSign() {
-        const requiresPanel = this.signUi.currentSignType !== 'hiddenVisa'
-            && typeof this.signUi.hasValidSelectedCertType === 'function'
-            && !this.signUi.hasValidSelectedCertType();
-        this.signUi.signComment = $();
-        return this.prepareLaunchSign(Boolean(requiresPanel));
-    }
-
     removeImageStampOptionTemporarily() {
         const certTypeSelect = this.signUi.certTypeSelect;
         if (!certTypeSelect.length || this.removedImageStampOption != null) {
@@ -427,7 +419,7 @@ export class SignatureFlowController {
     }
 
     setLaunchButtonsDisabled(disabled) {
-        $("#signLaunchButton, #signAdvancedLaunchButton, #checkValidateAdvancedSignButton, #launchNoInfiniteSignButton, #launch-infinite-sign-button, #checkValidateSignButtonNext, #checkValidateSignButtonEnd").prop("disabled", disabled);
+        $("#signLaunchButton, #checkValidateAdvancedSignButton, #launchNoInfiniteSignButton, #launch-infinite-sign-button, #checkValidateSignButtonNext, #checkValidateSignButtonEnd").prop("disabled", disabled);
     }
 
     resetLaunchUiState() {

@@ -189,16 +189,6 @@ body.es-signrequest-page #tools #signTypeLabel {
     max-width: clamp(8rem, 18cqi, 14rem);
 }
 
-body.es-signrequest-page #tools #signActionButtons > #signLaunchButton:after {
-    content: "";
-    position: absolute;
-    top: 0;
-    right: -5px;
-    border: 2px dashed var(--bs-secondary);
-    opacity: 0.5;
-    height: 100%;
-}
-
 body.es-signrequest-page.es-signrequest-sidepanel-open #signButtons {
     opacity: 0;
     pointer-events: none;
