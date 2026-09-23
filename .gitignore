@@ -14,3 +14,4 @@ src/main/resources/static/images/watermark.png
 !pom.xml
 !docs
 !docs/**
+/src/main/resources/logback-dev.xml
