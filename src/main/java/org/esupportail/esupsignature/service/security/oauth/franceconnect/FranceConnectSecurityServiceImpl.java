@@ -40,8 +40,6 @@ public class FranceConnectSecurityServiceImpl implements OidcOtpSecurityService 
 		return """
             J’utilise FranceConnect pour créer mon compte ou me connecter.
             FranceConnect est la solution proposée par l’État pour sécuriser et simplifier la connexion aux services publics en ligne.
-            <br>
-            <b>L'adresse email FranceConnect doit être la même que celle qui a reçu le lien de signature.</b>
             """;
 	}
 
