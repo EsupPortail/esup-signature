@@ -106,7 +106,7 @@
                                         <span style="font-weight: bold;" th:if="${signRequestFull.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).visa}"> Viser</span>
                                         <span style="font-weight: bold;" th:if="${signRequestFull.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signRequestFull.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}"> Signer</span>
                                     </div>
-                                    <i style="text-align:left; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block;" id="signTypeLabel"></i>
+                                    <i style="text-align:left; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: none;" id="signTypeLabel"></i>
                                 </div>
                             </button>
                         </div>

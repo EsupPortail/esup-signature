@@ -193,7 +193,7 @@
             <div class="modal-footer justify-content-center">
                 <div th:if="${signRequest != null}" th:unless="${stepRepeatable != null && stepRepeatable}">
                     <button id="checkValidateAdvancedSignButton"
-                            class="btn btn-success" th:value="${signRequest.id}" autofocus>
+                            class="btn btn-success fw-bold" th:value="${signRequest.id}" autofocus>
                         <span th:unless="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}"><i th:class="${signRequestFull.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa} ? 'fi fi-rr-registration-paper' : 'fi fi-rr-signature-lock'" style="margin-top: 0; border: 0; font-weight: bold;"></i> Confirmer la signature</span>
                         <span th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa}">Confirmer le visa</span>
                         <span th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Confirmer la validation</span>
