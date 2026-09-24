@@ -1861,14 +1861,18 @@ public class SignBookService {
     @Transactional
     public void pendingSignBook(SignBook signBook, Data data, String userEppn, String authUserEppn, boolean forceSendEmail, boolean sendEmailAlert) throws EsupSignatureRuntimeException {
         LiveWorkflowStep liveWorkflowStep = signBook.getLiveWorkflow().getCurrentStep();
+        boolean autoSign = liveWorkflowStep != null && liveWorkflowStep.getAutoSign();
         boolean alreadyPendingSignBook = SignRequestStatus.pending.equals(signBook.getStatus());
         boolean pendingStartedForAtLeastOneSignRequest = false;
         boolean emailSended = false;
-        for(SignRequest signRequest : signBook.getSignRequests()) {
-            if(signBook.getLiveWorkflow() != null && signBook.getLiveWorkflow().getCurrentStep() != null && signBook.getLiveWorkflow().getCurrentStep().getAutoSign()) {
-                signBook.getLiveWorkflow().getCurrentStep().setSignType(SignType.signature);
-                liveWorkflowStepService.addRecipient(liveWorkflowStep, recipientService.createRecipient(userService.getSystemUser()));
+        if(autoSign) {
+            liveWorkflowStep.setSignType(SignType.signature);
+            User systemUser = userService.getSystemUser();
+            if(liveWorkflowStep.getRecipients().stream().noneMatch(recipient -> recipient.getUser().equals(systemUser))) {
+                liveWorkflowStepService.addRecipient(liveWorkflowStep, recipientService.createRecipient(systemUser));
             }
+        }
+        for(SignRequest signRequest : signBook.getSignRequests()) {
             if(!signRequest.getStatus().equals(SignRequestStatus.refused)) {
                 if (liveWorkflowStep != null) {
                     boolean pendingStarted = signRequestService.pendingSignRequest(signRequest, userEppn);
@@ -1885,51 +1889,7 @@ public class SignBookService {
                             throw new EsupSignatureRuntimeException(e.getMessage());
                         }
                     }
-                    if(pendingStarted && signBook.getLiveWorkflow().getCurrentStep().getAutoSign()) {
-                        for(SignRequest signRequest1 : signBook.getSignRequests()) {
-                            List<SignRequestParams> signRequestParamses = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams();
-                            if(liveWorkflowStep.getWorkflowStep() != null && liveWorkflowStep.getWorkflowStep().getCertificat() != null) {
-                                if (!signRequestParamses.isEmpty()) {
-                                    signRequestParamses.get(0).setExtraDate(true);
-                                    signRequestParamses.get(0).setAddExtra(true);
-                                    signRequestParamses.get(0).setExtraOnTop(true);
-                                    signRequestParamses.get(0).setAddWatermark(true);
-                                    signRequestParamses.get(0).setSignWidth(200);
-                                    signRequestParamses.get(0).setSignHeight(100);
-                                    signRequestParamses.get(0).setExtraText(signBook.getLiveWorkflow().getCurrentStep().getWorkflowStep().getCertificat().getKeystore().getFileName().replace(",", "\n"));
-                                }
-                                try {
-                                    signRequestParamsService.copySignRequestParams(signRequest1.getId(), signRequestParamses);
-                                    signRequestService.sign(signRequest1, "", "autoCert", "default", null, null,"system", "system", null, "", false);
-                                } catch (IOException | EsupSignatureMailException e) {
-                                    refuse(signRequest1.getId(), "Signature refusée par le système automatique", "system", "system");
-                                    logger.error("auto sign fail", e);
-                                    throw new EsupSignatureRuntimeException("Erreur lors de la signature automatique : " + e.getMessage());
-                                }
-                            } else {
-                                try {
-                                    String sealCertificatName = liveWorkflowStep.getWorkflowStep() != null
-                                            && StringUtils.hasText(liveWorkflowStep.getWorkflowStep().getSealCertificatName())
-                                            ? liveWorkflowStep.getWorkflowStep().getSealCertificatName()
-                                            : "default";
-                                    signRequestParamsService.copySignRequestParams(signRequest1.getId(), signRequestParamses);
-                                    signRequestService.sign(signRequest1, "", "sealCert", sealCertificatName, null, null,"system", "system", null, "", false);
-                                } catch (IOException | EsupSignatureRuntimeException e) {
-                                    logger.error("auto sign fail", e);
-                                    refuse(signRequest1.getId(), "Signature refusée par le système automatique", "system", "system");
-                                    throw new EsupSignatureRuntimeException("Erreur lors de la signature automatique : " + e.getMessage());
-                                }
-                            }
-
-                        }
-                        if(signRequestService.isMoreWorkflowStep(signBook)) {
-                            pendingSignBook(signBook, data, userEppn, authUserEppn, forceSendEmail, sendEmailAlert);
-                        } else {
-                            completeSignBook(signBook, userEppn, "Tous les documents sont signés");
-                            logger.info("Circuit " + signBook.getId() + " terminé");
-                            return;
-                        }
-                    } else if (pendingStarted) {
+                    if(pendingStarted && !autoSign) {
                         if(!signRequest.getSignRequestParams().isEmpty()) {
                             dispatchSignRequestParams(signRequest);
                         }
@@ -1940,6 +1900,50 @@ public class SignBookService {
                     return;
                 }
             }
+        }
+        if(autoSign && pendingStartedForAtLeastOneSignRequest) {
+            List<SignRequestParams> signRequestParamses = liveWorkflowStep.getSignRequestParams();
+            for(SignRequest signRequest : signBook.getSignRequests()) {
+                if(liveWorkflowStep.getWorkflowStep() != null && liveWorkflowStep.getWorkflowStep().getCertificat() != null) {
+                    if (!signRequestParamses.isEmpty()) {
+                        signRequestParamses.get(0).setExtraDate(true);
+                        signRequestParamses.get(0).setAddExtra(true);
+                        signRequestParamses.get(0).setExtraOnTop(true);
+                        signRequestParamses.get(0).setAddWatermark(true);
+                        signRequestParamses.get(0).setSignWidth(200);
+                        signRequestParamses.get(0).setSignHeight(100);
+                        signRequestParamses.get(0).setExtraText(liveWorkflowStep.getWorkflowStep().getCertificat().getKeystore().getFileName().replace(",", "\n"));
+                    }
+                    try {
+                        signRequestParamsService.copySignRequestParams(signRequest.getId(), signRequestParamses);
+                        signRequestService.sign(signRequest, "", "autoCert", "default", null, null,"system", "system", null, "", false);
+                    } catch (IOException | EsupSignatureMailException e) {
+                        refuse(signRequest.getId(), "Signature refusée par le système automatique", "system", "system");
+                        logger.error("auto sign fail", e);
+                        throw new EsupSignatureRuntimeException("Erreur lors de la signature automatique : " + e.getMessage());
+                    }
+                } else {
+                    try {
+                        String sealCertificatName = liveWorkflowStep.getWorkflowStep() != null
+                                && StringUtils.hasText(liveWorkflowStep.getWorkflowStep().getSealCertificatName())
+                                ? liveWorkflowStep.getWorkflowStep().getSealCertificatName()
+                                : "default";
+                        signRequestParamsService.copySignRequestParams(signRequest.getId(), signRequestParamses);
+                        signRequestService.sign(signRequest, "", "sealCert", sealCertificatName, null, null,"system", "system", null, "", false);
+                    } catch (IOException | EsupSignatureRuntimeException e) {
+                        logger.error("auto sign fail", e);
+                        refuse(signRequest.getId(), "Signature refusée par le système automatique", "system", "system");
+                        throw new EsupSignatureRuntimeException("Erreur lors de la signature automatique : " + e.getMessage());
+                    }
+                }
+            }
+            if(signRequestService.isMoreWorkflowStep(signBook)) {
+                pendingSignBook(signBook, data, userEppn, authUserEppn, forceSendEmail, sendEmailAlert);
+            } else {
+                completeSignBook(signBook, userEppn, "Tous les documents sont signés");
+                logger.info("Circuit " + signBook.getId() + " terminé");
+            }
+            return;
         }
         if (!pendingStartedForAtLeastOneSignRequest && alreadyPendingSignBook) {
             logger.info("Circuit " + signBook.getId() + " déjà démarré pour signature de l'étape " + signBook.getLiveWorkflow().getCurrentStepNumber());
@@ -3424,6 +3428,9 @@ public class SignBookService {
             return false;
         }
 
+        if(currentStepTransferred) {
+            otpService.deleteOtp(signBook.getId(), user);
+        }
         recipientsToTransfer.forEach(recipient -> recipient.setUser(replacedByUser));
         signBook.getTeam().remove(user);
         if(signBook.getTeam().stream().noneMatch(teamUser -> teamUser.getId().equals(replacedByUser.getId()))) {
@@ -3532,17 +3539,12 @@ public class SignBookService {
         Otp otp = otpService.getOtpFromDatabase(urlId);
         if(otp != null) {
             SignBook signBook = otp.getSignBook();
-            if (signBook != null) {
-                SignRequest signRequest = signBook.getSignRequests().stream().filter(s -> s.getArchiveStatus().equals(ArchiveStatus.none) || !s.getDeleted()).findFirst().orElse(null);
-                if (signRequest != null) {
-                    List<Recipient> recipients = signRequest.getRecipientHasSigned().keySet().stream().filter(r -> r.getUser().getUserType().equals(UserType.external)).toList();
-                    for (Recipient recipient : recipients) {
-                        try {
-                            return otpService.generateOtpForSignRequest(signBook.getId(), recipient.getUser().getId(), recipient.getUser().getPhone(), otp.isSignature());
-                        } catch (EsupSignatureMailException e) {
-                            logger.error(e.getMessage());
-                        }
-                    }
+            User user = otp.getUser();
+            if (signBook != null && user != null) {
+                try {
+                    return otpService.generateOtpForSignRequest(signBook.getId(), user.getId(), user.getPhone(), otp.isSignature());
+                } catch (EsupSignatureMailException e) {
+                    logger.error(e.getMessage());
                 }
             }
         }

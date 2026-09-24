@@ -7,15 +7,16 @@
     <div class="es-wrapper">
         <div id="content" class="es-content-full" style="overflow-y: auto;">
             <div class="es-auth-page flex-column align-items-center px-3 pb-5">
-            <div class="text-center mb-4" style="max-width: 64rem;">
+            <div class="text-center" style="max-width: 64rem;">
                 <h4 th:text="'Bonjour ' + ${otp.user.firstname} + ' ' + ${otp.user.name} + ', l’établissement ' + #{application.footer} + ' vous invite à signer un document'"></h4>
-                <p th:utext="'Vous devez signer le document <b>' + ${otp.signBook.subject} + '</b> transmis par <b>' + ${otp.signBook.createBy.firstname} + ' ' + ${otp.signBook.createBy.name} + '</b>. Contact : <a href=\'mailto:' + ${otp.signBook.createBy.email} + '\'>' + ${otp.signBook.createBy.email} + '</a>'"></p>
+                <p class="alert alert-light" th:utext="'Vous allez signer le document <b>' + ${otp.signBook.subject} + '</b> qui vous a été transmis par <b>' + ${otp.signBook.createBy.firstname} + ' ' + ${otp.signBook.createBy.name} + '</b>, contact : <a href=\'mailto:' + ${otp.signBook.createBy.email} + '\'>' + ${otp.signBook.createBy.email} + '</a>'"></p>
+                <p class="alert alert-secondary">Attention, l’adresse email que vous utilisez pour la connexion doit être la même que celle qui a reçu le lien de signature.</p>
             </div>
             <div class="d-flex justify-content-center mx-auto gap-2 row w-100" style="max-width: 72rem;">
                 <th:block th:each="securityService : ${securityServices}">
                     <div th:if="${#lists.contains(externalAuths, securityService.externalAuth)}" class="d-flex flex-column align-items-center text-center col-12 col-lg-5 p-4 alert alert-light" style="min-width: 300px;">
                         <div class="h-100">
-                        <h3 th:text="'Utilisez ' + ${securityService.title}"></h3>
+                        <h5 style="font-weight: bold" th:text="'Utilisez ' + ${securityService.title}"></h5>
                         <p class="text-left" th:utext="${securityService.description}"></p>
                         </div>
                         <div class="oidc-connect d-flex flex-column align-items-center gap-2">

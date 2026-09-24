@@ -7,6 +7,8 @@ import {MobileSignatureFlow} from "../modules/ui/signrequests/MobileSignatureFlo
 
 let activeKeyboardPlacementId = null;
 const activeKeyboardPlacementNamespace = ".signRequestParamsKeyboardActive";
+const inactivePlacementZIndex = 1028;
+const activePlacementZIndex = 1029;
 
 export class SignRequestParams extends EventFactory {
 
@@ -881,7 +883,7 @@ export class SignRequestParams extends EventFactory {
         // Keep a stable absolute origin even when #pdf layout changes (flex/center).
         this.cross.css("left", "0px");
         this.cross.css("top", "0px");
-        this.cross.css("z-index", "1028");
+        this.cross.css("z-index", inactivePlacementZIndex);
         this.cross.attr("data-id", this.id);
 
     }
@@ -923,7 +925,7 @@ export class SignRequestParams extends EventFactory {
         if (this.isLight || this.cross == null || !this.cross.length) {
             return;
         }
-        this.#unlock();
+        this.#wantUnlock();
     }
 
     hideDuringInitialPlacement() {
@@ -1569,6 +1571,10 @@ export class SignRequestParams extends EventFactory {
         }
     }
 
+    deletePlacement() {
+        this.#deleteSign();
+    }
+
     #getTools() {
         let self = this;
         let tools = $("#crossTools_x").clone();
@@ -1677,6 +1683,7 @@ export class SignRequestParams extends EventFactory {
     }
 
     #unlock() {
+        this.cross.css("z-index", activePlacementZIndex);
         this.cross.removeClass("hide-handles");
         this.#refreshToolsPosition();
         this.tools.removeClass("d-none");
@@ -1796,17 +1803,6 @@ export class SignRequestParams extends EventFactory {
             this.signHeight = Math.round(parseInt(this.cross.css("height"))/ (this.currentScale));
         }
         this.fireEvent("sizeChanged", ['ok']);
-    }
-
-
-    #simulateDrag(x, y) {
-        console.log("simulate drag : (" + x + ", " + y + ")");
-        this.cross.simulate("drag", {
-            handle: "corner",
-            moves: 1,
-            dx: x,
-            dy: y
-        });
     }
 
     #displayMoreTools() {
@@ -2562,6 +2558,7 @@ export class SignRequestParams extends EventFactory {
         if (this.cross.hasClass("ui-draggable")) {
             this.cross.draggable("enable");
         }
+        this.cross.css("z-index", inactivePlacementZIndex);
         this.cross.addClass("hide-handles");
         this.tools.addClass("d-none");
         if(this.userSignaturePad != null) {
@@ -2618,6 +2615,8 @@ export class SignRequestParams extends EventFactory {
             });
             this.#refreshToolsPosition();
             this.#syncSpotSaveState();
+            let signLaunchButton = $("#signLaunchButton");
+            signLaunchButton.focus();
         }
     }
 

@@ -161,7 +161,7 @@
                             </th:block>
                             <th:block th:unless="${showSignRequest.workflow.hasWorkflow}">
                                 <p>
-                                    La procédure comporte une étape
+                                    La procédure comporte une ou plusieurs étapes :
                                 </p>
                                 <th:block th:each="liveWorkflowStep, iterator : ${showSignRequest.steps}">
                                     <p>

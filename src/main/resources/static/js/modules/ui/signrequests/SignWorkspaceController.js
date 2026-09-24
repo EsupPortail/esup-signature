@@ -696,9 +696,9 @@ export class SignWorkspaceController {
 
     getPrimaryToolbarFocusSelectors() {
         if (this.currentSignType === 'hiddenVisa') {
-            return ['#signLaunchButton', '#signAdvancedLaunchButton', '#refuseLaunchButton', '#insert-btn'];
+            return ['#signLaunchButton', '#refuseLaunchButton', '#insert-btn'];
         }
-        return ['#addSignButton2', '#signLaunchButton', '#signAdvancedLaunchButton', '#addParaphButton2', '#refuseLaunchButton'];
+        return ['#addSignButton2', '#signLaunchButton', '#addParaphButton2', '#refuseLaunchButton'];
     }
 
     refreshToolbarAccessibility() {
@@ -1025,7 +1025,7 @@ export class SignWorkspaceController {
         }
 
         if (this.signable) {
-            this.toggleDNone(['#sign-tools', '#signTools', '#signLaunchButton', '#signAdvancedLaunchButton', '#addSignButton2', '#addParaphButton', '#visaLaunchButton', '#signButtons', '#forward-btn', '#refuseLaunchButton', '#trashLaunchButton'], false);
+            this.toggleDNone(['#sign-tools', '#signTools', '#signLaunchButton', '#addSignButton2', '#addParaphButton', '#visaLaunchButton', '#signButtons', '#forward-btn', '#refuseLaunchButton', '#trashLaunchButton'], false);
         }
 
         if (this.editable || this.isManager) {
@@ -1068,7 +1068,7 @@ export class SignWorkspaceController {
         $('#commentModeButton').removeClass('btn-outline-warning');
         $('#signModeButton').removeClass('btn-outline-success');
         $('#readModeButton').removeClass('btn-outline-secondary');
-        this.toggleDNone(['#addCommentButton2', '#addSpotButton2', '#signLaunchButton', '#signAdvancedLaunchButton', '#forward-btn', '#addSignButton2', '#addParaphButton', '#visaLaunchButton', '#refuseLaunchButton', '#commentHelp', '#sign-tools', '#signTools'], true);
+        this.toggleDNone(['#addCommentButton2', '#addSpotButton2', '#signLaunchButton', '#forward-btn', '#addSignButton2', '#addParaphButton', '#visaLaunchButton', '#refuseLaunchButton', '#commentHelp', '#sign-tools', '#signTools'], true);
         $('#commentsTools, #infos, #postit, #refusetools, #insert-btn-div').hide();
         $('#pdf').css('cursor', 'default');
         $('#hideCommentButton').off('click' + this.commentDialogNamespace);
