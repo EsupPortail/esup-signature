@@ -145,7 +145,7 @@ public class UserAndOtpSignRequestController {
                 .body(script);
     }
 
-    @PreAuthorize("@preAuthorizeService.signRequestRecipientAndViewers(#id, #userEppn)")
+    @PreAuthorize("@preAuthorizeService.signRequestRecipientAndViewers(#id, #userEppn) || @preAuthorizeService.signRequestManager(#id, #userEppn)")
     @PostMapping(value = "/postit/{id}")
     public Object postit(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
                          @RequestParam(value = "comment", required = false) String comment,

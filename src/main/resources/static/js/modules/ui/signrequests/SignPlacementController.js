@@ -167,13 +167,21 @@ export class SignPlacementController extends EventFactory {
         return this.currentSignRequestParamses.find(signRequestParams => signRequestParams.ready == null || !signRequestParams.ready) ?? null;
     }
 
+    hasCurrentStepSignSpots() {
+        return Array.isArray(this.currentSignRequestParamses) && this.currentSignRequestParamses.length > 0;
+    }
+
+    isSingleSignatureLimited() {
+        return this.currentStepMultiSign === false && !this.hasCurrentStepSignSpots();
+    }
+
     canAddAnnotations() {
-        return this.currentStepMultiSign !== false || this.currentStepSingleSignWithAnnotation !== false;
+        return !this.isSingleSignatureLimited() || this.currentStepSingleSignWithAnnotation !== false;
     }
 
     setSingleSignInsertionState(id, isParaph) {
         this.signsList.push(id);
-        if (isParaph || this.currentStepMultiSign !== false || this.signRequestParamses.size === 0) {
+        if (isParaph || !this.isSingleSignatureLimited() || this.signRequestParamses.size === 0) {
             return;
         }
         if (this.currentStepSingleSignWithAnnotation === false) {
@@ -184,6 +192,7 @@ export class SignPlacementController extends EventFactory {
     }
 
     bindSignRequestParamsEvents(signRequestParams, id, signImageNumber, isParaph) {
+        signRequestParams.addEventListener("unlock", () => this.selectSignPlacement(signRequestParams));
         signRequestParams.addEventListener("delete", e => this.removeSign(e, id));
         signRequestParams.addEventListener("detachFromSlot", slotIndex => {
             if (Number.isFinite(parseInt(slotIndex, 10)) && this.currentSignRequestParamses?.[slotIndex] != null) {
@@ -373,6 +382,14 @@ export class SignPlacementController extends EventFactory {
         this.syncAddSignButtonState();
     }
 
+    selectSignPlacement(selectedSignRequestParams) {
+        this.signRequestParamses.forEach(signRequestParams => {
+            if (signRequestParams !== selectedSignRequestParams) {
+                signRequestParams.lock();
+            }
+        });
+    }
+
     disableForwardButton() {
         if(this.forwardButton.length) {
             this.forwardButton.addClass("disabled");
@@ -393,9 +410,13 @@ export class SignPlacementController extends EventFactory {
         $("#add-sign-image").modal("show");
     }
 
+    requiresSignatureImageSelection(placementKind) {
+        return placementKind === 'signature' && (this.isOtp || this.signatureStepRequested);
+    }
+
     async addSign(page, restore, signImageNumber, forceSignNumber, placementKind = null) {
         signImageNumber = this.normalizeSignImageNumber(signImageNumber);
-        if (this.isOtp || this.signatureStepRequested) {
+        if (this.requiresSignatureImageSelection(placementKind)) {
             const selection = await this.waitForOtpSelection();
             if (this.signatureStepRequested) {
                 this.signatureStepRequested = false;
@@ -433,7 +454,7 @@ export class SignPlacementController extends EventFactory {
                 h: signRequestParams.originalHeight
             });
         } else if (signImageNumber != null && signImageNumber >= 0) {
-            if (!isParaph && this.currentStepMultiSign === false && this.signsList.length > 0) {
+            if (!isParaph && this.isSingleSignatureLimited() && this.signsList.length > 0) {
                 alert("Impossible d'ajouter plusieurs signatures sur cette étape");
                 return;
             }
@@ -469,10 +490,12 @@ export class SignPlacementController extends EventFactory {
                 });
             }
 
-            if (signImageNumber != null && signImageNumber !== SPECIAL_SIGN_IMAGE_NUMBERS.SPOT && (!isVisaPlacement || isParaph)) {
-                await signRequestParams.changeSignImage(signImageNumber);
-                if (!restore && typeof signRequestParams.syncExtraLayoutFromState === "function") {
-                    signRequestParams.syncExtraLayoutFromState();
+            if (signImageNumber != null && signImageNumber !== SPECIAL_SIGN_IMAGE_NUMBERS.SPOT) {
+                if (!isVisaPlacement || isParaph) {
+                    await signRequestParams.changeSignImage(signImageNumber);
+                    if (!restore && typeof signRequestParams.syncExtraLayoutFromState === "function") {
+                        signRequestParams.syncExtraLayoutFromState();
+                    }
                 }
                 if (currentSignRequestParams == null && typeof signRequestParams.centerOnCurrentViewport === "function") {
                     signRequestParams.centerOnCurrentViewport();
@@ -491,23 +514,23 @@ export class SignPlacementController extends EventFactory {
     }
 
     addCheckImage(page) {
-        this.addSign(page, false, -1);
+        this.addSign(page, false, -1, null, 'annotation');
     }
 
     addTimesImage(page) {
-        this.addSign(page, false, -2);
+        this.addSign(page, false, -2, null, 'annotation');
     }
 
     addCircleImage(page) {
-        this.addSign(page, false, -3);
+        this.addSign(page, false, -3, null, 'annotation');
     }
 
     addMinusImage(page) {
-        this.addSign(page, false, -4);
+        this.addSign(page, false, -4, null, 'annotation');
     }
 
     async addText(page) {
-        let signRequestParams = await this.addSign(page, false, null);
+        let signRequestParams = await this.addSign(page, false, null, null, 'annotation');
         if(signRequestParams != null) {
             signRequestParams.turnToText();
             signRequestParams.cross.css("background-image", "");
@@ -518,30 +541,6 @@ export class SignPlacementController extends EventFactory {
 
     getBrowserZoom() {
         return window.devicePixelRatio || 1;
-    }
-
-    setStepState(step, active, complete, disabled) {
-        step.toggleClass("active", active);
-        step.toggleClass("complete", complete);
-        step.toggleClass("disable", disabled);
-    }
-
-    setButtonVariant(button, activeClass) {
-        button.removeClass("btn-secondary btn-success btn-danger");
-        button.addClass(activeClass);
-    }
-
-    getStepUiElements() {
-        return {
-            step1: $("#step-1"),
-            step2: $("#step-2"),
-            addSignButton2: $("#addSignButton2, #drawSignButton"),
-            insertBtn: $("#insert-btn"),
-            refuseLaunchButton: $("#refuseLaunchButton"),
-            signLaunchButton: $("#signLaunchButton"),
-            signAdvancedLaunchButton: $("#signAdvancedLaunchButton"),
-            refuseLaunchDiv: $("#refuseLaunchDiv")
-        };
     }
 
     getActiveSigns() {
@@ -568,29 +567,58 @@ export class SignPlacementController extends EventFactory {
         return this.getActiveSigns().length;
     }
 
+    focusSignPlacement(id) {
+        const element = this.signRequestParamses.get(id)?.cross?.get?.(0);
+        const workspace = this.getScrollContainer();
+        if (element == null || workspace == null) {
+            return false;
+        }
+        const elementRect = element.getBoundingClientRect();
+        const workspaceRect = workspace.getBoundingClientRect();
+        const centeredTop = workspace.scrollTop
+            + elementRect.top
+            - workspaceRect.top
+            - (workspace.clientHeight - elementRect.height) / 2;
+        workspace.scrollTo({
+            top: Math.max(0, centeredTop),
+            behavior: 'smooth'
+        });
+        return true;
+    }
+
+    deleteSignPlacement(id) {
+        const signRequestParams = this.signRequestParamses.get(id);
+        if (typeof signRequestParams?.deletePlacement !== 'function') {
+            return false;
+        }
+        signRequestParams.deletePlacement();
+        return true;
+    }
+
+    getSignaturePlacementLimit() {
+        if (this.hasCurrentStepSignSpots()) {
+            return this.currentSignRequestParamses.length;
+        }
+        return this.currentStepMultiSign === false ? 1 : null;
+    }
+
     syncAddSignButtonState() {
         const addSignButton2 = $("#addSignButton2");
         if (!addSignButton2.length) {
             return;
         }
         const count = this.getPlacedSignatureCount();
-        const hasSignature = count > 0;
-        let defaultLabel = "Insérer une signature";
-        let defaultSecondaryLabel = "Signatures insérées : ";
-        if (this.signType === "visa") {
-            defaultLabel = "Insérer un visa";
-            defaultSecondaryLabel = "Visas insérés : ";
-        }
-        const label = hasSignature ? defaultSecondaryLabel : defaultLabel;
-        addSignButton2.find(".es-add-sign-button-label").text(label);
+        const limit = this.getSignaturePlacementLimit();
+        const label = this.signType === "visa" ? "Insérer un visa" : "Insérer une signature";
         addSignButton2
-            .attr("aria-label", hasSignature
-                ? `${label}. ${count} signature${count > 1 ? "s" : ""} en place.`
-                : label);
+            .attr("aria-label", limit == null
+                ? label
+                : `${label}. ${count} sur ${limit} en place.`);
         const countBadge = addSignButton2.find("#addSignButton2Count");
-        countBadge.toggleClass("d-none", !hasSignature);
-        countBadge.find(".es-add-sign-count").text(count);
-        countBadge.find(".visually-hidden").text(` signature${count > 1 ? "s" : ""} en place`);
+        countBadge.addClass("badge-success");
+        countBadge.toggleClass("d-none", limit == null);
+        countBadge.find(".es-add-sign-count").text(`${count}/${limit ?? ""}`);
+        countBadge.find(".visually-hidden").text(limit == null ? "" : ` signature${limit > 1 ? "s" : ""} en place sur ${limit}`);
     }
 
     hasPendingSignaturePlacement() {
@@ -619,44 +647,9 @@ export class SignPlacementController extends EventFactory {
         return this.getActiveSigns().some(signRequestParams => signRequestParams.inside === false);
     }
 
-    isSignatureActionReady() {
-        return this.isHiddenVisa() || !this.showPlacementStep || this.hasPendingSignaturePlacement();
-    }
-
-    syncSignatureActionButtons(forceEnabled = null, skipFocus = false) {
-        const {
-            signLaunchButton,
-            signAdvancedLaunchButton
-        } = this.getStepUiElements();
-
-        const enabled = forceEnabled == null
-            ? this.isSignatureActionReady()
-            : forceEnabled;
-        const disabled = this.hasInvalidSignaturePlacement();
-
-        signLaunchButton.prop("disabled", disabled);
-        signAdvancedLaunchButton.prop("disabled", disabled);
-        signLaunchButton.attr("aria-disabled", disabled ? "true" : "false");
-        signAdvancedLaunchButton.attr("aria-disabled", disabled ? "true" : "false");
-        $("#signActionButtons").attr("aria-busy", disabled ? "true" : "false");
-        this.setButtonVariant(signLaunchButton, enabled ? "btn-success" : "btn-secondary");
-        this.setButtonVariant(signAdvancedLaunchButton, enabled ? "btn-success" : "btn-secondary");
-        if(enabled && !disabled && !skipFocus) {
-            signLaunchButton.focus();
-        }
-    }
-
-    isHiddenVisa() {
-        return this.signType === "hiddenVisa";
-    }
-
     requestSignatureStep() {
-        if (this.isHiddenVisa() || !this.showPlacementStep) {
-            this.goStep2({singleVisibleStep: true});
-            return;
-        }
         this.signatureStepRequested = true;
-        this.goStep2();
+        this.syncAddSignButtonState();
     }
 
     clearRequestedSignatureStep() {
@@ -664,94 +657,15 @@ export class SignPlacementController extends EventFactory {
     }
 
     refreshSteps() {
-        if (this.isHiddenVisa() || !this.showPlacementStep) {
-            this.goStep2({singleVisibleStep: true});
-            return;
-        }
-
-        if (this.hasStartedSignaturePlacement()) {
-            this.signatureStepRequested = false;
-            this.goStep2();
-            return;
-        }
-
-        if (this.signatureStepRequested) {
-            this.goStep2();
-            return;
-        }
-
-        this.goStep1();
+        this.syncAddSignButtonState();
     }
 
     goStep1() {
-        if (!this.showPlacementStep) {
-            this.goStep2({singleVisibleStep: true});
-            return;
-        }
-        const {
-            step1,
-            step2,
-            addSignButton2,
-            insertBtn,
-            refuseLaunchButton,
-            refuseLaunchDiv
-        } = this.getStepUiElements();
-
-        addSignButton2.removeAttr("disabled");
-        insertBtn.removeAttr("disabled");
-        refuseLaunchButton.removeAttr("disabled");
-        refuseLaunchDiv.removeClass("d-none es-refuse-slot-hidden");
-
-        this.setButtonVariant(addSignButton2, "btn-success");
-        addSignButton2.addClass("pulse-success");
-        this.setButtonVariant(insertBtn, "btn-success");
-        this.setButtonVariant(refuseLaunchButton, "btn-danger");
-        this.syncSignatureActionButtons(false, true);
-
-        this.setStepState(step1, true, false, false);
-        this.setStepState(step2, false, false, true);
         this.syncAddSignButtonState();
-
-        step1.find(".step-horizontal-v2-icon").html("1");
-        step2.find(".step-horizontal-v2-icon").html("2");
     }
 
     goStep2({singleVisibleStep = false} = {}) {
-        const {
-            step1,
-            step2,
-            addSignButton2,
-            insertBtn,
-            refuseLaunchButton,
-            refuseLaunchDiv
-        } = this.getStepUiElements();
-
-        addSignButton2.removeAttr("disabled");
-        refuseLaunchButton.removeAttr("disabled");
-        insertBtn.removeAttr("disabled");
-        refuseLaunchDiv.removeClass("d-none");
-        refuseLaunchDiv.addClass("es-refuse-slot-hidden");
-
-        this.setButtonVariant(addSignButton2, "btn-success");
-        addSignButton2.removeClass("pulse-success");
         this.syncAddSignButtonState();
-        this.setButtonVariant(insertBtn, "btn-success");
-        this.setButtonVariant(refuseLaunchButton, "btn-secondary");
-        this.syncSignatureActionButtons(null, singleVisibleStep);
-
-        if (this.isHiddenVisa() || singleVisibleStep) {
-            this.setStepState(step1, false, false, true);
-            refuseLaunchDiv.removeClass("es-refuse-slot-hidden");
-            this.setButtonVariant(refuseLaunchButton, "btn-danger");
-            this.setStepState(step2, true, false, false);
-            step2.find(".step-horizontal-v2-icon").html("1");
-            return;
-        }
-
-        this.setStepState(step1, false, true, false);
-        this.setStepState(step2, true, false, false);
-        step1.find(".step-horizontal-v2-icon").html("<i class='fi fi-rr-check'></i>");
-        step2.find(".step-horizontal-v2-icon").html("2");
     }
 
     destroy() {
