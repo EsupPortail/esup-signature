@@ -2720,8 +2720,8 @@ public class SignBookService {
             }
             WorkflowStep toSaveWorkflowStep = workflowStepService.createWorkflowStep(liveWorkflowStep, recipients.toArray(RecipientWsDto[]::new));
             workflow.getWorkflowSteps().add(toSaveWorkflowStep);
-            userService.toggleFavorite(userEppn, workflow.getId(), UiParams.favoriteWorkflows);
         }
+        userService.toggleFavorite(userEppn, workflow.getId(), UiParams.favoriteWorkflows);
     }
 
     private boolean needToSign(SignRequest signRequest, String userEppn) {

@@ -10,9 +10,13 @@ import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.SignRequestParams;
 import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.entity.Workflow;
+import org.esupportail.esupsignature.entity.WorkflowStep;
 import org.esupportail.esupsignature.entity.enums.ArchiveStatus;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
+import org.esupportail.esupsignature.entity.enums.UiParams;
 import org.esupportail.esupsignature.entity.enums.UserType;
+import org.esupportail.esupsignature.dto.ws.RecipientWsDto;
 import org.esupportail.esupsignature.service.security.otp.OtpService;
 import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
@@ -29,10 +33,43 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class SignBookServiceTest {
+
+    @Test
+    void addsSavedWorkflowToFavoritesOnceWhenItContainsSeveralSteps() {
+        User user = new User();
+        user.setEppn("creator");
+
+        LiveWorkflow liveWorkflow = new LiveWorkflow();
+        liveWorkflow.getLiveWorkflowSteps().add(new LiveWorkflowStep());
+        liveWorkflow.getLiveWorkflowSteps().add(new LiveWorkflowStep());
+        SignBook signBook = new SignBook();
+        signBook.setLiveWorkflow(liveWorkflow);
+
+        Workflow workflow = new Workflow();
+        workflow.setId(42L);
+        UserService userService = mock(UserService.class);
+        WorkflowService workflowService = mock(WorkflowService.class);
+        WorkflowStepService workflowStepService = mock(WorkflowStepService.class);
+        when(userService.getByEppn("creator")).thenReturn(user);
+        when(workflowService.createWorkflow("Circuit", "Circuit", user, null)).thenReturn(workflow);
+        when(workflowStepService.createWorkflowStep(any(LiveWorkflowStep.class), any(RecipientWsDto[].class)))
+                .thenReturn(new WorkflowStep());
+
+        SignBookService service = mock(SignBookService.class, CALLS_REAL_METHODS);
+        ReflectionTestUtils.setField(service, "userService", userService);
+        ReflectionTestUtils.setField(service, "workflowService", workflowService);
+        ReflectionTestUtils.setField(service, "workflowStepService", workflowStepService);
+        doReturn(signBook).when(service).getById(10L);
+
+        service.saveSignBookAsWorkflow(10L, "Circuit", "Circuit", "creator");
+
+        verify(userService, times(1)).toggleFavorite("creator", 42L, UiParams.favoriteWorkflows);
+    }
 
     @Test
     void dispatchesDetectedSignatureFieldsToSuccessiveStepsWithoutWorkflow() {
