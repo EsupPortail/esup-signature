@@ -152,10 +152,6 @@ body.es-signrequest-page #tools .step-horizontal-v2-content {
     min-width: 0;
 }
 
-body.es-signrequest-page #tools #refuseLaunchDiv.es-refuse-slot-hidden {
-    display: none !important;
-}
-
 body.es-signrequest-page #tools .es-tools-actions .btn {
     flex: 0 0 auto;
     white-space: nowrap;
