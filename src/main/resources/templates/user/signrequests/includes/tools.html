@@ -113,7 +113,6 @@
                         <div th:id="'refuseLaunchDiv'"
                             th:if="${signRequestFull.currentStepNumber > 1 || signRequestLight.createBy.eppn != userEppn}"
                             class="d-flex align-items-center gap-1"
-                            th:classappend="${signRequestFull.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa} ? '' : ' es-refuse-slot-hidden'"
                             th:styleappend="'width:auto;flex:0 0 auto;'">
                             <span class="es-tools-or">ou</span>
                             <div class="es-tools-button-shell rounded-3 d-flex">
