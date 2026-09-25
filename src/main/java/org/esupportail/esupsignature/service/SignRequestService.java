@@ -1958,7 +1958,8 @@ public class SignRequestService {
 				logger.info("sending replay for signRequest : " + signRequest.getId());
 				for(Recipient recipient : recipients) {
 					if(recipient.getUser().getUserType().equals(UserType.external)) {
-						mailService.sendSignRequestReplayAlertOtp(otpService.generateOtpForSignRequest(signRequest.getParentSignBook().getId(), recipient.getUser().getId(), recipient.getUser().getPhone(), true), signRequest.getParentSignBook());
+						Otp otp = otpService.generateOtpForReplay(signRequest.getParentSignBook().getId(), recipient.getUser().getId(), recipient.getUser().getPhone());
+						mailService.sendSignRequestReplayAlertOtp(otp, signRequest.getParentSignBook());
 					} else {
 						mailService.sendSignRequestReplayAlert(Collections.singletonList(recipient.getUser().getEmail()), signRequest);
 					}
