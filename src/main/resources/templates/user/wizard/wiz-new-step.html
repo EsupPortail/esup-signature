@@ -18,7 +18,8 @@
             </div>
             <div class="step-horizontal-v2-content"><span class="text-xs font-bold">Création du circuit</span></div>
         </div>
-        <div id="wiz-step-3" class="step-horizontal-v2 d-flex gap-2 align-items-center disabled">
+        <div id="wiz-step-3" class="step-horizontal-v2 d-flex gap-2 align-items-center disabled"
+             th:unless="${globalProperties.hideWizardWorkflow}">
             <div class="d-flex align-items-center gap-2">
                 <div class="step-horizontal-v2-icon"><i class="fi fi-rr-disk"></i></div>
             </div>
@@ -90,14 +91,6 @@
             <select class="select-users" data-es-check-cert="true" name="recipientsEmails" id="recipientsEmails-1" multiple="multiple" required="required">
                 <option data-placeholder="true"></option>
             </select>
-            <script>
-                document.querySelector('#recipientsEmails-1').addEventListener('change', () => {
-                    if (!document.getElementById('end-workflow-sign') || !document.getElementById('end-workflow-sign-start')) return;
-                    let hasSelection = document.querySelector('#recipientsEmails-1').selectedOptions.length > 0;
-                    document.getElementById('end-workflow-sign').disabled = hasSelection;
-                    document.getElementById('end-workflow-sign-start').disabled = hasSelection;
-                });
-            </script>
             <div id="tempUsers-recipientsEmails-1"></div>
             <br/>
             <div class="form-check form-switch form-switch-md mb-2" id="all-sign-to-complete-div-1" style="display: none">
