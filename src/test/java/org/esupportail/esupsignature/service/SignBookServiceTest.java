@@ -1,5 +1,7 @@
 package org.esupportail.esupsignature.service;
 
+import org.esupportail.esupsignature.config.GlobalProperties;
+import org.esupportail.esupsignature.config.sms.SmsProperties;
 import org.esupportail.esupsignature.entity.Action;
 import org.esupportail.esupsignature.entity.LiveWorkflow;
 import org.esupportail.esupsignature.entity.LiveWorkflowStep;
@@ -13,6 +15,7 @@ import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.WorkflowStep;
 import org.esupportail.esupsignature.entity.enums.ArchiveStatus;
+import org.esupportail.esupsignature.entity.enums.ExternalAuth;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.UiParams;
 import org.esupportail.esupsignature.entity.enums.UserType;
@@ -23,6 +26,8 @@ import org.mockito.InOrder;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Answers.CALLS_REAL_METHODS;
@@ -38,6 +43,59 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class SignBookServiceTest {
+
+    @Test
+    void forcesSmsAuthenticationWhenSmsIsOptionalGlobally() {
+        GlobalProperties globalProperties = new GlobalProperties();
+        globalProperties.setSmsRequired(false);
+        SmsProperties smsProperties = new SmsProperties();
+        smsProperties.setEnableSms(true);
+
+        LiveWorkflow liveWorkflow = new LiveWorkflow();
+        SignBook signBook = new SignBook();
+        signBook.setId(42L);
+        signBook.setLiveWorkflow(liveWorkflow);
+        Otp otp = new Otp();
+        otp.setSignBook(signBook);
+        otp.setForceSms(true);
+
+        SignBookService service = mock(SignBookService.class, CALLS_REAL_METHODS);
+        ReflectionTestUtils.setField(service, "globalProperties", globalProperties);
+        ReflectionTestUtils.setField(service, "smsProperties", smsProperties);
+        doReturn(signBook).when(service).getById(42L);
+
+        List<ExternalAuth> externalAuths = service.getExternalAuths(otp, List.of());
+
+        assertThat(externalAuths).contains(ExternalAuth.sms).doesNotContain(ExternalAuth.open);
+    }
+
+    @Test
+    void forcesSmsAuthenticationWhenWorkflowAllowsOpenAuthentication() {
+        GlobalProperties globalProperties = new GlobalProperties();
+        globalProperties.setSmsRequired(false);
+        SmsProperties smsProperties = new SmsProperties();
+        smsProperties.setEnableSms(true);
+
+        Workflow workflow = new Workflow();
+        workflow.setExternalAuths(Set.of(ExternalAuth.open));
+        LiveWorkflow liveWorkflow = new LiveWorkflow();
+        liveWorkflow.setWorkflow(workflow);
+        SignBook signBook = new SignBook();
+        signBook.setId(42L);
+        signBook.setLiveWorkflow(liveWorkflow);
+        Otp otp = new Otp();
+        otp.setSignBook(signBook);
+        otp.setForceSms(true);
+
+        SignBookService service = mock(SignBookService.class, CALLS_REAL_METHODS);
+        ReflectionTestUtils.setField(service, "globalProperties", globalProperties);
+        ReflectionTestUtils.setField(service, "smsProperties", smsProperties);
+        doReturn(signBook).when(service).getById(42L);
+
+        List<ExternalAuth> externalAuths = service.getExternalAuths(otp, List.of());
+
+        assertThat(externalAuths).contains(ExternalAuth.sms).doesNotContain(ExternalAuth.open);
+    }
 
     @Test
     void addsSavedWorkflowToFavoritesOnceWhenItContainsSeveralSteps() {

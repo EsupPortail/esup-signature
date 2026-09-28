@@ -88,7 +88,7 @@ public class OtpAccessController {
             model.addAttribute("otp", otp);
             model.addAttribute("smsRequired", (globalProperties.getSmsRequired() || otp.isForceSms()));
             model.addAttribute("enableSms", smsProperties.getServiceName());
-            model.addAttribute("externalAuths", signBookService.getExternalAuths(otp.getSignBook().getId(), oidcOtpSecurityServices));
+            model.addAttribute("externalAuths", signBookService.getExternalAuths(otp, oidcOtpSecurityServices));
             httpServletRequest.getSession().setAttribute("after_oauth_redirect", "/otp/signrequests/signbook-redirect/" + otp.getSignBook().getId());
             httpServletRequest.getSession().setAttribute(OAuth2FailureHandler.AFTER_OAUTH_FAILURE_REDIRECT, "/otp-access/first/" + urlId);
             if("true".equals(httpServletRequest.getParameter("oauth2_cancelled"))) {

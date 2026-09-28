@@ -3750,14 +3750,11 @@ public class SignBookService {
     }
 
     @Transactional
-    public List<ExternalAuth> getExternalAuths(Long id, List<OidcOtpSecurityService> securityServices) {
+    public List<ExternalAuth> getExternalAuths(Otp otp, List<OidcOtpSecurityService> securityServices) {
         List<ExternalAuth> externalAuths = new ArrayList<>();
-        SignBook signBook = getById(id);
+        SignBook signBook = getById(otp.getSignBook().getId());
         if(signBook.getLiveWorkflow().getWorkflow() != null && !signBook.getLiveWorkflow().getWorkflow().getExternalAuths().isEmpty()) {
             externalAuths.addAll(signBook.getLiveWorkflow().getWorkflow().getExternalAuths());
-            if(BooleanUtils.isTrue(globalProperties.getSmsRequired())) {
-                externalAuths.remove(ExternalAuth.open);
-            }
         } else {
             if(securityServices.stream().anyMatch(s -> s instanceof ProConnectSecurityServiceImpl)) {
                 externalAuths.add(ExternalAuth.proconnect);
@@ -3765,12 +3762,14 @@ public class SignBookService {
             if(securityServices.stream().anyMatch(s -> s instanceof FranceConnectSecurityServiceImpl)) {
                 externalAuths.add(ExternalAuth.franceconnect);
             }
-            if(BooleanUtils.isFalse(globalProperties.getSmsRequired())) {
+            if(BooleanUtils.isFalse(globalProperties.getSmsRequired()) && !otp.isForceSms()) {
                 externalAuths.add(ExternalAuth.open);
-            } else {
-                if(BooleanUtils.isTrue(smsProperties.getEnableSms())) {
-                    externalAuths.add(ExternalAuth.sms);
-                }
+            }
+        }
+        if(BooleanUtils.isTrue(globalProperties.getSmsRequired()) || otp.isForceSms()) {
+            externalAuths.remove(ExternalAuth.open);
+            if(BooleanUtils.isTrue(smsProperties.getEnableSms()) && !externalAuths.contains(ExternalAuth.sms)) {
+                externalAuths.add(ExternalAuth.sms);
             }
         }
         return externalAuths;
