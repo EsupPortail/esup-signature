@@ -20,6 +20,7 @@ import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.UiParams;
 import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.dto.ws.RecipientWsDto;
+import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.service.security.otp.OtpService;
 import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
@@ -27,6 +28,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -43,6 +45,29 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class SignBookServiceTest {
+
+    @Test
+    void doesNotRefuseAgainAfterLockingAnAlreadyRefusedSignRequest() {
+        SignRequest signRequest = new SignRequest();
+        signRequest.setId(10L);
+        signRequest.setStatus(SignRequestStatus.refused);
+        SignBook signBook = new SignBook();
+        signBook.setId(42L);
+        signBook.getSignRequests().add(signRequest);
+
+        SignBookRepository signBookRepository = mock(SignBookRepository.class);
+        CommentService commentService = mock(CommentService.class);
+        when(signBookRepository.findBySignRequestIdForUpdate(10L)).thenReturn(Optional.of(signBook));
+
+        SignBookService service = mock(SignBookService.class, CALLS_REAL_METHODS);
+        ReflectionTestUtils.setField(service, "signBookRepository", signBookRepository);
+        ReflectionTestUtils.setField(service, "commentService", commentService);
+
+        service.refuse(10L, "Déjà refusée", "user", "user");
+
+        verify(signBookRepository).findBySignRequestIdForUpdate(10L);
+        verify(commentService, never()).create(any(), any(), any(), any(), any(), any(), any(), any(), any());
+    }
 
     @Test
     void forcesSmsAuthenticationWhenSmsIsOptionalGlobally() {

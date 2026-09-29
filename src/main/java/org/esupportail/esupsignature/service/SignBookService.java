@@ -2251,8 +2251,14 @@ public class SignBookService {
      */
     @Transactional
     public void refuse(Long signRequestId, String comment, String userEppn, String authUserEppn) throws EsupSignatureRuntimeException {
-        SignRequest signRequest = signRequestService.getById(signRequestId);
-        SignBook signBook = signRequest.getParentSignBook();
+        SignBook signBook = signBookRepository.findBySignRequestIdForUpdate(signRequestId).orElseThrow();
+        SignRequest signRequest = signBook.getSignRequests().stream()
+                .filter(currentSignRequest -> currentSignRequest != null && signRequestId.equals(currentSignRequest.getId()))
+                .findFirst()
+                .orElseThrow();
+        if(SignRequestStatus.refused.equals(signBook.getStatus()) || SignRequestStatus.refused.equals(signRequest.getStatus())) {
+            return;
+        }
         if(signBook.getSignRequests().size() > 1 && (signBook.getForceAllDocsSign() == null || !signBook.getForceAllDocsSign())) {
             commentService.create(signRequest.getId(), comment, 0, 0, 0, null, true, "#FF7EB9", userEppn);
             signRequestService.updateStatus(signRequest.getId(), SignRequestStatus.refused, "Refusé", null, "SUCCESS", null, null, null, signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber(), userEppn, authUserEppn);

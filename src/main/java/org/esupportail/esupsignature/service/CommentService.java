@@ -7,6 +7,7 @@ import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.repository.CommentRepository;
 import org.esupportail.esupsignature.repository.LiveWorkflowStepRepository;
+import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.repository.SignRequestParamsRepository;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.springframework.stereotype.Service;
@@ -28,13 +29,15 @@ import java.util.Optional;
 public class CommentService {
 
     private final CommentRepository commentRepository;
+    private final SignBookRepository signBookRepository;
     private final SignRequestRepository signRequestRepository;
     private final SignRequestParamsRepository signRequestParamsRepository;
     private final UserService userService;
     private final LiveWorkflowStepRepository liveWorkflowStepRepository;
 
-    public CommentService(CommentRepository commentRepository, SignRequestRepository signRequestRepository, SignRequestParamsRepository signRequestParamsRepository, UserService userService, LiveWorkflowStepRepository liveWorkflowStepRepository) {
+    public CommentService(CommentRepository commentRepository, SignBookRepository signBookRepository, SignRequestRepository signRequestRepository, SignRequestParamsRepository signRequestParamsRepository, UserService userService, LiveWorkflowStepRepository liveWorkflowStepRepository) {
         this.commentRepository = commentRepository;
+        this.signBookRepository = signBookRepository;
         this.signRequestRepository = signRequestRepository;
         this.signRequestParamsRepository = signRequestParamsRepository;
         this.userService = userService;
@@ -75,6 +78,7 @@ public class CommentService {
      */
     @Transactional
     public Comment create(Long signRequestId, String text, Integer posX, Integer posY, Integer pageNumer, Integer stepNumber, Boolean postit, String postitColor, String userEppn) {
+        signBookRepository.findBySignRequestIdForUpdate(signRequestId).orElseThrow();
         User user = userService.getByEppn(userEppn);
         SignRequest signRequest = signRequestRepository.findById(signRequestId).get();
         if(signRequest.getComments().stream().filter(Comment::getPostit).count() > 8) {
