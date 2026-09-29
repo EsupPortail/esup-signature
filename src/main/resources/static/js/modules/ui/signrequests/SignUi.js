@@ -160,6 +160,13 @@ export class SignUi {
             e.preventDefault();
             bootbox.alert("Merci de saisir les participants", null);
         });
+        $("#send-sign-form")
+            .off("submit.transfer")
+            .on("submit.transfer", function () {
+                $(this).find('button[type="submit"]')
+                    .prop("disabled", true)
+                    .attr("aria-busy", "true");
+            });
         this.initLaunchButtons();
         $("#refuseModal").on('shown.bs.modal', function () {
             $("#refuseComment").focus();

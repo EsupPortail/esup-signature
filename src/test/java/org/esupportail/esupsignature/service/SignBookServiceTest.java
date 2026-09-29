@@ -247,12 +247,15 @@ class SignBookServiceTest {
         signBook.getTeam().add(previousUser);
 
         OtpService otpService = mock(OtpService.class);
+        SignBookRepository signBookRepository = mock(SignBookRepository.class);
+        when(signBookRepository.findByIdForUpdate(42L)).thenReturn(Optional.of(signBook));
         SignBookService service = mock(SignBookService.class, CALLS_REAL_METHODS);
         ReflectionTestUtils.setField(service, "otpService", otpService);
-        doReturn(signBook).when(service).getById(42L);
+        ReflectionTestUtils.setField(service, "signBookRepository", signBookRepository);
 
         service.transfertSignRequest(42L, false, previousUser, replacementUser, false);
 
+        verify(signBookRepository).findByIdForUpdate(42L);
         verify(otpService).deleteOtp(42L, previousUser);
         verify(otpService).generateOtpForSignRequest(42L, 20L, "+33222222222", true);
         assertThat(recipient.getUser()).isSameAs(replacementUser);

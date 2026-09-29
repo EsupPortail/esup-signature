@@ -3400,7 +3400,7 @@ public class SignBookService {
     }
 
     private boolean tryTransfertSignRequest(Long signBookId, boolean transfertAll, User user, User replacedByUser, boolean keepFollow) {
-        SignBook signBook = getById(signBookId);
+        SignBook signBook = signBookRepository.findByIdForUpdate(signBookId).orElseThrow();
         List<LiveWorkflowStep> liveWorkflowSteps = new ArrayList<>();
         if(transfertAll || signBook.getSignRequests().size() > 1) {
             liveWorkflowSteps.addAll(signBook.getLiveWorkflow().getLiveWorkflowSteps());
