@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+
+<button th:fragment="toggle"
+        type="button"
+        class="es-sign-buttons-toggle btn btn-transparent text-dark"
+        th:title="#{signButtons.expand}"
+        th:aria-label="#{signButtons.expand}"
+        th:attr="data-expand-label=#{signButtons.expand},data-collapse-label=#{signButtons.collapse}"
+        aria-controls="signButtons"
+        aria-expanded="false">
+    <i class="fi fi-rr-angle-small-left" aria-hidden="true"></i>
+    <span class="es-sign-button-label" th:text="#{signButtons.expand}"></span>
+</button>
+
+</html>

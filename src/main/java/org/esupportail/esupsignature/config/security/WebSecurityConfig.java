@@ -261,6 +261,7 @@ public class WebSecurityConfig {
 				Set<String> scriptSrc = new LinkedHashSet<>();
 				scriptSrc.add("'self'");
 				scriptSrc.add("blob:");
+				scriptSrc.add("'wasm-unsafe-eval'");
 				addHttpSrcOrigin(scriptSrc, globalProperties.getNexuUrl(), "globalProperties.nexuUrl", "script-src");
 				headers.addHeaderWriter((request, response) -> {
 					Set<String> requestFormAction = new LinkedHashSet<>(formAction);

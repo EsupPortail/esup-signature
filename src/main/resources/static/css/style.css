@@ -579,6 +579,94 @@ option[unavailable="unavailable"] {
     font-size: 20px;
 }
 
+#signButtons {
+    flex: 0 0 72px;
+    width: 72px;
+    min-width: 72px;
+    max-width: 72px;
+    transition: flex-basis 0.2s ease, width 0.2s ease, min-width 0.2s ease, max-width 0.2s ease;
+}
+
+#signButtons.es-sign-buttons-expanded {
+    flex-basis: 280px;
+    width: 280px;
+    min-width: 280px;
+    max-width: 280px;
+}
+
+#signButtons ul,
+#signButtons li,
+#signButtons form,
+#signButtons > div,
+#signButtons > div > div {
+    width: 100%;
+}
+
+#signButtons ul {
+    margin-bottom: 0;
+}
+
+#signButtons .btn {
+    display: flex;
+    align-items: center;
+    flex-direction: row !important;
+    justify-content: center !important;
+    gap: 0.75rem;
+    width: 100%;
+    min-height: 42px;
+    padding: 0.5rem 0.75rem;
+    margin-right: 0 !important;
+    margin-left: 0 !important;
+    overflow: hidden;
+    text-align: left;
+    white-space: nowrap;
+}
+
+#signButtons.es-sign-buttons-expanded .btn {
+    justify-content: flex-start !important;
+}
+
+#signButtons .btn > i {
+    flex: 0 0 1.5rem;
+    width: 1.5rem;
+    margin-top: 0 !important;
+    text-align: center;
+}
+
+#signButtons .es-sign-button-label {
+    display: none;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#signButtons.es-sign-buttons-expanded .es-sign-button-label {
+    display: inline;
+    overflow: visible;
+    white-space: normal;
+}
+
+#signButtons .es-sign-buttons-toggle {
+    margin-bottom: 1rem;
+    border-bottom: 1px solid var(--bs-border-color);
+    border-radius: 0;
+}
+
+#signButtons #attachment-trigger-button {
+    position: relative;
+}
+
+#signButtons #attachment-badge {
+    position: absolute;
+    top: 0;
+    left: calc(50% + 0.1rem);
+    margin: 0 !important;
+}
+
+#signButtons.es-sign-buttons-expanded #attachment-badge {
+    right: 0.5rem;
+    left: auto;
+}
+
 .scrollbar-lite {
     overflow-y: hidden;
 }

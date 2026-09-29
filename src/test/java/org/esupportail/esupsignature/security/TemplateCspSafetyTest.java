@@ -32,6 +32,15 @@ class TemplateCspSafetyTest {
                         + String.join(", ", violations));
     }
 
+    @Test
+    void adminFormSignsShouldUseAnExternalBootstrapScript() throws IOException {
+        String template = Files.readString(Path.of("src/main/resources/templates/admin/forms/signs.html"));
+
+        assertTrue(template.contains("AdminFormSignsBootstrap.js"));
+        assertTrue(Pattern.compile("(?is)<script(?![^>]*\\bsrc=)[^>]*>\\s*\\S+").matcher(template).results().findAny().isEmpty(),
+                "Le JavaScript inline de la vue des signatures est bloqué par la CSP");
+    }
+
     private void findInlineConfirmHandler(Path path, List<String> violations) {
         try {
             String template = Files.readString(path);
