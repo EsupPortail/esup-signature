@@ -189,7 +189,8 @@ export class PdfFormManager {
             if(items[i].fieldName != null) {
                 let inputName = items[i].fieldName.split(/\$|#|!/)[0];
                 let savedValue = this.savedFields.get(items[i].fieldName);
-                let inputField = $('[name="' + inputName + '"]');
+                let namedFields = $(document.getElementsByName(inputName));
+                let inputField = namedFields;
                 if (inputField.val() != null) {
                     if(savedValue != null) {
                         if (inputField.is(':checkbox')) {
@@ -201,7 +202,9 @@ export class PdfFormManager {
                             continue;
                         }
                         if (inputField.is(':radio')) {
-                            let radio = $('input[name=\'' + inputName + '\'][value=\'' + items[i].buttonValue + '\']');
+                            let radio = namedFields.filter('input[type="radio"]').filter(function() {
+                                return $(this).val() === items[i].buttonValue;
+                            });
                             if (savedValue === radio.val()) {
                                 radio.prop("checked", true);
                             }
@@ -211,7 +214,7 @@ export class PdfFormManager {
                         continue;
                     }
                 }
-                let textareaField = $('textarea[name=\'' + inputName + '\']');
+                let textareaField = namedFields.filter('textarea');
                 if (textareaField.val() != null) {
                     if (savedValue != null) {
                         textareaField.val(savedValue);
@@ -219,14 +222,13 @@ export class PdfFormManager {
                     }
                 }
                 if (inputField.is('select')) {
-                    $("#" + inputName + " option[value='" + savedValue + "']").prop('selected', true);
-                    inputField.val(savedValue);
+                    inputField.filter('select').val(savedValue);
                     continue;
                 }
-                let selectField = $('select[name=\'' + inputName + '\']');
+                let selectField = namedFields.filter('select');
                 if (selectField.val() != null) {
                     let savedFields = this.savedFields;
-                    $('#' + inputName + ' option').each(function() {
+                    selectField.find('option').each(function() {
                         let fieldName = items[i].fieldName;
                         let value = $(this).val();
                         if(savedFields.get(fieldName) === value) {
