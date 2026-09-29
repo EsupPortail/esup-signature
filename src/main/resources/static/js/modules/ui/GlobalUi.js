@@ -853,10 +853,30 @@ export class GlobalUi {
             signButtons.classList.toggle('es-sign-buttons-expanded', expanded);
             toggleButton.setAttribute('aria-expanded', String(expanded));
             toggleButton.setAttribute('aria-label', label);
-            toggleButton.setAttribute('title', label);
             toggleButton.querySelector('.es-sign-button-label').textContent = label;
             icon.classList.toggle('fi-rr-angle-small-left', !expanded);
             icon.classList.toggle('fi-rr-angle-small-right', expanded);
+
+            signButtons.querySelectorAll('.btn').forEach(action => {
+                if (expanded) {
+                    const title = action.getAttribute('title');
+                    if (title != null) {
+                        action.dataset.signButtonsTitle = title;
+                    }
+                    action.removeAttribute('title');
+                    action.setAttribute('data-ui-tooltip', 'false');
+                    return;
+                }
+
+                action.removeAttribute('data-ui-tooltip');
+                if (action === toggleButton) {
+                    action.setAttribute('title', label);
+                    delete action.dataset.signButtonsTitle;
+                } else if (action.dataset.signButtonsTitle != null) {
+                    action.setAttribute('title', action.dataset.signButtonsTitle);
+                    delete action.dataset.signButtonsTitle;
+                }
+            });
         };
 
         applyState(localStorage.getItem('signButtonsExpanded') === 'true');

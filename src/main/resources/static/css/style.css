@@ -607,10 +607,6 @@ option[unavailable="unavailable"] {
     margin-bottom: 0;
 }
 
-#signButtons > .d-flex.flex-column {
-    gap: 0.25rem !important;
-}
-
 #signButtons .btn {
     display: flex;
     align-items: center;

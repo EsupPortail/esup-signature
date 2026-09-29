@@ -30,7 +30,7 @@
 </nav>
 
 <div th:fragment="sign-buttons" id="signButtons" class="es-sign-buttons d-flex flex-column justify-content-between bg-white es-fixed-action-btns active">
-    <div class="d-flex flex-column gap-4">
+    <div class="d-flex flex-column gap-2">
         <th:block th:replace="~{fragments/sign-buttons :: toggle}"></th:block>
         <button id="infos-btn" tabindex="0" class="d-flex justify-content-center btn btn-transparent text-dark d-none d-lg-flex"
                 th:title="#{signButtons.information}" th:aria-label="#{signButtons.information}" data-bs-toggle="modal" data-bs-target="#detailsModal">
@@ -129,7 +129,7 @@
             </li>
         </th:block>
     </div>
-    <div class="d-flex flex-column gap-4">
+    <div class="d-flex flex-column gap-2">
         <a th:if="${signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused && signRequestLight.createBy.eppn == userEppn}" tabindex="1" class="d-flex justify-content-center btn btn-transparent text-dark me-1 d-none d-sm-flex"
            th:href="'/ws-secure/global/get-original-file/' + ${signRequestLight.id}" target="_blank"
            th:title="#{signButtons.downloadOriginal}" th:aria-label="#{signButtons.downloadOriginal}">
