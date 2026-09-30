@@ -30,6 +30,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.context.MessageSource;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.stereotype.Controller;
@@ -71,8 +72,9 @@ public class SignBookController {
     private final SignRequestService signRequestService;
     private final FormService formService;
     private final TemplateEngine templateEngine;
+    private final MessageSource messageSource;
 
-    public SignBookController(RecipientService recipientService, SignWithService signWithService, LiveWorkflowStepService liveWorkflowStepService, PreAuthorizeService preAuthorizeService, WorkflowService workflowService, SignBookService signBookService, SignRequestService signRequestService, FormService formService, TemplateEngine templateEngine, CertificatService certificatService, GlobalProperties globalProperties) {
+    public SignBookController(RecipientService recipientService, SignWithService signWithService, LiveWorkflowStepService liveWorkflowStepService, PreAuthorizeService preAuthorizeService, WorkflowService workflowService, SignBookService signBookService, SignRequestService signRequestService, FormService formService, TemplateEngine templateEngine, CertificatService certificatService, GlobalProperties globalProperties, MessageSource messageSource) {
         this.recipientService = recipientService;
         this.signWithService = signWithService;
         this.liveWorkflowStepService = liveWorkflowStepService;
@@ -84,6 +86,7 @@ public class SignBookController {
         this.templateEngine = templateEngine;
         this.certificatService = certificatService;
         this.globalProperties = globalProperties;
+        this.messageSource = messageSource;
     }
 
     @GetMapping
@@ -409,6 +412,26 @@ public class SignBookController {
     public String pending(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id) throws EsupSignatureRuntimeException {
         signBookService.pendingSignBook(authUserEppn, id);
         return "redirect:/user/signbooks/" + id;
+    }
+
+    @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
+    @PostMapping(value = "/{id}/auto-sign/{liveWorkflowStepId}/reset")
+    public String resetAutoSignStatus(@ModelAttribute("authUserEppn") String authUserEppn,
+                                      @PathVariable("id") Long id,
+                                      @PathVariable("liveWorkflowStepId") Long liveWorkflowStepId,
+                                      HttpServletRequest httpServletRequest,
+                                      RedirectAttributes redirectAttributes) {
+        try {
+            boolean success = signBookService.resetAutoSignStatus(id, liveWorkflowStepId, authUserEppn);
+            String messageKey = success ? "autosign.reset.success" : "autosign.reset.failed";
+            String messageType = success ? "success" : "error";
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto(messageType, messageSource.getMessage(messageKey, null, Locale.FRENCH)));
+        } catch (RuntimeException e) {
+            logger.error("Unable to reset automatic signature for step {}", liveWorkflowStepId, e);
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", messageSource.getMessage("autosign.reset.failed", null, Locale.FRENCH)));
+        }
+        String referer = httpServletRequest.getHeader(HttpHeaders.REFERER);
+        return StringUtils.hasText(referer) ? "redirect:" + referer : "redirect:/user/signbooks/" + id;
     }
 
     @PreAuthorize("@preAuthorizeService.signBookView(#id, #authUserEppn, #authUserEppn)")

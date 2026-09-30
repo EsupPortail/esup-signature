@@ -29,6 +29,8 @@ import org.esupportail.esupsignature.repository.DataRepository;
 import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.repository.SignRequestParamsRepository;
 import org.esupportail.esupsignature.repository.WorkflowRepository;
+import org.esupportail.esupsignature.service.event.AutoSignFailedEvent;
+import org.esupportail.esupsignature.service.event.AutoSignRequestedEvent;
 import org.esupportail.esupsignature.service.interfaces.fs.FsAccessFactoryService;
 import org.esupportail.esupsignature.service.interfaces.fs.FsAccessService;
 import org.esupportail.esupsignature.service.interfaces.fs.FsFile;
@@ -46,6 +48,7 @@ import org.esupportail.esupsignature.service.utils.pdf.PdfService;
 import org.esupportail.esupsignature.service.utils.sign.SignService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.MessageSource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -54,6 +57,7 @@ import org.springframework.http.MediaTypeFactory;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -125,8 +129,9 @@ public class SignBookService {
     private final SmsProperties smsProperties;
     private final SignService signService;
     private final UiSignBookMapper uiSignBookMapper;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
-    public SignBookService(GlobalProperties globalProperties, MessageSource messageSource, AuditTrailService auditTrailService, SignBookRepository signBookRepository, SignRequestService signRequestService, UserService userService, FsAccessFactoryService fsAccessFactoryService, WebUtilsService webUtilsService, FileService fileService, PdfService pdfService, WorkflowService workflowService, MailService mailService, WorkflowStepService workflowStepService, LiveWorkflowService liveWorkflowService, LiveWorkflowStepService liveWorkflowStepService, DataService dataService, LogService logService, TargetService targetService, UserPropertieService userPropertieService, CommentService commentService, OtpService otpService, DataRepository dataRepository, WorkflowRepository workflowRepository, UserShareService userShareService, RecipientService recipientService, DocumentService documentService, SignRequestParamsService signRequestParamsService, PreFillService preFillService, ReportService reportService, ActionService actionService, SignRequestParamsRepository signRequestParamsRepository, ObjectMapper objectMapper, SignWithService signWithService, SmsProperties smsProperties, SignService signService, UiSignBookMapper uiSignBookMapper) {
+    public SignBookService(GlobalProperties globalProperties, MessageSource messageSource, AuditTrailService auditTrailService, SignBookRepository signBookRepository, SignRequestService signRequestService, UserService userService, FsAccessFactoryService fsAccessFactoryService, WebUtilsService webUtilsService, FileService fileService, PdfService pdfService, WorkflowService workflowService, MailService mailService, WorkflowStepService workflowStepService, LiveWorkflowService liveWorkflowService, LiveWorkflowStepService liveWorkflowStepService, DataService dataService, LogService logService, TargetService targetService, UserPropertieService userPropertieService, CommentService commentService, OtpService otpService, DataRepository dataRepository, WorkflowRepository workflowRepository, UserShareService userShareService, RecipientService recipientService, DocumentService documentService, SignRequestParamsService signRequestParamsService, PreFillService preFillService, ReportService reportService, ActionService actionService, SignRequestParamsRepository signRequestParamsRepository, ObjectMapper objectMapper, SignWithService signWithService, SmsProperties smsProperties, SignService signService, UiSignBookMapper uiSignBookMapper, ApplicationEventPublisher applicationEventPublisher) {
         this.globalProperties = globalProperties;
         this.messageSource = messageSource;
         this.auditTrailService = auditTrailService;
@@ -163,6 +168,7 @@ public class SignBookService {
         this.smsProperties = smsProperties;
         this.signService = signService;
         this.uiSignBookMapper = uiSignBookMapper;
+        this.applicationEventPublisher = applicationEventPublisher;
     }
 
     private String toContainsLikePattern(String value) {
@@ -1854,17 +1860,32 @@ public class SignBookService {
      */
     @Transactional
     public void pendingSignBook(String authUserEppn, Long id) {
-        SignBook signBook = signBookRepository.findByIdForUpdate(id).orElse(null);
-        pendingSignBook(signBook, null, authUserEppn, authUserEppn, false, true);
+        pendingSignBook(authUserEppn, authUserEppn, id);
     }
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void pendingSignBook(String userEppn, String authUserEppn, Long id) {
+        SignBook signBook = signBookRepository.findByIdForUpdate(id).orElse(null);
+        pendingSignBook(signBook, null, userEppn, authUserEppn, false, true);
+    }
+
+    /**
+     * Démarre l'étape courante du circuit : prépare les demandes, envoie les notifications
+     * puis lance la signature système ou attend l'action des destinataires.
+     * Une fois l'étape traitée, le circuit avance ou se termine.
+     */
     @Transactional
     public void pendingSignBook(SignBook signBook, Data data, String userEppn, String authUserEppn, boolean forceSendEmail, boolean sendEmailAlert) throws EsupSignatureRuntimeException {
         LiveWorkflowStep liveWorkflowStep = signBook.getLiveWorkflow().getCurrentStep();
-        boolean autoSign = liveWorkflowStep != null && liveWorkflowStep.getAutoSign();
+        boolean autoSign = liveWorkflowStep != null && Boolean.TRUE.equals(liveWorkflowStep.getAutoSign());
         boolean alreadyPendingSignBook = SignRequestStatus.pending.equals(signBook.getStatus());
         boolean pendingStartedForAtLeastOneSignRequest = false;
         boolean emailSended = false;
+        if(autoSign && liveWorkflowStep.getAutoSignStatus() != null) {
+            logger.info("Signature automatique déjà traitée pour l'étape {} du circuit {}", liveWorkflowStep.getId(), signBook.getId());
+            return;
+        }
+        // Une étape automatique est exécutée par l'utilisateur système.
         if(autoSign) {
             liveWorkflowStep.setSignType(SignType.signature);
             User systemUser = userService.getSystemUser();
@@ -1872,6 +1893,7 @@ public class SignBookService {
                 liveWorkflowStepService.addRecipient(liveWorkflowStep, recipientService.createRecipient(systemUser));
             }
         }
+        // Démarre les demandes actives et prépare les destinataires de l'étape.
         for(SignRequest signRequest : signBook.getSignRequests()) {
             if(!signRequest.getStatus().equals(SignRequestStatus.refused)) {
                 if (liveWorkflowStep != null) {
@@ -1901,9 +1923,13 @@ public class SignBookService {
                 }
             }
         }
-        if(autoSign && pendingStartedForAtLeastOneSignRequest) {
+        // Signe chaque document et enchaîne immédiatement les étapes automatiques.
+        if(autoSign && (pendingStartedForAtLeastOneSignRequest || alreadyPendingSignBook)) {
             List<SignRequestParams> signRequestParamses = liveWorkflowStep.getSignRequestParams();
             for(SignRequest signRequest : signBook.getSignRequests()) {
+                if(!SignRequestStatus.pending.equals(signRequest.getStatus())) {
+                    continue;
+                }
                 if(liveWorkflowStep.getWorkflowStep() != null && liveWorkflowStep.getWorkflowStep().getCertificat() != null) {
                     if (!signRequestParamses.isEmpty()) {
                         signRequestParamses.get(0).setExtraDate(true);
@@ -1917,10 +1943,11 @@ public class SignBookService {
                     try {
                         signRequestParamsService.copySignRequestParams(signRequest.getId(), signRequestParamses);
                         signRequestService.sign(signRequest, "", "autoCert", "default", null, null,"system", "system", null, "", false);
-                    } catch (IOException | EsupSignatureMailException e) {
-                        refuse(signRequest.getId(), "Signature refusée par le système automatique", "system", "system");
+                    } catch (IOException | EsupSignatureRuntimeException e) {
                         logger.error("auto sign fail", e);
-                        throw new EsupSignatureRuntimeException("Erreur lors de la signature automatique : " + e.getMessage());
+                        liveWorkflowStep.setAutoSignStatus(false);
+                        applicationEventPublisher.publishEvent(new AutoSignFailedEvent(liveWorkflowStep.getId()));
+                        return;
                     }
                 } else {
                     try {
@@ -1932,11 +1959,13 @@ public class SignBookService {
                         signRequestService.sign(signRequest, "", "sealCert", sealCertificatName, null, null,"system", "system", null, "", false);
                     } catch (IOException | EsupSignatureRuntimeException e) {
                         logger.error("auto sign fail", e);
-                        refuse(signRequest.getId(), "Signature refusée par le système automatique", "system", "system");
-                        throw new EsupSignatureRuntimeException("Erreur lors de la signature automatique : " + e.getMessage());
+                        liveWorkflowStep.setAutoSignStatus(false);
+                        applicationEventPublisher.publishEvent(new AutoSignFailedEvent(liveWorkflowStep.getId()));
+                        return;
                     }
                 }
             }
+            liveWorkflowStep.setAutoSignStatus(true);
             if(signRequestService.isMoreWorkflowStep(signBook)) {
                 pendingSignBook(signBook, data, userEppn, authUserEppn, forceSendEmail, sendEmailAlert);
             } else {
@@ -1945,6 +1974,7 @@ public class SignBookService {
             }
             return;
         }
+        // Évite de redémarrer un circuit déjà en attente sans nouvelle demande à traiter.
         if (!pendingStartedForAtLeastOneSignRequest && alreadyPendingSignBook) {
             logger.info("Circuit " + signBook.getId() + " déjà démarré pour signature de l'étape " + signBook.getLiveWorkflow().getCurrentStepNumber());
             return;
@@ -1962,6 +1992,23 @@ public class SignBookService {
                 }
             }
         }
+    }
+
+    @Transactional
+    public boolean resetAutoSignStatus(Long signBookId, Long liveWorkflowStepId, String authUserEppn) {
+        SignBook signBook = signBookRepository.findByIdForUpdate(signBookId).orElseThrow();
+        LiveWorkflowStep liveWorkflowStep = signBook.getLiveWorkflow().getLiveWorkflowSteps().stream()
+                .filter(step -> liveWorkflowStepId.equals(step.getId()))
+                .findFirst()
+                .orElseThrow();
+        if(!liveWorkflowStep.equals(signBook.getLiveWorkflow().getCurrentStep())
+                || !Boolean.TRUE.equals(liveWorkflowStep.getAutoSign())
+                || !Boolean.FALSE.equals(liveWorkflowStep.getAutoSignStatus())) {
+            throw new EsupSignatureRuntimeException(messageSource.getMessage("autosign.reset.unavailable", null, Locale.FRENCH));
+        }
+        liveWorkflowStep.setAutoSignStatus(null);
+        pendingSignBook(signBook, null, authUserEppn, authUserEppn, false, false);
+        return Boolean.TRUE.equals(liveWorkflowStep.getAutoSignStatus());
     }
 
     private void completeSignBook(SignBook signBook, String userEppn, String message) throws EsupSignatureRuntimeException {
@@ -2137,7 +2184,12 @@ public class SignBookService {
             } else if(stepStatus.equals(StepStatus.completed)) {
                 if(signRequestService.isCurrentStepCompleted(signRequest)) {
                     signRequest.getSignRequestParams().clear();
-                    pendingSignBook(signRequest.getParentSignBook(), null, userEppn, authUserEppn, false, true);
+                    LiveWorkflowStep currentStep = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep();
+                    if(currentStep != null && Boolean.TRUE.equals(currentStep.getAutoSign())) {
+                        applicationEventPublisher.publishEvent(new AutoSignRequestedEvent(signRequest.getParentSignBook().getId(), userEppn, authUserEppn));
+                    } else {
+                        pendingSignBook(signRequest.getParentSignBook(), null, userEppn, authUserEppn, false, true);
+                    }
                 }
             }
             return stepStatus;

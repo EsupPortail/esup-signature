@@ -3,6 +3,7 @@ package org.esupportail.esupsignature.service;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.sms.SmsProperties;
 import org.esupportail.esupsignature.entity.Action;
+import org.esupportail.esupsignature.entity.AuditTrail;
 import org.esupportail.esupsignature.entity.LiveWorkflow;
 import org.esupportail.esupsignature.entity.LiveWorkflowStep;
 import org.esupportail.esupsignature.entity.Log;
@@ -17,13 +18,19 @@ import org.esupportail.esupsignature.entity.WorkflowStep;
 import org.esupportail.esupsignature.entity.enums.ArchiveStatus;
 import org.esupportail.esupsignature.entity.enums.ExternalAuth;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
+import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.entity.enums.UiParams;
 import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.dto.ws.RecipientWsDto;
+import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.repository.SignBookRepository;
+import org.esupportail.esupsignature.service.event.AutoSignFailedEvent;
+import org.esupportail.esupsignature.service.event.AutoSignRequestedEvent;
 import org.esupportail.esupsignature.service.security.otp.OtpService;
+import org.esupportail.esupsignature.service.utils.StepStatus;
 import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.LinkedHashMap;
@@ -35,10 +42,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Answers.CALLS_REAL_METHODS;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -307,6 +316,7 @@ class SignBookServiceTest {
         }).when(liveWorkflowStepService).addRecipient(autoSignStep, systemRecipient);
         when(signRequestService.pendingSignRequest(any(SignRequest.class), eq("creator"))).thenAnswer(invocation -> {
             SignRequest signRequest = invocation.getArgument(0);
+            signRequest.setStatus(SignRequestStatus.pending);
             signRequest.getRecipientHasSigned().put(systemRecipient, new Action());
             return true;
         });
@@ -331,6 +341,143 @@ class SignBookServiceTest {
         inOrder.verify(signRequestService).sign(secondSignRequest, "", "sealCert", "default", null, null, "system", "system", null, "", false);
         assertThat(firstSignRequest.getRecipientHasSigned()).containsKey(systemRecipient);
         assertThat(secondSignRequest.getRecipientHasSigned()).containsKey(systemRecipient);
+        assertThat(autoSignStep.getAutoSignStatus()).isTrue();
+    }
+
+    @Test
+    void marksAutomaticStepAsFailedAndDoesNotRetryIt() throws Exception {
+        User systemUser = new User();
+        systemUser.setId(1L);
+        systemUser.setEppn("system");
+        systemUser.setEmail("system");
+        Recipient systemRecipient = recipient(10L, systemUser);
+
+        LiveWorkflowStep autoSignStep = new LiveWorkflowStep();
+        autoSignStep.setId(20L);
+        autoSignStep.setAutoSign(true);
+        LiveWorkflow liveWorkflow = new LiveWorkflow();
+        liveWorkflow.getLiveWorkflowSteps().add(autoSignStep);
+        liveWorkflow.setCurrentStep(autoSignStep);
+
+        User creator = new User();
+        creator.setId(2L);
+        creator.setEppn("creator");
+        SignBook signBook = new SignBook();
+        signBook.setId(42L);
+        signBook.setCreateBy(creator);
+        signBook.setStatus(SignRequestStatus.draft);
+        signBook.setLiveWorkflow(liveWorkflow);
+        SignRequest signRequest = signRequest(100L, signBook);
+        signBook.getSignRequests().add(signRequest);
+
+        SignRequestService signRequestService = mock(SignRequestService.class);
+        UserService userService = mock(UserService.class);
+        LiveWorkflowStepService liveWorkflowStepService = mock(LiveWorkflowStepService.class);
+        RecipientService recipientService = mock(RecipientService.class);
+        SignRequestParamsService signRequestParamsService = mock(SignRequestParamsService.class);
+        ApplicationEventPublisher applicationEventPublisher = mock(ApplicationEventPublisher.class);
+        when(userService.getSystemUser()).thenReturn(systemUser);
+        when(userService.getByEppn("creator")).thenReturn(creator);
+        when(recipientService.createRecipient(systemUser)).thenReturn(systemRecipient);
+        doAnswer(invocation -> {
+            autoSignStep.getRecipients().add(invocation.getArgument(1));
+            return null;
+        }).when(liveWorkflowStepService).addRecipient(autoSignStep, systemRecipient);
+        when(signRequestService.pendingSignRequest(signRequest, "creator")).thenAnswer(invocation -> {
+            signRequest.setStatus(SignRequestStatus.pending);
+            return true;
+        });
+        doThrow(new EsupSignatureRuntimeException("cachet indisponible"))
+                .when(signRequestService).sign(signRequest, "", "sealCert", "default", null, null, "system", "system", null, "", false);
+
+        SignBookService service = mock(SignBookService.class, CALLS_REAL_METHODS);
+        ReflectionTestUtils.setField(service, "signRequestService", signRequestService);
+        ReflectionTestUtils.setField(service, "userService", userService);
+        ReflectionTestUtils.setField(service, "liveWorkflowStepService", liveWorkflowStepService);
+        ReflectionTestUtils.setField(service, "recipientService", recipientService);
+        ReflectionTestUtils.setField(service, "signRequestParamsService", signRequestParamsService);
+        ReflectionTestUtils.setField(service, "applicationEventPublisher", applicationEventPublisher);
+
+        service.pendingSignBook(signBook, null, "creator", "creator", false, false);
+        service.pendingSignBook(signBook, null, "creator", "creator", false, false);
+
+        assertThat(autoSignStep.getAutoSignStatus()).isFalse();
+        verify(signRequestService, times(1)).sign(signRequest, "", "sealCert", "default", null, null, "system", "system", null, "", false);
+        verify(applicationEventPublisher).publishEvent(any(AutoSignFailedEvent.class));
+        verify(service, never()).refuse(any(), any(), any(), any());
+    }
+
+    @Test
+    void resetsFailedAutomaticStepBeforeRetryingIt() {
+        LiveWorkflowStep autoSignStep = new LiveWorkflowStep();
+        autoSignStep.setId(20L);
+        autoSignStep.setAutoSign(true);
+        autoSignStep.setAutoSignStatus(false);
+        LiveWorkflow liveWorkflow = new LiveWorkflow();
+        liveWorkflow.getLiveWorkflowSteps().add(autoSignStep);
+        liveWorkflow.setCurrentStep(autoSignStep);
+        SignBook signBook = new SignBook();
+        signBook.setId(42L);
+        signBook.setLiveWorkflow(liveWorkflow);
+
+        SignBookRepository signBookRepository = mock(SignBookRepository.class);
+        when(signBookRepository.findByIdForUpdate(42L)).thenReturn(Optional.of(signBook));
+        SignBookService service = mock(SignBookService.class, CALLS_REAL_METHODS);
+        ReflectionTestUtils.setField(service, "signBookRepository", signBookRepository);
+        doAnswer(invocation -> {
+            assertThat(autoSignStep.getAutoSignStatus()).isNull();
+            autoSignStep.setAutoSignStatus(true);
+            return null;
+        }).when(service).pendingSignBook(eq(signBook), isNull(), eq("manager"), eq("manager"), eq(false), eq(false));
+
+        boolean success = service.resetAutoSignStatus(42L, 20L, "manager");
+
+        assertThat(success).isTrue();
+        verify(service).pendingSignBook(signBook, null, "manager", "manager", false, false);
+    }
+
+    @Test
+    void startsNextAutomaticStepOnlyAfterUserSignatureCommit() throws Exception {
+        LiveWorkflowStep userStep = new LiveWorkflowStep();
+        userStep.setSignType(SignType.signature);
+        LiveWorkflowStep autoSignStep = new LiveWorkflowStep();
+        autoSignStep.setAutoSign(true);
+        autoSignStep.setSignType(SignType.signature);
+        LiveWorkflow liveWorkflow = new LiveWorkflow();
+        liveWorkflow.getLiveWorkflowSteps().add(userStep);
+        liveWorkflow.getLiveWorkflowSteps().add(autoSignStep);
+        liveWorkflow.setCurrentStep(userStep);
+        SignBook signBook = new SignBook();
+        signBook.setId(42L);
+        signBook.setLiveWorkflow(liveWorkflow);
+        SignRequest signRequest = signRequest(100L, signBook);
+        signRequest.setAuditTrail(new AuditTrail());
+        signBook.getSignRequests().add(signRequest);
+
+        SignRequestService signRequestService = mock(SignRequestService.class);
+        UserService userService = mock(UserService.class);
+        ApplicationEventPublisher applicationEventPublisher = mock(ApplicationEventPublisher.class);
+        when(signRequestService.getById(100L)).thenReturn(signRequest);
+        when(userService.getSignRequestParamsesFromJson("[]", "user")).thenReturn(List.of());
+        when(signRequestService.sign(signRequest, "", "imageStamp", null, null, null,
+                "user", "user", null, null, false)).thenAnswer(invocation -> {
+            liveWorkflow.setCurrentStep(autoSignStep);
+            return StepStatus.completed;
+        });
+        when(signRequestService.isCurrentStepCompleted(signRequest)).thenReturn(true);
+
+        SignBookService service = mock(SignBookService.class, CALLS_REAL_METHODS);
+        ReflectionTestUtils.setField(service, "globalProperties", new GlobalProperties());
+        ReflectionTestUtils.setField(service, "signRequestService", signRequestService);
+        ReflectionTestUtils.setField(service, "userService", userService);
+        ReflectionTestUtils.setField(service, "applicationEventPublisher", applicationEventPublisher);
+
+        StepStatus stepStatus = service.initSign(100L, "[]", null, null, "", "imageStamp", null,
+                null, "user", "user", false);
+
+        assertThat(stepStatus).isEqualTo(StepStatus.completed);
+        verify(applicationEventPublisher).publishEvent(any(AutoSignRequestedEvent.class));
+        verify(service, never()).pendingSignBook(eq(signBook), isNull(), eq("user"), eq("user"), eq(false), eq(true));
     }
 
     private SignRequestParams signRequestParams(int page, int x, int y) {

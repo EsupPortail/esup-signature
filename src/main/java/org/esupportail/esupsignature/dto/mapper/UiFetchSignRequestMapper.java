@@ -194,6 +194,7 @@ public class UiFetchSignRequestMapper {
         dto.setSignType(step.getSignType());
         dto.setMinSignLevel(step.getMinSignLevel() != null ? step.getMinSignLevel() : SignLevel.simple);
         dto.setAutoSign(step.getAutoSign());
+        dto.setAutoSignStatus(step.getAutoSignStatus());
         dto.setAllSignToComplete(step.getAllSignToComplete());
         dto.setRepeatable(step.getRepeatable());
         dto.setSealVisa(step.getSealVisa());
@@ -250,6 +251,7 @@ public class UiFetchSignRequestMapper {
             dto.setSignType(step.getSignType());
             dto.setMinSignLevel(step.getMinSignLevel() != null ? step.getMinSignLevel() : SignLevel.simple);
             dto.setAutoSign(Boolean.TRUE.equals(step.getAutoSign()));
+            dto.setAutoSignStatus(step.getAutoSignStatus());
             dto.setAllSignToComplete(Boolean.TRUE.equals(step.getAllSignToComplete()));
             dto.setRepeatable(Boolean.TRUE.equals(step.getRepeatable()));
             dto.setSealVisa(Boolean.TRUE.equals(step.getSealVisa()));

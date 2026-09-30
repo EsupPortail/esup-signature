@@ -115,15 +115,16 @@
                                          || showSignRequest.signBookLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported
                                          || showSignRequest.signBookLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned
                                          || showSignRequest.signBookLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived},
-                                    isAutoSign=${liveWorkflowStep.autoSign}">
+                                    isAutoSign=${liveWorkflowStep.autoSign},
+                                    isAutoSignFailed=${liveWorkflowStep.autoSign && liveWorkflowStep.autoSignStatus == false}">
 
                         <div th:id="'liveStep-' + ${stepNumber}"
                             class="toggle-layer-div"
                             th:data-step="${stepNumber}"
                             th:classappend="'step-vertical'
-                                + ${(isCompleted  || (isCurrent  && !isPending  && !isRefused  && !isDraft)) ? ' complete' : ''}
-                                + ${(isCurrent  && isPending  && !isRefused  && !isDraft) ? ' active' : ''}
-                                + ${(isCurrent  && isRefused) ? ' refused' : ''}">
+                                + ${(!isAutoSignFailed && (isCompleted  || (isCurrent  && !isPending  && !isRefused  && !isDraft))) ? ' complete' : ''}
+                                + ${(!isAutoSignFailed && isCurrent  && isPending  && !isRefused  && !isDraft) ? ' active' : ''}
+                                + ${((isCurrent  && isRefused) || isAutoSignFailed) ? ' refused' : ''}">
 
                             <!-- Icône -->
                             <div class="step-vertical-icon">
@@ -134,10 +135,10 @@
 
                                 <!-- Étape en cours -->
                                 <th:block th:if="${isCurrent}">
-                                    <i th:if="${isPending}" class="fi fi-rr-duration-alt"></i>
-                                    <i th:if="${isRefused}" class="fi fi-rr-cross-small"></i>
-                                    <i th:if="${!isPending  && !isRefused  && !isDraft  && !isWorkflowFinished  && !isAutoSign}" class="fi fi-rr-attribution-pencil"></i>
-                                    <i th:if="${!isPending  && !isRefused  && !isDraft  && !isWorkflowFinished  && isAutoSign}" class="fi fi-rr-cloud-gear-automation"></i>
+                                    <i th:if="${isPending && !isAutoSignFailed}" class="fi fi-rr-duration-alt"></i>
+                                    <i th:if="${isRefused || isAutoSignFailed}" class="fi fi-rr-cross-small"></i>
+                                    <i th:if="${!isPending  && !isRefused  && !isDraft  && !isWorkflowFinished  && !isAutoSignFailed && !isAutoSign}" class="fi fi-rr-attribution-pencil"></i>
+                                    <i th:if="${!isPending  && !isRefused  && !isDraft  && !isWorkflowFinished  && !isAutoSignFailed && isAutoSign}" class="fi fi-rr-cloud-gear-automation"></i>
                                 </th:block>
 
                                 <!-- Étape complétée -->
@@ -159,7 +160,15 @@
 
                                         <!-- Indicateurs -->
                                         <div class="step-indicators">
-                                            <small th:if="${isAutoSign}" class="badge bg-info">Automatique</small>
+                                            <small th:if="${isAutoSign && liveWorkflowStep.autoSignStatus == null}"
+                                                   class="badge bg-info"
+                                                   th:text="#{autosign.status.pending}"></small>
+                                            <small th:if="${isAutoSign && liveWorkflowStep.autoSignStatus == true}"
+                                                   class="badge bg-success"
+                                                   th:text="#{autosign.status.success}"></small>
+                                            <small th:if="${isAutoSign && liveWorkflowStep.autoSignStatus == false}"
+                                                   class="badge bg-danger"
+                                                   th:text="#{autosign.status.failed}"></small>
                                             <span th:if="${liveWorkflowStep.recipients.size() > 1}" th:unless="${liveWorkflowStep.allSignToComplete}" title="Une signature suffit" class="step-indicator">
                                         <i class="fi fi-rr-users-slash"></i>
                                     </span>
@@ -256,7 +265,8 @@
                                                    canAddStep=${signRequestFull.updateAllowed && !isNextCompleted && isEditableStatus},
                                                    canUpdateStep=${signRequestFull.updateAllowed && !isAutoSign && isEditableStatus && stepNumber >= signRequestFull.currentStepNumber},
                                                    canDeleteStep=${signRequestFull.updateAllowed && signRequestFull.manager && isEditableStatus && showSignRequest.steps.size() > 1 && showSignRequest.steps.size() > signRequestFull.currentStepNumber && stepNumber >= signRequestFull.currentStepNumber},
-                                                   hasStepMenu=${canResendLink || canShowLayerActions || canDownloadHistory || canAddStep || canUpdateStep || canDeleteStep}">
+                                                   canResetAutoSign=${isCurrent && isAutoSign && liveWorkflowStep.autoSignStatus == false && signRequestFull.manager},
+                                                   hasStepMenu=${canResendLink || canShowLayerActions || canDownloadHistory || canAddStep || canUpdateStep || canDeleteStep || canResetAutoSign}">
                                 <div class="wv-100 dropdown dropdown-center float-end" th:classappend="${hasStepMenu ? '' : ' pb-1'}">
                                     <button th:if="${hasStepMenu}"
                                             class="btn btn-sm btn-transparent text-dark border-secondary-subtle"
@@ -268,6 +278,14 @@
                                         <i class="fi fi-rr-menu-dots"></i>
                                     </button>
                                     <ul th:if="${hasStepMenu}" class="dropdown-menu dropdown-menu-end p-1" style="width:292px; text-wrap: auto; overflow: clip;">
+                                        <li th:if="${canResetAutoSign}">
+                                            <button class="d-flex align-items-center btn btn-transparent text-dark w-100 text-left"
+                                                    type="button"
+                                                    data-bs-toggle="modal"
+                                                    th:data-bs-target="'#es-reset-auto-sign-' + ${liveWorkflowStep.id}">
+                                                <i class="fi fi-rr-refresh"></i>&nbsp;<span th:text="#{autosign.reset.action}"></span>
+                                            </button>
+                                        </li>
                                         <th:block th:each="recipient : ${liveWorkflowStep.recipients}" th:with="recipientAction=${showSignRequest.recipientActions.get(recipient.id)}">
                                             <li th:if="${isCurrent  && signRequestFull.manager  && recipient.user.userType.name() == 'external'  && isPending}">
                                                 <button class="d-flex align-items-center btn btn-transparent text-dark w-100 text-left js-step-menu-toggle"
@@ -345,6 +363,35 @@
                                     </ul>
                                 </div>
                                 </th:block>
+                            </div>
+                            <div th:if="${isCurrent && isAutoSign && liveWorkflowStep.autoSignStatus == false && signRequestFull.manager}"
+                                 class="modal fade"
+                                 th:id="'es-reset-auto-sign-' + ${liveWorkflowStep.id}"
+                                 tabindex="-1"
+                                 th:attr="aria-labelledby='es-reset-auto-sign-label-' + ${liveWorkflowStep.id}"
+                                 aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <form th:action="@{'/user/signbooks/' + ${showSignRequest.signBookLight.id} + '/auto-sign/' + ${liveWorkflowStep.id} + '/reset'}"
+                                              method="post">
+                                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                                            <div class="modal-header">
+                                                <h1 class="modal-title fs-5"
+                                                    th:id="'es-reset-auto-sign-label-' + ${liveWorkflowStep.id}"
+                                                    th:text="#{autosign.reset.title}"></h1>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                        th:aria-label="#{autosign.reset.cancel}"></button>
+                                            </div>
+                                            <div class="modal-body" th:text="#{autosign.reset.confirm}"></div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+                                                        th:text="#{autosign.reset.cancel}"></button>
+                                                <button type="submit" class="btn btn-primary"
+                                                        th:text="#{autosign.reset.submit}"></button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
                             </div>
                             <div th:if="${signRequestFull.updateAllowed && !isAutoSign && isEditableStatus && stepNumber >= signRequestFull.currentStepNumber}"
                                  data-bs-focus="false"
