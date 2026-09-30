@@ -21,12 +21,7 @@ public class ClientLoggerController {
 
     @PostMapping(consumes = {"application/json"})
     public ResponseEntity<Boolean> log(@RequestBody UiErrorDto jsonClientSideError, HttpServletRequest httpServletRequest) {
-        long contentLength = httpServletRequest.getContentLengthLong();
-        if (contentLength > Long.parseLong("1000")) {
-            logger.warn("This signRequestLight is too big and its content will not be logged. Headers");
-        } else {
-            logger.warn("Client-side error occurred : " + jsonClientSideError);
-        }
+        logger.warn("Client-side error occurred : " + jsonClientSideError);
         return new ResponseEntity<>(true, HttpStatus.OK);
     }
 

@@ -244,7 +244,7 @@
         </div>
     </div>
 
-    <div th:if="${@preAuthorizeService.signRequestManager(signRequestLight.id, authUserEppn)}" data-bs-focus="false" class="modal modal-lg modal-warning fade in" th:id="'modal-warning-' + ${signRequestLight.id}">
+    <div th:if="${@preAuthorizeService.signRequestDelete(signRequestLight.id, authUserEppn) && (!signRequestLight.status.equals(T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed) || showSignRequest.signBookLight.status.equals(T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed))}" data-bs-focus="false" class="modal modal-lg modal-warning fade in" th:id="'modal-warning-' + ${signRequestLight.id}">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
