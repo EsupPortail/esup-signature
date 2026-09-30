@@ -1916,7 +1916,7 @@ public class SignBookService {
                 }
             }
         }
-        // Signe chaque document et enchaîne immédiatement les étapes automatiques.
+        // Signe chaque document puis initialise l'étape suivante, si elle existe.
         if(autoSign && (pendingStartedForAtLeastOneSignRequest || alreadyPendingSignBook)) {
             List<SignRequestParams> signRequestParamses = liveWorkflowStep.getSignRequestParams();
             for(SignRequest signRequest : signBook.getSignRequests()) {
@@ -1959,7 +1959,7 @@ public class SignBookService {
                 }
             }
             liveWorkflowStep.setAutoSignStatus(true);
-            if(signRequestService.isMoreWorkflowStep(signBook)) {
+            if(!liveWorkflowStep.equals(signBook.getLiveWorkflow().getCurrentStep())) {
                 pendingSignBook(signBook, data, userEppn, authUserEppn, forceSendEmail, sendEmailAlert);
             } else {
                 completeSignBook(signBook, userEppn, "Tous les documents sont signés");

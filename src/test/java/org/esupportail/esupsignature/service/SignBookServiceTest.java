@@ -437,6 +437,76 @@ class SignBookServiceTest {
     }
 
     @Test
+    void startsTheFinalHumanStepAfterAnAutomaticStep() throws Exception {
+        User systemUser = new User();
+        systemUser.setId(1L);
+        systemUser.setEppn("system");
+        Recipient systemRecipient = recipient(10L, systemUser);
+        User creator = new User();
+        creator.setId(2L);
+        creator.setEppn("creator");
+
+        LiveWorkflowStep autoSignStep = new LiveWorkflowStep();
+        autoSignStep.setId(20L);
+        autoSignStep.setAutoSign(true);
+        LiveWorkflowStep humanStep = new LiveWorkflowStep();
+        humanStep.setId(21L);
+        humanStep.setAutoSign(false);
+        LiveWorkflow liveWorkflow = new LiveWorkflow();
+        liveWorkflow.getLiveWorkflowSteps().add(autoSignStep);
+        liveWorkflow.getLiveWorkflowSteps().add(humanStep);
+        liveWorkflow.setCurrentStep(autoSignStep);
+
+        SignBook signBook = new SignBook();
+        signBook.setId(42L);
+        signBook.setCreateBy(creator);
+        signBook.setStatus(SignRequestStatus.draft);
+        signBook.setLiveWorkflow(liveWorkflow);
+        SignRequest signRequest = signRequest(100L, signBook);
+        signBook.getSignRequests().add(signRequest);
+
+        SignRequestService signRequestService = mock(SignRequestService.class);
+        UserService userService = mock(UserService.class);
+        LiveWorkflowStepService liveWorkflowStepService = mock(LiveWorkflowStepService.class);
+        RecipientService recipientService = mock(RecipientService.class);
+        SignRequestParamsService signRequestParamsService = mock(SignRequestParamsService.class);
+        when(userService.getSystemUser()).thenReturn(systemUser);
+        when(userService.getByEppn("creator")).thenReturn(creator);
+        when(recipientService.createRecipient(systemUser)).thenReturn(systemRecipient);
+        doAnswer(invocation -> {
+            autoSignStep.getRecipients().add(invocation.getArgument(1));
+            return null;
+        }).when(liveWorkflowStepService).addRecipient(autoSignStep, systemRecipient);
+        when(signRequestService.pendingSignRequest(signRequest, "creator")).thenAnswer(invocation -> {
+            if(liveWorkflow.getCurrentStep().equals(autoSignStep)) {
+                signRequest.setStatus(SignRequestStatus.pending);
+                return true;
+            }
+            return false;
+        });
+        when(signRequestService.sign(signRequest, "", "sealCert", "default", null, null,
+                "system", "system", null, "", false)).thenAnswer(invocation -> {
+            liveWorkflow.setCurrentStep(humanStep);
+            signBook.setStatus(SignRequestStatus.pending);
+            return StepStatus.completed;
+        });
+
+        SignBookService service = mock(SignBookService.class, CALLS_REAL_METHODS);
+        ReflectionTestUtils.setField(service, "signRequestService", signRequestService);
+        ReflectionTestUtils.setField(service, "userService", userService);
+        ReflectionTestUtils.setField(service, "liveWorkflowStepService", liveWorkflowStepService);
+        ReflectionTestUtils.setField(service, "recipientService", recipientService);
+        ReflectionTestUtils.setField(service, "signRequestParamsService", signRequestParamsService);
+
+        service.pendingSignBook(signBook, null, "creator", "creator", false, false);
+
+        assertThat(liveWorkflow.getCurrentStep()).isSameAs(humanStep);
+        assertThat(autoSignStep.getAutoSignStatus()).isTrue();
+        verify(signRequestService, times(2)).pendingSignRequest(signRequest, "creator");
+        verify(signRequestService, never()).completeSignRequests(any(), any());
+    }
+
+    @Test
     void leavesNextAutomaticStepForASeparateTransaction() throws Exception {
         LiveWorkflowStep userStep = new LiveWorkflowStep();
         userStep.setSignType(SignType.signature);
