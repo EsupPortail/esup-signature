@@ -3,6 +3,7 @@ global:
     domain: univ-ville.fr
     nexu-url: http://localhost:9795
     hide-wizard: false
+    hide-wizard-workflow: false
     hide-auto-sign: false
     hide-send-sign-request: false
     hide-wizard-except-roles:

@@ -885,29 +885,6 @@ body.es-signrequest-page #tools .es-tools-halo.btn-outline-danger {
     --es-tools-halo-color: var(--bs-danger-bg-subtle);
 }
 
-body.es-signrequest-page #tools .es-tools-button-shell {
-    padding: .25rem;
-    border-radius: var(--bs-border-radius-sm);
-    background-color: var(--bs-secondary-bg-subtle);
-}
-
-body.es-signrequest-page #tools .es-tools-button-shell:has(> .btn-success),
-body.es-signrequest-page #tools .es-tools-button-shell:has(> .btn-outline-success) {
-    background-color: var(--bs-success-bg-subtle);
-}
-
-body.es-signrequest-page #tools .es-tools-button-shell:has(> .btn-danger),
-body.es-signrequest-page #tools .es-tools-button-shell:has(> .btn-outline-danger) {
-    background-color: var(--bs-danger-bg-subtle);
-}
-
-body.es-signrequest-page #tools #signActionButtons:has(> .btn-success) {
-    background-color: var(--bs-success-bg-subtle) !important;
-}
-
-body.es-signrequest-page #tools #signActionButtons:has(> .btn-danger) {
-    background-color: var(--bs-danger-bg-subtle) !important;
-}
 
 /* Adapt to the space occupied by the toolbar, including when the sidebar is open. */
 @container sign-tools (max-width: 1050px) {

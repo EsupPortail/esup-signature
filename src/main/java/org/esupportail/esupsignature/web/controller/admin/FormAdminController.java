@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.dto.ui.global.UiMessageDto;
 import org.esupportail.esupsignature.config.GlobalProperties;
+import org.esupportail.esupsignature.dto.page.admin.AdminFormDetailViewDto;
 import org.esupportail.esupsignature.dto.page.admin.FormFieldUpdateDto;
 import org.esupportail.esupsignature.dto.ui.global.SignatureUiConfigDto;
 import org.esupportail.esupsignature.entity.Form;
@@ -165,7 +166,7 @@ public class FormAdminController {
 
 	@GetMapping("{id}/signs")
 	@PreAuthorize("@preAuthorizeService.formManager(#id, #authUserEppn) || hasRole('ROLE_ADMIN')")
-	public String addSigns(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) throws EsupSignatureIOException {
+	public String addSigns(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) throws EsupSignatureIOException, JsonProcessingException {
 		String workflowRole;
 		if(preAuthorizeService.formManager(id, authUserEppn)) {
 			workflowRole = "manager";
@@ -175,7 +176,7 @@ public class FormAdminController {
 			redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", "Accès non autorisé"));
 			return "redirect:/admin/forms";
 		}
-		var view = uiFetchService.buildAdminFormSignsView(authUserEppn, workflowRole, id);
+		AdminFormDetailViewDto view = uiFetchService.buildAdminFormSignsView(authUserEppn, workflowRole, id);
 		model.addAttribute("workflowRole", view.getWorkflowRole());
 		model.addAttribute("form", view.getForm());
 		model.addAttribute("workflow", view.getWorkflow());
@@ -183,7 +184,9 @@ public class FormAdminController {
 		model.addAttribute("spots", view.getSpots());
 		model.addAttribute("srpMap", view.getSrpMap());
 		model.addAttribute("defaultSignImageNumber", view.getDefaultSignImageNumber());
-		model.addAttribute("signatureUiConfig", SignatureUiConfigDto.fromGlobalProperties(globalProperties));
+		model.addAttribute("spotsJson", objectMapper.writeValueAsString(view.getSpots()));
+		model.addAttribute("srpMapJson", objectMapper.writeValueAsString(view.getSrpMap()));
+		model.addAttribute("signatureUiConfigJson", objectMapper.writeValueAsString(SignatureUiConfigDto.fromGlobalProperties(globalProperties)));
 		return "admin/forms/signs";
 	}
 

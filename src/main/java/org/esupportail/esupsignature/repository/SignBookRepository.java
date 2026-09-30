@@ -32,6 +32,10 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
     @Query("select sb from SignBook sb where sb.id = :id")
     Optional<SignBook> findByIdForUpdate(@Param("id") Long id);
 
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select sb from SignRequest sr join sr.parentSignBook sb where sr.id = :signRequestId")
+    Optional<SignBook> findBySignRequestIdForUpdate(@Param("signRequestId") Long signRequestId);
+
     @Query("""
             select distinct sb from SignBook sb
             left join fetch sb.liveWorkflow lw
@@ -73,6 +77,7 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
                    lws.signType as signType,
                    lws.minSignLevel as minSignLevel,
                    coalesce(lws.autoSign, false) as autoSign,
+                   lws.autoSignStatus as autoSignStatus,
                    coalesce(lws.allSignToComplete, false) as allSignToComplete,
                    coalesce(lws.repeatable, false) as repeatable,
                    coalesce(lws.sealVisa, false) as sealVisa

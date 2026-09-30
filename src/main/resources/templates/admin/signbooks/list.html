@@ -170,24 +170,33 @@
                 </div>
             <div id="signButtons" class="es-sign-buttons es-fixed-action-btns active">
                 <ul id="buttonList" class="list-unstyled">
+                    <li th:insert="~{fragments/sign-buttons :: toggle}"></li>
                     <li>
-                        <a type="button" data-bs-toggle="modal" data-bs-target="#searchModal" class="btn btn-transparent text-dark">
+                        <a type="button" data-bs-toggle="modal" data-bs-target="#searchModal" class="btn btn-transparent text-dark"
+                           th:title="#{signButtons.search}" th:aria-label="#{signButtons.search}">
                             <i class="fi fi-rr-search"></i>
+                            <span class="es-sign-button-label" th:text="#{signButtons.search}"></span>
                         </a>
                     </li>
                     <li>
-                        <a type="button" id="downloadMultipleButton" class="btn btn-transparent text-dark d-none">
+                        <a type="button" id="downloadMultipleButton" class="btn btn-transparent text-dark d-none"
+                           th:title="#{signButtons.downloadSelection}" th:aria-label="#{signButtons.downloadSelection}">
                             <i class="fi fi-rr-download"></i>
+                            <span class="es-sign-button-label" th:text="#{signButtons.downloadSelection}"></span>
                         </a>
                     </li>
                     <li>
-                        <a type="button" id="restoreMultipleButton" class="btn btn-transparent text-primary d-none">
+                        <a type="button" id="restoreMultipleButton" class="btn btn-transparent text-primary d-none"
+                           th:title="#{signButtons.restoreSelection}" th:aria-label="#{signButtons.restoreSelection}">
                             <i class="fi fi-rr-trash-restore-alt"></i>
+                            <span class="es-sign-button-label" th:text="#{signButtons.restoreSelection}"></span>
                         </a>
                     </li>
                     <li>
-                        <a type="button" id="deleteMultipleButton" class="btn btn-transparent text-danger d-none">
+                        <a type="button" id="deleteMultipleButton" class="btn btn-transparent text-danger d-none"
+                           th:title="#{signButtons.deleteSelection}" th:aria-label="#{signButtons.deleteSelection}">
                             <i class="fi fi-rr-trash"></i>
+                            <span class="es-sign-button-label" th:text="#{signButtons.deleteSelection}"></span>
                         </a>
                     </li>
 

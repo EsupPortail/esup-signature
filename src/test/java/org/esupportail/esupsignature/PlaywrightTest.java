@@ -170,6 +170,12 @@ public class PlaywrightTest {
         );
     }
 
+    private void confirmSignature(Page currentPage) {
+        String selector = "#signModal.show #checkValidateAdvancedSignButton";
+        currentPage.waitForSelector(selector);
+        safeClick(currentPage, selector);
+    }
+
     private void deleteAllCustomSignImages(Page currentPage) {
         String selector = "[id^='deleteSign_']";
         for (int attempt = 0; attempt < 20; attempt++) {
@@ -429,6 +435,7 @@ public class PlaywrightTest {
 
         waitForSignLaunchReady(page);
         safeClick(page, "#signLaunchButton");
+        confirmSignature(page);
         page.waitForSelector("#link-dashboard");
 
         safeClick(page, "#link-dashboard");
@@ -463,6 +470,7 @@ public class PlaywrightTest {
 
         waitForSignLaunchReady(page);
         safeClick(page, "#signLaunchButton");
+        confirmSignature(page);
         page.waitForSelector("#link-dashboard");
 
         safeClick(page, "#link-dashboard");
@@ -536,6 +544,7 @@ public class PlaywrightTest {
         safeClick(secondaryPage, "#addSignButton2");
         waitForSignLaunchReady(secondaryPage);
         safeClick(secondaryPage, "#signLaunchButton");
+        confirmSignature(secondaryPage);
         waitForSignCompletion(secondaryPage);
         logoutCurrentUser(secondaryPage);
 
@@ -560,4 +569,3 @@ public class PlaywrightTest {
         }
     }
 }
-

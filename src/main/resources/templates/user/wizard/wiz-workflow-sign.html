@@ -36,7 +36,8 @@
                 <span class="text-xs font-bold">Création du circuit</span>
             </div>
         </div>
-        <div id="wiz-step-3" class="step-horizontal-v2 d-flex gap-2 align-items-center disabled">
+        <div id="wiz-step-3" class="step-horizontal-v2 d-flex gap-2 align-items-center disabled"
+             th:unless="${globalProperties.hideWizardWorkflow}">
             <div class="d-flex align-items-center gap-2">
                 <div class="step-horizontal-v2-icon"><i class="fi fi-rr-disk"></i></div>
             </div>

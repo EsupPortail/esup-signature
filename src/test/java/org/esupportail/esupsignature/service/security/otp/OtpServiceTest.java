@@ -16,9 +16,11 @@ import org.mockito.ArgumentCaptor;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -55,6 +57,32 @@ class OtpServiceTest {
                 .containsExactly(firstExternalUser, secondExternalUser);
         assertThat(secondOtp.getUser()).isSameAs(secondExternalUser);
         assertThat(secondOtp.getUser().getEmail()).isEqualTo("second@example.org");
+    }
+
+    @Test
+    void generatesOtpForReplayWithoutSendingTheStandardOtpEmail() {
+        User externalUser = externalUser(10L, "external@example.org");
+        SignBook signBook = new SignBook();
+        signBook.setId(42L);
+        signBook.setStatus(SignRequestStatus.pending);
+
+        SignBookRepository signBookRepository = mock(SignBookRepository.class);
+        OtpRepository otpRepository = mock(OtpRepository.class);
+        MailService mailService = mock(MailService.class);
+        UserService userService = mock(UserService.class);
+        GlobalProperties globalProperties = mock(GlobalProperties.class);
+        when(globalProperties.getOtpValidity()).thenReturn(15);
+        when(globalProperties.getSmsRequired()).thenReturn(false);
+        when(signBookRepository.findById(42L)).thenReturn(Optional.of(signBook));
+        when(userService.getById(10L)).thenReturn(externalUser);
+
+        OtpService service = new OtpService(signBookRepository, otpRepository, mailService, userService, globalProperties, null);
+        Otp otp = service.generateOtpForReplay(42L, 10L, null);
+
+        assertThat(otp.getUser()).isSameAs(externalUser);
+        assertThat(otp.getUrlId()).isNotBlank();
+        verify(otpRepository).save(otp);
+        verify(mailService, never()).sendOtp(any(Otp.class), same(signBook), eq(true));
     }
 
     private User externalUser(Long id, String email) {

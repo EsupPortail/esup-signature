@@ -217,26 +217,35 @@
                 </table>
                     </div>
                 </div>
-                <div id="signButtons" class="es-fixed-action-btns active">
+                <div id="signButtons" class="es-sign-buttons es-fixed-action-btns active">
                     <ul id="buttonList" class="list-unstyled">
+                        <li th:insert="~{fragments/sign-buttons :: toggle}"></li>
                         <li th:if="${hided}">
-                            <a th:href="'/user/manage/workflow/' + ${workflow.id} + '/signbooks'" type="button" class="btn btn-transparent text-dark" title="Afficher les demandes non masquées">
+                            <a th:href="'/user/manage/workflow/' + ${workflow.id} + '/signbooks'" type="button" class="btn btn-transparent text-dark"
+                               th:title="#{signButtons.showVisible}" th:aria-label="#{signButtons.showVisible}">
                                 <i class="fi fi-rr-eye " style="margin-top: 10px;"></i>
+                                <span class="es-sign-button-label" th:text="#{signButtons.showVisible}"></span>
                             </a>
                         </li>
                         <li th:unless="${hided}">
-                            <a th:href="'/user/manage/workflow/' + ${workflow.id} + '/signbooks?hided=true'" type="button" class="btn btn-transparent text-dark" title="Afficher les demandes masquées">
+                            <a th:href="'/user/manage/workflow/' + ${workflow.id} + '/signbooks?hided=true'" type="button" class="btn btn-transparent text-dark"
+                               th:title="#{signButtons.showHidden}" th:aria-label="#{signButtons.showHidden}">
                                 <i class="fi fi-rr-eye-crossed " style="margin-top: 10px;"></i>
+                                <span class="es-sign-button-label" th:text="#{signButtons.showHidden}"></span>
                             </a>
                         </li>
                         <li>
-                            <a th:unless="${form != null}" th:href="'user/manage/workflow/' + ${workflow.id} + '/datas/csv'" type="button" class="btn btn-transparent text-dark">
+                            <a th:unless="${form != null}" th:href="'user/manage/workflow/' + ${workflow.id} + '/datas/csv'" type="button" class="btn btn-transparent text-dark"
+                               th:title="#{signButtons.exportCsv}" th:aria-label="#{signButtons.exportCsv}">
                                 <i class="fi fi-rr-file-csv " style="margin-top: 10px;"></i>
+                                <span class="es-sign-button-label" th:text="#{signButtons.exportCsv}"></span>
                             </a>
                         </li>
                         <li>
-                            <a th:if="${form != null}" th:href="'/user/manage/form/' + ${form.id} + '/datas/csv'" class="btn btn-transparent text-dark">
+                            <a th:if="${form != null}" th:href="'/user/manage/form/' + ${form.id} + '/datas/csv'" class="btn btn-transparent text-dark"
+                               th:title="#{signButtons.exportCsv}" th:aria-label="#{signButtons.exportCsv}">
                                 <i class="fi fi-rr-file-csv"></i>
+                                <span class="es-sign-button-label" th:text="#{signButtons.exportCsv}"></span>
                             </a>
                         </li>
                     </ul>

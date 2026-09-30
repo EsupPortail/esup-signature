@@ -190,42 +190,48 @@
                         </table>
                     </div>
                 </div>
-                <div id="signButtons" class="es-sign-buttons d-flex flex-column justify-content-between bg-white es-fixed-action-btns active active" style="width: 72px;">
+                <div id="signButtons" class="es-sign-buttons d-flex flex-column justify-content-between bg-white es-fixed-action-btns active">
                     <ul id="buttonList" class="list-unstyled">
+                        <li th:insert="~{fragments/sign-buttons :: toggle}"></li>
                         <li>
                             <a type="button" id="massSignModalButton"
                                data-bs-toggle="modal" data-bs-target="#signModal"
-                               title="Signer en masse les demandes sélectionnées"
+                               th:title="#{signButtons.massSign}" th:aria-label="#{signButtons.massSign}"
                                class="btn btn-transparent text-success d-none">
                                 <i class="fi fi-rr-signature-lock" ></i>
+                                <span class="es-sign-button-label" th:text="#{signButtons.massSign}"></span>
                             </a>
                         </li>
                         <li>
                             <a type="button" id="downloadMultipleButton"
-                               title="Télécharger la selection"
+                               th:title="#{signButtons.downloadSelection}" th:aria-label="#{signButtons.downloadSelection}"
                                class="btn btn-transparent text-dark d-none">
                                 <i class="fi fi-rr-download" ></i>
+                                <span class="es-sign-button-label" th:text="#{signButtons.downloadSelection}"></span>
                             </a>
                         </li>
                         <li>
                             <a type="button" id="downloadMultipleButtonWithReport"
-                               title="Télécharger la selection avec les rapports"
+                               th:title="#{signButtons.downloadSelectionReports}" th:aria-label="#{signButtons.downloadSelectionReports}"
                                class="btn btn-transparent text-dark d-none">
                                 <i class="fi fi-rr-folder-download " ></i>
+                                <span class="es-sign-button-label" th:text="#{signButtons.downloadSelectionReports}"></span>
                             </a>
                         </li>
                         <li>
                             <a type="button" id="restoreMultipleButton"
-                               title="Restaurer en masse les demandes sélectionnées"
+                               th:title="#{signButtons.restoreSelection}" th:aria-label="#{signButtons.restoreSelection}"
                                class="btn btn-transparent text-primary d-none">
                                 <i class="fi fi-rr-trash-restore"></i>
+                                <span class="es-sign-button-label" th:text="#{signButtons.restoreSelection}"></span>
                             </a>
                         </li>
                         <li>
                             <a type="button" id="deleteMultipleButton"
-                               title="Supprimer en masse les demandes sélectionnées"
+                               th:title="#{signButtons.deleteSelection}" th:aria-label="#{signButtons.deleteSelection}"
                                class="btn btn-transparent text-danger d-none">
                                 <i class="fi fi-rr-trash" ></i>
+                                <span class="es-sign-button-label" th:text="#{signButtons.deleteSelection}"></span>
                             </a>
                         </li>
                         <li th:if="${statusFilter == 'deleted'}">
@@ -233,8 +239,9 @@
                                   data-confirm-message="Voulez-vous vraiment vider la corbeille ?"
                                   th:action="'/user/signbooks/empty-trash'" th:method="'delete'">
                                 <button type="submit" tabindex="1" id="trashLaunchButton" class="btn btn-transparent text-danger"
-                                        title="Vider la corbeille" style="border: 0;">
+                                        th:title="#{signButtons.emptyTrash}" th:aria-label="#{signButtons.emptyTrash}" style="border: 0;">
                                     <i class="fi fi-rr-dumpster-fire" style="margin-top: 0;"></i>
+                                    <span class="es-sign-button-label" th:text="#{signButtons.emptyTrash}"></span>
                                 </button>
                             </form>
                         </li>

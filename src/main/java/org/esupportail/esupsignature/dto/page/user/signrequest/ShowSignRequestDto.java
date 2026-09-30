@@ -409,6 +409,7 @@ public class ShowSignRequestDto {
         private SignType signType;
         private SignLevel minSignLevel;
         private Boolean autoSign;
+        private Boolean autoSignStatus;
         private Boolean allSignToComplete;
         private Boolean repeatable;
         private Boolean sealVisa;
@@ -446,6 +447,8 @@ public class ShowSignRequestDto {
         public void setMinSignLevel(SignLevel minSignLevel) { this.minSignLevel = minSignLevel; }
         public Boolean getAutoSign() { return autoSign; }
         public void setAutoSign(Boolean autoSign) { this.autoSign = autoSign; }
+        public Boolean getAutoSignStatus() { return autoSignStatus; }
+        public void setAutoSignStatus(Boolean autoSignStatus) { this.autoSignStatus = autoSignStatus; }
         public Boolean getAllSignToComplete() { return allSignToComplete; }
         public void setAllSignToComplete(Boolean allSignToComplete) { this.allSignToComplete = allSignToComplete; }
         public Boolean getRepeatable() { return repeatable; }

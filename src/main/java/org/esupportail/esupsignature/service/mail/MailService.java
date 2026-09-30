@@ -191,14 +191,11 @@ public class MailService {
         final Context ctx = new Context(Locale.FRENCH);
         setTemplate(ctx, signBook);
         ctx.setVariable("comment", comment);
-        Set<String> toEmails = new HashSet<>();
-        if(!signBook.getCreateBy().getEppn().equals("system")) toEmails.add(signBook.getCreateBy().getEmail());
-        if(BooleanUtils.isTrue(sendToAll)) {
-            String systemAddress = "system@" + globalProperties.getDomain();
-            toEmails.addAll(signBook.getTeam().stream().map(User::getEmail).toList().stream().filter(email -> !email.equals(systemAddress) && !email.equals("system")).toList());
-        }
         User user = userService.getByEppn(userEppn);
-        toEmails.removeIf(e -> e.equals(user.getEmail()));
+        Set<String> toEmails = getPostitRecipientEmails(signBook, user, sendToAll);
+        if (toEmails.isEmpty()) {
+            return;
+        }
         try {
             MimeMessageHelper mimeMessage = new MimeMessageHelper(getMailSender().createMimeMessage(), true, "UTF-8");
             String htmlContent = templateEngine.process("mail/email-postit.html", ctx);
@@ -211,6 +208,24 @@ public class MailService {
             logger.error("unable to send COMPLETE email", e);
             throw new EsupSignatureMailException("Problème lors de l'envoi du mail", e);
         }
+    }
+
+    private Set<String> getPostitRecipientEmails(SignBook signBook, User sender, Boolean sendToAll) {
+        Set<String> toEmails = new HashSet<>();
+        User creator = signBook.getCreateBy();
+        if (!UserType.external.equals(creator.getUserType()) && !creator.getEppn().equals("system")) {
+            toEmails.add(creator.getEmail());
+        }
+        if (BooleanUtils.isTrue(sendToAll)) {
+            String systemAddress = "system@" + globalProperties.getDomain();
+            toEmails.addAll(signBook.getTeam().stream()
+                    .filter(teamUser -> !UserType.external.equals(teamUser.getUserType()))
+                    .map(User::getEmail)
+                    .filter(email -> !email.equals(systemAddress) && !email.equals("system"))
+                    .toList());
+        }
+        toEmails.remove(sender.getEmail());
+        return toEmails;
     }
 
     public void sendCompletedCCMail(SignBook signBook, String userEppn, Set<String> toMails) throws EsupSignatureMailException {
