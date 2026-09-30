@@ -18,6 +18,7 @@ import org.esupportail.esupsignature.entity.enums.SignWith;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.service.RecipientService;
 import org.esupportail.esupsignature.service.SignBookService;
+import org.esupportail.esupsignature.service.SignBookSigningService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.utils.StepStatus;
@@ -42,12 +43,14 @@ public class SignRequestJwtController {
     private final RecipientService recipientService;
     private final SignRequestService signRequestService;
     private final SignBookService signBookService;
+    private final SignBookSigningService signBookSigningService;
 
-    public SignRequestJwtController(UserService userService, RecipientService recipientService, SignRequestService signRequestService, SignBookService signBookService) {
+    public SignRequestJwtController(UserService userService, RecipientService recipientService, SignRequestService signRequestService, SignBookService signBookService, SignBookSigningService signBookSigningService) {
         this.userService = userService;
         this.recipientService = recipientService;
         this.signRequestService = signRequestService;
         this.signBookService = signBookService;
+        this.signBookSigningService = signBookSigningService;
     }
 
     @PreAuthorize("hasRole('ROLE_USER')")
@@ -164,7 +167,7 @@ public class SignRequestJwtController {
         signRequestService.addAttachement(attachementMultipartFiles, null, Long.valueOf(signRequestIds.get(0)), user.getEppn());
         boolean allSignCompleted = true;
         for(String signRequestId : signRequestIds) {
-            StepStatus stepStatus = signBookService.initSign(Long.valueOf(signRequestId), signRequestParamsJsonString, null, null, "", SignWith.imageStamp.name(), null, null, user.getEppn(), user.getEppn(), keepSignFields);
+            StepStatus stepStatus = signBookSigningService.initSign(Long.valueOf(signRequestId), signRequestParamsJsonString, null, null, "", SignWith.imageStamp.name(), null, null, user.getEppn(), user.getEppn(), keepSignFields);
             if(stepStatus.equals(StepStatus.not_completed)) {
                 allSignCompleted = false;
                 break;

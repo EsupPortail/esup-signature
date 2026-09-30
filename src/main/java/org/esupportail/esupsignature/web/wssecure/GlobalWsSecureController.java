@@ -48,15 +48,17 @@ public class GlobalWsSecureController {
     private final GlobalProperties globalProperties;
     private final SignRequestService signRequestService;
     private final SignBookService signBookService;
+    private final SignBookSigningService signBookSigningService;
     private final DocumentService documentService;
     private final SedaExportService sedaExportService;
     private final CommentService commentService;
     private final WorkflowService workflowService;
 
-    public GlobalWsSecureController(GlobalProperties globalProperties, SignRequestService signRequestService, SignBookService signBookService, DocumentService documentService, SedaExportService sedaExportService, CommentService commentService, WorkflowService workflowService) {
+    public GlobalWsSecureController(GlobalProperties globalProperties, SignRequestService signRequestService, SignBookService signBookService, SignBookSigningService signBookSigningService, DocumentService documentService, SedaExportService sedaExportService, CommentService commentService, WorkflowService workflowService) {
         this.globalProperties = globalProperties;
         this.signRequestService = signRequestService;
         this.signBookService = signBookService;
+        this.signBookSigningService = signBookSigningService;
         this.documentService = documentService;
         this.sedaExportService = sedaExportService;
         this.commentService = commentService;
@@ -79,14 +81,14 @@ public class GlobalWsSecureController {
         if(userShareString != null) userShareId = Long.valueOf(userShareString.toString());
         try {
             if(signAll == null || !signAll) {
-                StepStatus stepStatus = signBookService.initSign(signRequestId, signRequestParamsJsonString, comment, formData, password, certType, sealCertificat, userShareId, userEppn, authUserEppn, false);
+                StepStatus stepStatus = signBookSigningService.initSign(signRequestId, signRequestParamsJsonString, comment, formData, password, certType, sealCertificat, userShareId, userEppn, authUserEppn, false);
                 if(stepStatus.equals(StepStatus.nexu_redirect)) {
                     return ResponseEntity.ok().body("initNexu");
                 }
             } else {
                 List<SignRequest> signRequests = signRequestService.getSignRequests(signRequestId);
                 for(SignRequest signRequest : signRequests) {
-                    StepStatus stepStatus = signBookService.initSign(signRequest.getId(), signRequestParamsJsonString, comment, formData, password, certType, sealCertificat, userShareId, userEppn, authUserEppn, false);
+                    StepStatus stepStatus = signBookSigningService.initSign(signRequest.getId(), signRequestParamsJsonString, comment, formData, password, certType, sealCertificat, userShareId, userEppn, authUserEppn, false);
                     if(stepStatus.equals(StepStatus.nexu_redirect)) {
                         return ResponseEntity.ok().body("initNexu");
                     }

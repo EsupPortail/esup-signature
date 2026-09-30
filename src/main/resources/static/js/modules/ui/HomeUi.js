@@ -741,40 +741,91 @@ export class HomeUi {
     }
 
     initToSignToggle() {
-        const toggleBtn = document.getElementById('toggleSizeBtn');
-        const toSignDiv = document.getElementById('toSignDiv');
-        const toggleIcon = document.getElementById('toggleIcon');
-        const myFavorites = document.getElementById('myFavorites');
-        if (toggleBtn == null || toSignDiv == null || toggleIcon == null) {
+        const toggleSizeBtn = document.getElementById('toggleSizeBtn');
+        const favoritesToggleBtn = document.getElementById('favoritesSidebarToggle');
+        const documentsColumn = document.getElementById('documentsColumn');
+        const favoritesColumn = document.getElementById('favoritesColumn');
+        const toggleLabel = document.getElementById('favoritesSidebarToggleLabel');
+        const favoritesToggleIcon = document.getElementById('favoritesSidebarToggleIcon');
+        const toggleSizeIcon = document.getElementById('toggleIcon');
+        if (toggleSizeBtn == null || documentsColumn == null) {
+            return;
+        }
+        if (favoritesColumn == null) {
+            toggleSizeBtn.disabled = true;
+            toggleSizeBtn.title = toggleSizeBtn.dataset.unavailableLabel || '';
             return;
         }
 
-        const applyState = expanded => {
-            if (expanded) {
-                toSignDiv.style.flex = '1 1 100%';
-                if (myFavorites != null) {
-                    myFavorites.style.display = 'none';
+        const collapsedStorageKey = 'esup-favorites-sidebar-collapsed';
+        const balancedStorageKey = 'esup-favorites-sidebar-balanced';
+        const responsiveColumnClasses = ['col-lg-4', 'col-lg-5', 'col-lg-7', 'col-lg-8', 'col-xl-3', 'col-xl-9'];
+        const applyState = () => {
+            responsiveColumnClasses.forEach(className => {
+                documentsColumn.classList.remove(className);
+                favoritesColumn.classList.remove(className);
+            });
+            favoritesColumn.classList.toggle('d-none', isCollapsed);
+            if (!isCollapsed) {
+                if (isBalanced) {
+                    documentsColumn.classList.add('col-lg-7');
+                    favoritesColumn.classList.add('col-lg-5');
+                } else {
+                    documentsColumn.classList.add('col-lg-8', 'col-xl-9');
+                    favoritesColumn.classList.add('col-lg-4', 'col-xl-3');
                 }
-                toggleIcon.className = 'fi fi-rr-compress';
-                toggleBtn.title = 'Réduire';
-                return;
             }
 
-            toSignDiv.style.flex = '1 1 auto';
-            if (myFavorites != null) {
-                myFavorites.style.display = 'flex';
+            toggleSizeBtn.disabled = isCollapsed;
+            toggleSizeBtn.setAttribute('aria-pressed', String(isBalanced));
+            favoritesToggleBtn?.setAttribute('aria-expanded', String(!isCollapsed));
+            if (toggleLabel != null && favoritesToggleBtn != null) {
+                toggleLabel.textContent = isCollapsed
+                    ? favoritesToggleBtn.dataset.showLabel
+                    : favoritesToggleBtn.dataset.hideLabel;
             }
-            toggleIcon.className = 'fi fi-rr-expand';
-            toggleBtn.title = 'Agrandir';
+            if (favoritesToggleIcon != null) {
+                favoritesToggleIcon.className = isCollapsed ? 'fi fi-rr-angle-small-left' : 'fi fi-rr-angle-small-right';
+            }
+            if (toggleSizeIcon != null) {
+                toggleSizeIcon.className = isBalanced ? 'fi fi-rr-compress' : 'fi fi-rr-expand';
+            }
+            toggleSizeBtn.title = isBalanced
+                ? toggleSizeBtn.dataset.compactLabel
+                : toggleSizeBtn.dataset.expandedLabel;
         };
 
-        const isExpanded = localStorage.getItem('toSignExpanded') === 'true';
-        applyState(isExpanded);
+        let storedCollapsedState = null;
+        let storedBalancedState = null;
+        try {
+            storedCollapsedState = localStorage.getItem(collapsedStorageKey);
+            storedBalancedState = localStorage.getItem(balancedStorageKey);
+        } catch (error) {
+            console.debug('Unable to read home columns state', error);
+        }
+        let isCollapsed = storedCollapsedState == null
+            ? favoritesColumn.dataset.hasFavorites !== 'true'
+            : storedCollapsedState === 'true';
+        let isBalanced = storedBalancedState === 'true';
+        applyState();
 
-        toggleBtn.addEventListener('click', () => {
-            const newState = !(localStorage.getItem('toSignExpanded') === 'true');
-            localStorage.setItem('toSignExpanded', String(newState));
-            applyState(newState);
+        favoritesToggleBtn?.addEventListener('click', () => {
+            isCollapsed = !isCollapsed;
+            try {
+                localStorage.setItem(collapsedStorageKey, String(isCollapsed));
+            } catch (error) {
+                console.debug('Unable to save favorites sidebar state', error);
+            }
+            applyState();
+        });
+        toggleSizeBtn.addEventListener('click', () => {
+            isBalanced = !isBalanced;
+            try {
+                localStorage.setItem(balancedStorageKey, String(isBalanced));
+            } catch (error) {
+                console.debug('Unable to save home columns state', error);
+            }
+            applyState();
         });
     }
 

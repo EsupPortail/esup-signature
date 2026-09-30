@@ -3,11 +3,13 @@
 <!--/*@thymesVar id="field" type="org.esupportail.esupsignature.entity.Field"*/-->
 <!--/*@thymesVar id="form" type="org.esupportail.esupsignature.entity.Form"*/-->
 <head th:replace="~{fragments/head-full :: head}"></head>
-<script th:inline="javascript" type="module">
-    import {default as FormSignsUi} from '/js/modules/ui/forms/FormSignsUi.js?version=@[(${versionApp})]@';
-    new FormSignsUi("admin", [[${form.id}]], [[${_csrf}]]);
-</script>
-<body class="es-signrequest-page">
+<script type="module" th:src="'/js/modules/bootstrap/AdminFormSignsBootstrap.js?version=' + ${versionApp}"></script>
+<body class="es-signrequest-page"
+      th:data-esup-workflow-role="${workflowRole}"
+      th:data-esup-form-id="${form.id}"
+      th:data-esup-workflow-available="${workflow != null}"
+      th:data-esup-pdf="${document != null && document.contentType == 'application/pdf'}"
+      th:data-esup-default-sign-image-number="${defaultSignImageNumber}">
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
     <div class="es-wrapper">
@@ -65,68 +67,11 @@
         </div>
     </div>
 </main>
-<script th:inline="javascript" type="module" th:if="${workflow != null}">
-    import {SignUi} from '/js/modules/ui/signrequests/SignUi.js?version=@[(${versionApp})]@';
-    import {SignUiFrontDto} from '/js/modules/ui/signrequests/dto/SignUiFrontDto.js?version=@[(${versionApp})]@';
-    const signatureUiConfig = /*[[${signatureUiConfig}]]*/ null;
-    const rawSpots = [[${spots}]];
-    const rawSrpMap = [[${srpMap}]];
-    const idToStepMap = {};
-    if (rawSrpMap != null) {
-        Object.entries(rawSrpMap).forEach(([step, srpId]) => {
-            const parsedStep = parseInt(step, 10);
-            const parsedSrpId = parseInt(srpId, 10);
-            if (Number.isFinite(parsedStep) && Number.isFinite(parsedSrpId)) {
-                idToStepMap[parsedSrpId] = parsedStep;
-            }
-        });
-    }
-    const spotsWithStepNumber = Array.isArray(rawSpots)
-        ? rawSpots.map(spot => {
-            const parsedId = parseInt(spot?.id, 10);
-            const mappedStep = Number.isFinite(parsedId) ? idToStepMap[parsedId] : null;
-            return {
-                ...spot,
-                stepNumber: Number.isFinite(mappedStep) ? mappedStep : (spot?.stepNumber ?? 1)
-            };
-        })
-        : [];
-    const formSignsFrontDto = SignUiFrontDto.from({
-        signRequestId: [[${form.id}]],
-        dataId: null,
-        formId: [[${form.id}]],
-        currentSignRequestParamses: spotsWithStepNumber,
-        signImageNumber: [[${defaultSignImageNumber}]],
-        currentSignType: 'form',
-        signable: false,
-        editable: true,
-        comments: [],
-        spots: spotsWithStepNumber,
-        pdf: [[${document != null && document.contentType == 'application/pdf'}]],
-        currentStepNumber: 1,
-        currentStepMultiSign: false,
-        currentStepSingleSignWithAnnotation: false,
-        currentStepMinSignLevel: null,
-        workflowAvailable: false,
-        signImages: [],
-        userName: [[${workflowRole}]],
-        authUserName: 'forms',
-        fields: [],
-        stepRepeatable: null,
-        status: 'pending',
-        action: null,
-        nbSignRequests: 1,
-        notSigned: true,
-        attachmentAlert: false,
-        attachmentRequire: false,
-        otp: false,
-        restore: true,
-        phone: null,
-        returnToHomeAfterSign: false,
-        manager: true
-    });
-    new SignUi(formSignsFrontDto, [[${_csrf}]], signatureUiConfig);
-</script>
+<th:block th:if="${workflow != null}">
+    <textarea id="admin-form-signs-spots-json" class="d-none" th:text="${spotsJson}" aria-hidden="true"></textarea>
+    <textarea id="admin-form-signs-srp-map-json" class="d-none" th:text="${srpMapJson}" aria-hidden="true"></textarea>
+    <textarea id="admin-form-signs-signature-ui-config-json" class="d-none" th:text="${signatureUiConfigJson}" aria-hidden="true"></textarea>
+</th:block>
 <div th:if="${workflow != null && form.signRequestParams != null}" data-bs-focus="false" class="modal fade" id="updateSignsModal" tabindex="-1" aria-labelledby="updateSignsModalTitle"  aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">

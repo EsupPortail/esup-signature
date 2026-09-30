@@ -29,6 +29,7 @@ import org.esupportail.esupsignature.repository.DataRepository;
 import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.repository.SignRequestParamsRepository;
 import org.esupportail.esupsignature.repository.WorkflowRepository;
+import org.esupportail.esupsignature.service.event.AutoSignFailedEvent;
 import org.esupportail.esupsignature.service.interfaces.fs.FsAccessFactoryService;
 import org.esupportail.esupsignature.service.interfaces.fs.FsAccessService;
 import org.esupportail.esupsignature.service.interfaces.fs.FsFile;
@@ -46,6 +47,7 @@ import org.esupportail.esupsignature.service.utils.pdf.PdfService;
 import org.esupportail.esupsignature.service.utils.sign.SignService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.MessageSource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -125,8 +127,9 @@ public class SignBookService {
     private final SmsProperties smsProperties;
     private final SignService signService;
     private final UiSignBookMapper uiSignBookMapper;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
-    public SignBookService(GlobalProperties globalProperties, MessageSource messageSource, AuditTrailService auditTrailService, SignBookRepository signBookRepository, SignRequestService signRequestService, UserService userService, FsAccessFactoryService fsAccessFactoryService, WebUtilsService webUtilsService, FileService fileService, PdfService pdfService, WorkflowService workflowService, MailService mailService, WorkflowStepService workflowStepService, LiveWorkflowService liveWorkflowService, LiveWorkflowStepService liveWorkflowStepService, DataService dataService, LogService logService, TargetService targetService, UserPropertieService userPropertieService, CommentService commentService, OtpService otpService, DataRepository dataRepository, WorkflowRepository workflowRepository, UserShareService userShareService, RecipientService recipientService, DocumentService documentService, SignRequestParamsService signRequestParamsService, PreFillService preFillService, ReportService reportService, ActionService actionService, SignRequestParamsRepository signRequestParamsRepository, ObjectMapper objectMapper, SignWithService signWithService, SmsProperties smsProperties, SignService signService, UiSignBookMapper uiSignBookMapper) {
+    public SignBookService(GlobalProperties globalProperties, MessageSource messageSource, AuditTrailService auditTrailService, SignBookRepository signBookRepository, SignRequestService signRequestService, UserService userService, FsAccessFactoryService fsAccessFactoryService, WebUtilsService webUtilsService, FileService fileService, PdfService pdfService, WorkflowService workflowService, MailService mailService, WorkflowStepService workflowStepService, LiveWorkflowService liveWorkflowService, LiveWorkflowStepService liveWorkflowStepService, DataService dataService, LogService logService, TargetService targetService, UserPropertieService userPropertieService, CommentService commentService, OtpService otpService, DataRepository dataRepository, WorkflowRepository workflowRepository, UserShareService userShareService, RecipientService recipientService, DocumentService documentService, SignRequestParamsService signRequestParamsService, PreFillService preFillService, ReportService reportService, ActionService actionService, SignRequestParamsRepository signRequestParamsRepository, ObjectMapper objectMapper, SignWithService signWithService, SmsProperties smsProperties, SignService signService, UiSignBookMapper uiSignBookMapper, ApplicationEventPublisher applicationEventPublisher) {
         this.globalProperties = globalProperties;
         this.messageSource = messageSource;
         this.auditTrailService = auditTrailService;
@@ -163,6 +166,7 @@ public class SignBookService {
         this.smsProperties = smsProperties;
         this.signService = signService;
         this.uiSignBookMapper = uiSignBookMapper;
+        this.applicationEventPublisher = applicationEventPublisher;
     }
 
     private String toContainsLikePattern(String value) {
@@ -1858,13 +1862,23 @@ public class SignBookService {
         pendingSignBook(signBook, null, authUserEppn, authUserEppn, false, true);
     }
 
+    /**
+     * Démarre l'étape courante du circuit : prépare les demandes, envoie les notifications
+     * puis lance la signature système ou attend l'action des destinataires.
+     * Une fois l'étape traitée, le circuit avance ou se termine.
+     */
     @Transactional
     public void pendingSignBook(SignBook signBook, Data data, String userEppn, String authUserEppn, boolean forceSendEmail, boolean sendEmailAlert) throws EsupSignatureRuntimeException {
         LiveWorkflowStep liveWorkflowStep = signBook.getLiveWorkflow().getCurrentStep();
-        boolean autoSign = liveWorkflowStep != null && liveWorkflowStep.getAutoSign();
+        boolean autoSign = liveWorkflowStep != null && Boolean.TRUE.equals(liveWorkflowStep.getAutoSign());
         boolean alreadyPendingSignBook = SignRequestStatus.pending.equals(signBook.getStatus());
         boolean pendingStartedForAtLeastOneSignRequest = false;
         boolean emailSended = false;
+        if(autoSign && liveWorkflowStep.getAutoSignStatus() != null) {
+            logger.info("Signature automatique déjà traitée pour l'étape {} du circuit {}", liveWorkflowStep.getId(), signBook.getId());
+            return;
+        }
+        // Une étape automatique est exécutée par l'utilisateur système.
         if(autoSign) {
             liveWorkflowStep.setSignType(SignType.signature);
             User systemUser = userService.getSystemUser();
@@ -1872,6 +1886,7 @@ public class SignBookService {
                 liveWorkflowStepService.addRecipient(liveWorkflowStep, recipientService.createRecipient(systemUser));
             }
         }
+        // Démarre les demandes actives et prépare les destinataires de l'étape.
         for(SignRequest signRequest : signBook.getSignRequests()) {
             if(!signRequest.getStatus().equals(SignRequestStatus.refused)) {
                 if (liveWorkflowStep != null) {
@@ -1901,9 +1916,13 @@ public class SignBookService {
                 }
             }
         }
-        if(autoSign && pendingStartedForAtLeastOneSignRequest) {
+        // Signe chaque document puis initialise l'étape suivante, si elle existe.
+        if(autoSign && (pendingStartedForAtLeastOneSignRequest || alreadyPendingSignBook)) {
             List<SignRequestParams> signRequestParamses = liveWorkflowStep.getSignRequestParams();
             for(SignRequest signRequest : signBook.getSignRequests()) {
+                if(!SignRequestStatus.pending.equals(signRequest.getStatus())) {
+                    continue;
+                }
                 if(liveWorkflowStep.getWorkflowStep() != null && liveWorkflowStep.getWorkflowStep().getCertificat() != null) {
                     if (!signRequestParamses.isEmpty()) {
                         signRequestParamses.get(0).setExtraDate(true);
@@ -1917,10 +1936,11 @@ public class SignBookService {
                     try {
                         signRequestParamsService.copySignRequestParams(signRequest.getId(), signRequestParamses);
                         signRequestService.sign(signRequest, "", "autoCert", "default", null, null,"system", "system", null, "", false);
-                    } catch (IOException | EsupSignatureMailException e) {
-                        refuse(signRequest.getId(), "Signature refusée par le système automatique", "system", "system");
+                    } catch (IOException | EsupSignatureRuntimeException e) {
                         logger.error("auto sign fail", e);
-                        throw new EsupSignatureRuntimeException("Erreur lors de la signature automatique : " + e.getMessage());
+                        liveWorkflowStep.setAutoSignStatus(false);
+                        applicationEventPublisher.publishEvent(new AutoSignFailedEvent(liveWorkflowStep.getId()));
+                        return;
                     }
                 } else {
                     try {
@@ -1932,12 +1952,14 @@ public class SignBookService {
                         signRequestService.sign(signRequest, "", "sealCert", sealCertificatName, null, null,"system", "system", null, "", false);
                     } catch (IOException | EsupSignatureRuntimeException e) {
                         logger.error("auto sign fail", e);
-                        refuse(signRequest.getId(), "Signature refusée par le système automatique", "system", "system");
-                        throw new EsupSignatureRuntimeException("Erreur lors de la signature automatique : " + e.getMessage());
+                        liveWorkflowStep.setAutoSignStatus(false);
+                        applicationEventPublisher.publishEvent(new AutoSignFailedEvent(liveWorkflowStep.getId()));
+                        return;
                     }
                 }
             }
-            if(signRequestService.isMoreWorkflowStep(signBook)) {
+            liveWorkflowStep.setAutoSignStatus(true);
+            if(!liveWorkflowStep.equals(signBook.getLiveWorkflow().getCurrentStep())) {
                 pendingSignBook(signBook, data, userEppn, authUserEppn, forceSendEmail, sendEmailAlert);
             } else {
                 completeSignBook(signBook, userEppn, "Tous les documents sont signés");
@@ -1945,6 +1967,7 @@ public class SignBookService {
             }
             return;
         }
+        // Évite de redémarrer un circuit déjà en attente sans nouvelle demande à traiter.
         if (!pendingStartedForAtLeastOneSignRequest && alreadyPendingSignBook) {
             logger.info("Circuit " + signBook.getId() + " déjà démarré pour signature de l'étape " + signBook.getLiveWorkflow().getCurrentStepNumber());
             return;
@@ -1962,6 +1985,23 @@ public class SignBookService {
                 }
             }
         }
+    }
+
+    @Transactional
+    public boolean resetAutoSignStatus(Long signBookId, Long liveWorkflowStepId, String authUserEppn) {
+        SignBook signBook = signBookRepository.findByIdForUpdate(signBookId).orElseThrow();
+        LiveWorkflowStep liveWorkflowStep = signBook.getLiveWorkflow().getLiveWorkflowSteps().stream()
+                .filter(step -> liveWorkflowStepId.equals(step.getId()))
+                .findFirst()
+                .orElseThrow();
+        if(!liveWorkflowStep.equals(signBook.getLiveWorkflow().getCurrentStep())
+                || !Boolean.TRUE.equals(liveWorkflowStep.getAutoSign())
+                || !Boolean.FALSE.equals(liveWorkflowStep.getAutoSignStatus())) {
+            throw new EsupSignatureRuntimeException(messageSource.getMessage("autosign.reset.unavailable", null, Locale.FRENCH));
+        }
+        liveWorkflowStep.setAutoSignStatus(null);
+        pendingSignBook(signBook, null, authUserEppn, authUserEppn, false, false);
+        return Boolean.TRUE.equals(liveWorkflowStep.getAutoSignStatus());
     }
 
     private void completeSignBook(SignBook signBook, String userEppn, String message) throws EsupSignatureRuntimeException {
@@ -2137,10 +2177,24 @@ public class SignBookService {
             } else if(stepStatus.equals(StepStatus.completed)) {
                 if(signRequestService.isCurrentStepCompleted(signRequest)) {
                     signRequest.getSignRequestParams().clear();
-                    pendingSignBook(signRequest.getParentSignBook(), null, userEppn, authUserEppn, false, true);
+                    LiveWorkflowStep currentStep = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep();
+                    if(currentStep == null || !Boolean.TRUE.equals(currentStep.getAutoSign())) {
+                        pendingSignBook(signRequest.getParentSignBook(), null, userEppn, authUserEppn, false, true);
+                    }
                 }
             }
             return stepStatus;
+        }
+    }
+
+    @Transactional
+    public void pendingAutoSignAfterUserSignature(Long signRequestId, String userEppn, String authUserEppn) {
+        SignBook signBook = signBookRepository.findBySignRequestIdForUpdate(signRequestId).orElseThrow();
+        LiveWorkflowStep currentStep = signBook.getLiveWorkflow().getCurrentStep();
+        if(currentStep != null
+                && Boolean.TRUE.equals(currentStep.getAutoSign())
+                && currentStep.getAutoSignStatus() == null) {
+            pendingSignBook(signBook, null, userEppn, authUserEppn, false, true);
         }
     }
 
@@ -2251,8 +2305,14 @@ public class SignBookService {
      */
     @Transactional
     public void refuse(Long signRequestId, String comment, String userEppn, String authUserEppn) throws EsupSignatureRuntimeException {
-        SignRequest signRequest = signRequestService.getById(signRequestId);
-        SignBook signBook = signRequest.getParentSignBook();
+        SignBook signBook = signBookRepository.findBySignRequestIdForUpdate(signRequestId).orElseThrow();
+        SignRequest signRequest = signBook.getSignRequests().stream()
+                .filter(currentSignRequest -> currentSignRequest != null && signRequestId.equals(currentSignRequest.getId()))
+                .findFirst()
+                .orElseThrow();
+        if(SignRequestStatus.refused.equals(signBook.getStatus()) || SignRequestStatus.refused.equals(signRequest.getStatus())) {
+            return;
+        }
         if(signBook.getSignRequests().size() > 1 && (signBook.getForceAllDocsSign() == null || !signBook.getForceAllDocsSign())) {
             commentService.create(signRequest.getId(), comment, 0, 0, 0, null, true, "#FF7EB9", userEppn);
             signRequestService.updateStatus(signRequest.getId(), SignRequestStatus.refused, "Refusé", null, "SUCCESS", null, null, null, signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber(), userEppn, authUserEppn);
@@ -2720,8 +2780,8 @@ public class SignBookService {
             }
             WorkflowStep toSaveWorkflowStep = workflowStepService.createWorkflowStep(liveWorkflowStep, recipients.toArray(RecipientWsDto[]::new));
             workflow.getWorkflowSteps().add(toSaveWorkflowStep);
-            userService.toggleFavorite(userEppn, workflow.getId(), UiParams.favoriteWorkflows);
         }
+        userService.toggleFavorite(userEppn, workflow.getId(), UiParams.favoriteWorkflows);
     }
 
     private boolean needToSign(SignRequest signRequest, String userEppn) {
@@ -3394,7 +3454,7 @@ public class SignBookService {
     }
 
     private boolean tryTransfertSignRequest(Long signBookId, boolean transfertAll, User user, User replacedByUser, boolean keepFollow) {
-        SignBook signBook = getById(signBookId);
+        SignBook signBook = signBookRepository.findByIdForUpdate(signBookId).orElseThrow();
         List<LiveWorkflowStep> liveWorkflowSteps = new ArrayList<>();
         if(transfertAll || signBook.getSignRequests().size() > 1) {
             liveWorkflowSteps.addAll(signBook.getLiveWorkflow().getLiveWorkflowSteps());
@@ -3750,14 +3810,11 @@ public class SignBookService {
     }
 
     @Transactional
-    public List<ExternalAuth> getExternalAuths(Long id, List<OidcOtpSecurityService> securityServices) {
+    public List<ExternalAuth> getExternalAuths(Otp otp, List<OidcOtpSecurityService> securityServices) {
         List<ExternalAuth> externalAuths = new ArrayList<>();
-        SignBook signBook = getById(id);
+        SignBook signBook = getById(otp.getSignBook().getId());
         if(signBook.getLiveWorkflow().getWorkflow() != null && !signBook.getLiveWorkflow().getWorkflow().getExternalAuths().isEmpty()) {
             externalAuths.addAll(signBook.getLiveWorkflow().getWorkflow().getExternalAuths());
-            if(BooleanUtils.isTrue(globalProperties.getSmsRequired())) {
-                externalAuths.remove(ExternalAuth.open);
-            }
         } else {
             if(securityServices.stream().anyMatch(s -> s instanceof ProConnectSecurityServiceImpl)) {
                 externalAuths.add(ExternalAuth.proconnect);
@@ -3765,12 +3822,14 @@ public class SignBookService {
             if(securityServices.stream().anyMatch(s -> s instanceof FranceConnectSecurityServiceImpl)) {
                 externalAuths.add(ExternalAuth.franceconnect);
             }
-            if(BooleanUtils.isFalse(globalProperties.getSmsRequired())) {
+            if(BooleanUtils.isFalse(globalProperties.getSmsRequired()) && !otp.isForceSms()) {
                 externalAuths.add(ExternalAuth.open);
-            } else {
-                if(BooleanUtils.isTrue(smsProperties.getEnableSms())) {
-                    externalAuths.add(ExternalAuth.sms);
-                }
+            }
+        }
+        if(BooleanUtils.isTrue(globalProperties.getSmsRequired()) || otp.isForceSms()) {
+            externalAuths.remove(ExternalAuth.open);
+            if(BooleanUtils.isTrue(smsProperties.getEnableSms()) && !externalAuths.contains(ExternalAuth.sms)) {
+                externalAuths.add(ExternalAuth.sms);
             }
         }
         return externalAuths;

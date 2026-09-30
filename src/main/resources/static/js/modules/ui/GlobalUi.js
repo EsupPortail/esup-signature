@@ -35,6 +35,7 @@ export class GlobalUi {
         this.initListeners();
         this.initBootBox();
         this.initSideBar();
+        this.initSignButtons();
         this.checkCurrentPage();
         this.initTooltips();
         this.lastWidth = window.innerWidth;
@@ -837,6 +838,53 @@ export class GlobalUi {
             localStorage.setItem('sideBarStatus', 'on');
             this.sideBarStatus = 'on';
         }
+    }
+
+    initSignButtons() {
+        const signButtons = document.getElementById('signButtons');
+        const toggleButton = signButtons?.querySelector('.es-sign-buttons-toggle');
+        if (signButtons == null || toggleButton == null) {
+            return;
+        }
+
+        const applyState = expanded => {
+            const label = expanded ? toggleButton.dataset.collapseLabel : toggleButton.dataset.expandLabel;
+            const icon = toggleButton.querySelector('i');
+            signButtons.classList.toggle('es-sign-buttons-expanded', expanded);
+            toggleButton.setAttribute('aria-expanded', String(expanded));
+            toggleButton.setAttribute('aria-label', label);
+            toggleButton.querySelector('.es-sign-button-label').textContent = label;
+            icon.classList.toggle('fi-rr-angle-small-left', !expanded);
+            icon.classList.toggle('fi-rr-angle-small-right', expanded);
+
+            signButtons.querySelectorAll('.btn').forEach(action => {
+                if (expanded) {
+                    const title = action.getAttribute('title');
+                    if (title != null) {
+                        action.dataset.signButtonsTitle = title;
+                    }
+                    action.removeAttribute('title');
+                    action.setAttribute('data-ui-tooltip', 'false');
+                    return;
+                }
+
+                action.removeAttribute('data-ui-tooltip');
+                if (action === toggleButton) {
+                    action.setAttribute('title', label);
+                    delete action.dataset.signButtonsTitle;
+                } else if (action.dataset.signButtonsTitle != null) {
+                    action.setAttribute('title', action.dataset.signButtonsTitle);
+                    delete action.dataset.signButtonsTitle;
+                }
+            });
+        };
+
+        applyState(localStorage.getItem('signButtonsExpanded') === 'true');
+        toggleButton.addEventListener('click', () => {
+            const expanded = !signButtons.classList.contains('es-sign-buttons-expanded');
+            localStorage.setItem('signButtonsExpanded', String(expanded));
+            applyState(expanded);
+        });
     }
 
     checkSelectUser() {

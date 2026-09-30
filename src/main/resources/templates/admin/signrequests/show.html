@@ -123,17 +123,23 @@
             </div>
                 <div id="signButtons" class="es-sign-buttons es-fixed-action-btns active">
                     <ul id="buttonList" class="list-unstyled">
+                        <li th:insert="~{fragments/sign-buttons :: toggle}"></li>
                         <li th:if="${signRequestLight.createBy != null && signRequestLight.createBy.eppn == userEppn && signRequestLight.deleted}">
-                            <a th:href="'/admin/signbooks/restore/' + ${signBookLight.id}" role="button" class="btn btn-transparent text-dark" title="Restaurer">
+                            <a th:href="'/admin/signbooks/restore/' + ${signBookLight.id}" role="button" class="btn btn-transparent text-dark"
+                               th:title="#{signButtons.restore}" th:aria-label="#{signButtons.restore}">
                                 <i class="fi fi-rr-trash-restore"></i>
+                                <span class="es-sign-button-label" th:text="#{signButtons.restore}"></span>
                             </a>
                         </li>
                         <li th:if="${@preAuthorizeService.signRequestManager(signRequestLight.id, authUserEppn)}">
                             <a id="trashLaunchButton" role="button" class="btn btn-transparent text-dark"
-                               th:title="${!signRequestLight.deleted ? 'Mettre à la corbeille' : 'Supprimer définitivement de la corbeille'}"
+                               th:title="${!signRequestLight.deleted ? #messages.msg('signButtons.trash') : #messages.msg('signButtons.deletePermanently')}"
+                               th:aria-label="${!signRequestLight.deleted ? #messages.msg('signButtons.trash') : #messages.msg('signButtons.deletePermanently')}"
                                data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${signRequestLight.id}">
                                 <i th:if="${signRequestLight.deleted}" class="fi fi-rr-dumpster-fire"></i>
                                 <i th:if="${!signRequestLight.deleted}" class="fi fi-rr-trash "></i>
+                                <span class="es-sign-button-label"
+                                      th:text="${!signRequestLight.deleted ? #messages.msg('signButtons.trash') : #messages.msg('signButtons.deletePermanently')}"></span>
                             </a>
                         </li>
                     </ul>

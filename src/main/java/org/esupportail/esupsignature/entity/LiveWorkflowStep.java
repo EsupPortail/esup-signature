@@ -47,6 +47,8 @@ public class LiveWorkflowStep {
 
     private Boolean autoSign = false;
 
+    private Boolean autoSignStatus;
+
     private Boolean sealVisa = false;
 
     @NotNull
@@ -159,6 +161,14 @@ public class LiveWorkflowStep {
 
     public void setAutoSign(Boolean autoSign) {
         this.autoSign = autoSign;
+    }
+
+    public Boolean getAutoSignStatus() {
+        return autoSignStatus;
+    }
+
+    public void setAutoSignStatus(Boolean autoSignStatus) {
+        this.autoSignStatus = autoSignStatus;
     }
 
     public SignType getSignType() {

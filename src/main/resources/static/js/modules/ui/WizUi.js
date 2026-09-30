@@ -497,6 +497,14 @@ export class WizUi {
         if(workflowIdInput.length) {
             this.newWorkflowId = workflowIdInput.val();
         }
+        const workflowStepForm = $("#wiz-step-form");
+        const initialWorkflowStepFormState = this.getWorkflowStepFormState(workflowStepForm);
+        workflowStepForm.on("input change", ":input", () => {
+            window.setTimeout(() => {
+                const formChanged = this.getWorkflowStepFormState(workflowStepForm) !== initialWorkflowStepFormState;
+                $("#end-workflow-sign, #end-workflow-sign-start").prop("disabled", formChanged);
+            }, 0);
+        });
         $("#end-workflow-sign-start").on('click', function (){
             self.end = true;
             self.start = true;
@@ -535,6 +543,20 @@ export class WizUi {
         $("#send-draft-button").on('click', e => this.workflowSignSubmitLastStepData(false));
         $("#send-pending-button").on('click', e => this.workflowSignSubmitLastStepData(true));
         this.requestModalFocus();
+    }
+
+    getWorkflowStepFormState(form) {
+        const fields = form.find(":input").not("[type='submit']").map(function (index) {
+            const field = $(this);
+            const type = (field.attr("type") || this.tagName).toLowerCase();
+            return {
+                key: this.id || this.name || index,
+                type: type,
+                value: type === "checkbox" || type === "radio" ? field.prop("checked") : field.val(),
+                disabled: field.prop("disabled")
+            };
+        }).get();
+        return JSON.stringify(fields);
     }
 
     workflowSignSubmitStepData() {

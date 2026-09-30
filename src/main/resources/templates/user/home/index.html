@@ -82,19 +82,38 @@
                     <span class="d-none d-xxxxl-none d-lg-block" style="font-size: clamp(0.8rem, 1vw, 0.95rem);">Rapports de signature</span>
                 </a>
             </div>
-            <div class="col-12 col-xxl-10 mx-auto d-flex flex-column flex-xl-row gap-2 gap-xxl-3">
-                <div id="toSignDiv" class="alert bg-white rounded-3 shadow-sm border-0 gap-2 border-secondary-subtle pe-xxl-3 position-relative home-signbooks-loading-shell"
-                     style="max-width: 100%;"
-                     th:classappend="${userEppn == authUserEppn} ? 'd-flex flex-column' : 'w-100'">
-                    <div class="d-flex justify-content-between">
-                        <h5>Documents</h5>
-                        <button id="toggleSizeBtn"
-                                class="btn btn-sm btn-transparent text-dark position-absolute"
-                                style="top: 10px; right: 10px; z-index: 1;"
-                                title="Agrandir/Réduire"
-                                aria-label="Agrandir/Réduire la section">
-                            <i class="fi fi-rr-expand" id="toggleIcon"></i>
-                        </button>
+            <div class="col-12 col-xxl-10 mx-auto">
+                <div class="row g-2 g-xxl-3">
+                    <div id="documentsColumn"
+                         class="col-12 mt-0 p-0 pb-3"
+                         th:classappend="${userEppn == authUserEppn && (workflows.size() > 0 || forms.size() > 0 || featuredWorkflows.size() > 0 || featuredForms.size() > 0)} ? ' col-lg-8 col-xl-9' : ''">
+                <div id="toSignDiv" class="alert bg-white rounded-3 shadow-sm border-0 d-flex flex-column gap-2 border-secondary-subtle pe-xxl-3 position-relative home-signbooks-loading-shell mb-0 w-100 h-100">
+                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+                        <h5 class="mb-0">Documents</h5>
+                        <div class="d-flex align-items-center gap-2">
+                            <button id="favoritesSidebarToggle"
+                                    type="button"
+                                    class="btn btn-sm btn-light border-secondary-subtle text-dark d-flex align-items-center gap-2"
+                                    th:if="${userEppn == authUserEppn && (workflows.size() > 0 || forms.size() > 0 || featuredWorkflows.size() > 0 || featuredForms.size() > 0)}"
+                                    th:attr="data-hide-label=#{home.favorites.hide},data-show-label=#{home.favorites.show}"
+                                    aria-controls="favoritesColumn"
+                                    aria-expanded="true">
+                                <i class="fi fi-rr-star text-warning" aria-hidden="true"></i>
+                                <span id="favoritesSidebarToggleLabel"
+                                      th:text="#{home.favorites.hide}"></span>
+                                <i id="favoritesSidebarToggleIcon" class="fi fi-rr-angle-small-right" aria-hidden="true"></i>
+                            </button>
+                            <button id="toggleSizeBtn"
+                                    type="button"
+                                    class="btn btn-sm btn-transparent text-dark border-0"
+                                    th:title="#{home.columns.equal}"
+                                    th:aria-label="#{home.columns.toggle}"
+                                    th:attr="data-compact-label=#{home.columns.compact},data-expanded-label=#{home.columns.expanded},data-unavailable-label=#{home.favorites.unavailable}"
+                                    aria-controls="favoritesColumn"
+                                    aria-pressed="false">
+                                <i class="fi fi-rr-expand" id="toggleIcon" aria-hidden="true"></i>
+                            </button>
+                        </div>
                     </div>
                     <h5 class="ms-2 d-flex justify-content-start align-items-center gap-3">
                         <i id="home-to-sign-icon" class="fi fi-rr-inbox-full text-secondary-emphasis"></i>
@@ -125,10 +144,15 @@
                         </div>
                     </div>
                 </div>
-                <div id="myFavorites" th:if="${userEppn == authUserEppn && (workflows.size() > 0 || forms.size() > 0 || featuredWorkflows.size() > 0 || featuredForms.size() > 0)}" class="alert bg-white rounded-3 shadow-sm border-0 d-flex flex-row gap-2 d-flex flex-column pe-xxl-3 w-100 w-75-l" style="max-width: 100%;">
+                    </div>
+                <div id="favoritesColumn"
+                     th:if="${userEppn == authUserEppn && (workflows.size() > 0 || forms.size() > 0 || featuredWorkflows.size() > 0 || featuredForms.size() > 0)}"
+                     data-has-favorites="true"
+                     class="col-12 col-lg-4 col-xl-3 mt-0 p-0 pb-3 ps-lg-3">
+                <div id="myFavorites" class="alert bg-white rounded-3 shadow-sm border-0 d-flex flex-column gap-2 pe-xxl-3 mb-0 w-100 h-100">
                     <div th:insert="~{fragments/new-featured :: new-featured}" th:if="${featuredWorkflows.size() > 0  || featuredForms.size() > 0}"></div>
                     <div class="w-100"  th:if="${workflows.size() > 0}">
-                        <div class="d-flex align-items-center w-100 gap-2">
+                        <div class="d-flex justify-content-between align-items-center w-100 gap-2">
                             <h5 class="d-flex align-items-center m-1"><i class="fi fi-rr-diagram-project project-diagram-color"></i> Mes circuits favoris</h5>
                             <a tabindex="0" role="button"
                                 class="btn btn-sm btn-secondary"
@@ -190,7 +214,7 @@
                         </th:block>
                     </div>
                     <div class="w-100" th:if="${forms.size() > 0}">
-                        <div class="d-flex align-items-center w-100 gap-2">
+                        <div class="d-flex justify-content-between align-items-center w-100 gap-2">
                             <h5 class="d-flex align-items-center m-1"><i class="fi fi-rr-poll-h file-alt-color"></i> Mes formulaires favoris</h5>
                             <a tabindex="0" role="button"
                                 class="btn btn-sm btn-secondary"
@@ -230,6 +254,8 @@
                             </div>
                         </th:block>
                     </div>
+                </div>
+                </div>
                 </div>
             </div>
         </div>

@@ -246,7 +246,7 @@ class GlobalSecurityAttackSurfaceTest {
 
             Otp otp = otp("sms-required-link", false, 0, 52L);
             when(otpService.getAndCheckOtpFromDatabase("sms-required-link")).thenReturn(otp);
-            when(signBookService.getExternalAuths(eq(52L), anyList())).thenReturn(List.of());
+            when(signBookService.getExternalAuths(eq(otp), anyList())).thenReturn(List.of());
 
             ConcurrentModel model = new ConcurrentModel();
             MockHttpServletRequest request = new MockHttpServletRequest("GET", "/otp-access/first/sms-required-link");
@@ -284,7 +284,7 @@ class GlobalSecurityAttackSurfaceTest {
 
             Otp otp = otp("force-sms-link", true, 0, 53L);
             when(otpService.getAndCheckOtpFromDatabase("force-sms-link")).thenReturn(otp);
-            when(signBookService.getExternalAuths(eq(53L), anyList())).thenReturn(List.of());
+            when(signBookService.getExternalAuths(eq(otp), anyList())).thenReturn(List.of());
 
             ConcurrentModel model = new ConcurrentModel();
             MockHttpServletRequest request = new MockHttpServletRequest("GET", "/otp-access/first/force-sms-link");
@@ -458,7 +458,7 @@ class GlobalSecurityAttackSurfaceTest {
 
             Otp otp = otp("oidc-link", false, 0, 54L);
             when(otpService.getAndCheckOtpFromDatabase("oidc-link")).thenReturn(otp);
-            when(signBookService.getExternalAuths(eq(54L), anyList())).thenReturn(List.of());
+            when(signBookService.getExternalAuths(eq(otp), anyList())).thenReturn(List.of());
 
             ConcurrentModel model = new ConcurrentModel();
             MockHttpServletRequest request = new MockHttpServletRequest("GET", "/otp-access/first/oidc-link");
@@ -495,7 +495,7 @@ class GlobalSecurityAttackSurfaceTest {
 
             Otp otp = otp("cancelled-oauth-link", false, 0, 55L);
             when(otpService.getAndCheckOtpFromDatabase("cancelled-oauth-link")).thenReturn(otp);
-            when(signBookService.getExternalAuths(eq(55L), anyList())).thenReturn(List.of());
+            when(signBookService.getExternalAuths(eq(otp), anyList())).thenReturn(List.of());
 
             ConcurrentModel model = new ConcurrentModel();
             MockHttpServletRequest request = new MockHttpServletRequest("GET", "/otp-access/first/cancelled-oauth-link");
@@ -956,6 +956,7 @@ class GlobalSecurityAttackSurfaceTest {
             Set<String> scriptSrc = new LinkedHashSet<>();
             scriptSrc.add("'self'");
             scriptSrc.add("blob:");
+            scriptSrc.add("'wasm-unsafe-eval'");
             Set<String> connectSrc = new LinkedHashSet<>();
             connectSrc.add("'self'");
             connectSrc.add("blob:");
@@ -983,7 +984,7 @@ class GlobalSecurityAttackSurfaceTest {
             buildCspPolicy.setAccessible(true);
             String policy = (String) buildCspPolicy.invoke(config, scriptSrc, connectSrc, formAction, false);
 
-            assertTrue(policy.contains("script-src 'self' blob: http://localhost:9795 http://127.0.0.1:9795"));
+            assertTrue(policy.contains("script-src 'self' blob: 'wasm-unsafe-eval' http://localhost:9795 http://127.0.0.1:9795"));
             assertTrue(policy.contains("connect-src 'self' blob: http://localhost:9795 http://127.0.0.1:9795"));
             assertFalse(policy.contains("script-src 'self' 'unsafe-inline'"));
         }

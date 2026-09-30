@@ -18,13 +18,15 @@
         </div>
         <div class="step-horizontal-v2-content"><span class="text-xs font-bold">Création du circuit</span></div>
     </div>
-    <div id="wiz-step-3" class="step-horizontal-v2 d-flex gap-2 align-items-center active">
+    <div id="wiz-step-3" class="step-horizontal-v2 d-flex gap-2 align-items-center active"
+         th:unless="${globalProperties.hideWizardWorkflow}">
         <div class="d-flex align-items-center gap-2">
             <div class="step-horizontal-v2-icon"><i class="fi fi-rr-disk"></i></div>
         </div>
         <div class="step-horizontal-v2-content"><span class="text-xs font-bold">Sauvegarde</span></div>
     </div>
-    <div id="wiz-step-4" class="step-horizontal-v2 d-flex gap-2 align-items-center disabled">
+    <div id="wiz-step-4" class="step-horizontal-v2 d-flex gap-2 align-items-center"
+         th:classappend="${globalProperties.hideWizardWorkflow} ? 'active' : 'disabled'">
         <div class="d-flex align-items-center gap-2">
             <div class="step-horizontal-v2-icon"><i class="fi fi-rr-flag"></i></div>
         </div>
@@ -42,6 +44,9 @@
         </div>
     </div>
 </form>
+<p class="alert alert-success mb-0"
+   th:if="${globalProperties.hideWizardWorkflow}"
+   th:text="#{wizard.custom-request.completed}"></p>
 </div>
 <div class="modal-footer">
     <button id="wiz-exit" type="button" class="btn btn-secondary float-start">
