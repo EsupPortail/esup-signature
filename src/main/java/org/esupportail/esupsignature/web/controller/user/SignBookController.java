@@ -69,18 +69,20 @@ public class SignBookController {
     private final PreAuthorizeService preAuthorizeService;
     private final WorkflowService workflowService;
     private final SignBookService signBookService;
+    private final SignBookSigningService signBookSigningService;
     private final SignRequestService signRequestService;
     private final FormService formService;
     private final TemplateEngine templateEngine;
     private final MessageSource messageSource;
 
-    public SignBookController(RecipientService recipientService, SignWithService signWithService, LiveWorkflowStepService liveWorkflowStepService, PreAuthorizeService preAuthorizeService, WorkflowService workflowService, SignBookService signBookService, SignRequestService signRequestService, FormService formService, TemplateEngine templateEngine, CertificatService certificatService, GlobalProperties globalProperties, MessageSource messageSource) {
+    public SignBookController(RecipientService recipientService, SignWithService signWithService, LiveWorkflowStepService liveWorkflowStepService, PreAuthorizeService preAuthorizeService, WorkflowService workflowService, SignBookService signBookService, SignBookSigningService signBookSigningService, SignRequestService signRequestService, FormService formService, TemplateEngine templateEngine, CertificatService certificatService, GlobalProperties globalProperties, MessageSource messageSource) {
         this.recipientService = recipientService;
         this.signWithService = signWithService;
         this.liveWorkflowStepService = liveWorkflowStepService;
         this.preAuthorizeService = preAuthorizeService;
         this.workflowService = workflowService;
         this.signBookService = signBookService;
+        this.signBookSigningService = signBookSigningService;
         this.signRequestService = signRequestService;
         this.formService = formService;
         this.templateEngine = templateEngine;
@@ -477,7 +479,7 @@ public class SignBookController {
                                            @RequestParam(value = "signWith", required = false) String signWith,
                                            @RequestParam(value = "sealCertificat", required = false) String sealCertificat,
                                            HttpSession httpSession) throws EsupSignatureRuntimeException, IOException {
-        String error = signBookService.initMassSign(userEppn, authUserEppn, ids, httpSession, password, signWith, sealCertificat);
+        String error = signBookSigningService.initMassSign(userEppn, authUserEppn, ids, httpSession, password, signWith, sealCertificat);
         if(error == null) {
             return new ResponseEntity<>(HttpStatus.OK);
         } else {

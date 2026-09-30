@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.sms.SmsProperties;
 import org.esupportail.esupsignature.entity.Action;
@@ -25,7 +26,6 @@ import org.esupportail.esupsignature.dto.ws.RecipientWsDto;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.service.event.AutoSignFailedEvent;
-import org.esupportail.esupsignature.service.event.AutoSignRequestedEvent;
 import org.esupportail.esupsignature.service.security.otp.OtpService;
 import org.esupportail.esupsignature.service.utils.StepStatus;
 import org.junit.jupiter.api.Test;
@@ -437,7 +437,7 @@ class SignBookServiceTest {
     }
 
     @Test
-    void startsNextAutomaticStepOnlyAfterUserSignatureCommit() throws Exception {
+    void leavesNextAutomaticStepForASeparateTransaction() throws Exception {
         LiveWorkflowStep userStep = new LiveWorkflowStep();
         userStep.setSignType(SignType.signature);
         LiveWorkflowStep autoSignStep = new LiveWorkflowStep();
@@ -456,7 +456,6 @@ class SignBookServiceTest {
 
         SignRequestService signRequestService = mock(SignRequestService.class);
         UserService userService = mock(UserService.class);
-        ApplicationEventPublisher applicationEventPublisher = mock(ApplicationEventPublisher.class);
         when(signRequestService.getById(100L)).thenReturn(signRequest);
         when(userService.getSignRequestParamsesFromJson("[]", "user")).thenReturn(List.of());
         when(signRequestService.sign(signRequest, "", "imageStamp", null, null, null,
@@ -470,14 +469,28 @@ class SignBookServiceTest {
         ReflectionTestUtils.setField(service, "globalProperties", new GlobalProperties());
         ReflectionTestUtils.setField(service, "signRequestService", signRequestService);
         ReflectionTestUtils.setField(service, "userService", userService);
-        ReflectionTestUtils.setField(service, "applicationEventPublisher", applicationEventPublisher);
 
         StepStatus stepStatus = service.initSign(100L, "[]", null, null, "", "imageStamp", null,
                 null, "user", "user", false);
 
         assertThat(stepStatus).isEqualTo(StepStatus.completed);
-        verify(applicationEventPublisher).publishEvent(any(AutoSignRequestedEvent.class));
         verify(service, never()).pendingSignBook(eq(signBook), isNull(), eq("user"), eq("user"), eq(false), eq(true));
+    }
+
+    @Test
+    void keepsUserSignatureSuccessfulWhenNextAutomaticStepFails() throws Exception {
+        SignBookService signBookService = mock(SignBookService.class);
+        when(signBookService.initSign(100L, "[]", null, null, "", "imageStamp", null,
+                null, "user", "user", false)).thenReturn(StepStatus.completed);
+        doThrow(new EsupSignatureRuntimeException("automatic signature failed"))
+                .when(signBookService).pendingAutoSignAfterUserSignature(100L, "user", "user");
+        SignBookSigningService signingService = new SignBookSigningService(signBookService, mock(ObjectMapper.class));
+
+        StepStatus stepStatus = signingService.initSign(100L, "[]", null, null, "", "imageStamp", null,
+                null, "user", "user", false);
+
+        assertThat(stepStatus).isEqualTo(StepStatus.completed);
+        verify(signBookService).pendingAutoSignAfterUserSignature(100L, "user", "user");
     }
 
     private SignRequestParams signRequestParams(int page, int x, int y) {

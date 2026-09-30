@@ -30,7 +30,6 @@ import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.repository.SignRequestParamsRepository;
 import org.esupportail.esupsignature.repository.WorkflowRepository;
 import org.esupportail.esupsignature.service.event.AutoSignFailedEvent;
-import org.esupportail.esupsignature.service.event.AutoSignRequestedEvent;
 import org.esupportail.esupsignature.service.interfaces.fs.FsAccessFactoryService;
 import org.esupportail.esupsignature.service.interfaces.fs.FsAccessService;
 import org.esupportail.esupsignature.service.interfaces.fs.FsFile;
@@ -57,7 +56,6 @@ import org.springframework.http.MediaTypeFactory;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -1860,13 +1858,8 @@ public class SignBookService {
      */
     @Transactional
     public void pendingSignBook(String authUserEppn, Long id) {
-        pendingSignBook(authUserEppn, authUserEppn, id);
-    }
-
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void pendingSignBook(String userEppn, String authUserEppn, Long id) {
         SignBook signBook = signBookRepository.findByIdForUpdate(id).orElse(null);
-        pendingSignBook(signBook, null, userEppn, authUserEppn, false, true);
+        pendingSignBook(signBook, null, authUserEppn, authUserEppn, false, true);
     }
 
     /**
@@ -2185,14 +2178,23 @@ public class SignBookService {
                 if(signRequestService.isCurrentStepCompleted(signRequest)) {
                     signRequest.getSignRequestParams().clear();
                     LiveWorkflowStep currentStep = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep();
-                    if(currentStep != null && Boolean.TRUE.equals(currentStep.getAutoSign())) {
-                        applicationEventPublisher.publishEvent(new AutoSignRequestedEvent(signRequest.getParentSignBook().getId(), userEppn, authUserEppn));
-                    } else {
+                    if(currentStep == null || !Boolean.TRUE.equals(currentStep.getAutoSign())) {
                         pendingSignBook(signRequest.getParentSignBook(), null, userEppn, authUserEppn, false, true);
                     }
                 }
             }
             return stepStatus;
+        }
+    }
+
+    @Transactional
+    public void pendingAutoSignAfterUserSignature(Long signRequestId, String userEppn, String authUserEppn) {
+        SignBook signBook = signBookRepository.findBySignRequestIdForUpdate(signRequestId).orElseThrow();
+        LiveWorkflowStep currentStep = signBook.getLiveWorkflow().getCurrentStep();
+        if(currentStep != null
+                && Boolean.TRUE.equals(currentStep.getAutoSign())
+                && currentStep.getAutoSignStatus() == null) {
+            pendingSignBook(signBook, null, userEppn, authUserEppn, false, true);
         }
     }
 
