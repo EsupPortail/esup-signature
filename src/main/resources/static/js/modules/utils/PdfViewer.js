@@ -311,14 +311,9 @@ export class PdfViewer extends EventFactory {
         this._isRefreshingOCG = true;
         const visiblePages = this.getVisiblePages();
         visiblePages.forEach(pageNum => {
-            const pageContainer = document.getElementById(`page_${pageNum}`);
-            if (pageContainer) {
-                // Vider le canvas, garder l'enveloppe
-                const canvasWrapper = pageContainer.querySelector('.canvasWrapper');
-                if (canvasWrapper) {
-                    canvasWrapper.innerHTML = '';
-                }
-                this.renderQueue.unshift(pageNum);
+            if (!this.renderingPageNums.has(pageNum)) {
+                this.renderedPageNums.delete(pageNum);
+                this.rendererController.queuePageRender(pageNum);
             }
         });
         this.processRenderQueue();
