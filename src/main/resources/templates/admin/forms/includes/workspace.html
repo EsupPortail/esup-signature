@@ -117,11 +117,12 @@
                                     <option th:if="${step.signType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}"
                                             th:text="'Etape ' + ${iterator.index + 1}"
                                             th:value="${iterator.index + 1}"
-                                            th:disabled="${srpMap.containsKey(iterator.index + 1)}"></option>
+                                            th:disabled="${step.multiSign == false && srpMap.containsKey(iterator.index + 1)}"
+                                            th:attr="data-es-multi-sign=${step.multiSign}"></option>
                                 </th:block>
                             </select>
                         </div>
-                        <input type="hidden" id="spotStepNumberHidden" name="spotStepNumber" value="1" th:unless="${workflow.workflowSteps.size() > 1}">
+                        <input type="hidden" id="spotStepNumberHidden" name="spotStepNumber" value="1" th:unless="${workflow.workflowSteps.size() > 1}" th:attr="data-es-multi-sign=${workflow.workflowSteps[0].multiSign}">
                         <input id="spotComment" name="comment" type="hidden">
                         <button id="hideSpotButton" type="button" class="btn btn-sm btn-secondary float-start" data-bs-dismiss="modal">
                             Annuler

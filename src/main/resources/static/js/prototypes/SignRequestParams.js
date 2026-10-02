@@ -795,8 +795,10 @@ export class SignRequestParams extends EventFactory {
         const cssHeight = parseInt(this.cross.css("height"), 10) || Math.round(this.signHeight * this.currentScale * zoom);
         const pdfWidth = parseInt(cssWidth / (this.currentScale * zoom), 10) || 0;
         const pdfHeight = parseInt(cssHeight / (this.currentScale * zoom), 10) || 0;
+        const spotStepNumber = parseInt(this.spotStepNumber, 10);
+        const stepLabel = Number.isFinite(spotStepNumber) ? " étape " + spotStepNumber : "";
 
-        const spotHtml = "<div id='" + spotDomId + "' title='Emplacement de signature' class='sign-space' data-es-spot-id='" + parsedSpotId + "' data-es-pos-page='" + this.signPageNumber + "' data-es-pos-x='" + this.xPos + "' data-es-pos-y='" + this.yPos + "' data-es-sign-width='" + pdfWidth + "' data-es-sign-height='" + pdfHeight + "'" + (this.spotRecipientId != null ? " data-es-recipient-id='" + this.spotRecipientId + "'" : "") + "><button type='button' class='slot-delete-btn btn btn-sm btn-danger' title='Supprimer l’emplacement'><i class='fi fi-rr-trash'></i></button><div class='sign-content'><span class='sign-text text-uppercase'>Emplacement de signature</span></div></div>";
+        const spotHtml = "<div id='" + spotDomId + "' title='Emplacement de signature' class='sign-space' data-es-spot-id='" + parsedSpotId + "' data-es-step-number='" + (Number.isFinite(spotStepNumber) ? spotStepNumber : "") + "' data-es-pos-page='" + this.signPageNumber + "' data-es-pos-x='" + this.xPos + "' data-es-pos-y='" + this.yPos + "' data-es-sign-width='" + pdfWidth + "' data-es-sign-height='" + pdfHeight + "'" + (this.spotRecipientId != null ? " data-es-recipient-id='" + this.spotRecipientId + "'" : "") + "><button type='button' class='slot-delete-btn btn btn-sm btn-danger' title='Supprimer l’emplacement'><i class='fi fi-rr-trash'></i></button><div class='sign-content'><span class='sign-text text-uppercase'>Emplacement de signature" + stepLabel + "</span></div></div>";
         $("#pdf").append(spotHtml);
 
         const spotDiv = $(spotSelector);
@@ -832,7 +834,7 @@ export class SignRequestParams extends EventFactory {
             yPos: this.yPos,
             signWidth: pdfWidth,
             signHeight: pdfHeight,
-            stepNumber: parseInt(this.spotStepNumber, 10),
+            stepNumber: spotStepNumber,
             recipientId: this.spotRecipientId
         }]);
 

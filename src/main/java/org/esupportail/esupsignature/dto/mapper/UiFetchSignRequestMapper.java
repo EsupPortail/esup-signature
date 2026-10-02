@@ -196,6 +196,7 @@ public class UiFetchSignRequestMapper {
         dto.setAutoSign(step.getAutoSign());
         dto.setAutoSignStatus(step.getAutoSignStatus());
         dto.setAllSignToComplete(step.getAllSignToComplete());
+        dto.setMultiSign(step.getMultiSign());
         dto.setRepeatable(step.getRepeatable());
         dto.setSealVisa(step.getSealVisa());
         dto.setUsers(step.getUsers().stream().map(this::toStepUserDto).toList());
@@ -253,6 +254,7 @@ public class UiFetchSignRequestMapper {
             dto.setAutoSign(Boolean.TRUE.equals(step.getAutoSign()));
             dto.setAutoSignStatus(step.getAutoSignStatus());
             dto.setAllSignToComplete(Boolean.TRUE.equals(step.getAllSignToComplete()));
+            dto.setMultiSign(!Boolean.FALSE.equals(step.getMultiSign()));
             dto.setRepeatable(Boolean.TRUE.equals(step.getRepeatable()));
             dto.setSealVisa(Boolean.TRUE.equals(step.getSealVisa()));
             dto.setUsers(stepRecipients.stream().map(this::toStepUserDto).filter(Objects::nonNull).toList());
