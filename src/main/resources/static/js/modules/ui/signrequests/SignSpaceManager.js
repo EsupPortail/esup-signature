@@ -39,7 +39,7 @@ export class SignSpaceManager {
 			const signSpaceId = this.getSignSpaceId(currentSignRequestParams, i, isSignableField);
 			let signSpaceDiv = $("#" + signSpaceId);
 
-			if (this.options.isSignable() || this.options.isEditable()) {
+			if (this.options.isSignable() || this.options.isEditable() || this.options.isManager()) {
 				if(signSpaceDiv.length) {
 					signSpaceDiv.off(this.options.signSpaceNamespace);
 					try {
@@ -145,6 +145,10 @@ export class SignSpaceManager {
 		if (!deleteBtn.length) {
 			return;
 		}
+		if (this.options.isManager()) {
+			deleteBtn.show();
+			return;
+		}
 		if (isSignableField) {
 			deleteBtn.toggle(!ready);
 			return;
@@ -197,11 +201,8 @@ export class SignSpaceManager {
 		const currentParams = Array.isArray(this.options.getCurrentSignRequestParamses()) ? this.options.getCurrentSignRequestParamses() : [];
 		const spots = Array.isArray(this.options.getSpots()) ? this.options.getSpots() : [];
 
-		if (this.options.isEditable() && this.canViewAllSpots()) {
-			const managerSpots = this.options.isCreator()
-				? spots
-				: this.options.filterSpotsNotCurrentStep(spots);
-			const merged = [...currentParams, ...managerSpots];
+		if (this.options.isManager() || (this.options.isEditable() && this.options.isCreator())) {
+			const merged = [...currentParams, ...spots];
 			const byKey = new Map();
 			for (let i = 0; i < merged.length; i++) {
 				const item = merged[i];
@@ -213,10 +214,6 @@ export class SignSpaceManager {
 				}
 			}
 			return Array.from(byKey.values());
-		}
-
-		if (this.options.isEditable() && this.options.isManager()) {
-			return spots;
 		}
 
 		return currentParams;
@@ -555,6 +552,7 @@ export class SignSpaceManager {
 	}
 
 	shouldHideSpotSignSpace(signParams) {
-		return this.isSpotParamAlreadyUsed(signParams) || this.isSpotFromPreviousStep(signParams);
+		return !this.options.isManager()
+			&& (this.isSpotParamAlreadyUsed(signParams) || this.isSpotFromPreviousStep(signParams));
 	}
 }

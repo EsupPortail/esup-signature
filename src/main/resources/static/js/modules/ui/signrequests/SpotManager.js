@@ -611,6 +611,8 @@ export class SpotManager {
                 this.options.setCurrentSignRequestParamses(currentParams);
             }
             this.options.refreshSignFields();
+        } else if (this.options.isManager()) {
+            this.options.refreshSignFields();
         }
     }
 
