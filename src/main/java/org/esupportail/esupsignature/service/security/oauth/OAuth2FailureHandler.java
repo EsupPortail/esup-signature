@@ -50,6 +50,12 @@ public class OAuth2FailureHandler implements AuthenticationFailureHandler {
             }
             redirectUrl.append("error_description=").append(java.net.URLEncoder.encode(errorDescription, java.nio.charset.StandardCharsets.UTF_8));
         }
+        if (exception.getMessage() != null && !exception.getMessage().isEmpty()) {
+            if (redirectUrl.toString().contains("=")) {
+                redirectUrl.append("&");
+            }
+            redirectUrl.append("internal_error=").append(java.net.URLEncoder.encode(exception.getMessage(), java.nio.charset.StandardCharsets.UTF_8));
+        }
         if (state != null && !state.isEmpty()) {
             if (redirectUrl.toString().contains("=")) {
                 redirectUrl.append("&");

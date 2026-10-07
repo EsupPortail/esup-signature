@@ -207,11 +207,13 @@ public class OtpAccessController {
     public String oauth2Error(
             @RequestParam(required = false) String error,
             @RequestParam(required = false) String error_description,
+            @RequestParam(required = false) String internal_error,
             @RequestParam(required = false) String state,
             Model model) {
         logger.warn("OAuth2/OIDC error received - error: {}, description: {}, state: {}", error, error_description, state);
         model.addAttribute("oauth2Error", error);
         model.addAttribute("oauth2ErrorDescription", error_description);
+        model.addAttribute("oauth2InternalError", internal_error);
         model.addAttribute("oauth2State", state);
         String errorMessage = mapOAuth2ErrorToMessage(error);
         model.addAttribute("errorMessage", errorMessage);

@@ -15,7 +15,7 @@
                     <div class="error-message">
                         <p th:text="${errorMessage}"></p>
                     </div>
-                    <div class="error-details" th:if="${oauth2Error}">
+                    <div class="error-details" th:if="${oauth2Error != null || oauth2ErrorDescription != null || oauth2InternalError != null || oauth2State != null}">
                         <details>
                             <summary>Détails techniques</summary>
                             <ul>
@@ -24,6 +24,9 @@
                                 </li>
                                 <li th:if="${oauth2ErrorDescription}">
                                     <strong>Description :</strong> <code th:text="${oauth2ErrorDescription}"></code>
+                                </li>
+                                <li th:if="${oauth2InternalError}">
+                                    <strong th:text="#{otp.oauth2.internal-error}"></strong> <code th:text="${oauth2InternalError}"></code>
                                 </li>
                                 <li th:if="${oauth2State}">
                                     <strong>État :</strong> <code th:text="${oauth2State}"></code>

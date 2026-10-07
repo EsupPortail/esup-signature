@@ -68,7 +68,7 @@ class OAuth2FailureHandlerTest {
 
         new OAuth2FailureHandler().onAuthenticationFailure(request, response, new AuthenticationServiceException("access_denied"));
 
-        assertThat(response.getRedirectedUrl()).isEqualTo("/otp-access/oauth2?error=access_denied&error_description=User+auth+aborted");
+        assertThat(response.getRedirectedUrl()).isEqualTo("/otp-access/oauth2?error=access_denied&error_description=User+auth+aborted&internal_error=access_denied");
     }
 
     @Test
@@ -82,7 +82,49 @@ class OAuth2FailureHandlerTest {
 
         new OAuth2FailureHandler().onAuthenticationFailure(request, response, new AuthenticationServiceException("provider failure"));
 
-        assertThat(response.getRedirectedUrl()).isEqualTo("/otp-access/oauth2?error=server_error&error_description=Provider+unavailable&state=state-123%3D");
+        assertThat(response.getRedirectedUrl()).isEqualTo("/otp-access/oauth2?error=server_error&error_description=Provider+unavailable&internal_error=provider+failure&state=state-123%3D");
+    }
+
+    @Test
+    void internalErrorWithoutProviderParametersIsEncoded() throws Exception {
+        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/login/oauth2/code/franceconnect");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        new OAuth2FailureHandler().onAuthenticationFailure(request, response,
+                new AuthenticationServiceException("[invalid_id_token] issuer=a&expected=b"));
+
+        assertThat(response.getRedirectedUrl()).isEqualTo("/otp-access/oauth2?internal_error=%5Binvalid_id_token%5D+issuer%3Da%26expected%3Db");
+    }
+
+    @ParameterizedTest
+    @NullSource
+    @ValueSource(strings = {""})
+    void missingExceptionMessageDoesNotAddInternalDiagnostic(String diagnostic) throws Exception {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setParameter("error", "server_error");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        new OAuth2FailureHandler().onAuthenticationFailure(request, response, new AuthenticationServiceException(diagnostic));
+
+        assertThat(response.getRedirectedUrl()).isEqualTo("/otp-access/oauth2?error=server_error");
+    }
+
+    @ParameterizedTest
+    @NullSource
+    @ValueSource(strings = {"server_error"})
+    void internalDiagnosticDoesNotReplaceUserMessage(String error) {
+        OtpAccessController controller = new OtpAccessController(mock(GlobalProperties.class), mock(OtpService.class),
+                mock(SignBookService.class), mock(UserService.class), List.of(), null, mock(ResourceBundleMessageSource.class));
+        ConcurrentModel model = new ConcurrentModel();
+        String diagnostic = "[invalid_id_token] issuer mismatch";
+
+        assertThat(controller.oauth2Error(error, "Provider unavailable", diagnostic, "state-123", model)).isEqualTo("otp/oauth2-error");
+        assertThat(model.getAttribute("oauth2InternalError")).isEqualTo(diagnostic);
+        assertThat(model.getAttribute("oauth2ErrorDescription")).isEqualTo("Provider unavailable");
+        assertThat(model.getAttribute("oauth2State")).isEqualTo("state-123");
+        assertThat(model.getAttribute("errorMessage")).isEqualTo(error == null
+                ? "Une erreur inconnue s'est produite lors de l'authentification."
+                : "Le service d'authentification rencontre un problème technique. Veuillez réessayer ou choisir un autre mode de connexion.");
     }
 
     @Test
