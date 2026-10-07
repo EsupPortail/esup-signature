@@ -46,11 +46,13 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -1707,6 +1709,9 @@ public class SignRequestService {
 	@Transactional(readOnly = true)
 	public void getToSignFileResponse(Long signRequestId, String disposition, HttpServletResponse httpServletResponse, boolean force) throws IOException, EsupSignatureRuntimeException, EsupSignatureException {
 		SignRequest signRequest = getById(signRequestId);
+		if (signRequest == null) {
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+		}
 		if(!force && !disposition.equals("inline")
 				&& signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null
 				&&  BooleanUtils.isTrue(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getForbidDownloadsBeforeEnd())
