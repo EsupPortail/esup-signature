@@ -18,10 +18,13 @@ import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.interfaces.sms.SmsService;
 import org.esupportail.esupsignature.service.security.OidcOtpSecurityService;
 import org.esupportail.esupsignature.service.security.SecurityService;
+import org.esupportail.esupsignature.service.security.oauth.OAuth2FailureHandler;
 import org.esupportail.esupsignature.service.security.otp.OtpService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
@@ -54,14 +57,16 @@ public class OtpAccessController {
     private final UserService userService;
     private final List<SecurityService> securityServices;
     private final SmsService smsService;
+    private final MessageSource messageSource;
 
-    public OtpAccessController(GlobalProperties globalProperties, OtpService otpService, SignBookService signBookService, UserService userService, List<SecurityService> securityServices, @Autowired(required = false) SmsService smsService) {
+    public OtpAccessController(GlobalProperties globalProperties, OtpService otpService, SignBookService signBookService, UserService userService, List<SecurityService> securityServices, @Autowired(required = false) SmsService smsService, MessageSource messageSource) {
         this.globalProperties = globalProperties;
         this.otpService = otpService;
         this.signBookService = signBookService;
         this.userService = userService;
         this.securityServices = securityServices;
         this.smsService = smsService;
+        this.messageSource = messageSource;
     }
 
     @GetMapping(value = "/first/{urlId}")
@@ -82,6 +87,10 @@ public class OtpAccessController {
             model.addAttribute("smsRequired", (globalProperties.getSmsRequired() || otp.isForceSms()));
             model.addAttribute("externalAuths", signBookService.getExternalAuths(otp.getSignBook().getId(), oidcOtpSecurityServices));
             httpServletRequest.getSession().setAttribute("after_oauth_redirect", "/otp/signrequests/signbook-redirect/" + otp.getSignBook().getId());
+            httpServletRequest.getSession().setAttribute(OAuth2FailureHandler.AFTER_OAUTH_FAILURE_REDIRECT, "/otp-access/first/" + urlId);
+            if ("true".equals(httpServletRequest.getParameter("oauth2_cancelled"))) {
+                model.addAttribute("message", new JsMessage("info", messageSource.getMessage("otp.oauth2.cancelled", null, LocaleContextHolder.getLocale())));
+            }
             model.addAttribute("securityServices", oidcOtpSecurityServices);
             model.addAttribute("globalProperties", globalProperties);
             return "otp/signin";
