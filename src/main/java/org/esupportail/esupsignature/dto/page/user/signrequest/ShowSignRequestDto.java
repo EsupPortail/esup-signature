@@ -411,6 +411,7 @@ public class ShowSignRequestDto {
         private Boolean autoSign;
         private Boolean autoSignStatus;
         private Boolean allSignToComplete;
+        private Boolean multiSign;
         private Boolean repeatable;
         private Boolean sealVisa;
         private List<StepUserDto> users;
@@ -451,6 +452,8 @@ public class ShowSignRequestDto {
         public void setAutoSignStatus(Boolean autoSignStatus) { this.autoSignStatus = autoSignStatus; }
         public Boolean getAllSignToComplete() { return allSignToComplete; }
         public void setAllSignToComplete(Boolean allSignToComplete) { this.allSignToComplete = allSignToComplete; }
+        public Boolean getMultiSign() { return multiSign; }
+        public void setMultiSign(Boolean multiSign) { this.multiSign = multiSign; }
         public Boolean getRepeatable() { return repeatable; }
         public void setRepeatable(Boolean repeatable) { this.repeatable = repeatable; }
         public Boolean getSealVisa() { return sealVisa; }

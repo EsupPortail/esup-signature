@@ -139,6 +139,7 @@ public class UiAdminFormMapper {
         dto.setId(workflowStep.getId());
         dto.setSignType(workflowStep.getSignType());
         dto.setAllSignToComplete(workflowStep.getAllSignToComplete());
+        dto.setMultiSign(workflowStep.getMultiSign());
         dto.setName(workflowStep.getName());
         dto.setUsers(workflowStep.getUsers() == null ? List.of() : workflowStep.getUsers().stream().map(this::toAdminFormUserDto).toList());
         return dto;
@@ -269,4 +270,3 @@ public class UiAdminFormMapper {
                 .toList();
     }
 }
-

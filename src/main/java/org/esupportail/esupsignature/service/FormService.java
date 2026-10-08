@@ -32,6 +32,8 @@ import org.esupportail.esupsignature.service.utils.pdf.PdfService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -63,8 +65,9 @@ public class FormService {
 	private final WebUtilsService webUtilsService;
 	private final LiveWorkflowStepRepository liveWorkflowStepRepository;
 	private final ObjectMapper objectMapper;
+	private final MessageSource messageSource;
 
-	public FormService(ApplicationContext applicationContext, FormRepository formRepository, PdfService pdfService, UserShareService userShareService, FieldService fieldService, WorkflowRepository workflowRepository, DocumentService documentService, FieldPropertieService fieldPropertieService, UserService userService, SignRequestParamsService signRequestParamsService, DataRepository dataRepository, WebUtilsService webUtilsService, LiveWorkflowStepRepository liveWorkflowStepRepository, ObjectMapper objectMapper) {
+	public FormService(ApplicationContext applicationContext, FormRepository formRepository, PdfService pdfService, UserShareService userShareService, FieldService fieldService, WorkflowRepository workflowRepository, DocumentService documentService, FieldPropertieService fieldPropertieService, UserService userService, SignRequestParamsService signRequestParamsService, DataRepository dataRepository, WebUtilsService webUtilsService, LiveWorkflowStepRepository liveWorkflowStepRepository, ObjectMapper objectMapper, MessageSource messageSource) {
         this.applicationContext = applicationContext;
         this.formRepository = formRepository;
         this.pdfService = pdfService;
@@ -79,6 +82,7 @@ public class FormService {
         this.webUtilsService = webUtilsService;
         this.liveWorkflowStepRepository = liveWorkflowStepRepository;
         this.objectMapper = objectMapper;
+		this.messageSource = messageSource;
 	}
 
     public Form getById(Long formId) {
@@ -573,10 +577,14 @@ public class FormService {
 	public Long addSignRequestParamsSteps(Long formId, Integer step, Integer signPageNumber, Integer xPos, Integer yPos, Integer commentWidth, Integer commentHeight) {
 		Form form = getById(formId);
 		validateSpotBounds(form, signPageNumber, xPos, yPos, commentWidth, commentHeight);
+		WorkflowStep workflowStep = form.getWorkflow().getWorkflowSteps().get(step - 1);
+		if (!workflowStep.getMultiSign() && !workflowStep.getSignRequestParams().isEmpty()) {
+			throw new EsupSignatureRuntimeException(messageSource.getMessage("signSpot.error.multiSign", null, LocaleContextHolder.getLocale()));
+		}
 		SignRequestParams signRequestParams = signRequestParamsService.createSignRequestParams(signPageNumber, xPos, yPos);
 		signRequestParams.setSignWidth(commentWidth);
 		signRequestParams.setSignHeight(commentHeight);
-		form.getWorkflow().getWorkflowSteps().get(step - 1).getSignRequestParams().add(signRequestParams);
+		workflowStep.getSignRequestParams().add(signRequestParams);
 		return signRequestParams.getId();
 	}
 

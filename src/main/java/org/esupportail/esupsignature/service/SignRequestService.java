@@ -43,12 +43,16 @@ import org.esupportail.esupsignature.service.utils.sign.ValidationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -102,8 +106,9 @@ public class SignRequestService {
 	private final NexuSignatureRepository nexuSignatureRepository;
 	private final OtpService otpService;
 	private final SignService signService;
+	private final MessageSource messageSource;
 
-	public SignRequestService(GlobalProperties globalProperties, TargetService targetService, WebUtilsService webUtilsService, SignRequestRepository signRequestRepository, ActionService actionService, PdfService pdfService, DocumentService documentService, CustomMetricsService customMetricsService, UserService userService, DataService dataService, CommentService commentService, MailService mailService, AuditTrailService auditTrailService, UserShareService userShareService, RecipientService recipientService, FsAccessFactoryService fsAccessFactoryService, WsAccessTokenRepository wsAccessTokenRepository, FileService fileService, PreFillService preFillService, LogService logService, SignRequestParamsService signRequestParamsService, ValidationService validationService, FOPService fopService, ObjectMapper objectMapper, SignBookRepository signBookRepository, NexuSignatureRepository nexuSignatureRepository, OtpService otpService, SignService signService) {
+	public SignRequestService(GlobalProperties globalProperties, TargetService targetService, WebUtilsService webUtilsService, SignRequestRepository signRequestRepository, ActionService actionService, PdfService pdfService, DocumentService documentService, CustomMetricsService customMetricsService, UserService userService, DataService dataService, CommentService commentService, MailService mailService, AuditTrailService auditTrailService, UserShareService userShareService, RecipientService recipientService, FsAccessFactoryService fsAccessFactoryService, WsAccessTokenRepository wsAccessTokenRepository, FileService fileService, PreFillService preFillService, LogService logService, SignRequestParamsService signRequestParamsService, ValidationService validationService, FOPService fopService, ObjectMapper objectMapper, SignBookRepository signBookRepository, NexuSignatureRepository nexuSignatureRepository, OtpService otpService, SignService signService, MessageSource messageSource) {
 		this.globalProperties = globalProperties;
 		this.targetService = targetService;
 		this.webUtilsService = webUtilsService;
@@ -132,6 +137,7 @@ public class SignRequestService {
 		this.nexuSignatureRepository = nexuSignatureRepository;
 		this.otpService = otpService;
 		this.signService = signService;
+		this.messageSource = messageSource;
 	}
 
 	@PostConstruct
@@ -1475,6 +1481,7 @@ public class SignRequestService {
 			throw new EsupSignatureException("Impossible d'ajouter un champ signature générique s'il y a plusieurs participants dans l'étape ; merci de cibler un destinataire");
 		}
 		validateSpotBounds(signRequest, pageNumber, posX, posY, signWidth, signHeight);
+		validateSpotMultiplicity(liveWorkflowStep, signRequest, recipient);
 		SignRequestParams signRequestParams = signRequestParamsService.createSignRequestParams(pageNumber, posX, posY);
 		if(signWidth != null && signHeight != null) {
 			signRequestParams.setSignWidth(signWidth);
@@ -1485,6 +1492,21 @@ public class SignRequestService {
 		signRequestParams.setRecipient(recipient);
 		liveWorkflowStep.getSignRequestParams().add(signRequestParams);
 		return signRequestParams.getId();
+	}
+
+	private void validateSpotMultiplicity(LiveWorkflowStep liveWorkflowStep, SignRequest signRequest, Recipient recipient) throws EsupSignatureException {
+		if (liveWorkflowStep.getMultiSign()) {
+			return;
+		}
+		int signDocumentNumber = getOrderInSignBookOrFallback(signRequest);
+		boolean occupied = liveWorkflowStep.getSignRequestParams().stream()
+				.filter(signRequestParams -> Objects.equals(signRequestParams.getSignDocumentNumber(), signDocumentNumber))
+				.anyMatch(signRequestParams -> signRequestParams.getRecipient() == null
+						|| recipient == null
+						|| Objects.equals(signRequestParams.getRecipient().getId(), recipient.getId()));
+		if (occupied) {
+			throw new EsupSignatureException(messageSource.getMessage("signSpot.error.multiSign", null, LocaleContextHolder.getLocale()));
+		}
 	}
 
 	private void validateSpotBounds(SignRequest signRequest, Integer pageNumber, Integer posX, Integer posY, Integer signWidth, Integer signHeight) throws EsupSignatureException {
@@ -1687,6 +1709,9 @@ public class SignRequestService {
 	@Transactional(readOnly = true)
 	public void getToSignFileResponse(Long signRequestId, String disposition, HttpServletResponse httpServletResponse, boolean force) throws IOException, EsupSignatureRuntimeException, EsupSignatureException {
 		SignRequest signRequest = getById(signRequestId);
+		if (signRequest == null) {
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+		}
 		if(!force && !disposition.equals("inline")
 				&& signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null
 				&&  BooleanUtils.isTrue(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getForbidDownloadsBeforeEnd())

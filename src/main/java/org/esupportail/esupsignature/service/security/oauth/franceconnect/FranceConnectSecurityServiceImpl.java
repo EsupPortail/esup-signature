@@ -39,8 +39,7 @@ public class FranceConnectSecurityServiceImpl implements OidcOtpSecurityService 
 	@Override
 	public String getDescription() {
 		return """
-            J’utilise FranceConnect pour créer mon compte ou me connecter.
-            FranceConnect est la solution proposée par l’État pour sécuriser et simplifier la connexion aux services publics en ligne.
+            <p>FranceConnect est la solution proposée par l’État pour sécuriser et simplifier la connexion aux services publics en ligne.</p>
             """;
 	}
 

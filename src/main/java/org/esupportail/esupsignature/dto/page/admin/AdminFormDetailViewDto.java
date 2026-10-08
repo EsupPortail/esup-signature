@@ -345,6 +345,7 @@ public class AdminFormDetailViewDto {
         private Long id;
         private SignType signType;
         private Boolean allSignToComplete;
+        private Boolean multiSign;
         private String name;
         private List<UserDto> users;
 
@@ -370,6 +371,14 @@ public class AdminFormDetailViewDto {
 
         public void setAllSignToComplete(Boolean allSignToComplete) {
             this.allSignToComplete = allSignToComplete;
+        }
+
+        public Boolean getMultiSign() {
+            return multiSign;
+        }
+
+        public void setMultiSign(Boolean multiSign) {
+            this.multiSign = multiSign;
         }
 
         public String getName() {
