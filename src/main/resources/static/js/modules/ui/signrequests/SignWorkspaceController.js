@@ -217,6 +217,7 @@ export class SignWorkspaceController {
             exitCommentAddMode: () => this.exitCommentAddMode(),
             startSpotPlacement: () => this.signPlacementController.addSign(this.pdfViewer.pageNum, false, 999999, null),
             refreshSignFields: () => this.initSignFields(),
+            refreshSpotActionAvailability: () => this.updateAnnotationActionButtonsAvailability(),
             removeSignSpaceBySpotId: spotId => $("#signSpace_spot_" + spotId).remove()
         });
         this.signSpaceManager = new SignSpaceManager(this.state, {
@@ -831,7 +832,9 @@ export class SignWorkspaceController {
     }
 
     canUseSpotAction() {
-        return this.isManager && this.canUseDocumentPlacementActions();
+        return this.isManager
+            && this.canUseDocumentPlacementActions()
+            && (this.spotManager == null || this.spotManager.hasAvailableSpotTarget());
     }
 
     hasActiveSignRequestParamsOnCurrentPage() {

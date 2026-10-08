@@ -12,6 +12,7 @@ public interface LiveWorkflowStepProjectionDto {
     Boolean getAutoSign();
     Boolean getAutoSignStatus();
     Boolean getAllSignToComplete();
+    Boolean getMultiSign();
     Boolean getRepeatable();
     Boolean getSealVisa();
 }

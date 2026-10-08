@@ -29,6 +29,7 @@ export class SpotManager {
             exitCommentAddMode: options.exitCommentAddMode ?? (() => {}),
             startSpotPlacement: options.startSpotPlacement ?? (() => {}),
             refreshSignFields: options.refreshSignFields ?? (() => {}),
+            refreshSpotActionAvailability: options.refreshSpotActionAvailability ?? (() => {}),
             removeSignSpaceBySpotId: options.removeSignSpaceBySpotId ?? (() => {}),
             lockSigns: options.lockSigns ?? (() => {}),
             getEditable: options.getEditable ?? (() => false)
@@ -154,6 +155,7 @@ export class SpotManager {
             return rawSteps.map((step, index) => ({
                 stepNumber: String(index + 1),
                 allSignToComplete: step?.allSignToComplete === true,
+                multiSign: step?.multiSign !== false,
                 recipients: Array.isArray(step?.recipients)
                     ? step.recipients
                         .filter(recipient => recipient?.id != null)
@@ -200,6 +202,7 @@ export class SpotManager {
                 definitions.push({
                     stepNumber: String(value),
                     allSignToComplete: option.attr("data-es-all-sign-to-complete") === "true",
+                    multiSign: option.attr("data-es-multi-sign") !== "false",
                     recipients: recipientsByStep.get(String(value)) ?? []
                 });
             });
@@ -209,6 +212,7 @@ export class SpotManager {
         return [{
             stepNumber: String(stepField.val() ?? stepField.attr("value") ?? "1"),
             allSignToComplete: stepField.attr("data-es-all-sign-to-complete") === "true",
+            multiSign: stepField.attr("data-es-multi-sign") !== "false",
             recipients: recipientsByStep.get(String(stepField.val() ?? stepField.attr("value") ?? "1")) ?? []
         }];
     }
@@ -300,20 +304,21 @@ export class SpotManager {
         if (stepDefinition != null) {
             return {
                 allSignToComplete: stepDefinition.allSignToComplete === true,
+                multiSign: stepDefinition.multiSign !== false,
                 recipientCount: stepDefinition.recipients.length
             };
         }
 
         const spotStepNumber = this.getSpotStepField();
         if (!spotStepNumber.length) {
-            return {allSignToComplete: false, recipientCount: 0};
+            return {allSignToComplete: false, multiSign: true, recipientCount: 0};
         }
 
         let source = spotStepNumber;
         if (spotStepNumber.is("select")) {
             source = spotStepNumber.find(`option[value='${stepNumber}']`).first();
             if (!source.length) {
-                return {allSignToComplete: false, recipientCount: 0};
+                return {allSignToComplete: false, multiSign: true, recipientCount: 0};
             }
         }
 
@@ -324,6 +329,7 @@ export class SpotManager {
         const recipientCount = parseInt(source.attr("data-es-recipient-count"), 10);
         return {
             allSignToComplete: source.attr("data-es-all-sign-to-complete") === "true",
+            multiSign: source.attr("data-es-multi-sign") !== "false",
             recipientCount: Number.isFinite(recipientCount) ? recipientCount : fallbackRecipients
         };
     }
@@ -331,6 +337,47 @@ export class SpotManager {
     stepRequiresRecipientSelection(stepNumber) {
         const metadata = this.getStepMetadata(stepNumber);
         return metadata.recipientCount > 1 && metadata.allSignToComplete === true;
+    }
+
+    isStepAvailableForSpot(stepNumber) {
+        const metadata = this.getStepMetadata(stepNumber);
+        if (metadata.multiSign !== false) {
+            return true;
+        }
+        const spots = Array.isArray(this.options.getSpots()) ? this.options.getSpots() : [];
+        const stepSpots = spots.filter(spot => String(spot?.stepNumber ?? "") === String(stepNumber));
+        if (!this.stepRequiresRecipientSelection(stepNumber)) {
+            return stepSpots.length === 0;
+        }
+        if (stepSpots.some(spot => spot?.recipientId == null)) {
+            return false;
+        }
+        const occupiedRecipientCount = new Set(
+            stepSpots
+                .map(spot => spot?.recipientId)
+                .filter(recipientId => recipientId != null)
+                .map(recipientId => String(recipientId))
+        ).size;
+        return metadata.recipientCount === 0 || occupiedRecipientCount < metadata.recipientCount;
+    }
+
+    hasAvailableSpotTarget() {
+        const spotStepNumber = this.getSpotStepField();
+        if (!spotStepNumber.length) {
+            return true;
+        }
+        if (!spotStepNumber.is("select")) {
+            return this.isStepAvailableForSpot(spotStepNumber.val() ?? spotStepNumber.attr("value") ?? "1");
+        }
+        return spotStepNumber.find("option[value]")
+            .toArray()
+            .some(optionElement => {
+                const option = $(optionElement);
+                const value = option.attr("value") ?? "";
+                return value !== ""
+                    && !option.is("[data-placeholder='true']")
+                    && this.isStepAvailableForSpot(value);
+            });
     }
 
     syncSlimSelect(selectField, items, selectedValue) {
@@ -355,7 +402,7 @@ export class SpotManager {
             .replaceAll("'", "&#39;");
     }
 
-    rebuildRecipientFieldOptions(recipientField, recipients, selectedValue, occupiedRecipientIds, hasGenericSpot) {
+    rebuildRecipientFieldOptions(recipientField, recipients, selectedValue, occupiedRecipientIds, hasGenericSpot, multiSign) {
         const optionHtml = ["<option data-placeholder='true' readonly='' value=''>Choisir un destinataire</option>"];
         const slimData = [{
             text: "Choisir un destinataire",
@@ -367,7 +414,7 @@ export class SpotManager {
 
         recipients.forEach(recipient => {
             const value = String(recipient.id);
-            const disabled = hasGenericSpot || occupiedRecipientIds.has(value);
+            const disabled = multiSign === false && (hasGenericSpot || occupiedRecipientIds.has(value));
             optionHtml.push(`<option value='${this.escapeHtml(value)}'${disabled ? " disabled='disabled'" : ""}>${this.escapeHtml(recipient.label)}</option>`);
             slimData.push({
                 text: recipient.label,
@@ -423,7 +470,8 @@ export class SpotManager {
             return;
         }
 
-        nextValue = this.rebuildRecipientFieldOptions(recipientField, recipients, nextValue, occupiedRecipientIds, hasGenericSpot);
+        const metadata = this.getStepMetadata(stepValue);
+        nextValue = this.rebuildRecipientFieldOptions(recipientField, recipients, nextValue, occupiedRecipientIds, hasGenericSpot, metadata.multiSign);
         recipientField.val(nextValue);
     }
 
@@ -446,8 +494,8 @@ export class SpotManager {
             const stepSpots = spots.filter(spot => String(spot?.stepNumber ?? "") === value);
             let shouldDisable = false;
             if (!isPlaceholder && value !== "") {
-                if (this.stepRequiresRecipientSelection(value)) {
-                    const metadata = this.getStepMetadata(value);
+                const metadata = this.getStepMetadata(value);
+                if (metadata.multiSign === false && this.stepRequiresRecipientSelection(value)) {
                     const hasGenericSpot = stepSpots.some(spot => spot?.recipientId == null);
                     const occupiedRecipientCount = new Set(
                         stepSpots
@@ -456,7 +504,7 @@ export class SpotManager {
                             .map(recipientId => String(recipientId))
                     ).size;
                     shouldDisable = hasGenericSpot || (metadata.recipientCount > 0 && occupiedRecipientCount >= metadata.recipientCount);
-                } else {
+                } else if (metadata.multiSign === false) {
                     shouldDisable = stepSpots.length > 0;
                 }
             }
@@ -550,6 +598,7 @@ export class SpotManager {
         }
         this.options.setSpots(spots);
         this.refreshSpotStepOptions();
+        this.options.refreshSpotActionAvailability();
 
         if (this.options.isSignable() && this.canCurrentUserUseSpot(normalizedSpot)) {
             this.options.removeSignSpaceBySpotId(spotId);
@@ -561,6 +610,8 @@ export class SpotManager {
                 currentParams.push({...normalizedSpot, ready: false});
                 this.options.setCurrentSignRequestParamses(currentParams);
             }
+            this.options.refreshSignFields();
+        } else if (this.options.isManager()) {
             this.options.refreshSignFields();
         }
     }
@@ -579,6 +630,7 @@ export class SpotManager {
         this.options.setSpots(spots);
         this.options.setCurrentSignRequestParamses(currentParams);
         this.refreshSpotStepOptions();
+        this.options.refreshSpotActionAvailability();
     }
 
     bindSignSpaceDelete(signSpaceDiv) {

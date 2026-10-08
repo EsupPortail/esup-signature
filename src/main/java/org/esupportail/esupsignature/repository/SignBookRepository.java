@@ -79,6 +79,7 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
                    coalesce(lws.autoSign, false) as autoSign,
                    lws.autoSignStatus as autoSignStatus,
                    coalesce(lws.allSignToComplete, false) as allSignToComplete,
+                   coalesce(lws.multiSign, true) as multiSign,
                    coalesce(lws.repeatable, false) as repeatable,
                    coalesce(lws.sealVisa, false) as sealVisa
             from SignBook sb
