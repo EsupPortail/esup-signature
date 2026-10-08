@@ -36,8 +36,7 @@ public class ProConnectSecurityServiceImpl implements OidcOtpSecurityService {
     @Override
     public String getDescription() {
         return """
-                Se connecter avec ProConnect.
-                ProConnect est le moyen d'authentification commun des services numériques de l'État pour les professionnels.
+                <p>ProConnect est le moyen d'authentification commun des services numériques de l'État pour les professionnels.</p>
             """;
     }
 
