@@ -13,10 +13,12 @@ import org.esupportail.esupsignature.dto.ui.global.UiMessageDto;
 import org.esupportail.esupsignature.entity.Otp;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
+import org.esupportail.esupsignature.entity.enums.ExternalAuth;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.UserService;
+import org.esupportail.esupsignature.service.mail.MailService;
 import org.esupportail.esupsignature.service.interfaces.sms.SmsService;
 import org.esupportail.esupsignature.service.security.OidcOtpSecurityService;
 import org.esupportail.esupsignature.service.security.SecurityService;
@@ -26,6 +28,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -60,8 +64,10 @@ public class OtpAccessController {
     private final SmsService smsService;
     private final ClientRegistrationRepository clientRegistrationRepository;
     private final SmsProperties smsProperties;
+    private final MailService mailService;
+    private final MessageSource messageSource;
 
-    public OtpAccessController(GlobalProperties globalProperties, OtpService otpService, SignBookService signBookService, UserService userService, List<SecurityService> securityServices, @Autowired(required = false) SmsService smsService, @Autowired(required = false) ClientRegistrationRepository clientRegistrationRepository, SmsProperties smsProperties) {
+    public OtpAccessController(GlobalProperties globalProperties, OtpService otpService, SignBookService signBookService, UserService userService, List<SecurityService> securityServices, @Autowired(required = false) SmsService smsService, @Autowired(required = false) ClientRegistrationRepository clientRegistrationRepository, SmsProperties smsProperties, MailService mailService, MessageSource messageSource) {
         this.globalProperties = globalProperties;
         this.otpService = otpService;
         this.signBookService = signBookService;
@@ -70,6 +76,8 @@ public class OtpAccessController {
         this.smsService = smsService;
         this.clientRegistrationRepository = clientRegistrationRepository;
         this.smsProperties = smsProperties;
+        this.mailService = mailService;
+        this.messageSource = messageSource;
     }
 
     @GetMapping(value = "/first/{urlId}")
@@ -78,17 +86,18 @@ public class OtpAccessController {
         List<OidcOtpSecurityService> oidcOtpSecurityServices = getActiveOidcSecurityServices();
         Otp otp = otpService.getAndCheckOtpFromDatabase(urlId);
         if(otp != null && ((otp.isSignature() && otp.getTries() < globalProperties.getNbSignOtpTries()) || (!otp.isSignature() && otp.getTries() < globalProperties.getNbViewOtpTries()))) {
-            if (!globalProperties.getSmsRequired() && !otp.isForceSms() && oidcOtpSecurityServices.isEmpty()) {
-                authOtp(model, httpServletRequest, otp.getUser());
-                return "redirect:/otp/signrequests/signbook-redirect/" + otp.getSignBook().getId();
-            }
             if(!otp.getSignBook().getStatus().equals(SignRequestStatus.pending) && otp.isSignature()) {
                 return "redirect:/otp-access/completed";
             }
             model.addAttribute("otp", otp);
             model.addAttribute("smsRequired", (globalProperties.getSmsRequired() || otp.isForceSms()));
-            model.addAttribute("enableSms", smsProperties.getServiceName());
-            model.addAttribute("externalAuths", signBookService.getExternalAuths(otp, oidcOtpSecurityServices));
+            model.addAttribute("enableSms", useEmailPin(otp) ? "EMAIL" : smsProperties.getServiceName());
+            List<ExternalAuth> externalAuths = new ArrayList<>(signBookService.getExternalAuths(otp, oidcOtpSecurityServices));
+            externalAuths.remove(ExternalAuth.open);
+            if (!externalAuths.contains(ExternalAuth.sms)) {
+                externalAuths.add(ExternalAuth.sms);
+            }
+            model.addAttribute("externalAuths", externalAuths);
             httpServletRequest.getSession().setAttribute("after_oauth_redirect", "/otp/signrequests/signbook-redirect/" + otp.getSignBook().getId());
             httpServletRequest.getSession().setAttribute(OAuth2FailureHandler.AFTER_OAUTH_FAILURE_REDIRECT, "/otp-access/first/" + urlId);
             if("true".equals(httpServletRequest.getParameter("oauth2_cancelled"))) {
@@ -149,12 +158,37 @@ public class OtpAccessController {
         return "otp/error";
     }
 
+    private boolean useEmailPin(Otp otp) {
+        return (!BooleanUtils.isTrue(globalProperties.getSmsRequired()) && !otp.isForceSms())
+                || !BooleanUtils.isTrue(smsProperties.getEnableSms())
+                || smsService == null
+                || "EMAIL".equals(smsProperties.getServiceName());
+    }
+
+    private String message(String key) {
+        return messageSource.getMessage(key, null, LocaleContextHolder.getLocale());
+    }
+
     @PostMapping(value = "/phone")
     @ResponseBody
     public ResponseEntity<?> phone(@RequestParam String urlId, @RequestParam String phone) throws EsupSignatureUserException, NumberParseException {
-        Otp otp = otpService.getOtpFromDatabase(urlId);
+        Otp otp = otpService.getAndCheckOtpFromDatabase(urlId);
         if(otp != null) {
             User user = otp.getUser();
+            if (useEmailPin(otp)) {
+                if (otp.getSmsSended() && otpService.getOtpFromCache(urlId) != null) {
+                    return ResponseEntity.ok().body(message("otp.pin.alreadySent"));
+                }
+                try {
+                    String code = otpService.generateOtpPassword(urlId, null);
+                    mailService.sendMailCode(user.getEmail(), code);
+                    otpService.setSmsSended(urlId);
+                    return ResponseEntity.ok().body(message("otp.pin.sentEmail"));
+                } catch (Exception e) {
+                    logger.error("Failed to send OTP email", e);
+                    return ResponseEntity.internalServerError().body(message("otp.pin.sendFailed"));
+                }
+            }
             User userTest = userService.getUserByPhone(phone);
             if (userTest == null || user.getEppn().equals(userTest.getEppn())) {
                 Phonenumber.PhoneNumber number = null;
@@ -170,12 +204,6 @@ public class OtpAccessController {
                 }
                 if ((!otp.getSmsSended() || otpService.getOtpFromCache(urlId) == null) && smsService != null) {
                     String password = otpService.generateOtpPassword(urlId, phone);
-                    if(smsProperties.getServiceName().equals("EMAIL")) {
-                        smsService.sendSms(user.getEmail(), null, password);
-                        otpService.setSmsSended(urlId);
-                        return ResponseEntity.ok().body("Code transmit sur votre boite mail");
-
-                    }
                     if (phoneUtil.isValidNumber(number)) {
                         logger.info("sending password by sms : " + password + " to " + phone);
                         try {
@@ -201,10 +229,8 @@ public class OtpAccessController {
     @PostMapping
     public String auth(@RequestParam String urlId, @RequestParam String password, Model model, RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) throws EsupSignatureUserException {
         Otp otp = otpService.getAndCheckOtpFromDatabase(urlId);
-        if (!globalProperties.getSmsRequired() && !otp.isForceSms()) {
-            authOtp(model, httpServletRequest, otp.getUser());
-            otpService.addOtpTry(urlId);
-            return "redirect:/otp/signrequests/signbook-redirect/" + otp.getSignBook().getId();
+        if (otp == null) {
+            return "redirect:/otp-access/first/" + urlId;
         }
         Boolean testOtp = otpService.checkOtp(urlId, password);
         if(BooleanUtils.isTrue(testOtp)) {
@@ -215,14 +241,18 @@ public class OtpAccessController {
             return "redirect:/otp/signrequests/signbook-redirect/" + otp.getSignBook().getId();
         } else {
             String newPassword = otpService.generateOtpPassword(urlId, otp.getPhoneNumber());
-            logger.info("sending password by sms : " + newPassword + " to " + otp.getPhoneNumber());
             try {
-                smsService.sendSms(otp.getUser().getEmail(), otp.getPhoneNumber(), newPassword);
+                if (useEmailPin(otp)) {
+                    mailService.sendMailCode(otp.getUser().getEmail(), newPassword);
+                } else {
+                    smsService.sendSms(otp.getUser().getEmail(), otp.getPhoneNumber(), newPassword);
+                }
                 otpService.setSmsSended(urlId);
+                redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", message("otp.pin.invalid")));
             } catch (Exception e) {
-                logger.error(e.getMessage());
+                logger.error("Failed to resend OTP code", e);
+                redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", message("otp.pin.sendFailed")));
             }
-            redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", "Mauvais code SMS, un nouveau code vous à été envoyé"));
             return "redirect:/otp-access/first/" + urlId;
         }
     }
