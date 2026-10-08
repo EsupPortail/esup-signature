@@ -16,6 +16,8 @@ import org.esupportail.esupsignature.entity.WsAccessToken;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.repository.WsAccessTokenRepository;
 import org.esupportail.esupsignature.service.*;
+import org.esupportail.esupsignature.service.mail.MailService;
+import org.springframework.context.support.ResourceBundleMessageSource;
 import org.esupportail.esupsignature.service.interfaces.sms.SmsService;
 import org.esupportail.esupsignature.service.security.LogoutHandlerImpl;
 import org.esupportail.esupsignature.service.security.OidcOtpSecurityService;
@@ -191,7 +193,7 @@ class GlobalSecurityAttackSurfaceTest {
     class OtpAccessControllerTests {
 
         @Test
-        void otpEntryPointShouldCreateAuthenticatedSessionFromUrlTokenOnlyWhenSmsIsNotRequired() throws Exception {
+        void otpEntryPointShouldRequireEmailPinWhenSmsIsNotRequired() throws Exception {
             GlobalProperties globalProperties = new GlobalProperties();
             globalProperties.setSmsRequired(false);
             globalProperties.setNbSignOtpTries(3);
@@ -208,7 +210,9 @@ class GlobalSecurityAttackSurfaceTest {
                     List.of(),
                     null,
                     null,
-                    smsProperties
+                    smsProperties,
+                    mock(MailService.class),
+                    otpMessages()
             );
 
             Otp otp = otp("public-bearer-link", false, 0, 42L);
@@ -219,8 +223,9 @@ class GlobalSecurityAttackSurfaceTest {
 
             String view = controller.signin("public-bearer-link", model, request, new RedirectAttributesModelMap());
 
-            assertEquals("redirect:/otp/signrequests/signbook-redirect/42", view);
-            assertOtpAuthenticationStoredInSession(request);
+            assertEquals("otp/signin", view);
+            assertEquals("EMAIL", model.getAttribute("enableSms"));
+            assertNull(request.getSession().getAttribute(SPRING_SECURITY_CONTEXT_KEY));
         }
 
         @Test
@@ -241,7 +246,9 @@ class GlobalSecurityAttackSurfaceTest {
                     List.of(),
                     null,
                     null,
-                    smsProperties
+                    smsProperties,
+                    mock(MailService.class),
+                    otpMessages()
             );
 
             Otp otp = otp("sms-required-link", false, 0, 52L);
@@ -279,7 +286,9 @@ class GlobalSecurityAttackSurfaceTest {
                     List.of(),
                     null,
                     null,
-                    new SmsProperties()
+                    new SmsProperties(),
+                    mock(MailService.class),
+                    otpMessages()
             );
 
             Otp otp = otp("force-sms-link", true, 0, 53L);
@@ -312,7 +321,9 @@ class GlobalSecurityAttackSurfaceTest {
                     List.of(),
                     null,
                     null,
-                    new SmsProperties()
+                    new SmsProperties(),
+                    mock(MailService.class),
+                    otpMessages()
             );
 
             Otp expiredOtp = otp("expired-link", false, 3, 66L);
@@ -339,7 +350,9 @@ class GlobalSecurityAttackSurfaceTest {
                     List.of(),
                     null,
                     null,
-                    new SmsProperties()
+                    new SmsProperties(),
+                    mock(MailService.class),
+                    otpMessages()
             );
 
             when(otpService.getAndCheckOtpFromDatabase("missing-link")).thenReturn(null);
@@ -368,7 +381,9 @@ class GlobalSecurityAttackSurfaceTest {
                     List.of(),
                     mock(SmsService.class),
                     null,
-                    new SmsProperties()
+                    new SmsProperties(),
+                    mock(MailService.class),
+                    otpMessages()
             );
 
             Otp otp = otp("sms-auth-link", false, 0, 77L);
@@ -391,6 +406,9 @@ class GlobalSecurityAttackSurfaceTest {
             SignBookService signBookService = mock(SignBookService.class);
             UserService userService = mock(UserService.class);
             SmsService smsService = mock(SmsService.class);
+            SmsProperties smsProperties = new SmsProperties();
+            smsProperties.setEnableSms(true);
+            smsProperties.setServiceName("SMSU");
 
             OtpAccessController controller = new OtpAccessController(
                     globalProperties,
@@ -400,7 +418,9 @@ class GlobalSecurityAttackSurfaceTest {
                     List.of(),
                     smsService,
                     null,
-                    new SmsProperties()
+                    smsProperties,
+                    mock(MailService.class),
+                    otpMessages()
             );
 
             Otp otp = otp("wrong-sms-link", false, 0, 88L);
@@ -453,7 +473,9 @@ class GlobalSecurityAttackSurfaceTest {
                     List.of(oidcService),
                     null,
                     clientRegistrationRepository,
-                    new SmsProperties()
+                    new SmsProperties(),
+                    mock(MailService.class),
+                    otpMessages()
             );
 
             Otp otp = otp("oidc-link", false, 0, 54L);
@@ -490,7 +512,9 @@ class GlobalSecurityAttackSurfaceTest {
                     List.of(),
                     null,
                     null,
-                    new SmsProperties()
+                    new SmsProperties(),
+                    mock(MailService.class),
+                    otpMessages()
             );
 
             Otp otp = otp("cancelled-oauth-link", false, 0, 55L);
@@ -508,7 +532,7 @@ class GlobalSecurityAttackSurfaceTest {
         }
 
         @Test
-        void otpAuthenticationShouldBypassSmsChallengeWhenSmsIsDisabledGlobally() {
+        void otpAuthenticationShouldRejectMissingPinWhenSmsIsDisabledGlobally() {
             GlobalProperties globalProperties = new GlobalProperties();
             globalProperties.setSmsRequired(false);
             OtpService otpService = mock(OtpService.class);
@@ -523,18 +547,44 @@ class GlobalSecurityAttackSurfaceTest {
                     List.of(),
                     null,
                     null,
-                    new SmsProperties()
+                    new SmsProperties(),
+                    mock(MailService.class),
+                    otpMessages()
             );
 
             Otp otp = otp("bypass-link", false, 0, 78L);
             when(otpService.getAndCheckOtpFromDatabase("bypass-link")).thenReturn(otp);
 
             MockHttpServletRequest request = new MockHttpServletRequest("POST", "/otp-access");
-            String view = controller.auth("bypass-link", "ignored", new ConcurrentModel(), new RedirectAttributesModelMap(), request);
+            String view = controller.auth("bypass-link", "", new ConcurrentModel(), new RedirectAttributesModelMap(), request);
 
-            assertEquals("redirect:/otp/signrequests/signbook-redirect/78", view);
+            assertEquals("redirect:/otp-access/first/bypass-link", view);
+            assertNull(request.getSession(false));
+            verify(otpService).checkOtp("bypass-link", "");
+        }
+
+        @Test
+        void otpEmailFallbackShouldSendPinWithoutPhoneAndAcceptValidPin() throws Exception {
+            GlobalProperties properties = new GlobalProperties();
+            properties.setSmsRequired(false);
+            OtpService otpService = mock(OtpService.class);
+            MailService mailService = mock(MailService.class);
+            OtpAccessController controller = new OtpAccessController(properties, otpService,
+                    mock(SignBookService.class), mock(UserService.class), List.of(), null, null,
+                    new SmsProperties(), mailService, otpMessages());
+            Otp otp = otp("email-link", false, 0, 81L);
+            otp.getUser().setEmail("recipient@example.org");
+            when(otpService.getAndCheckOtpFromDatabase("email-link")).thenReturn(otp);
+            when(otpService.generateOtpPassword("email-link", null)).thenReturn("123456");
+
+            assertEquals(200, controller.phone("email-link", "").getStatusCode().value());
+            verify(mailService).sendMailCode("recipient@example.org", "123456");
+            verify(otpService).setSmsSended("email-link");
+            when(otpService.checkOtp("email-link", "123456")).thenReturn(true);
+            MockHttpServletRequest request = new MockHttpServletRequest();
+            assertEquals("redirect:/otp/signrequests/signbook-redirect/81",
+                    controller.auth("email-link", "123456", new ConcurrentModel(), new RedirectAttributesModelMap(), request));
             assertOtpAuthenticationStoredInSession(request);
-            verify(otpService).addOtpTry("bypass-link");
         }
 
         @Test
@@ -547,7 +597,9 @@ class GlobalSecurityAttackSurfaceTest {
                     List.of(),
                     null,
                     null,
-                    new SmsProperties()
+                    new SmsProperties(),
+                    mock(MailService.class),
+                    otpMessages()
             );
 
             MockHttpServletRequest request = new MockHttpServletRequest();
@@ -573,7 +625,9 @@ class GlobalSecurityAttackSurfaceTest {
                     List.of(),
                     null,
                     null,
-                    new SmsProperties()
+                    new SmsProperties(),
+                    mock(MailService.class),
+                    otpMessages()
             );
 
             Otp renewedOtp = otp("resend-link", false, 1, 79L);
@@ -596,7 +650,9 @@ class GlobalSecurityAttackSurfaceTest {
                     List.of(),
                     null,
                     null,
-                    new SmsProperties()
+                    new SmsProperties(),
+                    mock(MailService.class),
+                    otpMessages()
             );
 
             ConcurrentModel model = new ConcurrentModel();
@@ -616,7 +672,9 @@ class GlobalSecurityAttackSurfaceTest {
         void otpPhoneShouldRejectAlreadyAssignedNumber() throws Exception {
             GlobalProperties globalProperties = new GlobalProperties();
             SmsProperties smsProperties = new SmsProperties();
-            smsProperties.setServiceName("EMAIL");
+            smsProperties.setServiceName("SMSU");
+            smsProperties.setEnableSms(true);
+            globalProperties.setSmsRequired(true);
             OtpService otpService = mock(OtpService.class);
             SignBookService signBookService = mock(SignBookService.class);
             UserService userService = mock(UserService.class);
@@ -629,13 +687,15 @@ class GlobalSecurityAttackSurfaceTest {
                     List.of(),
                     mock(SmsService.class),
                     null,
-                    smsProperties
+                    smsProperties,
+                    mock(MailService.class),
+                    otpMessages()
             );
 
             Otp otp = otp("phone-link", false, 0, 80L);
             User anotherUser = new User();
             anotherUser.setEppn("other@example.org");
-            when(otpService.getOtpFromDatabase("phone-link")).thenReturn(otp);
+            when(otpService.getAndCheckOtpFromDatabase("phone-link")).thenReturn(otp);
             when(userService.getUserByPhone("0601010101")).thenReturn(anotherUser);
 
             ResponseEntity<?> response = controller.phone("phone-link", "0601010101");
@@ -1295,6 +1355,13 @@ class GlobalSecurityAttackSurfaceTest {
             assertTrue(response.getRedirectedUrl().contains("error=server_error"));
             assertTrue(response.getRedirectedUrl().contains("state=state-123"));
         }
+    }
+
+    private ResourceBundleMessageSource otpMessages() {
+        ResourceBundleMessageSource messages = new ResourceBundleMessageSource();
+        messages.setBasename("i18n/messages");
+        messages.setDefaultEncoding("UTF-8");
+        return messages;
     }
 
     private Otp otp(String urlId, boolean forceSms, int tries, long signBookId) {
