@@ -36,7 +36,14 @@
                         </div>
                     </div>
                 </th:block>
-                <div class="accordion text-center col-12 col-lg-5" th:if="${#lists.contains(externalAuths, T(org.esupportail.esupsignature.entity.enums.ExternalAuth).open) || #lists.contains(externalAuths, T(org.esupportail.esupsignature.entity.enums.ExternalAuth).sms)}" style="min-width: 300px;padding: 0;" >
+            </div>
+            <div id="es-otp-separator" class="d-flex align-items-center gap-3 w-100 my-3" style="max-width: 32rem;" th:if="${!securityServices.isEmpty()}">
+                <hr class="flex-grow-1 m-0">
+                <span th:text="#{otp.signin.or}"></span>
+                <hr class="flex-grow-1 m-0">
+            </div>
+            <div id="es-otp-pin-container" class="d-flex justify-content-center w-100">
+                <div id="es-otp-pin" class="accordion text-center col-12 col-lg-5" th:if="${#lists.contains(externalAuths, T(org.esupportail.esupsignature.entity.enums.ExternalAuth).open) || #lists.contains(externalAuths, T(org.esupportail.esupsignature.entity.enums.ExternalAuth).sms)}" style="min-width: 300px;padding: 0;" >
                     <div class="accordion-item ">
                         <h3 class="accordion-header">
                             <button class="accordion-button bg-light-subtle text-light-emphasis" th:classappend="${!securityServices.isEmpty() ? 'collapsed' : ''}" type="button" data-bs-toggle="collapse" data-bs-target="#otherMethod" aria-expanded="true" aria-controls="otherMethod">
@@ -63,26 +70,14 @@
                                     <th:block th:if="${enableSms == 'EMAIL'}">
                                         <form id="phoneForm" th:method="'post'" th:action="'#'">
                                             <input type="hidden" name="urlId" th:value="${urlId}">
-                                            <input id="submitPhone" type="submit" class="btn btn-success" value="Recevoir mon code d'accès">
+                                            <input id="submitPhone" type="submit" class="btn btn-success" th:value="#{otp.pin.receiveEmail}">
                                         </form>
                                     </th:block>
                                     <form th:action="'/otp-access'" method="post" class="mx-auto gap-2" style="width: 250px;">
                                         <input name="urlId" type="hidden" th:value="${urlId}">
                                         <label class="form-label" for="password">Saisir ici le code reçu</label>
-                                        <input id="smsPassword" name="password" type="password" class="form-control mb-2" maxlength="6" placeholder="******" autofocus th:disabled="${message == null}">
-                                        <input id="smsSubmit" type="submit" class="btn btn-success" value="Confirmer" th:disabled="${message == null}">
-                                    </form>
-                                    <hr>
-                                </th:block>
-                                <th:block th:if="${#lists.contains(externalAuths, T(org.esupportail.esupsignature.entity.enums.ExternalAuth).open)}">
-                                    <p class="text-left"><b>J’accède à la signature sans authentification complémentaire</b></p>
-                                    <p class="text-left" style="height: 100px;" th:if="${!securityServices.isEmpty()}">
-                                        Attention ! Cette méthode n’est à utiliser que dans le cas ou vous ne pouvez pas utiliser d’autres modes
-                                    </p>
-                                    <form th:action="'/otp-access'" method="post" class="mx-auto gap-2" style="width: 250px;">
-                                        <input name="urlId" type="hidden" th:value="${urlId}">
-                                        <input name="password" type="hidden">
-                                        <input type="submit" class="btn btn-primary" value="Continuer">
+                                        <input id="smsPassword" name="password" type="password" class="form-control mb-2" maxlength="6" placeholder="******" autofocus th:disabled="${!otp.smsSended}">
+                                        <input id="smsSubmit" type="submit" class="btn btn-success" value="Confirmer" th:disabled="${!otp.smsSended}">
                                     </form>
                                     <hr>
                                 </th:block>

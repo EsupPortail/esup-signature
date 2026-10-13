@@ -15,6 +15,7 @@ export class SignSpaceManager {
 			isEditable: options.isEditable ?? (() => false),
 			isManager: options.isManager ?? (() => false),
 			isCreator: options.isCreator ?? (() => false),
+			status: options.status ?? (() => null),
 			getBrowserZoom: options.getBrowserZoom ?? (() => 1),
 			requestAddSign: options.requestAddSign ?? (() => {}),
 			findSpotIdForSignParams: options.findSpotIdForSignParams ?? (() => null),
@@ -23,11 +24,17 @@ export class SignSpaceManager {
 		};
 	}
 
-	canViewAllSpots() {
-		return this.options.isManager() || this.options.isCreator();
+	canDisplaySignSpaces() {
+		return !['completed', 'exported', 'refused', 'deleted', 'archived', 'cleaned'].includes(this.options.status())
+			&& (this.options.isSignable() || this.options.isEditable() || this.options.isManager());
 	}
 
 	initSignFields() {
+		if (!this.canDisplaySignSpaces()) {
+			this.destroy();
+			$(".sign-space").remove();
+			return;
+		}
 		const signParamsToDisplay = this.getSignParamsToDisplay();
 		const pdfViewer = this.options.getPdfViewer();
 		if (pdfViewer == null) {
@@ -69,16 +76,6 @@ export class SignSpaceManager {
 				const resolvedStepNumber = Number.isFinite(parseInt(rawStepNumber, 10))
 					? parseInt(rawStepNumber, 10)
 					: parseInt(this.options.getCurrentStepNumber(), 10);
-				const currentStep = parseInt(this.options.getCurrentStepNumber(), 10);
-
-				if (!this.canViewAllSpots()
-					&& !isSignableField
-					&& spotId != null
-					&& Number.isFinite(currentStep)
-					&& Number.isFinite(resolvedStepNumber)
-					&& resolvedStepNumber < currentStep) {
-					continue;
-				}
 
 				let signSpaceHtml = "<div id='" + signSpaceId + "' title='Emplacement de signature : " + (currentSignRequestParams.comment || "") + "' class='" + cssClasses + "' data-es-spot-id='" + (spotId == null ? "" : spotId) + "' data-es-step-number='" + (Number.isFinite(resolvedStepNumber) ? resolvedStepNumber : "") + "' data-es-pos-page='" + currentSignRequestParams.signPageNumber + "' data-es-pos-x='" + currentSignRequestParams.xPos + "' data-es-sign-name='" + (currentSignRequestParams.pdSignatureFieldName || "") + "' data-es-pos-y='" + currentSignRequestParams.yPos + "' data-es-sign-width='" + currentSignRequestParams.signWidth + "' data-es-sign-height='" + currentSignRequestParams.signHeight + "'>" + deleteBtnHtml + "</div>";
 				$("#pdf").append(signSpaceHtml);
@@ -143,10 +140,6 @@ export class SignSpaceManager {
 	updateSignSpaceDeleteButtonVisibility(signSpaceDiv, { isSignableField = false, ready = false } = {}) {
 		const deleteBtn = signSpaceDiv.children(".slot-delete-btn");
 		if (!deleteBtn.length) {
-			return;
-		}
-		if (this.options.isManager()) {
-			deleteBtn.show();
 			return;
 		}
 		if (isSignableField) {
@@ -220,6 +213,10 @@ export class SignSpaceManager {
 	}
 
 	refreshSignFields() {
+		if (!this.canDisplaySignSpaces()) {
+			$(".sign-space").hide();
+			return;
+		}
 		const pdfViewer = this.options.getPdfViewer();
 		if (pdfViewer == null) {
 			return;
@@ -552,7 +549,7 @@ export class SignSpaceManager {
 	}
 
 	shouldHideSpotSignSpace(signParams) {
-		return !this.options.isManager()
-			&& (this.isSpotParamAlreadyUsed(signParams) || this.isSpotFromPreviousStep(signParams));
+		return this.isSpotFromPreviousStep(signParams)
+			|| (!this.options.isManager() && this.isSpotParamAlreadyUsed(signParams));
 	}
 }
