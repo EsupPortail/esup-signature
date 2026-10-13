@@ -16,6 +16,7 @@ export class SpotManager {
             setCurrentSignRequestParamses: options.setCurrentSignRequestParamses ?? (() => {}),
             getCurrentStepNumber: options.getCurrentStepNumber ?? (() => null),
             isSignable: options.isSignable ?? (() => false),
+            isManager: options.isManager ?? (() => false),
             getCurrentSignType: options.getCurrentSignType ?? (() => null),
             getUserName: options.getUserName ?? (() => null),
             getFormId: options.getFormId ?? (() => null),

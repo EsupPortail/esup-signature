@@ -204,6 +204,7 @@ export class SignWorkspaceController {
             },
             getCurrentStepNumber: () => this.currentStepNumber,
             isSignable: () => this.signable,
+            isManager: () => this.isManager,
             getCurrentSignType: () => this.currentSignType,
             getUserName: () => this.userName,
             getFormId: () => this.formId,
