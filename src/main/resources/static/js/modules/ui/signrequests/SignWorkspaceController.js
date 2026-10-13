@@ -232,6 +232,7 @@ export class SignWorkspaceController {
             isEditable: () => this.editable,
             isManager: () => this.isManager,
             isCreator: () => this.isCurrentUserCreator(),
+            status: () => this.status,
             getBrowserZoom: () => this.getBrowserZoom(),
             requestAddSign: signIndex => this.addSign(signIndex),
             findSpotIdForSignParams: signParams => this.findSpotIdForSignParams(signParams),
@@ -834,6 +835,7 @@ export class SignWorkspaceController {
 
     canUseSpotAction() {
         return this.isManager
+            && this.signSpaceManager.canDisplaySignSpaces()
             && this.canUseDocumentPlacementActions()
             && (this.spotManager == null || this.spotManager.hasAvailableSpotTarget());
     }
@@ -1041,7 +1043,7 @@ export class SignWorkspaceController {
             this.toggleDNone(['#addCommentButton2', '#postit', '#commentHelp'], false);
         }
 
-        if (this.isManager) {
+        if (this.isManager && this.signSpaceManager.canDisplaySignSpaces()) {
             this.toggleDNone(['#addSpotButton2'], false);
         }
 
@@ -1053,7 +1055,7 @@ export class SignWorkspaceController {
             this.hideAllPostits();
         }
 
-        $(".sign-space").toggle(this.signable || this.editable);
+        $(".sign-space").toggle(this.signSpaceManager.canDisplaySignSpaces());
 
         $('#infos, #insert-btn-div, #insert-btn').show();
         $('#insert-btn').removeClass("btn-warning");
