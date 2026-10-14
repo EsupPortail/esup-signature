@@ -826,7 +826,7 @@ export class SignWorkspaceController {
             && !this.addCommentEnabled
             && !this.addSpotEnabled
             && !$("body").hasClass("es-spot-add-mode")
-            && !this.hasActiveSignRequestParamsOnCurrentPage();
+            && !this.hasActiveSignRequestParams();
     }
 
     canUseCommentAction() {
@@ -840,18 +840,14 @@ export class SignWorkspaceController {
             && (this.spotManager == null || this.spotManager.hasAvailableSpotTarget());
     }
 
-    hasActiveSignRequestParamsOnCurrentPage() {
-        const currentPage = parseInt(this.pdfViewer?.pageNum, 10);
-        if (!Number.isFinite(currentPage) || this.signPlacementController?.signRequestParamses == null) {
+    hasActiveSignRequestParams() {
+        if (this.signPlacementController?.signRequestParamses == null) {
             return false;
         }
         return Array.from(this.signPlacementController.signRequestParamses.values()).some(signRequestParams => {
-            const signPageNumber = parseInt(signRequestParams?.signPageNumber, 10);
             const signImageNumber = parseInt(signRequestParams?.signImageNumber, 10);
             return signRequestParams?.isSign === true
-                && signImageNumber !== 999999
-                && Number.isFinite(signPageNumber)
-                && signPageNumber === currentPage;
+                && signImageNumber !== 999999;
         });
     }
 
