@@ -15,6 +15,10 @@
 		<meta name="esup-max-inactive-interval" th:content="${maxInactiveInterval}">
 		<meta name="esup-enable-sms" th:content="${enableSms}">
 		<meta name="esup-sms-required" th:content="${smsRequired}">
+        <meta id="es-id-pdf-compatibility-messages"
+              th:data-browser-error="#{client.pdf.browserError}"
+              th:data-load-error="#{client.pdf.loadError}">
+        <script th:src="@{/js/customs/pdf-compatibility.js(version=${versionApp})}"></script>
 		<base href="/">
 		<link rel="stylesheet" th:href="@{/webjars/pdfjs-dist/legacy/web/pdf_viewer.css}" />
 		<link rel="stylesheet" th:href="@{/webjars/jquery-ui/dist/themes/vader/jquery-ui.css}" />
@@ -49,9 +53,7 @@
 		<script th:src="@{/webjars/momentjs/locale/fr.js}"></script>
 		<script th:src="@{/webjars/popperjs__core/dist/umd/popper.js}"></script>
 		<script th:src="@{/webjars/eonasdan__tempus-dominus/dist/js/tempus-dominus.js}"></script>
-		<script type="module" th:src="@{/webjars/pdfjs-dist/legacy/build/pdf.min.mjs}"></script>
-		<script type="module" th:src="'/js/modules/bootstrap/PdfJsBootstrap.js?version=' + ${versionApp}"></script>
-		<script type="module" th:src="@{/webjars/pdfjs-dist/legacy/web/pdf_viewer.mjs}"></script>
+        <script id="es-id-pdf-js-bootstrap" type="module" th:src="'/js/modules/bootstrap/PdfJsBootstrap.js?version=' + ${versionApp}"></script>
 		<script th:src="@{/webjars/slim-select/dist/slimselect.js}"></script>
 		<script th:src="@{/js/customs/jquery.simulate.js}"></script>
 		<script th:src="@{/webjars/intro.js/minified/intro.min.js}"></script>

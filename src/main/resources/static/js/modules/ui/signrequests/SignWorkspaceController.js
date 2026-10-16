@@ -764,7 +764,6 @@ export class SignWorkspaceController {
         const userAgent = navigator.userAgent || "indisponible";
         const firefoxMatch = userAgent.match(/Firefox\/(\d+(?:\.\d+)?)/i);
         const firefoxVersion = firefoxMatch?.[1] ?? null;
-        const firefoxMajorVersion = firefoxVersion == null ? null : parseInt(firefoxVersion, 10);
         const errorName = typeof error?.name === "string" && error.name.trim() !== ""
             ? error.name.trim()
             : "Erreur inconnue";
@@ -782,10 +781,8 @@ export class SignWorkspaceController {
             probableCause = "Le document PDF est protégé par un mot de passe que l’application ne peut pas fournir.";
         } else if (errorName === "UnexpectedResponseException") {
             probableCause = "Le serveur a renvoyé une réponse inattendue à la place du document PDF.";
-        } else if (firefoxMajorVersion != null && firefoxMajorVersion < 140) {
-            probableCause = `Firefox ${firefoxVersion} est probablement trop ancien pour PDF.js 6 (version ESR prise en charge : Firefox 140 ou ultérieure).`;
-        } else if (!globalThis.pdfjsLib || typeof Promise.withResolvers !== "function") {
-            probableCause = "Le navigateur ne fournit pas les fonctions nécessaires au moteur d’affichage PDF.";
+        } else if (window.esupPdfCompatibility?.incompatible) {
+            probableCause = document.getElementById('es-id-pdf-compatibility-messages').getAttribute('data-browser-error');
         }
 
         return {

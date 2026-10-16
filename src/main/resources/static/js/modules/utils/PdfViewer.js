@@ -112,13 +112,10 @@ export class PdfViewer extends EventFactory {
 
     async loadDocument() {
         try {
-            if (!globalThis.pdfjsLib || !Promise.withResolvers) {
-                const message = "Votre navigateur ne supporte pas pdfJs pour l'affichage des PDF.";
-                const error = new Error(message);
-                this.failRender(error, message);
-                bootbox.alert(message + "<br>Versions prises en charge par PDF.js 6 : Firefox 140 ESR, Chrome 125, Safari 18", function () {
-                    document.location = "https://www.mozilla.org/fr/firefox/new/";
-                });
+            if (window.esupPdfCompatibility && !await window.esupPdfCompatibility.ready) {
+                const message = document.getElementById('es-id-pdf-compatibility-messages')
+                    .getAttribute(window.esupPdfCompatibility.incompatible ? 'data-browser-error' : 'data-load-error');
+                this.failRender(new Error(message), message);
                 return null;
             }
             if (!this.url) {
@@ -149,6 +146,9 @@ export class PdfViewer extends EventFactory {
             return;
         }
         this.renderFailed = true;
+        if (window.esupPdfCompatibility?.isCompatibilityError(error, false)) {
+            window.esupPdfCompatibility.fail(error, false);
+        }
         this.isRendering = false;
         this.pendingRender = false;
         this.pendingRenderPdf = null;
