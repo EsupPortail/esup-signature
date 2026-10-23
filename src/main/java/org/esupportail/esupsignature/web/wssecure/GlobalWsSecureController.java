@@ -22,6 +22,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -114,6 +115,8 @@ public class GlobalWsSecureController {
         try {
             signRequestService.getToSignFileResponse(id, "attachment", httpServletResponse, false);
             return ResponseEntity.ok().build();
+        } catch (ResponseStatusException e) {
+            throw e;
         } catch (Exception e) {
             logger.error("get file error", e);
         }
@@ -192,6 +195,8 @@ public class GlobalWsSecureController {
         try {
             signRequestService.getToSignFileResponse(id, "inline", httpServletResponse, false);
             return ResponseEntity.ok().build();
+        } catch (ResponseStatusException e) {
+            throw e;
         } catch (Exception e) {
             logger.error("get file error :" + e.getMessage());
         }
@@ -216,6 +221,8 @@ public class GlobalWsSecureController {
         try {
             signRequestService.getSignedFileAndReportResponse(id, httpServletRequest, httpServletResponse, false);
             return ResponseEntity.ok().build();
+        } catch (ResponseStatusException e) {
+            throw e;
         } catch (Exception e) {
             logger.error("get file error :" + e.getMessage());
         }

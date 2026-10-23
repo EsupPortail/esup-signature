@@ -164,7 +164,8 @@ public class UiFetchSignRequestService {
         List<ShowSignRequestDto.SignBookViewerDto> signBookViewers = signBookService.getSignBookViewerDtos(signBook.getId());
         var signBookLight = mapper.toSignBookLightDto(signBook, signBookViewers);
         var signRequestLight = mapper.toSignRequestLightDto(signRequest);
-        var workflowMeta = mapper.toWorkflowMetaDto(workflow);
+        ShowSignRequestDto.WorkflowMetaDto workflowMeta = mapper.toWorkflowMetaDto(workflow);
+        workflowMeta.setDownloadAllowed(signRequestService.canDownloadDocument(signRequest));
         List<ShowSignRequestDto.StepDto> steps = signBookService.getLiveWorkflowStepDtos(signBook.getId());
         List<ShowSignRequestDto.TargetDto> targets = signBookService.getLiveWorkflowTargetDtos(signBook.getId());
         List<ShowSignRequestDto.SignRequestLightDto> clonedSignRequests = signRequest.getStatus() == SignRequestStatus.refused

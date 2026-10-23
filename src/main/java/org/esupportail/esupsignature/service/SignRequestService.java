@@ -1712,16 +1712,8 @@ public class SignRequestService {
 		if (signRequest == null) {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND);
 		}
-		if(!force && !disposition.equals("inline")
-				&& signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null
-				&&  BooleanUtils.isTrue(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getForbidDownloadsBeforeEnd())
-				&& !signRequest.getStatus().equals(SignRequestStatus.completed)
-				&& !signRequest.getStatus().equals(SignRequestStatus.exported)
-				&& !signRequest.getStatus().equals(SignRequestStatus.refused)
-				&& !signRequest.getArchiveStatus().equals(ArchiveStatus.archived)
-				&& !signRequest.getArchiveStatus().equals(ArchiveStatus.cleaned)
-		) {
-			throw new EsupSignatureException("Téléchargement interdit avant la fin du circuit pour : " + signRequestId);
+		if (!force && !canDownloadDocument(signRequest)) {
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN);
 		}
 		if (!signRequest.getParentSignBook().getArchiveStatus().equals(ArchiveStatus.cleaned)) {
 			List<Document> documents = getToSignDocuments(signRequest.getId());
@@ -1745,7 +1737,7 @@ public class SignRequestService {
 		}
 		SignRequest signRequest = getById(signRequestId);
 		if (!canDownloadLayeredPdfAtStep(signRequest, stepNumber)) {
-			throw new EsupSignatureException("Téléchargement interdit pour cette étape pour : " + signRequestId);
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN);
 		}
 
 		if (stepNumber == 0 && signRequest.getOriginalDocuments() != null && !signRequest.getOriginalDocuments().isEmpty()) {
@@ -1779,8 +1771,27 @@ public class SignRequestService {
 		return pdfService.removeOptionalContentAfterStep(pdfBytes, stepNumber);
 	}
 
+	public boolean canDownloadDocument(SignRequest signRequest) {
+		if (signRequest == null || signRequest.getStatus() == null) {
+			return false;
+		}
+		if (signRequest.getStatus().equals(SignRequestStatus.completed)
+				|| signRequest.getStatus().equals(SignRequestStatus.exported)
+				|| signRequest.getStatus().equals(SignRequestStatus.refused)
+				|| signRequest.getStatus().equals(SignRequestStatus.archived)
+				|| signRequest.getStatus().equals(SignRequestStatus.cleaned)
+				|| ArchiveStatus.archived.equals(signRequest.getArchiveStatus())
+				|| ArchiveStatus.cleaned.equals(signRequest.getArchiveStatus())) {
+			return true;
+		}
+		return !(signRequest.getParentSignBook() != null
+				&& signRequest.getParentSignBook().getLiveWorkflow() != null
+				&& signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null
+				&& BooleanUtils.isTrue(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getForbidDownloadsBeforeEnd()));
+	}
+
 	public boolean canDownloadLayeredPdfAtStep(SignRequest signRequest, int stepNumber) {
-		if (signRequest == null || signRequest.getStatus() == null || stepNumber < 0) {
+		if (!canDownloadDocument(signRequest) || stepNumber < 0) {
 			return false;
 		}
 		if (signRequest.getStatus().equals(SignRequestStatus.completed)
@@ -1848,14 +1859,8 @@ public class SignRequestService {
 	@Transactional
 	public void getSignedFileAndReportResponse(Long signRequestId, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, boolean force) throws Exception {
 		SignRequest signRequest = getById(signRequestId);
-		if(!force
-				&& signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null
-				&& BooleanUtils.isTrue(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getForbidDownloadsBeforeEnd())
-				&& (!signRequest.getStatus().equals(SignRequestStatus.completed) && !signRequest.getStatus().equals(SignRequestStatus.exported)
-				&& !signRequest.getStatus().equals(SignRequestStatus.refused)
-				&& !signRequest.getArchiveStatus().equals(ArchiveStatus.archived)
-				&& !signRequest.getArchiveStatus().equals(ArchiveStatus.cleaned))) {
-			throw new EsupSignatureException("Téléchargement interdit avant la fin du circuit");
+		if (!force && !canDownloadDocument(signRequest)) {
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN);
 		}
 		webUtilsService.copyFileStreamToHttpResponse(signRequest.getParentSignBook().getSubject() + "-avec_rapport.zip", "application/zip; charset=utf-8", "attachment", new ByteArrayInputStream(getZipWithDocAndReport(signRequest, httpServletRequest, httpServletResponse)), httpServletResponse);
 	}
@@ -1937,8 +1942,7 @@ public class SignRequestService {
 				.stream()
 				.noneMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_ADMIN"))
 				&&
-				signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null && BooleanUtils.isTrue(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getForbidDownloadsBeforeEnd())
-				&& !(signRequest.getStatus().equals(SignRequestStatus.completed) || signRequest.getStatus().equals(SignRequestStatus.exported))) {
+				!canDownloadDocument(signRequest)) {
 			throw new EsupSignatureRuntimeException("Téléchargement interdit avant la fin du circuit");
 		}
 		webUtilsService.copyFileStreamToHttpResponse(document.getFileName(), document.getContentType(), disposition, document.getInputStream(), httpServletResponse);
@@ -2558,6 +2562,9 @@ public class SignRequestService {
 	@Transactional
 	public byte[] getDocumentFromArchive(Long signRequestId, int versionIndex) throws IOException, InterruptedException {
 		SignRequest signRequest = getById(signRequestId);
+		if (!canDownloadDocument(signRequest)) {
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+		}
 		byte[] archive = signRequest.getDocumentsHistory().getInputStream().readAllBytes();
 
 		if (archive == null) {
