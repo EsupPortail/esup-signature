@@ -699,7 +699,7 @@ export class ListSignBooksUi {
             sortParam = `&sort=${sort}`;
         }
         $("#loader").show();
-        $.get("/" + this.mode + "/signbooks/list-ws?statusFilter=" + this.statusFilter + sortParam + "&recipientsFilter=" + this.recipientsFilter + "&workflowFilter=" + this.workflowFilter + "&docTitleFilter=" + this.docTitleFilter + "&creatorFilter=" + this.creatorFilter + "&dateFilter=" + this.dateFilter + "&" + this.csrf.parameterName + "=" + this.csrf.token + "&page=" + this.page + "&size=15")
+        $.get("/" + this.mode + "/signbooks/list-ws?statusFilter=" + this.statusFilter + sortParam + "&recipientsFilter=" + this.recipientsFilter + "&workflowFilter=" + this.workflowFilter + "&docTitleFilter=" + encodeURIComponent(this.docTitleFilter) + "&creatorFilter=" + this.creatorFilter + "&dateFilter=" + this.dateFilter + "&" + this.csrf.parameterName + "=" + this.csrf.token + "&page=" + this.page + "&size=15")
             .done(function (data) {
                 if(typeof data === 'string' && data.trim().length > 0) {
                     self.unbindInfiniteScrollListener();

@@ -31,6 +31,12 @@ import org.esupportail.esupsignature.service.utils.StepStatus;
 import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.mockito.ArgumentCaptor;
+import java.util.Date;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.LinkedHashMap;
@@ -54,6 +60,36 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class SignBookServiceTest {
+
+    @Test
+    void appliesColumnFiltersBeforePaginatingFollowedSignBooks() {
+        User user = new User();
+        User creator = new User();
+        User recipient = new User();
+        UserService userService = mock(UserService.class);
+        when(userService.getByEppn("viewer")).thenReturn(user);
+        when(userService.getByEppn("creator")).thenReturn(creator);
+        when(userService.getUserByEmail("recipient@example.org")).thenReturn(recipient);
+        SignBookRepository repository = mock(SignBookRepository.class);
+        PageRequest pageable = PageRequest.of(1, 15);
+        Page<SignBook> expected = Page.empty(pageable);
+        when(repository.findByViewersContaining(eq(user), eq(recipient), eq("workflow"), eq("%contrat%"), eq(creator), any(Date.class), any(Date.class), eq(pageable)))
+                .thenReturn(expected);
+        SignBookService service = mock(SignBookService.class, CALLS_REAL_METHODS);
+        ReflectionTestUtils.setField(service, "userService", userService);
+        ReflectionTestUtils.setField(service, "signBookRepository", repository);
+
+        Page<SignBook> result = service.getSignBooks("viewer", "viewer", "followByMe", "recipient@example.org", "workflow", "Contrat", "creator", "2026-11-02", pageable);
+
+        assertThat(result).isSameAs(expected);
+        ArgumentCaptor<Date> startDate = ArgumentCaptor.forClass(Date.class);
+        ArgumentCaptor<Date> endDate = ArgumentCaptor.forClass(Date.class);
+        verify(repository).findByViewersContaining(eq(user), eq(recipient), eq("workflow"), eq("%contrat%"), eq(creator), startDate.capture(), endDate.capture(), eq(pageable));
+        LocalDate filterDate = LocalDate.of(2026, 11, 2);
+        assertThat(startDate.getValue().toInstant().atZone(ZoneId.systemDefault()).toLocalDate()).isEqualTo(filterDate);
+        assertThat(endDate.getValue().toInstant().atZone(ZoneId.systemDefault()).toLocalDate()).isEqualTo(filterDate);
+        assertThat(startDate.getValue()).isBefore(endDate.getValue());
+    }
 
     @Test
     void doesNotRefuseAgainAfterLockingAnAlreadyRefusedSignRequest() {

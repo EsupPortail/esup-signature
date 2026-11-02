@@ -441,7 +441,7 @@ public class SignBookService {
         } else if(statusFilter.equals("refusedByMe")) {
             signBooks = signBookRepository.findRefusedByRecipientNotDeleted(user, workflowFilter, docTitleLikeFilter, creatorFilterUser, pageable);
         } else if(statusFilter.equals("followByMe")) {
-            signBooks = signBookRepository.findByViewersContaining(user, pageable);
+            signBooks = signBookRepository.findByViewersContaining(user, userFilter, workflowFilter, docTitleLikeFilter, creatorFilterUser, startDateFilter, endDateFilter, pageable);
         } else if(statusFilter.equals("sharedSign")) {
             signBooks = signBookRepository.findOnShareByEppn(user.getEppn(), userFilter, workflowFilter, docTitleLikeFilter, creatorFilterUser, startDateFilter, endDateFilter, pageable);
         } else if(statusFilter.equals("hided")) {
