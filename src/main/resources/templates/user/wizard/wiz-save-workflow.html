@@ -26,13 +26,15 @@
     </div>
 </div>
 <h4 class="d-flex justify-content-center mt-4">Création du circuit terminée</h4>
+<p id="es-wizard-save-error" class="alert alert-danger d-none" role="alert"
+   th:attr="data-error-message=#{wizard.save.error},data-title-error-message=#{wizard.save.value-too-long}"></p>
 <form id="saveWorkflowForm">
     <div class="row">
         <div class="col-lg-12">
             <input type="submit" id="save-workflow-submit" class="d-none">
             <div class="form-group mb-2">
                 <label for="workflowName"><strong>Choisir un nom pour sauvegarder le circuit en tant que modèle</strong></label>
-                <input type="text" id="workflowName" name="name" class="form-control required" required autofocus>
+                <input type="text" id="workflowName" name="name" class="form-control required" maxlength="255" required autofocus>
             </div>
             <div class="form-group mb-2">
                 <label for="recipientsCCEmails"><strong>Observateurs</strong></label>

@@ -24,12 +24,18 @@ export class WizUi {
         this.end = false;
         this.start = false;
         this.selfSignStartSubmitted = false;
+        this.savingWorkflow = false;
         this.modal = $('#' + this.div.attr('id').replace("div", "modal"));
         $('#save-step').hide();
         this.initListeners();
     }
 
     initListeners() {
+        this.modal.on('hide.bs.modal', event => {
+            if (this.savingWorkflow) {
+                event.preventDefault();
+            }
+        });
         this.modal.on('hidden.bs.modal', e => this.checkOnModalClose());
         this.modal.on('shown.bs.modal', () => this.requestModalFocus());
     }
@@ -534,6 +540,10 @@ export class WizUi {
         $("#multiSign-1").on('change', e => this.toggleAnnotationOption(e.target));
         $("#wiz-end").on('click', e => this.wizardEnd());
         $("#wiz-exit").on('click', e => this.wizardExit());
+        $("#saveWorkflowForm").on('submit', event => {
+            event.preventDefault();
+            this.saveWorkflow();
+        });
         $("#save-workflow").on('click', e => this.saveWorkflow());
         $("#save-step").on('click', e => this.workflowSignSubmitStepData());
         $("button[id^='delete-step-']").on('click', e => {
@@ -638,8 +648,21 @@ export class WizUi {
     }
 
     saveWorkflow() {
+        const form = document.getElementById('saveWorkflowForm');
+        if (this.savingWorkflow || (form != null && !form.reportValidity())) {
+            return;
+        }
+        const saveButton = $("#save-workflow");
+        const errorAlert = $("#es-wizard-save-error");
+        errorAlert.addClass('d-none').text('');
+        const name = $("#workflowName").val();
+        if (name.length > 255) {
+            errorAlert.text(errorAlert.attr('data-title-error-message')).removeClass('d-none');
+            return;
+        }
+        this.savingWorkflow = true;
+        saveButton.prop('disabled', true);
         let csrf = this.csrf;
-        let name = $("#workflowName").val();
         let self = this;
         let mode = "workflow";
         let elementId = -1;
@@ -650,8 +673,14 @@ export class WizUi {
             elementId = this.newWorkflowId;
         }
         $.ajax({
-            url: "/user/wizard/wiz-save-"+ mode +"/" + elementId + "?name=" + name + "&viewers=" + self.recipientCCSelect.slimSelect.getSelected() + "&" + csrf.parameterName + "=" + csrf.token,
+            url: "/user/wizard/wiz-save-" + mode + "/" + elementId,
             type: 'POST',
+            data: {
+                name: name,
+                viewers: self.recipientCCSelect?.slimSelect.getSelected() || [],
+                [csrf.parameterName]: csrf.token
+            },
+            traditional: true,
             success: function() {
                 if(self.newSignBookId !== "") {
                     location.href = "/user/signbooks/" + self.newSignBookId;
@@ -659,13 +688,21 @@ export class WizUi {
                     location.href = "/user";
                 }
             },
-            error: function() {
-                $("#save-workflow-submit").click();
+            error: function(error) {
+                const message = error.responseJSON?.message || errorAlert.attr('data-error-message');
+                errorAlert.text(message).removeClass('d-none');
+            },
+            complete: function() {
+                self.savingWorkflow = false;
+                saveButton.prop('disabled', false);
             }
         });
     }
 
     wizardExit() {
+        if (this.savingWorkflow) {
+            return;
+        }
         location.href = "/user/signbooks/" + this.newSignBookId;
     }
 
@@ -683,6 +720,10 @@ export class WizUi {
         if($("#recipientsCCEmails").length) {
             this.recipientCCSelect = new SelectUser("recipientsCCEmails", null, null, this.csrf);
         }
+        $("#saveWorkflowForm").on('submit', event => {
+            event.preventDefault();
+            this.saveWorkflow();
+        });
         $("#save-workflow").on('click', e => this.saveWorkflow());
         this.requestModalFocus();
 

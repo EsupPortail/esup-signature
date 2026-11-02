@@ -23,6 +23,9 @@ import org.esupportail.esupsignature.service.WorkflowService;
 import org.esupportail.esupsignature.service.ui.UiFetchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.MessageSource;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -37,8 +40,10 @@ import org.thymeleaf.context.WebContext;
 import org.thymeleaf.web.servlet.IServletWebExchange;
 import org.thymeleaf.web.servlet.JakartaServletWebApplication;
 
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 @RequestMapping("/user/wizard")
 @Controller
@@ -46,6 +51,7 @@ public class WizardController {
 
     private static final Logger logger = LoggerFactory.getLogger(WizardController.class);
 
+    private final MessageSource messageSource;
     private final WorkflowService workflowService;
     private final UiFetchService uiFetchService;
     private final FormService formService;
@@ -56,7 +62,8 @@ public class WizardController {
     private final LiveWorkflowStepService liveWorkflowStepService;
     private final GlobalProperties globalProperties;
 
-    public WizardController(WorkflowService workflowService, UiFetchService uiFetchService, FormService formService, SignBookService signBookService, SignRequestService signRequestService, TemplateEngine templateEngine, WorkflowStepService workflowStepService, LiveWorkflowStepService liveWorkflowStepService, GlobalProperties globalProperties) {
+    public WizardController(WorkflowService workflowService, UiFetchService uiFetchService, FormService formService, SignBookService signBookService, SignRequestService signRequestService, TemplateEngine templateEngine, WorkflowStepService workflowStepService, LiveWorkflowStepService liveWorkflowStepService, GlobalProperties globalProperties, MessageSource messageSource) {
+        this.messageSource = messageSource;
         this.workflowService = workflowService;
         this.uiFetchService = uiFetchService;
         this.formService = formService;
@@ -66,6 +73,24 @@ public class WizardController {
         this.workflowStepService = workflowStepService;
         this.liveWorkflowStepService = liveWorkflowStepService;
         this.globalProperties = globalProperties;
+    }
+
+    @ExceptionHandler({DataIntegrityViolationException.class, EsupSignatureRuntimeException.class})
+    @ResponseBody
+    public ResponseEntity<Map<String, String>> handleSaveException(RuntimeException exception, Locale locale) {
+        logger.error("Wizard operation failed", exception);
+        String messageKey = "wizard.save.error";
+        HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
+        Throwable cause = exception;
+        while (cause != null) {
+            if (cause instanceof SQLException sqlException && "22001".equals(sqlException.getSQLState())) {
+                messageKey = "wizard.save.value-too-long";
+                status = HttpStatus.CONFLICT;
+                break;
+            }
+            cause = cause.getCause();
+        }
+        return ResponseEntity.status(status).body(Map.of("message", messageSource.getMessage(messageKey, null, locale)));
     }
 
     @PreAuthorize("@preAuthorizeService.notInShare(#userEppn, #authUserEppn) && hasRole('ROLE_USER')")
@@ -292,12 +317,8 @@ public class WizardController {
         if(Boolean.TRUE.equals(globalProperties.getHideWizardWorkflow())) {
             return "user/wizard/wiz-end";
         }
-        try {
-            signBookService.saveSignBookAsWorkflow(id, name, name, userEppn);
-            signBookService.addViewers(id, viewers);
-        } catch (EsupSignatureRuntimeException e) {
-            return "user/wizard/wiz-save";
-        }
+        signBookService.saveSignBookAsWorkflow(id, name, name, userEppn);
+        signBookService.addViewers(id, viewers);
         return "user/wizard/wiz-end";
     }
 
