@@ -39,7 +39,7 @@ public class UserListService {
             if(listName.contains("*")) {
                 listName = listName.split("\\*")[1];
             }
-            if(ldapPersonService != null && ldapPersonService.getPersonLdapByMail(listName).isEmpty()) {
+            if (ldapPersonService == null || ldapPersonService.getPersonLdapByMail(listName).isEmpty()) {
                 Optional<User> optionalUser = userRepository.findByEmailIgnoreCase(listName);
                 if (optionalUser.isEmpty() || optionalUser.get().getUserType().equals(UserType.group)) {
                     Set<String> emails = new HashSet<>();

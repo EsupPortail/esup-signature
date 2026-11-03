@@ -444,6 +444,12 @@ public class GlobalProperties {
 
     public String newVersion;
 
+    private String sympaUrl;
+
+    private String sympaApp;
+
+    private String sympaToken;
+
     @PostConstruct
     public void init() {
         if (sealCertificatProperties.isEmpty()) {
@@ -1077,5 +1083,28 @@ public class GlobalProperties {
 
     public void setSignatureExtraLineHeightFactor(Float signatureExtraLineHeightFactor) {
         this.signatureExtraLineHeightFactor = signatureExtraLineHeightFactor;
+    }
+    public String getSympaUrl() {
+        return sympaUrl;
+    }
+
+    public void setSympaUrl(String sympaUrl) {
+        this.sympaUrl = sympaUrl;
+    }
+
+    public String getSympaApp() {
+        return sympaApp;
+    }
+
+    public void setSympaApp(String sympaApp) {
+        this.sympaApp = sympaApp;
+    }
+
+    public String getSympaToken() {
+        return sympaToken;
+    }
+
+    public void setSympaToken(String sympaToken) {
+        this.sympaToken = sympaToken;
     }
 }
