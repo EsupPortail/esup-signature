@@ -10,6 +10,7 @@ import org.esupportail.esupsignature.entity.enums.ArchiveStatus;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.repository.AppliVersionRepository;
 import org.esupportail.esupsignature.repository.SignBookRepository;
+import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.service.FormService;
 import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.slf4j.Logger;
@@ -26,6 +27,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
@@ -44,10 +47,11 @@ public class UpgradeService {
     private final BuildProperties buildProperties;
     private final FileService fileService;
     private final FormService formService;
+    private final SignRequestRepository signRequestRepository;
 
-    private final String[] updates = new String[] {"1.19", "1.22", "1.23", "1.29.10", "1.30.5", "1.33.7", "1.34.0", "1.34.4", "1.36.1", "1.36.7", "1.36.25", "1.36.26", "1.37.3", "1.37.22"};
+    private final String[] updates = new String[] {"1.19", "1.22", "1.23", "1.29.10", "1.30.5", "1.33.7", "1.34.0", "1.34.4", "1.36.1", "1.36.7", "1.36.25", "1.36.26", "1.37.3", "1.37.22", "1.37.30"};
 
-    public UpgradeService(EntityManager entityManager, GlobalProperties globalProperties, SignBookRepository signBookRepository, AppliVersionRepository appliVersionRepository, @Autowired(required = false) BuildProperties buildProperties, FileService fileService, FormService formService) {
+    public UpgradeService(EntityManager entityManager, GlobalProperties globalProperties, SignBookRepository signBookRepository, AppliVersionRepository appliVersionRepository, @Autowired(required = false) BuildProperties buildProperties, FileService fileService, FormService formService, SignRequestRepository signRequestRepository) {
         this.entityManager = entityManager;
         this.globalProperties = globalProperties;
         this.signBookRepository = signBookRepository;
@@ -55,6 +59,7 @@ public class UpgradeService {
         this.buildProperties = buildProperties;
         this.fileService = fileService;
         this.formService = formService;
+        this.signRequestRepository = signRequestRepository;
     }
 
     @Transactional
@@ -553,6 +558,42 @@ public class UpgradeService {
                 END $$;
                 """).executeUpdate();
         logger.info("#### Legacy group mappings migration completed ####");
+    }
+
+    @SuppressWarnings("unused")
+    public void update_1_37_30() throws IOException {
+        logger.info("#### Starting audit trail checksum migration ####");
+        List<Long> signRequestIds = signRequestRepository.findCompletedIdsWithoutAuditTrailCheckSum();
+        int fixed = 0;
+        int count = 0;
+        for(Long signRequestId : signRequestIds) {
+            SignRequest signRequest = signRequestRepository.findById(signRequestId).orElse(null);
+            if(signRequest != null && signRequest.getAuditTrail() != null && signRequest.getLastSignedDocument() != null) {
+                Document document = signRequest.getLastSignedDocument();
+                try (InputStream inputStream = document.getInputStream()) {
+                    if(inputStream != null) {
+                        AuditTrail auditTrail = signRequest.getAuditTrail();
+                        auditTrail.setDocumentCheckSum(fileService.getFileChecksum(inputStream));
+                        auditTrail.setDocumentName(document.getFileName());
+                        auditTrail.setDocumentType(document.getContentType());
+                        auditTrail.setDocumentSize(document.getSize());
+                        auditTrail.setDocumentId(document.getId().toString());
+                        fixed++;
+                    } else {
+                        logger.warn("audit trail checksum migration skipped for sign request {} : unreadable document", signRequestId);
+                    }
+                }
+            } else {
+                logger.warn("audit trail checksum migration skipped for sign request {} : no final document", signRequestId);
+            }
+            count++;
+            if(count % 50 == 0) {
+                entityManager.flush();
+                entityManager.clear();
+            }
+        }
+        entityManager.flush();
+        logger.info("#### Audit trail checksum migration completed : {} / {} updated ####", fixed, signRequestIds.size());
     }
 
 }

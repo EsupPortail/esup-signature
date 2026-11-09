@@ -21,6 +21,9 @@ import java.util.Optional;
 
 public interface SignRequestRepository extends CrudRepository<SignRequest, Long>, PagingAndSortingRepository<SignRequest, Long> {
 
+    @Query("select s.id from SignRequest s where s.auditTrail is not null and s.auditTrail.documentCheckSum is null and s.status = org.esupportail.esupsignature.entity.enums.SignRequestStatus.completed and s.parentSignBook.status = org.esupportail.esupsignature.entity.enums.SignRequestStatus.completed")
+    List<Long> findCompletedIdsWithoutAuditTrailCheckSum();
+
     List<SignRequest> findByIdIn(List<Long> ids);
 
     @Query("""

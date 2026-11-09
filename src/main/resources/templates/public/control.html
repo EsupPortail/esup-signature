@@ -31,11 +31,9 @@
                 </div>
                 <div class="es-status-card__body">
                     <h5 class="es-status-card__title mb-1">Validation incomplète sur cette plateforme</h5>
-                    <p class="es-status-card__description mb-2">Le document que vous avez fourni ne peut pas être totalement validé sur cette plateforme :</p>
-                    <ul class="mb-0">
-                        <li>Soit, le document a été modifié depuis qu’il a été signé</li>
-                        <li>Soit, le document n’a pas été signé sur cette plateforme</li>
-                    </ul>
+                    <p id="es-control-error-reason" class="es-status-card__description mb-0">
+                        <span th:if="${errorReason != null}" th:text="#{${errorReason}}"></span>
+                    </p>
                 </div>
             </div>
             <th:block th:if="${(auditTrail != null) || signRequest != null || (viewAccess != null && viewAccess)}">
@@ -58,6 +56,13 @@
                                 <dl class="row border-bottom m-0">
                                     <dt class="col-3">Taille : </dt>
                                     <dd class="col-9" th:text="${size} + ' (' + ${auditTrail.documentSize} + ')'"></dd>
+                                </dl>
+                                <dl id="es-control-checksum" class="row border-bottom m-0" th:if="${#authorization.expression('hasRole(''ROLE_USER'')')}">
+                                    <dt class="col-3" th:text="#{public.control.checksum}"></dt>
+                                    <dd class="col-9 text-break">
+                                        <span th:if="${auditTrail.documentCheckSum != null}" th:text="${auditTrail.documentCheckSum}"></span>
+                                        <span th:unless="${auditTrail.documentCheckSum != null}" class="text-danger" th:text="#{public.control.checksum.missing}"></span>
+                                    </dd>
                                 </dl>
                                 <div class="es-status-note es-status-note--secondary" th:if="${signRequest != null && viewAccess != null && viewAccess}">
                                     Vous avez accès à cette demande : <a th:href="'/user/signrequests/' + ${signRequest.id}">Voir la demande</a>

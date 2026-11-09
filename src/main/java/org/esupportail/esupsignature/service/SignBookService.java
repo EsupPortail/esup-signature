@@ -2169,8 +2169,14 @@ public class SignBookService {
                         sealAllDocs(signRequest.getParentSignBook().getId());
                     }
                     completeSignBook(signRequest.getParentSignBook(), authUserEppn, "Tous les documents sont signés");
-                    Document signedDocument = signRequest.getLastSignedDocument();
-                    auditTrailService.closeAuditTrail(signRequest.getToken(), signedDocument, signedDocument.getInputStream());
+                    for(SignRequest signBookSignRequest : signRequest.getParentSignBook().getSignRequests()) {
+                        Document signedDocument = signBookSignRequest.getLastSignedDocument();
+                        if(signedDocument != null && !SignRequestStatus.refused.equals(signBookSignRequest.getStatus())) {
+                            auditTrailService.closeAuditTrail(signBookSignRequest.getToken(), signedDocument, signedDocument.getInputStream());
+                        } else {
+                            logger.warn("audit trail not closed for sign request {} (token {}) : no final document or refused", signBookSignRequest.getId(), signBookSignRequest.getToken());
+                        }
+                    }
                 } catch(IOException e) {
                     throw new EsupSignatureRuntimeException(e.getMessage());
                 }

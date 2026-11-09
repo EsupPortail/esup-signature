@@ -22,6 +22,8 @@ import org.esupportail.esupsignature.service.security.PreAuthorizeService;
 import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.esupportail.esupsignature.service.utils.sign.SignService;
 import org.esupportail.esupsignature.service.utils.sign.ValidationService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.http.HttpHeaders;
@@ -46,6 +48,8 @@ import java.util.Optional;
 
 @RequestMapping("/public")
 public class PublicController {
+
+    private static final Logger logger = LoggerFactory.getLogger(PublicController.class);
 
     private final BuildProperties buildProperties;
     private final GlobalProperties globalProperties;
@@ -153,8 +157,18 @@ public class PublicController {
             if(reports != null) {
                 model.addAttribute("simpleReport", xsltService.generateShortReport(reports.getXmlSimpleReport()));
             }
+            model.addAttribute("errorReason", "public.control.error.unknown-checksum");
             model.addAttribute("error", true);
+            logger.warn("control: unknown checksum {} (file={}, size={}), no audit trail matches", checksum, multipartFile.getOriginalFilename(), multipartFile.getSize());
         } else {
+            AuditTrail expectedAuditTrail = auditTrailService.getAuditTrailByToken(token);
+            if (expectedAuditTrail != null) {
+                model.addAttribute("errorReason", "public.control.error.checksum-mismatch");
+                logger.warn("control: checksum mismatch for token {} (file={}, providedChecksum={}, providedSize={}, expectedChecksum={}, expectedSize={}, expectedName={})", token, multipartFile.getOriginalFilename(), checksum, multipartFile.getSize(), expectedAuditTrail.getDocumentCheckSum(), expectedAuditTrail.getDocumentSize(), expectedAuditTrail.getDocumentName());
+            } else {
+                model.addAttribute("errorReason", "public.control.error.no-audit-trail");
+                logger.warn("control: no audit trail for token {} (file={}, providedChecksum={})", token, multipartFile.getOriginalFilename(), checksum);
+            }
             model.addAttribute("error", true);
         }
         return "public/control";

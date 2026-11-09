@@ -80,6 +80,10 @@ public class AuditTrailService {
 
     public void  closeAuditTrail(String token, Document document, InputStream inputStream) throws IOException {
         AuditTrail auditTrail = auditTrailRepository.findByToken(token);
+        if(auditTrail == null) {
+            logger.warn("unable to close audit trail, no audit trail for token {}", token);
+            return;
+        }
         auditTrail.setDocumentCheckSum(fileService.getFileChecksum(inputStream));
         auditTrail.setDocumentName(document.getFileName());
         auditTrail.setDocumentType(document.getContentType());
