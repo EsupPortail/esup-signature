@@ -466,7 +466,7 @@ export class SignUi {
         if(value === "nexuCert") {
             this.nexu.checkNexuClient().then(function (e) {
                 console.info("Esup-DSS-Client est lancé !");
-                $("#certType > option[value='nexuCert']").remove('unavailable');
+                $("#certType > option[value='nexuCert']").removeAttr('unavailable').removeAttr('disabled').prop('disabled', false);
                 $("#nexu_missing_alert").hide();
                 $("#no-options").hide();
                 $("#no-options-alert").hide();
