@@ -209,9 +209,11 @@
             </button>
         </div>
         <button type="button"
-                class="w-100 d-flex justify-content-center btn btn-transparent text-success d-none d-sm-flex js-sign-goto-next-switch"
+                class="w-100 d-flex justify-content-center btn btn-transparent text-dark d-none d-sm-flex js-sign-goto-next-switch"
                 aria-pressed="false"
-                title="Activer l'ouverture automatique de la demande suivante">
+                th:title="#{signButtons.nextAuto.enable}"
+                th:data-es-title-enable="#{signButtons.nextAuto.enable}"
+                th:data-es-title-disable="#{signButtons.nextAuto.disable}">
             <i class="fi fi-rr-infinite-cycle"></i>
             <span class="es-sign-button-label" th:text="#{signButtons.nextAuto}"></span>
         </button>

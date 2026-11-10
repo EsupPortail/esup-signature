@@ -45,16 +45,19 @@ export class SignatureFlowController {
             return;
         }
 
-        const title = value
-            ? "Désactiver l'ouverture automatique de la demande suivante"
-            : "Activer l'ouverture automatique de la demande suivante";
-
-        gotoNextButtons
-            .toggleClass("active", value)
-            // .toggleClass("text-primary", value)
-            .toggleClass("text-dark", !value)
-            .attr("aria-pressed", String(value))
-            .attr("title", title);
+        gotoNextButtons.each((index, element) => {
+            const button = $(element);
+            let title = button.attr("data-es-title-enable");
+            if (value) {
+                title = button.attr("data-es-title-disable");
+            }
+            button
+                .toggleClass("active", value)
+                .toggleClass("text-success", value)
+                .toggleClass("text-dark", !value)
+                .attr("aria-pressed", String(value))
+                .attr("title", title);
+        });
     }
 
     syncAllGotoNextPreferences(value = this.getStoredGotoNextPreference()) {
