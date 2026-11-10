@@ -7,7 +7,7 @@
     <div class="es-wrapper">
         <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full text-uppercase">
             <ol id="breadcrumb-ol" class="breadcrumb">
-                <li class="breadcrumb-item"><a href="/admin" class="d-flex align-items-center"><i class="fi fi-rr-chess-queen"></i> Administration</a></li>
+                <li class="breadcrumb-item"><a th:href="@{${urlPrefix}}" class="d-flex align-items-center"><i class="fi fi-rr-chess-queen"></i> Administration</a></li>
                 <li class="breadcrumb-item es-breadcrumb-title active">Gestionnaires de rôles</li>
             </ol>
         </nav>
@@ -34,7 +34,7 @@
                                     <tbody>
                                     <th:block th:each="role, status :${roleManagers.keySet}">
                                         <tr>
-                                            <form th:action="'/admin/roles-managers/edit-role'" method="post">
+                                            <form th:action="@{${urlPrefix} + '/roles-managers/edit-role'}" method="post">
                                                 <td th:text="${role}"></td>
                                                 <input name="role" type="hidden" th:value="${role}">
                                                 <td>
@@ -81,7 +81,7 @@
 <div data-bs-focus="false" class="modal fade" id="newManagersRoles"  role="dialog" aria-hidden="true" th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
-            <form th:action="'/admin/roles-managers/create-role'" method="post">
+            <form th:action="@{${urlPrefix} + '/roles-managers/create-role'}" method="post">
                 <div class="modal-header">
                     <h3 class="modal-title" id="exampleModalLabel">Ajouter un circuit</h3>
                     <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close">

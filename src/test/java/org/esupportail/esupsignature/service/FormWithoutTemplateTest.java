@@ -49,7 +49,7 @@ class FormWithoutTemplateTest {
         form.setDocument(document);
         when(service.generateForm(null, "name", "title", 1L, "none", null, false, "user", null)).thenReturn(form);
         when(userService.getRoles("user")).thenReturn(Set.of(role));
-        FormAdminController controller = new FormAdminController(service, userService, null, null, null, null, null, null, null);
+        FormAdminController controller = new FormAdminController(service, userService, null, null, null, null, null, null, null, null);
         assertEquals(expected, controller.generate("user", null, "name", "title", 1L, "none", null,
                 null, false, new RedirectAttributesModelMap()));
     }
