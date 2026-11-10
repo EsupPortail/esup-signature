@@ -1,6 +1,12 @@
 package org.esupportail.esupsignature.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.esupportail.esupsignature.entity.Report;
+import org.esupportail.esupsignature.entity.enums.ReportStatus;
+import org.springframework.context.MessageSource;
+import org.springframework.mock.web.MockHttpSession;
+import java.util.ArrayList;
+import static org.mockito.Answers.RETURNS_DEEP_STUBS;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.sms.SmsProperties;
 import org.esupportail.esupsignature.entity.Action;
@@ -60,6 +66,48 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class SignBookServiceTest {
+
+    @Test
+    void massSignChecksEachDocumentWithoutAttachingStepParams() throws Exception {
+        SignRequestService requestService = mock(SignRequestService.class);
+        ReportService reports = mock(ReportService.class);
+        SignBookService service = mock(SignBookService.class, CALLS_REAL_METHODS);
+        ReflectionTestUtils.setField(service, "signRequestService", requestService);
+        ReflectionTestUtils.setField(service, "reportService", reports);
+        ReflectionTestUtils.setField(service, "messageSource", mock(MessageSource.class));
+        ReflectionTestUtils.setField(service, "objectMapper", new ObjectMapper());
+        SignRequest first = mock(SignRequest.class, RETURNS_DEEP_STUBS);
+        SignRequest second = mock(SignRequest.class, RETURNS_DEEP_STUBS);
+        User user = new User();
+        user.setEppn("signer");
+        Recipient recipient = new Recipient();
+        recipient.setUser(user);
+        for (SignRequest request : List.of(first, second)) {
+            when(request.getStatus()).thenReturn(SignRequestStatus.pending);
+            when(request.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients()).thenReturn(List.of(recipient));
+            when(request.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType()).thenReturn(SignType.visa);
+        }
+        when(first.getId()).thenReturn(1L);
+        when(second.getId()).thenReturn(2L);
+        when(first.getParentSignBook().getSignRequests()).thenReturn(List.of(first, second));
+        when(requestService.getById(1L)).thenReturn(first);
+        List<SignRequestParams> originalParams = new ArrayList<>();
+        when(first.getSignRequestParams()).thenReturn(originalParams);
+        when(requestService.getCurrentStepSignRequestParams(first, "signer")).thenReturn(List.of(new SignRequestParams()));
+        when(requestService.getCurrentStepSignRequestParams(second, "signer")).thenReturn(List.of());
+        Report report = new Report();
+        report.setId(3L);
+        when(reports.createReport("signer")).thenReturn(report);
+        doReturn(StepStatus.completed).when(service)
+                .initSign(1L, null, null, null, null, "imageStamp", null, null, "signer", "signer", false);
+
+        service.initMassSign("signer", "signer", "[\"1\"]", new MockHttpSession(), null, "imageStamp", null);
+
+        assertThat(originalParams).isEmpty();
+        verify(service).initSign(1L, null, null, null, null, "imageStamp", null, null, "signer", "signer", false);
+        verify(reports).addSignRequestToReport(3L, 1L, ReportStatus.signed);
+        verify(reports).addSignRequestToReport(3L, 2L, ReportStatus.noSignField);
+    }
 
     @Test
     void appliesColumnFiltersBeforePaginatingFollowedSignBooks() {
