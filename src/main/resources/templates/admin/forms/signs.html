@@ -3,7 +3,7 @@
 <!--/*@thymesVar id="field" type="org.esupportail.esupsignature.entity.Field"*/-->
 <!--/*@thymesVar id="form" type="org.esupportail.esupsignature.entity.Form"*/-->
 <head th:replace="~{fragments/head-full :: head}"></head>
-<script type="module" th:src="'/js/modules/bootstrap/AdminFormSignsBootstrap.js?version=' + ${versionApp}"></script>
+<script th:if="${form.document != null}" type="module" th:src="'/js/modules/bootstrap/AdminFormSignsBootstrap.js?version=' + ${versionApp}"></script>
 <body class="es-signrequest-page"
       th:data-esup-workflow-role="${workflowRole}"
       th:data-esup-form-id="${form.id}"
@@ -38,18 +38,21 @@
                             <a class="nav-link active" th:href="'/' + ${workflowRole} + '/forms/' + ${form.id} + '/signs'"><i class="fi fi-rr-digital-signature"></i> Configuration des signatures</a>
                         </li>
                     </ul>
-                    <div th:if="${form.workflow == null}" class="alert alert-warning mt-1">
+                    <div th:if="${form.document != null && form.workflow == null}" class="alert alert-warning mt-1">
                         Merci de configurer un circuit pour ce formulaire
                     </div>
-                    <div th:replace="~{admin/forms/includes/tools :: tools}"></div>
-                    <div class="d-flex gap-2 flex-grow-1 overflow-hidden es-spot-workspace-row" th:if="${workflow != null}">
+                    <div id="es-id-alert-form-fields-no-model" th:if="${form.document == null}" class="alert alert-secondary mt-2" th:text="#{adminForm.noModel}"></div>
+                    <th:block th:if="${form.document != null}">
+                        <div th:replace="~{admin/forms/includes/tools :: tools}"></div>
+                    </th:block>
+                    <div class="d-flex gap-2 flex-grow-1 overflow-hidden es-spot-workspace-row" th:if="${workflow != null && form.document != null}">
                         <div style="width: 300px; flex: 0 0 300px;" th:insert="~{admin/workflows/cards/stepscard-light :: stepscard-light}"></div>
                         <div class="flex-grow-1 overflow-hidden es-spot-workspace-host" style="width: calc(100vw - 672px);">
                             <div th:replace="~{admin/forms/includes/workspace :: workspace}"></div>
                         </div>
                     </div>
                 </div>
-            <div class="es-sign-buttons es-fixed-action-btns active" th:if="${workflow != null}">
+            <div class="es-sign-buttons es-fixed-action-btns active" th:if="${workflow != null && form.document != null}">
                 <ul class="list-unstyled">
                     <li>
                         <button type="button" th:if="${form.document != null}" tabindex="1" id="addSpotButton2" role="button" class="btn btn-transparent text-dark d-none" title="Ajouter un emplacement de signature">
@@ -67,19 +70,19 @@
         </div>
     </div>
 </main>
-<th:block th:if="${workflow != null}">
+<th:block th:if="${workflow != null && form.document != null}">
     <textarea id="admin-form-signs-spots-json" class="d-none" th:text="${spotsJson}" aria-hidden="true"></textarea>
     <textarea id="admin-form-signs-srp-map-json" class="d-none" th:text="${srpMapJson}" aria-hidden="true"></textarea>
     <textarea id="admin-form-signs-signature-ui-config-json" class="d-none" th:text="${signatureUiConfigJson}" aria-hidden="true"></textarea>
 </th:block>
-<div th:if="${workflow != null && form.signRequestParams != null}" data-bs-focus="false" class="modal fade" id="updateSignsModal" tabindex="-1" aria-labelledby="updateSignsModalTitle"  aria-hidden="true">
+<div th:if="${workflow != null && form.document != null && form.signRequestParams != null}" data-bs-focus="false" class="modal fade" id="updateSignsModal" tabindex="-1" aria-labelledby="updateSignsModalTitle"  aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
                 <h1 class="modal-title fs-5" id="updateSignsModalTitle">Modifier les champs signatures</h1>
                 <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body" th:if="${workflow != null}">
+            <div class="modal-body" th:if="${workflow != null && form.document != null}">
                 <table class="table table-borderless table-hover">
                     <thead class="table-secondary">
                     <tr>
@@ -119,7 +122,7 @@
         </div>
     </div>
 </div>
-<div th:if="${workflow != null}">
+<div th:if="${workflow != null && form.document != null}">
 <th:block th:if="${form.signRequestParams != null}" th:each="signRequestParams : ${form.signRequestParams}">
 <div class="modal" th:id="'modal-warning-' + ${signRequestParams.id}" >
     <div class="modal-dialog">

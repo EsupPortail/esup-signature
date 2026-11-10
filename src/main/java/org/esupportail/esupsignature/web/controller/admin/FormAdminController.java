@@ -122,7 +122,7 @@ public class FormAdminController {
 	}
 
 	@PostMapping("generate")
-	public String generate(@ModelAttribute("authUserEppn") String authUserEppn, @RequestParam("multipartFile") MultipartFile multipartFile,
+	public String generate(@ModelAttribute("authUserEppn") String authUserEppn, @RequestParam(name = "multipartFile", required = false) MultipartFile multipartFile,
 						   @RequestParam String name,
 						   @RequestParam String title,
 						   @RequestParam Long workflowId,
@@ -132,6 +132,13 @@ public class FormAdminController {
 						   @RequestParam(required = false) Boolean publicUsage, RedirectAttributes redirectAttributes) throws IOException {
 		try {
 			Form form = formService.generateForm(multipartFile, name, title, workflowId, prefillType, roleNames, publicUsage, authUserEppn, managerRole);
+			if (form.getDocument() == null) {
+				if (userService.getRoles(authUserEppn).contains("ROLE_ADMIN")) {
+					return "redirect:/admin/forms/update/" + form.getId();
+				} else {
+					return "redirect:/manager/forms/update/" + form.getId();
+				}
+			}
 			if(userService.getRoles(authUserEppn).contains("ROLE_ADMIN")) {
 				return "redirect:/admin/forms/" + form.getId() + "/fields";
 			} else {

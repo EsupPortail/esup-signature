@@ -127,6 +127,9 @@ public class FormService {
 
 	@Transactional
 	public Form generateForm(MultipartFile multipartFile, String name, String title, Long workflowId, String prefillType, List<String> roleNames, Boolean publicUsage, String authUserEppn, String managerRole) throws IOException, EsupSignatureRuntimeException {
+		if (multipartFile == null || multipartFile.isEmpty()) {
+			return createForm(null, name, title, workflowId, prefillType, roleNames, publicUsage, null, null, authUserEppn, managerRole);
+		}
 		byte[] bytes = multipartFile.getInputStream().readAllBytes();
 		Document document = documentService.createDocument(new ByteArrayInputStream(bytes), userService.getSystemUser(), multipartFile.getOriginalFilename(), multipartFile.getContentType());
 		Form form = createForm(document, name, title, workflowId, prefillType, roleNames, publicUsage, null, null, authUserEppn, managerRole);

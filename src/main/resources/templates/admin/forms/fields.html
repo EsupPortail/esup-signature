@@ -109,9 +109,9 @@
                     <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
                     <nav th:replace="~{fragments/sides/side-manager :: side-manager}"></nav>
                 </div>
-                <div class="es-table-list-layout flex-grow-1">
-                    <div class="es-table-list-content p-0 m-2">
-                        <ul class="nav nav-tabs">
+                <div id="es-id-form-fields-panel" class="es-table-list-layout flex-grow-1">
+                    <div id="es-id-form-fields-content" class="es-table-list-content p-0 m-2">
+                        <ul class="nav nav-tabs flex-grow-0 flex-shrink-0">
                             <li class="nav-item">
                                 <a class="nav-link" th:href="'/' + ${workflowRole} + '/forms/update/' + ${form.id}"><i class="fi fi-rr-settings-sliders"></i> Paramètres</a>
                             </li>
@@ -125,10 +125,7 @@
                         <div th:if="${form.workflow == null}" class="alert alert-warning mt-1">
                             Merci de configurer un circuit pour ce formulaire
                         </div>
-                        <div th:unless="${form.fields.size() > 0}" class="alert alert-warning">
-                            Ce formulaire ne contient pas de modèle
-                        </div>
-                        <div class="table-fix-head scrollbar-style rounded-3 p-0 m-2">
+                        <div id="es-id-form-fields-container" class="table-fix-head scrollbar-style rounded-3 p-0 m-2">
                             <table class="table table-borderless table-striped table-hover table-light">
                                 <thead class="table-secondary">
                                 <tr>
