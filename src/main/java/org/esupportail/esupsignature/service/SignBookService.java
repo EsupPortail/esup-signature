@@ -1726,8 +1726,10 @@ public class SignBookService {
         addDocumentsToSignBook(signBook.getId(), multipartFiles, createByEppn, signRequestParamsDetectionPattern, keepSignFields, true);
         signBook.setForceAllDocsSign(forceAllSign);
         addViewers(signBook.getId(), steps.stream().map(WorkflowStepDto::getRecipientsCCEmails).filter(Objects::nonNull).flatMap(List::stream).toList());
-        for(String targetUrl : targetUrls) {
-            signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(targetUrl, true, false, false, false));
+        if(targetUrls != null) {
+            for (String targetUrl : targetUrls) {
+                signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(targetUrl, true, false, false, false));
+            }
         }
         Map<Integer, List<SignRequestParams>> integerListMap = new HashMap<>();
         if(!StringUtils.hasText(signRequestParamsDetectionPattern)) {
