@@ -74,6 +74,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.web.context.HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY;
 
@@ -710,13 +711,13 @@ class GlobalSecurityAttackSurfaceTest {
     class PublicControllerTests {
 
         @Test
-        void publicControlEndpointShouldRevealAuditTrailAndLogsWithoutAuthenticationWhenTokenIsKnown() throws Exception {
+        void publicControlEndpointShouldHideAuditTrailAndLogsWithoutAuthentication() throws Exception {
             LogService logService = mock(LogService.class);
             SignRequestService signRequestService = mock(SignRequestService.class);
             AuditTrailService auditTrailService = mock(AuditTrailService.class);
             FileService fileService = mock(FileService.class);
             UserService userService = mock(UserService.class);
-            var xsltService = mock(org.esupportail.esupsignature.dss.service.XSLTService.class);
+            org.esupportail.esupsignature.dss.service.XSLTService xsltService = mock(org.esupportail.esupsignature.dss.service.XSLTService.class);
             PreAuthorizeService preAuthorizeService = mock(PreAuthorizeService.class);
             ValidationService validationService = mock(ValidationService.class);
             SignService signService = mock(SignService.class);
@@ -729,17 +730,16 @@ class GlobalSecurityAttackSurfaceTest {
             auditTrail.setToken("known-public-token");
             auditTrail.setDocumentSize(1234L);
 
-            List<Log> logs = List.of(mock(Log.class));
             when(auditTrailService.getAuditTrailByToken("known-public-token")).thenReturn(auditTrail);
-            when(signRequestService.getSignRequestByToken("known-public-token")).thenReturn(Optional.empty());
-            when(logService.getFullByToken("known-public-token")).thenReturn(logs);
 
             ConcurrentModel model = new ConcurrentModel();
             String view = controller.controlToken("known-public-token", model);
 
             assertEquals("public/control", view);
-            assertSame(auditTrail, model.getAttribute("auditTrail"));
-            assertSame(logs, model.getAttribute("logs"));
+            assertNull(model.getAttribute("auditTrail"));
+            assertNull(model.getAttribute("logs"));
+            assertNull(model.getAttribute("referenceAvailable"));
+            verifyNoInteractions(signRequestService, logService, validationService);
             assertEquals(Boolean.FALSE, model.getAttribute("auditTrailChecked"));
         }
 
@@ -768,13 +768,13 @@ class GlobalSecurityAttackSurfaceTest {
         }
 
         @Test
-        void publicControlEndpointShouldExposeViewAccessForAuthenticatedKnownUser() throws Exception {
+        void publicControlEndpointShouldExposeOnlyReferenceMetadataForRoleUser() throws Exception {
             LogService logService = mock(LogService.class);
             SignRequestService signRequestService = mock(SignRequestService.class);
             AuditTrailService auditTrailService = mock(AuditTrailService.class);
             FileService fileService = mock(FileService.class);
             UserService userService = mock(UserService.class);
-            var xsltService = mock(org.esupportail.esupsignature.dss.service.XSLTService.class);
+            org.esupportail.esupsignature.dss.service.XSLTService xsltService = mock(org.esupportail.esupsignature.dss.service.XSLTService.class);
             PreAuthorizeService preAuthorizeService = mock(PreAuthorizeService.class);
             ValidationService validationService = mock(ValidationService.class);
             SignService signService = mock(SignService.class);
@@ -785,29 +785,19 @@ class GlobalSecurityAttackSurfaceTest {
             PublicController controller = publicController(logService, globalProperties, signRequestService, auditTrailService, fileService, userService, xsltService, preAuthorizeService, validationService, signService, mobileSignTokenService);
 
             AuditTrail auditTrail = new AuditTrail();
-            auditTrail.setToken("known-token");
-
-            SignRequest signRequest = new SignRequest();
-            signRequest.setId(123L);
-
-            User knownUser = new User();
-            knownUser.setEppn("user@example.org");
-
+            auditTrail.setDocumentName("reference.pdf");
             when(auditTrailService.getAuditTrailByToken("known-token")).thenReturn(auditTrail);
-            when(signRequestService.getSignRequestByToken("known-token")).thenReturn(Optional.of(signRequest));
-            when(logService.getFullByToken("known-token")).thenReturn(List.of());
-            when(userService.tryGetEppnFromLdap(any())).thenReturn("user@example.org");
-            when(userService.getByEppn("user@example.org")).thenReturn(knownUser);
-            when(preAuthorizeService.checkUserViewRights(123L, "user@example.org", "user@example.org")).thenReturn(true);
-
-            SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken("user@example.org", "n/a"));
+            SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(
+                    "user@example.org", "n/a", List.of(new SimpleGrantedAuthority("ROLE_USER"))));
             ConcurrentModel model = new ConcurrentModel();
-
             String view = controller.controlToken("known-token", model);
-
             assertEquals("public/control", view);
-            assertEquals(Boolean.TRUE, model.getAttribute("auditTrailChecked"));
-            assertEquals(Boolean.TRUE, model.getAttribute("viewAccess"));
+            assertEquals(Boolean.FALSE, model.getAttribute("auditTrailChecked"));
+            assertEquals(Boolean.TRUE, model.getAttribute("referenceAvailable"));
+            assertEquals("reference.pdf", model.getAttribute("referenceDocumentName"));
+            assertNull(model.getAttribute("viewAccess"));
+            assertNull(model.getAttribute("logs"));
+            verifyNoInteractions(signRequestService, logService, validationService);
         }
 
         @Test
@@ -828,7 +818,7 @@ class GlobalSecurityAttackSurfaceTest {
             PublicController controller = publicController(logService, globalProperties, signRequestService, auditTrailService, fileService, userService, xsltService, preAuthorizeService, validationService, signService, mobileSignTokenService);
 
             MockMultipartFile multipartFile = new MockMultipartFile("multipartFile", "test.pdf", "application/pdf", "payload".getBytes());
-            when(fileService.getFileChecksum(multipartFile.getInputStream())).thenReturn("checksum-1");
+            when(fileService.getFileChecksum(any(java.io.InputStream.class))).thenReturn("checksum-1");
             when(auditTrailService.getAuditTrailFromCheksum("checksum-1")).thenReturn(null);
 
             ConcurrentModel model = new ConcurrentModel();
@@ -857,7 +847,7 @@ class GlobalSecurityAttackSurfaceTest {
             PublicController controller = publicController(logService, globalProperties, signRequestService, auditTrailService, fileService, userService, xsltService, preAuthorizeService, validationService, signService, mobileSignTokenService);
 
             MockMultipartFile multipartFile = new MockMultipartFile("multipartFile", "test.pdf", "application/pdf", "payload".getBytes());
-            when(fileService.getFileChecksum(multipartFile.getInputStream())).thenReturn("checksum-2");
+            when(fileService.getFileChecksum(any(java.io.InputStream.class))).thenReturn("checksum-2");
             when(auditTrailService.getAuditTrailFromCheksum("checksum-2")).thenReturn(null);
 
             ConcurrentModel model = new ConcurrentModel();

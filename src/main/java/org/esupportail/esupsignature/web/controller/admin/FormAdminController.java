@@ -23,6 +23,7 @@ import org.esupportail.esupsignature.service.security.PreAuthorizeService;
 import org.esupportail.esupsignature.service.ui.UiFetchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -58,9 +59,10 @@ public class FormAdminController {
 	private final PreAuthorizeService preAuthorizeService;
 	private final UiFetchService uiFetchService;
 	private final GlobalProperties globalProperties;
+	private final MessageSource messageSource;
 	private final TagService tagService;
 
-	public FormAdminController(FormService formService, UserService userService, DataExportService dataExportService, FieldService fieldService, ObjectMapper objectMapper, PreAuthorizeService preAuthorizeService, UiFetchService uiFetchService, GlobalProperties globalProperties, TagService tagService) {
+	public FormAdminController(FormService formService, UserService userService, DataExportService dataExportService, FieldService fieldService, ObjectMapper objectMapper, PreAuthorizeService preAuthorizeService, UiFetchService uiFetchService, GlobalProperties globalProperties, TagService tagService, MessageSource messageSource) {
 		this.formService = formService;
 		this.userService = userService;
 		this.dataExportService = dataExportService;
@@ -70,6 +72,7 @@ public class FormAdminController {
 		this.uiFetchService = uiFetchService;
 		this.globalProperties = globalProperties;
 		this.tagService = tagService;
+		this.messageSource = messageSource;
     }
 
 	@GetMapping()
@@ -122,7 +125,7 @@ public class FormAdminController {
 	}
 
 	@PostMapping("generate")
-	public String generate(@ModelAttribute("authUserEppn") String authUserEppn, @RequestParam("multipartFile") MultipartFile multipartFile,
+	public String generate(@ModelAttribute("authUserEppn") String authUserEppn, @RequestParam(name = "multipartFile", required = false) MultipartFile multipartFile,
 						   @RequestParam String name,
 						   @RequestParam String title,
 						   @RequestParam Long workflowId,
@@ -132,6 +135,13 @@ public class FormAdminController {
 						   @RequestParam(required = false) Boolean publicUsage, RedirectAttributes redirectAttributes) throws IOException {
 		try {
 			Form form = formService.generateForm(multipartFile, name, title, workflowId, prefillType, roleNames, publicUsage, authUserEppn, managerRole);
+			if (form.getDocument() == null) {
+				if (userService.getRoles(authUserEppn).contains("ROLE_ADMIN")) {
+					return "redirect:/admin/forms/update/" + form.getId();
+				} else {
+					return "redirect:/manager/forms/update/" + form.getId();
+				}
+			}
 			if(userService.getRoles(authUserEppn).contains("ROLE_ADMIN")) {
 				return "redirect:/admin/forms/" + form.getId() + "/fields";
 			} else {
@@ -301,14 +311,20 @@ public class FormAdminController {
 
 	@DeleteMapping("{id}")
 	@PreAuthorize("@preAuthorizeService.formManager(#id, #authUserEppn) || hasRole('ROLE_ADMIN')")
-	public String deleteForm(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
+	public String deleteForm(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, RedirectAttributes redirectAttributes, Locale locale) {
+		boolean permanentlyDeleted = Boolean.TRUE.equals(formService.getById(id).getDeleted());
 		formService.deleteForm(id);
-		redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "Le formulaire a bien été supprimé"));
+		String messageKey = "admin.forms.trash.moved";
+		if (permanentlyDeleted) {
+			messageKey = "admin.forms.trash.deleted";
+		}
+		redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", messageSource.getMessage(messageKey, null, locale)));
 		if(userService.getRoles(authUserEppn).contains("ROLE_ADMIN")) {
-			return "redirect:/admin/forms/";
+			return "redirect:/admin/forms";
 		} else {
-			return "redirect:/manager/forms/";
-		}	}
+			return "redirect:/manager/forms";
+		}
+	}
 
 	@GetMapping(value = "/{id}/datas/csv", produces="text/csv")
 	public ResponseEntity<Void> getFormDatasCsv(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable Long id, HttpServletResponse response) {

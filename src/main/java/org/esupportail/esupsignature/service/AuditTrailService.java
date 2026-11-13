@@ -1,5 +1,7 @@
 package org.esupportail.esupsignature.service;
 
+import org.esupportail.esupsignature.dto.audit.ReferenceSignatureDto;
+
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 import com.openhtmltopdf.util.XRLog;
 import eu.europa.esig.dss.diagnostic.DiagnosticData;
@@ -80,6 +82,10 @@ public class AuditTrailService {
 
     public void  closeAuditTrail(String token, Document document, InputStream inputStream) throws IOException {
         AuditTrail auditTrail = auditTrailRepository.findByToken(token);
+        if(auditTrail == null) {
+            logger.warn("unable to close audit trail, no audit trail for token {}", token);
+            return;
+        }
         auditTrail.setDocumentCheckSum(fileService.getFileChecksum(inputStream));
         auditTrail.setDocumentName(document.getFileName());
         auditTrail.setDocumentType(document.getContentType());
@@ -135,6 +141,23 @@ public class AuditTrailService {
     @Transactional
     public AuditTrail getAuditTrailFromCheksum(String checkSum) {
         return initializeAuditTrail(auditTrailRepository.findByDocumentCheckSum(checkSum));
+    }
+
+    @Transactional(readOnly = true)
+    public List<ReferenceSignatureDto> getReferenceSignatures(String token) {
+        AuditTrail auditTrail = auditTrailRepository.findByToken(token);
+        List<ReferenceSignatureDto> signatures = new ArrayList<>();
+        if (auditTrail != null && auditTrail.getAuditSteps() != null) {
+            for (AuditStep step : auditTrail.getAuditSteps()) {
+                ReferenceSignatureDto signature = new ReferenceSignatureDto();
+                signature.setName(step.getName());
+                signature.setFirstname(step.getFirstname());
+                signature.setEmail(step.getEmail());
+                signature.setDate(step.getTimeStampDate());
+                signatures.add(signature);
+            }
+        }
+        return signatures;
     }
 
     @Transactional

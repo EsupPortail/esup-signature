@@ -170,13 +170,13 @@ public class UserController {
 
 	@GetMapping(value = "/search-user-list")
 	@ResponseBody
-	public List<String> searchUserList(@RequestParam(value="searchString") String searchString) {
+	public ResponseEntity<List<String>> searchUserList(@RequestParam(value="searchString") String searchString) {
 		try {
-			return userListService.getUsersEmailFromList(searchString);
+			return ResponseEntity.ok(userListService.getUsersEmailFromList(searchString));
 		} catch (DataAccessException | EsupSignatureRuntimeException e) {
-			logger.debug(e.getMessage());
+			logger.warn(e.getMessage(), e);
+			return ResponseEntity.internalServerError().body(Collections.emptyList());
 		}
-		return null;
 	}
 
 	@GetMapping("/properties")

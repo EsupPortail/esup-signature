@@ -30,48 +30,13 @@
         <nav th:replace="~{user/signrequests/includes/show-sections :: breadcrumb}"></nav>
         <div id="content" th:data-es-signbook-id="${showSignRequest.signBookLight.id}" class = "es-content-full">
             <div class="es-main-content es-signrequest-main-content d-flex">
-                <div class="es-signrequest-postits-layer" th:if="${showSignRequest.workflow.externalCanReaderAnnotations || user.userType.name() != 'external'}">
-                    <div id="postit-comment" class="postit-global d-none overflow-hidden es-signrequest-postit-note"
-                         th:if="${showSignRequest.signBookLight.description != null && showSignRequest.signBookLight.description != ''}">
-                        <button type="button" class="postit-global-close close">
-                            <i class="fi fi-rr-eye-crossed"></i>
-                        </button>
-                        <b>Note</b>
-                        <button th:es-postit-id="${signRequestLight.id}" type="button" title="Copier le texte du postit" class="postit-copy btn btn-sm btn-transparent text-dark">
-                            <i th:es-postit-id="${signRequestLight.id}" class="fi fi-rr-copy"></i>
-                        </button>
-                        <p th:id="'postit-text-' + ${signRequestLight.id}" class="postitarea" th:text="${showSignRequest.signBookLight.description}"></p>
-                    </div>
-                    <th:block th:each="postit, iterate : ${showSignRequest.postits}">
-                        <div th:id="'postit-' + ${postit.id}" class="postit-global d-none overflow-hidden  es-signrequest-postit-note"
-                             th:style="'width: 215px; height:215px; z-index: 1000; cursor: move;background-color: ' + ${postit.postitColor} + ';position: fixed; left: ' + ${310 + (iterate.index * 15)} + 'px; top : ' + ${310 + (iterate.index * 70)} + 'px;'">
-                            <button type="button" class="postit-global-close close">
-                                <i class="fi fi-rr-eye-crossed"></i>
-                            </button>
-                            <b th:text="${postit.createBy.firstname + ' ' + postit.createBy.name}"></b><br>
-                            <span th:text="${#dates.format(postit.createDate, 'dd/MM/yyyy HH:mm')}" style="    font-size: 12px; width: fit-content;"></span>
-                            <button th:es-postit-id="${postit.id}" type="button" title="Copier le texte du postit" class="postit-copy btn btn-sm btn-transparent text-dark">
-                                <i th:es-postit-id="${postit.id}" class="fi fi-rr-copy"></i>
-                            </button>
-                            <p th:if="${postit.createBy.eppn != userEppn || postit.refuse}" class="postitarea" th:text="${postit.text}"></p>
-                            <div class="es-postit-edit-form" th:if="${postit.createBy.eppn == userEppn && !postit.refuse}" th:id="|postit-${postit.id}|" th:attr="data-postit-id=${postit.id}">
-                                <textarea th:style="'color: var(--bs-black); width: 100%;height: 75%;resize:none;background-color: ' + ${postit.postitColor}" name="comment" th:id="|postit-text-${postit.id}|" class="postitarea" th:text="${postit.text}"></textarea>
-                                <button type="button" th:attr="data-postit-id=${postit.id}" class="btn btn-sm btn-dark float-end position-absolute es-postit-save-btn postit-save-ajax" title="Enregistrer"><i class="fi fi-rr-disk"></i></button>
-                            </div>
-                            <button type="button" th:if="${postit.createBy.eppn == userEppn && !postit.refuse}" th:attr="data-postit-id=${postit.id}" class="btn btn-sm btn-dark float-start position-absolute es-postit-delete-btn postit-delete-ajax"  title="Supprimer">
-                                <i class="fi fi-rr-trash"></i>
-                            </button>
-                        </div>
-                    </th:block>
-                </div>
-
                 <th:block th:if="${user.userType.name() == 'external' && !showSignRequest.workflow.disableSidebarForExternal}">
                     <th:block th:replace="~{fragments/sides/side-otp :: side-otp}"></th:block>
                 </th:block>
                 <th:block th:unless="${user.userType.name() == 'external'}">
                     <th:block th:replace="~{fragments/sides/side-sign :: side-sign}"></th:block>
                 </th:block>
-                <div class="es-workspace d-flex flex-column" th:classappend="${signRequestFull.signable && showSignRequest.toSignDocumentContentType == 'application/pdf'} ? ' es-pdf-render-scope' : ''">
+                <div id="es-id-signrequest-workspace" class="es-workspace d-flex flex-column" th:classappend="${signRequestFull.signable && showSignRequest.toSignDocumentContentType == 'application/pdf'} ? ' es-pdf-render-scope' : ''">
                     <div class="es-nav-tools d-flex justify-content-start" role="toolbar" aria-label="Outils du document" th:if="${showSignRequest.toSignDocumentContentType == 'application/pdf'}">
                         <div class="es-nav-tools-breadcrumb d-none" th:insert="~{user/signrequests/includes/show-sections :: breadcrumb-content('ws-tabs-mobile')}"></div>
                         <div id="document-navigation-tools"
@@ -230,6 +195,41 @@
             </div>
         </div>
 </main>
+
+<div id="es-id-signrequest-postits" class="d-none d-md-block" th:if="${showSignRequest.workflow.externalCanReaderAnnotations || user.userType.name() != 'external'}">
+    <div id="postit-comment" class="postit-global d-none overflow-hidden es-signrequest-postit-note"
+         th:if="${showSignRequest.signBookLight.description != null && showSignRequest.signBookLight.description != ''}">
+        <button type="button" class="postit-global-close close">
+            <i class="fi fi-rr-eye-crossed"></i>
+        </button>
+        <b>Note</b>
+        <button th:es-postit-id="${signRequestLight.id}" type="button" title="Copier le texte du postit" class="postit-copy btn btn-sm btn-transparent text-dark">
+            <i th:es-postit-id="${signRequestLight.id}" class="fi fi-rr-copy"></i>
+        </button>
+        <p th:id="'postit-text-' + ${signRequestLight.id}" class="postitarea" th:text="${showSignRequest.signBookLight.description}"></p>
+    </div>
+    <th:block th:each="postit, iterate : ${showSignRequest.postits}">
+        <div th:id="'postit-' + ${postit.id}" class="postit-global d-none overflow-hidden  es-signrequest-postit-note"
+             th:style="'width: 215px; height:215px; z-index: 1000; cursor: move;background-color: ' + ${postit.postitColor} + ';'">
+            <button type="button" class="postit-global-close close">
+                <i class="fi fi-rr-eye-crossed"></i>
+            </button>
+            <b th:text="${postit.createBy.firstname + ' ' + postit.createBy.name}"></b><br>
+            <span th:text="${#dates.format(postit.createDate, 'dd/MM/yyyy HH:mm')}" style="    font-size: 12px; width: fit-content;"></span>
+            <button th:es-postit-id="${postit.id}" type="button" title="Copier le texte du postit" class="postit-copy btn btn-sm btn-transparent text-dark">
+                <i th:es-postit-id="${postit.id}" class="fi fi-rr-copy"></i>
+            </button>
+            <p th:if="${postit.createBy.eppn != userEppn || postit.refuse}" class="postitarea" th:text="${postit.text}"></p>
+            <div class="es-postit-edit-form" th:if="${postit.createBy.eppn == userEppn && !postit.refuse}" th:id="|postit-${postit.id}|" th:attr="data-postit-id=${postit.id}">
+                <textarea th:style="'color: var(--bs-black); width: 100%;height: 75%;resize:none;background-color: ' + ${postit.postitColor}" name="comment" th:id="|postit-text-${postit.id}|" class="postitarea" th:text="${postit.text}"></textarea>
+                <button type="button" th:attr="data-postit-id=${postit.id}" class="btn btn-sm btn-dark float-end position-absolute es-postit-save-btn postit-save-ajax" title="Enregistrer"><i class="fi fi-rr-disk"></i></button>
+            </div>
+            <button type="button" th:if="${postit.createBy.eppn == userEppn && !postit.refuse}" th:attr="data-postit-id=${postit.id}" class="btn btn-sm btn-dark float-start position-absolute es-postit-delete-btn postit-delete-ajax"  title="Supprimer">
+                <i class="fi fi-rr-trash"></i>
+            </button>
+        </div>
+    </th:block>
+</div>
 
 <div th:replace="~{user/signrequests/includes/modals/show-modals :: all-modals}"></div>
 <div th:replace="~{fragments/new-modals :: new-modals}"></div>

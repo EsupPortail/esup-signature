@@ -144,6 +144,7 @@ public class SignRequestWsController {
                                     @RequestParam(required = false) @Parameter(description = "Commentaire") String comment,
                                     @RequestParam(required = false) @Parameter(description = "Envoyer la demande automatiquement") Boolean pending,
                                     @RequestParam(required = false) @Parameter(description = "Emplacement final", example = "smb://drive.univ-ville.fr/forms-archive/") String targetUrl,
+                                    @RequestParam(required = false) @Parameter(description = "Emplacements finaux", example = "[smb://drive.univ-ville.fr/forms-archive/]") List<String> targetUrls,
                                     @RequestParam(required = false) @Parameter(description = "Retour au format json (facultatif, false par défaut)") Boolean json,
                                     @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey,
                                     @RequestParam(required = false) @Parameter(deprecated = true, description = "Liste des participants") List<String> recipientsEmails,
@@ -169,6 +170,9 @@ public class SignRequestWsController {
         if(keepSignFields == null) {
             keepSignFields = false;
         }
+        if((targetUrls == null || targetUrls.isEmpty()) && StringUtils.hasText(targetUrl)) {
+            targetUrls = List.of(targetUrl);
+        }
         List<WorkflowStepDto> workflowStepDtos;
         if(stepsJsonString == null && recipientEmails != null) {
             workflowStepDtos = recipientService.convertRecipientEmailsToStep(recipientEmails);
@@ -183,7 +187,7 @@ public class SignRequestWsController {
             workflowStepDtos = recipientService.convertStepsJsonStringToWorkflowStepDtos(stepsJsonString);
         }
         if(workflowStepDtos != null) {
-            Map<SignBook, String> signBookStringMap = signBookService.createAndSendSignBook(title, multipartFiles, pending, workflowStepDtos, createByEppn, true, forceAllSign, targetUrl, signRequestParamsDetectionPattern, keepSignFields);
+            Map<SignBook, String> signBookStringMap = signBookService.createAndSendSignBook(title, multipartFiles, pending, workflowStepDtos, createByEppn, true, forceAllSign, targetUrls, signRequestParamsDetectionPattern, keepSignFields);
             List<String> signRequestIds = signBookStringMap.keySet().stream().flatMap(sb -> sb.getSignRequests().stream().map(signRequest -> signRequest.getId().toString())).toList();
             if(signRequestIds.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("-1");

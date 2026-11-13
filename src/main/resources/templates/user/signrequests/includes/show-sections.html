@@ -120,7 +120,7 @@
         <th:block id="openButtons" class="es-fixed-action-btns active"
                   th:if="${showSignRequest.viewRight && (signRequestLight.deleted || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned)}">
             <li>
-                <a tabindex="1" th:if="${signRequestLight.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported}"
+                <a tabindex="1" th:if="${showSignRequest.workflow.downloadAllowed && signRequestLight.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported}"
                    class="btn btn btn-floating bg-dark d-none" th:href="'/user/validation/document/' + ${signRequestLight.id}"
                    th:title="#{signButtons.validate}" th:aria-label="#{signButtons.validate}">
                     <i class="fi fi-rr-registration-paper"></i>
@@ -136,7 +136,7 @@
             <i class="fi fi-rr-progress-download" style="margin-top: 10px;"></i>
             <span class="es-sign-button-label" th:text="#{signButtons.downloadOriginal}"></span>
         </a>
-        <div th:if="${!showSignRequest.workflow.forbidDownloadsBeforeEnd && signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
+        <div th:if="${showSignRequest.workflow.downloadAllowed && signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
             <a tabindex="1" class="d-flex justify-content-center btn btn-transparent text-dark me-1 d-none d-sm-flex"
                th:href="'/ws-secure/global/get-last-file/' + ${signRequestLight.id}" target="_blank"
                th:title="#{signButtons.download}" th:aria-label="#{signButtons.download}">
@@ -144,7 +144,7 @@
                 <span class="es-sign-button-label" th:text="#{signButtons.download}"></span>
             </a>
         </div>
-        <div th:if="${signRequestLight.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && signRequestLight.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}">
+        <div th:if="${showSignRequest.workflow.downloadAllowed && signRequestLight.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && signRequestLight.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}">
             <a tabindex="1" class="d-flex justify-content-center btn btn-transparent text-dark me-1 d-none d-sm-flex"
                th:href="'/ws-secure/global/get-last-file/' + ${signRequestLight.id}" target="_blank"
                th:title="#{signButtons.downloadLatest}" th:aria-label="#{signButtons.downloadLatest}">
@@ -176,14 +176,14 @@
             </a>
         </div>
         <div th:if="${showSignRequest.lastSignedDocumentContentType == 'application/pdf' && (signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned)}">
-            <a tabindex="1" class="d-flex justify-content-center btn btn-transparent text-dark me-1 d-none d-sm-flex js-print-download-warning"
-               th:href="'/ws-secure/global/print-with-code/' + ${signRequestLight.id}" target="_blank"
-               th:title="#{signButtons.printDatamatrix}" th:aria-label="#{signButtons.printDatamatrix}">
+            <a tabindex="1" id="es-id-print-download-warning" class="d-flex justify-content-center btn btn-transparent text-dark me-1 d-none d-sm-flex"
+               href="#es-print-copy-modal" data-bs-toggle="modal"
+               th:title="#{signButtons.printCopy}" th:aria-label="#{signButtons.printCopy}">
                 <i class="fi fi-rr-print " style="margin-top: 0;"></i>
-                <span class="es-sign-button-label" th:text="#{signButtons.printDatamatrix}"></span>
+                <span class="es-sign-button-label" th:text="#{signButtons.printCopy}"></span>
             </a>
         </div>
-        <button tabindex="0" th:if="${!showSignRequest.workflow.forbidDownloadsBeforeEnd && signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}"
+        <button tabindex="0" th:if="${showSignRequest.workflow.downloadAllowed && signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}"
            class="d-flex justify-content-center btn btn-transparent text-dark  d-none d-lg-flex"
            id="print-last-file-button"
            th:attr="data-print-url='/ws-secure/global/get-last-file-inline/' + ${signRequestLight.id}"
@@ -209,9 +209,11 @@
             </button>
         </div>
         <button type="button"
-                class="w-100 d-flex justify-content-center btn btn-transparent text-success d-none d-sm-flex js-sign-goto-next-switch"
+                class="w-100 d-flex justify-content-center btn btn-transparent text-dark d-none d-sm-flex js-sign-goto-next-switch"
                 aria-pressed="false"
-                title="Activer l'ouverture automatique de la demande suivante">
+                th:title="#{signButtons.nextAuto.enable}"
+                th:data-es-title-enable="#{signButtons.nextAuto.enable}"
+                th:data-es-title-disable="#{signButtons.nextAuto.disable}">
             <i class="fi fi-rr-infinite-cycle"></i>
             <span class="es-sign-button-label" th:text="#{signButtons.nextAuto}"></span>
         </button>

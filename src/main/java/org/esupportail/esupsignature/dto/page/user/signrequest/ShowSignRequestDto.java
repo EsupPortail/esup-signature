@@ -234,6 +234,7 @@ public class ShowSignRequestDto {
         private Boolean externalCanEditAttachments;
         private Boolean authorizeClone;
         private Boolean forbidDownloadsBeforeEnd;
+        private boolean downloadAllowed;
         private Boolean sendAlertToAllRecipients;
         private Integer workflowStepCount;
         private String mailFrom;
@@ -273,6 +274,8 @@ public class ShowSignRequestDto {
         public void setExternalCanEditAttachments(Boolean externalCanEditAttachments) { this.externalCanEditAttachments = externalCanEditAttachments; }
         public Boolean getAuthorizeClone() { return authorizeClone; }
         public void setAuthorizeClone(Boolean authorizeClone) { this.authorizeClone = authorizeClone; }
+        public boolean isDownloadAllowed() { return downloadAllowed; }
+        public void setDownloadAllowed(boolean downloadAllowed) { this.downloadAllowed = downloadAllowed; }
         public Boolean getForbidDownloadsBeforeEnd() { return forbidDownloadsBeforeEnd; }
         public void setForbidDownloadsBeforeEnd(Boolean forbidDownloadsBeforeEnd) { this.forbidDownloadsBeforeEnd = forbidDownloadsBeforeEnd; }
         public Boolean getSendAlertToAllRecipients() { return sendAlertToAllRecipients; }

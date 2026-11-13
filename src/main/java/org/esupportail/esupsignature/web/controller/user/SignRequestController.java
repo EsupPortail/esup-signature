@@ -1,6 +1,9 @@
 package org.esupportail.esupsignature.web.controller.user;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.dto.ui.global.UiMessageDto;
 import org.esupportail.esupsignature.entity.SignRequest;
@@ -37,11 +40,43 @@ public class SignRequestController {
     private final SignBookService signBookService;
 
     private final OtpService otpService;
+    private final MessageSource messageSource;
 
-    public SignRequestController(SignRequestService signRequestService, SignBookService signBookService, OtpService otpService) {
+    public SignRequestController(SignRequestService signRequestService, SignBookService signBookService, OtpService otpService, MessageSource messageSource) {
         this.signRequestService = signRequestService;
         this.signBookService = signBookService;
         this.otpService = otpService;
+        this.messageSource = messageSource;
+    }
+
+    @PreAuthorize("hasRole('ROLE_USER')")
+    @GetMapping("/control/{token}")
+    public String loginForControl(@PathVariable String token, RedirectAttributes attributes, HttpSession session) {
+        session.removeAttribute("after_oauth_redirect");
+        attributes.addAttribute("token", token);
+        return "redirect:/public/control/{token}";
+    }
+
+    @PreAuthorize("hasRole('ROLE_USER') && @preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
+    @PostMapping("/{id}/transmit-email")
+    public String transmitEmail(@PathVariable Long id, @RequestParam String recipient,
+                                @RequestParam(required = false) String comment,
+                                @ModelAttribute("userEppn") String userEppn,
+                                @ModelAttribute("authUserEppn") String authUserEppn,
+                                RedirectAttributes attributes) {
+        String messageKey = "signRequest.transmit.error";
+        String level = "error";
+        try {
+            if (signRequestService.transmitSignedDocument(id, recipient, authUserEppn, comment)) {
+                messageKey = "signRequest.transmit.success";
+                level = "success";
+            }
+        } catch (Exception exception) {
+            logger.warn("Unable to transmit signed document {} by email", id, exception);
+        }
+        attributes.addFlashAttribute("message", new UiMessageDto(level,
+                messageSource.getMessage(messageKey, null, LocaleContextHolder.getLocale())));
+        return "redirect:/user/signrequests/" + id;
     }
 
     @GetMapping()

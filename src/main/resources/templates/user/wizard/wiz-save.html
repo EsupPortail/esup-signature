@@ -33,6 +33,8 @@
         <div class="step-horizontal-v2-content"><span class="text-xs font-bold">Fin</span></div>
     </div>
 </div>
+<p id="es-wizard-save-error" class="alert alert-danger d-none" role="alert"
+   th:attr="data-error-message=#{wizard.save.error},data-title-error-message=#{wizard.save.value-too-long}"></p>
 <form id="saveWorkflowForm" th:unless="${globalProperties.hideWizardWorkflow}">
     <input type="hidden" id="close" th:value="${close}" />
     <div class="row">
@@ -40,7 +42,7 @@
             <label for="workflowName"><strong>Choisir un nom pour sauvegarder le circuit en tant que modèle</strong></label>
             <input type="submit" id="save-workflow-submit" class="d-none">
             <input type="hidden" id="elementId" th:value="${signBook.id}">
-            <input type="text" id="workflowName" name="name" class="form-control required" required autofocus>
+            <input type="text" id="workflowName" name="name" class="form-control required" maxlength="255" required autofocus>
         </div>
     </div>
 </form>

@@ -37,6 +37,8 @@ public class UiGlobalPropertiesDto {
     private Integer nbSignOtpTries;
     private Integer nbViewOtpTries;
     private Boolean enableTransfertForUsers;
+    private Boolean enableSendByEmail;
+    private Boolean sendByEmailFromUser;
     private Boolean enableCaptcha;
     private Boolean enableSu;
     private Integer shareMode;
@@ -61,7 +63,7 @@ public class UiGlobalPropertiesDto {
                                  Float signatureExtraLineHeightFactor,
                                  Boolean enableHelp, Integer otpValidity, Boolean smsRequired,
                                  Integer nbSignOtpTries, Integer nbViewOtpTries,
-                                 Boolean enableTransfertForUsers, Boolean enableCaptcha, Boolean enableSu,
+                                 Boolean enableTransfertForUsers, Boolean enableSendByEmail, Boolean sendByEmailFromUser, Boolean enableCaptcha, Boolean enableSu,
                                  Integer shareMode, ExternalSignatureParamsDto externalSignatureParams,
                                  Integer nbDaysBeforeWarning, Integer nbDaysBeforeDeleting, String newVersion,
                                  Boolean disableCertStorage, Boolean sealCertificatConfigured,
@@ -95,6 +97,8 @@ public class UiGlobalPropertiesDto {
         this.nbSignOtpTries = nbSignOtpTries;
         this.nbViewOtpTries = nbViewOtpTries;
         this.enableTransfertForUsers = enableTransfertForUsers;
+        this.enableSendByEmail = enableSendByEmail;
+        this.sendByEmailFromUser = sendByEmailFromUser;
         this.enableCaptcha = enableCaptcha;
         this.enableSu = enableSu;
         this.shareMode = shareMode;
@@ -163,6 +167,10 @@ public class UiGlobalPropertiesDto {
     public void setNbSignOtpTries(Integer nbSignOtpTries) { this.nbSignOtpTries = nbSignOtpTries; }
     public Integer getNbViewOtpTries() { return nbViewOtpTries; }
     public void setNbViewOtpTries(Integer nbViewOtpTries) { this.nbViewOtpTries = nbViewOtpTries; }
+    public Boolean getEnableSendByEmail() { return enableSendByEmail; }
+    public void setEnableSendByEmail(Boolean enableSendByEmail) { this.enableSendByEmail = enableSendByEmail; }
+    public Boolean getSendByEmailFromUser() { return sendByEmailFromUser; }
+    public void setSendByEmailFromUser(Boolean sendByEmailFromUser) { this.sendByEmailFromUser = sendByEmailFromUser; }
     public Boolean getEnableTransfertForUsers() { return enableTransfertForUsers; }
     public void setEnableTransfertForUsers(Boolean enableTransfertForUsers) { this.enableTransfertForUsers = enableTransfertForUsers; }
     public Boolean getEnableCaptcha() { return enableCaptcha; }
@@ -214,6 +222,8 @@ public class UiGlobalPropertiesDto {
     public Boolean smsRequired() { return smsRequired; }
     public Integer nbSignOtpTries() { return nbSignOtpTries; }
     public Integer nbViewOtpTries() { return nbViewOtpTries; }
+    public Boolean enableSendByEmail() { return enableSendByEmail; }
+    public Boolean sendByEmailFromUser() { return sendByEmailFromUser; }
     public Boolean enableTransfertForUsers() { return enableTransfertForUsers; }
     public Boolean enableCaptcha() { return enableCaptcha; }
     public Boolean enableSu() { return enableSu; }
@@ -262,6 +272,8 @@ public class UiGlobalPropertiesDto {
                 props.getNbSignOtpTries(),
                 props.getNbViewOtpTries(),
                 props.getEnableTransfertForUsers(),
+                props.getEnableSendByEmail(),
+                props.getSendByEmailFromUser(),
                 props.getEnableCaptcha(),
                 props.getEnableSu(),
                 props.getShareMode(),

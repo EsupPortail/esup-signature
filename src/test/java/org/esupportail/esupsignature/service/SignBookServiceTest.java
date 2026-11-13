@@ -1,6 +1,12 @@
 package org.esupportail.esupsignature.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.esupportail.esupsignature.entity.Report;
+import org.esupportail.esupsignature.entity.enums.ReportStatus;
+import org.springframework.context.MessageSource;
+import org.springframework.mock.web.MockHttpSession;
+import java.util.ArrayList;
+import static org.mockito.Answers.RETURNS_DEEP_STUBS;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.sms.SmsProperties;
 import org.esupportail.esupsignature.entity.Action;
@@ -31,6 +37,12 @@ import org.esupportail.esupsignature.service.utils.StepStatus;
 import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.mockito.ArgumentCaptor;
+import java.util.Date;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.LinkedHashMap;
@@ -54,6 +66,78 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class SignBookServiceTest {
+
+    @Test
+    void massSignChecksEachDocumentWithoutAttachingStepParams() throws Exception {
+        SignRequestService requestService = mock(SignRequestService.class);
+        ReportService reports = mock(ReportService.class);
+        SignBookService service = mock(SignBookService.class, CALLS_REAL_METHODS);
+        ReflectionTestUtils.setField(service, "signRequestService", requestService);
+        ReflectionTestUtils.setField(service, "reportService", reports);
+        ReflectionTestUtils.setField(service, "messageSource", mock(MessageSource.class));
+        ReflectionTestUtils.setField(service, "objectMapper", new ObjectMapper());
+        SignRequest first = mock(SignRequest.class, RETURNS_DEEP_STUBS);
+        SignRequest second = mock(SignRequest.class, RETURNS_DEEP_STUBS);
+        User user = new User();
+        user.setEppn("signer");
+        Recipient recipient = new Recipient();
+        recipient.setUser(user);
+        for (SignRequest request : List.of(first, second)) {
+            when(request.getStatus()).thenReturn(SignRequestStatus.pending);
+            when(request.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients()).thenReturn(List.of(recipient));
+            when(request.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType()).thenReturn(SignType.visa);
+        }
+        when(first.getId()).thenReturn(1L);
+        when(second.getId()).thenReturn(2L);
+        when(first.getParentSignBook().getSignRequests()).thenReturn(List.of(first, second));
+        when(requestService.getById(1L)).thenReturn(first);
+        List<SignRequestParams> originalParams = new ArrayList<>();
+        when(first.getSignRequestParams()).thenReturn(originalParams);
+        when(requestService.getCurrentStepSignRequestParams(first, "signer")).thenReturn(List.of(new SignRequestParams()));
+        when(requestService.getCurrentStepSignRequestParams(second, "signer")).thenReturn(List.of());
+        Report report = new Report();
+        report.setId(3L);
+        when(reports.createReport("signer")).thenReturn(report);
+        doReturn(StepStatus.completed).when(service)
+                .initSign(1L, null, null, null, null, "imageStamp", null, null, "signer", "signer", false);
+
+        service.initMassSign("signer", "signer", "[\"1\"]", new MockHttpSession(), null, "imageStamp", null);
+
+        assertThat(originalParams).isEmpty();
+        verify(service).initSign(1L, null, null, null, null, "imageStamp", null, null, "signer", "signer", false);
+        verify(reports).addSignRequestToReport(3L, 1L, ReportStatus.signed);
+        verify(reports).addSignRequestToReport(3L, 2L, ReportStatus.noSignField);
+    }
+
+    @Test
+    void appliesColumnFiltersBeforePaginatingFollowedSignBooks() {
+        User user = new User();
+        User creator = new User();
+        User recipient = new User();
+        UserService userService = mock(UserService.class);
+        when(userService.getByEppn("viewer")).thenReturn(user);
+        when(userService.getByEppn("creator")).thenReturn(creator);
+        when(userService.getUserByEmail("recipient@example.org")).thenReturn(recipient);
+        SignBookRepository repository = mock(SignBookRepository.class);
+        PageRequest pageable = PageRequest.of(1, 15);
+        Page<SignBook> expected = Page.empty(pageable);
+        when(repository.findByViewersContaining(eq(user), eq(recipient), eq("workflow"), eq("%contrat%"), eq(creator), any(Date.class), any(Date.class), eq(pageable)))
+                .thenReturn(expected);
+        SignBookService service = mock(SignBookService.class, CALLS_REAL_METHODS);
+        ReflectionTestUtils.setField(service, "userService", userService);
+        ReflectionTestUtils.setField(service, "signBookRepository", repository);
+
+        Page<SignBook> result = service.getSignBooks("viewer", "viewer", "followByMe", "recipient@example.org", "workflow", "Contrat", "creator", "2026-11-02", pageable);
+
+        assertThat(result).isSameAs(expected);
+        ArgumentCaptor<Date> startDate = ArgumentCaptor.forClass(Date.class);
+        ArgumentCaptor<Date> endDate = ArgumentCaptor.forClass(Date.class);
+        verify(repository).findByViewersContaining(eq(user), eq(recipient), eq("workflow"), eq("%contrat%"), eq(creator), startDate.capture(), endDate.capture(), eq(pageable));
+        LocalDate filterDate = LocalDate.of(2026, 11, 2);
+        assertThat(startDate.getValue().toInstant().atZone(ZoneId.systemDefault()).toLocalDate()).isEqualTo(filterDate);
+        assertThat(endDate.getValue().toInstant().atZone(ZoneId.systemDefault()).toLocalDate()).isEqualTo(filterDate);
+        assertThat(startDate.getValue()).isBefore(endDate.getValue());
+    }
 
     @Test
     void doesNotRefuseAgainAfterLockingAnAlreadyRefusedSignRequest() {

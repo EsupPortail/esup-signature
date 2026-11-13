@@ -299,6 +299,12 @@ public class GlobalProperties {
      */
     private String restExtValueUrl;
 
+    /** Autoriser la transmission manuelle du document signé par email. */
+    private Boolean enableSendByEmail = true;
+
+    /** Utiliser l’adresse de l’utilisateur pour From et Reply-To lors de la transmission manuelle. */
+    private Boolean sendByEmailFromUser = true;
+
     /**
      *  Envoyer un email au créateur de la demande lors de l’ajout d’un postit
      */
@@ -443,6 +449,12 @@ public class GlobalProperties {
 
 
     public String newVersion;
+
+    private String sympaUrl;
+
+    private String sympaApp;
+
+    private String sympaToken;
 
     @PostConstruct
     public void init() {
@@ -840,6 +852,22 @@ public class GlobalProperties {
         this.restExtValueUrl = restExtValueUrl;
     }
 
+    public Boolean getEnableSendByEmail() {
+        return enableSendByEmail;
+    }
+
+    public void setEnableSendByEmail(Boolean enableSendByEmail) {
+        this.enableSendByEmail = enableSendByEmail;
+    }
+
+    public Boolean getSendByEmailFromUser() {
+        return sendByEmailFromUser;
+    }
+
+    public void setSendByEmailFromUser(Boolean sendByEmailFromUser) {
+        this.sendByEmailFromUser = sendByEmailFromUser;
+    }
+
     public Boolean getSendPostitByEmail() {
         return sendPostitByEmail;
     }
@@ -1077,5 +1105,28 @@ public class GlobalProperties {
 
     public void setSignatureExtraLineHeightFactor(Float signatureExtraLineHeightFactor) {
         this.signatureExtraLineHeightFactor = signatureExtraLineHeightFactor;
+    }
+    public String getSympaUrl() {
+        return sympaUrl;
+    }
+
+    public void setSympaUrl(String sympaUrl) {
+        this.sympaUrl = sympaUrl;
+    }
+
+    public String getSympaApp() {
+        return sympaApp;
+    }
+
+    public void setSympaApp(String sympaApp) {
+        this.sympaApp = sympaApp;
+    }
+
+    public String getSympaToken() {
+        return sympaToken;
+    }
+
+    public void setSympaToken(String sympaToken) {
+        this.sympaToken = sympaToken;
     }
 }

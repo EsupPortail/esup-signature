@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<html th:lang="${#locale.language}" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Demande signée</title>
+    <title th:text="#{email.file.title}"></title>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 </head>
 <body>
@@ -14,43 +14,45 @@
     </tr>
     <tr>
         <td style="width:100%; padding:10px;background-color:rgba(0,0,0,0.05);">
-            <p style="margin-bottom:1rem; margin-top:0;text-align: center;font-weight: bold">Bonjour, </p>
-            <p style="margin-bottom:1rem; margin-top:0;text-align: center;">Un document signé vous est destiné, il est attaché en piece jointe de ce mail : </p>
+            <p style="margin-bottom:1rem; margin-top:0;text-align: center;font-weight: bold" th:text="#{email.greeting}"></p>
+            <p style="margin-bottom:1rem; margin-top:0;text-align: center;" th:text="#{email.file.description}"></p>
+            <p th:if="${senderName != null}" th:text="#{email.file.sender(${senderName})}" style="text-align:center;"></p>
+            <p id="es-email-forwarded-comment" th:if="${forwardedComment != null}" th:text="${forwardedComment}" style="margin-bottom:1rem; white-space:pre-wrap;"></p>
             <table style="width: 66%; margin-left: 16.5%;">
                 <tr>
                     <td style="border-radius:5px; border-color: #212529;vertical-align: middle; width: 100%; background-color:#212529; padding:10px;font-size:14px;" bgcolor="#212529">
                         <p style="width: 96%; text-align: left;background-color: #6c757d;padding: 2%;border-radius: 5px;">
                             <a th:href="${url}">
-                                <img height="25" class="mx-auto float-start" src="cid:logo-file" style="border-style:none; vertical-align:middle;margin-right: 5%;"  valign="middle"><span class="text-white text-center" style="line-height:25px;color:#fff; font-weight: 600;font-size: 16px;" align="center" th:text="${signBook.signRequests.get(0).originalDocuments.get(0).getFileName()}"></span>
+                                <img height="25" class="mx-auto float-start" src="cid:logo-file" style="border-style:none; vertical-align:middle;margin-right: 5%;"  valign="middle"><span class="text-white text-center" style="line-height:25px;color:#fff; font-weight: 600;font-size: 16px;" align="center" th:if="${forwardedFileName == null}" th:text="${signBook.signRequests.get(0).originalDocuments.get(0).getFileName()}"></span><span th:if="${forwardedFileName != null}" th:text="${forwardedFileName}" style="color:#fff;"></span>
                             </a>
                         </p>
                         <p style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;color:#fff;" >
-                            Titre : <b style="box-sizing:border-box;font-weight:bolder;" ><span th:text="${signBook.subject}" style="box-sizing:border-box;" ></span></b>
+                            <span th:text="#{email.file.documentTitle}"></span> <b style="box-sizing:border-box;font-weight:bolder;" ><span th:text="${signBook.subject}" style="box-sizing:border-box;" ></span></b>
                             <br style="box-sizing:border-box;" >
-                            Circuit : <b style="box-sizing:border-box;font-weight:bolder;" ><span th:text="${signBook.workflowName}" style="box-sizing:border-box;" ></span></b>
+                            <span th:text="#{email.file.workflow}"></span> <b style="box-sizing:border-box;font-weight:bolder;" ><span th:text="${signBook.workflowName}" style="box-sizing:border-box;" ></span></b>
                             <br style="box-sizing:border-box;" >
-                            Crée par : <b style="box-sizing:border-box;font-weight:bolder;" ><span th:text="${signBook.createBy.firstname} + ' ' + ${signBook.createBy.name}" style="box-sizing:border-box;" ></span></b>
+                            <span th:text="#{email.file.createdBy}"></span> <b style="box-sizing:border-box;font-weight:bolder;" ><span th:text="${signBook.createBy.firstname} + ' ' + ${signBook.createBy.name}" style="box-sizing:border-box;" ></span></b>
                             <br style="box-sizing:border-box;" >
-                            Date de création : <b style="box-sizing:border-box;font-weight:bolder;" ><span th:text="${#dates.format(signBook.createDate, 'dd/MM/yyyy HH:mm')}" style="box-sizing:border-box;" ></span></b>
+                            <span th:text="#{email.file.createdAt}"></span> <b style="box-sizing:border-box;font-weight:bolder;" ><span th:text="${#dates.format(signBook.createDate, 'dd/MM/yyyy HH:mm')}" style="box-sizing:border-box;" ></span></b>
                             <br style="box-sizing:border-box;" >
                         </p>
                         <p style="margin-bottom:1rem; margin-top:0" th:if="${organizationalUnitLdap != null}">
-                            <span th:text="'Composante : ' + ${organizationalUnitLdap.description}" style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;color:#fff;"></span>
+                            <span th:text="#{email.file.unit(${organizationalUnitLdap.description})}" style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;color:#fff;"></span>
                         </p>
                     </td>
                 </tr>
             </table>
             <br>
             <p style="margin-bottom:1rem; margin-top:0;width: 100%;text-align: center;">
-                Si vous avez fait partie des signataires, vous pouvez accéder à la demande en cliquant sur le bouton ci-dessous
+                <span th:text="#{email.file.accessHelp}"></span>
                 <br>
-                <a th:href="${url}" style="background-color:#0d6efd; color:#fff; text-decoration:none; -moz-user-select:none; -ms-user-select:none; -webkit-user-select:none; border-radius: 20px; display:inline-block; font-size:14px; font-weight:600; line-height:1.5; padding:15px; text-align:center; transition:color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out; user-select:none; vertical-align:middle; margin-right:auto; margin-left:auto" bgcolor="#0d6efd" align="center" valign="middle">Accéder au document</a>
+                <a th:href="${url}" style="background-color:#0d6efd; color:#fff; text-decoration:none; -moz-user-select:none; -ms-user-select:none; -webkit-user-select:none; border-radius: 20px; display:inline-block; font-size:14px; font-weight:600; line-height:1.5; padding:15px; text-align:center; transition:color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out; user-select:none; vertical-align:middle; margin-right:auto; margin-left:auto" bgcolor="#0d6efd" align="center" valign="middle" th:text="#{email.accessDocument}"></a>
                 <br>
-                Sinon, vous pouvez obtenir plus d’informations sur le document à cette adresse :
-                <a th:href="${urlControl}" style="box-sizing:border-box;text-decoration:none;display:inline-block;font-weight:400;text-align:center;vertical-align:middle;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;border-width:1px;border-style:solid;padding-top:.375rem;padding-bottom:.375rem;padding-right:.75rem;padding-left:.75rem;font-size:14px;line-height:1.5;border-radius:.25rem;transition:color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;color:#fff;background-color:#5e5e5e;border-color:#5e5e5e;" >Contrôler le document</a>
+                <span th:text="#{email.file.controlHelp}"></span>
+                <a th:href="${urlControl}" style="box-sizing:border-box;text-decoration:none;display:inline-block;font-weight:400;text-align:center;vertical-align:middle;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;border-width:1px;border-style:solid;padding-top:.375rem;padding-bottom:.375rem;padding-right:.75rem;padding-left:.75rem;font-size:14px;line-height:1.5;border-radius:.25rem;transition:color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;color:#fff;background-color:#5e5e5e;border-color:#5e5e5e;" th:text="#{email.file.control}"></a>
             </p>
             <p style="margin-bottom:1rem; margin-top:0;color:#565656;">
-                ⚠️ Veuillez vérifier que le lien ci-dessus correspond bien à l’adresse officielle avant de cliquer. En cas de doute, copiez-collez l’URL directement dans votre navigateur : <span th:text="${url}"></span>
+                <span th:text="#{email.file.linkWarning}"></span> <span th:text="${url}"></span>
             </p>
             <p style="margin-bottom:1rem; margin-top:0;color:#565656;">Pour en savoir plus sur l’outil esup-signature, <a href="https://code.gouv.fr/sill/detail?name=Esup-Signature" style="color:#0d6efd; text-decoration:underline;">cliquez ici</a></p>
         </td>

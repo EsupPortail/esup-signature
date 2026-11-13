@@ -5,7 +5,7 @@
 <!--/*@thymesVar id="signRequestLight" type="org.esupportail.esupsignature.dto.page.user.signrequest.ShowSignRequestDto.SignRequestLightDto"*/-->
 <!--/*@thymesVar id="globalProperties" type="org.esupportail.esupsignature.config.GlobalProperties"*/-->
 <div th:fragment="tools" id="tools" class="es-tools position-fixed" th:classappend="${signRequestFull.signable && showSignRequest.toSignDocumentContentType == 'application/pdf'} ? ' tools-disabled' : ''" role="toolbar" aria-label="Actions principales de signature" th:if="${showSignRequest.toSignDocumentContentType != null}">
-    <div class="es-tools-actions d-flex flex-nowrap text-nowrap justify-content-center gap-2 align-items-center m-2 bg-white rounded-3 shadow-sm"
+    <div id="es-id-nav-tools-actions" class="es-tools-actions d-flex flex-nowrap text-nowrap justify-content-center gap-2 align-items-center m-2 bg-white rounded-3 shadow-sm"
         th:if="${annotation == null}"
         th:with="isCompletedRequest=${signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned},
                  isCompletedSignBook=${showSignRequest.signBookLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || showSignRequest.signBookLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || showSignRequest.signBookLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived || showSignRequest.signBookLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned}"
@@ -51,6 +51,11 @@
         <a class="es-tools-download es-tools-halo d-flex align-items-center justify-content-center btn btn-success p-3" title="Télécharger le document signé" aria-label="Télécharger le document signé" th:if="${isCompletedRequest}" tabindex="1" th:href="'/ws-secure/global/get-last-file/' + ${signRequestLight.id}" target="_blank">
             <i class="fi fi-rr-download d-flex align-items-center" style="margin-top: 0"></i><span class="es-tools-download-label"> Télécharger le document signé</span>
         </a>
+        <button id="es-transmit-email-button" type="button" class="es-tools-halo d-flex align-items-center justify-content-center btn btn-outline-success p-3"
+                th:if="${globalProperties.enableSendByEmail == true && isCompletedRequest && #authorization.expression('hasRole(''ROLE_USER'')')}"
+                data-bs-toggle="modal" data-bs-target="#es-transmit-email-modal" th:title="#{signRequest.transmit.title}" th:aria-label="#{signRequest.transmit.title}">
+            <i class="fi fi-rr-envelope d-flex align-items-center" aria-hidden="true"></i> <span class="es-tools-secondary-label" th:text="#{signRequest.transmit.title}"></span>
+        </button>
         <a class="es-tools-halo d-flex align-items-center justify-content-center btn btn-outline-success p-3" title="Tout télécharger" aria-label="Tout télécharger"
             th:if="${signRequestFull.nbSignRequests > 1 && isCompletedSignBook}"
             tabindex="1"

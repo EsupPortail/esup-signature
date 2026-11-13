@@ -98,9 +98,10 @@
                                 </th>
                                 <th class="d-none d-lg-table-cell" style="width: 60px;"></th>
                                 <th class="text-center">
-                                    <select es-search-text="Titre du document" es-search-url="/user/signbooks/search-doc-titles" id="docTitleFilter" class="slim-select-filter-search sign-request-filter" data-placeholder="Titre des documents" data-allow-deselect="true">
+                                    <select es-search-addable="true" es-search-text="Titre du document" es-search-url="/user/signbooks/search-doc-titles" id="docTitleFilter" class="slim-select-filter-search sign-request-filter" data-placeholder="Titre des documents" data-allow-deselect="true">
                                         <option data-placeholder="true"></option>
                                         <option value="all">Tout</option>
+                                        <option th:if="${docTitleFilter != null and !#strings.isEmpty(docTitleFilter) and docTitleFilter != 'all'}" th:value="${docTitleFilter}" th:text="${docTitleFilter}" selected></option>
                                     </select>
                                 </th>
                                 <th class="d-none d-xxl-table-cell text-center">

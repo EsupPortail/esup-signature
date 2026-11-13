@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.service.mail;
 
+import org.esupportail.esupsignature.service.interfaces.fs.FsFile;
 import jakarta.mail.Address;
 import jakarta.mail.Message;
 import jakarta.mail.MessagingException;
@@ -489,6 +490,45 @@ public class MailService {
 
     }
 
+    public boolean transmitSignedFile(SignRequest signRequest, FsFile file, String recipient, User sender, String comment) throws MessagingException, IOException {
+        InternetAddress address = new InternetAddress(recipient, true);
+        address.validate();
+        if (address.isGroup()) {
+            return false;
+        }
+        if (!checkMailSender()) {
+            return false;
+        }
+        Context context = new Context(Locale.FRENCH);
+        setTemplate(context, signRequest.getParentSignBook());
+        context.setVariable("forwardedFileName", file.getName());
+        context.setVariable("forwardedComment", StringUtils.trimToNull(comment));
+        String senderName = (StringUtils.trimToEmpty(sender.getFirstname()) + " " + StringUtils.trimToEmpty(sender.getName())).trim();
+        if (senderName.isEmpty()) {
+            senderName = sender.getEppn();
+        }
+        context.setVariable("senderName", senderName);
+        context.setVariable("url", globalProperties.getRootUrl() + "/user/signrequests/" + signRequest.getId());
+        context.setVariable("urlControl", globalProperties.getRootUrl() + "/public/control/" + signRequest.getToken());
+        MimeMessageHelper message = new MimeMessageHelper(getMailSender().createMimeMessage(), true, "UTF-8");
+        message.setSubject(messageSource.getMessage("email.file.subject", new Object[]{signRequest.getTitle()}, Locale.FRENCH));
+        message.setTo(address);
+        message.setText(templateEngine.process("mail/email-file.html", context), true);
+        try (InputStream input = file.getInputStream()) {
+            message.addAttachment(file.getName(), new ByteArrayResource(input.readAllBytes()), file.getContentType());
+        }
+        if (!Boolean.TRUE.equals(globalProperties.getSendByEmailFromUser())) {
+            return sendMail(message, null);
+        }
+        String senderEmail = mailConfig.getMailFrom();
+        if (StringUtils.isNotBlank(sender.getEmail())) {
+            senderEmail = sender.getEmail();
+        }
+        InternetAddress senderAddress = new InternetAddress(senderEmail, senderName, UTF_8.name());
+        senderAddress.validate();
+        return sendMail(message, null, true, senderAddress);
+    }
+
     public void sendTest(List<String> recipientsEmails) throws MessagingException, IOException {
         if (!checkMailSender()) {
             return;
@@ -503,11 +543,15 @@ public class MailService {
         sendMail(mimeMessage, null);
     }
 
-    private void sendMail(MimeMessageHelper mimeMessageHelper, Workflow workflow) throws MessagingException, IOException {
-        sendMail(mimeMessageHelper, workflow, true);
+    private boolean sendMail(MimeMessageHelper mimeMessageHelper, Workflow workflow) throws MessagingException, IOException {
+        return sendMail(mimeMessageHelper, workflow, true);
     }
 
-    private void sendMail(MimeMessageHelper mimeMessageHelper, Workflow workflow, boolean addFileLogo) throws MessagingException, IOException {
+    private boolean sendMail(MimeMessageHelper mimeMessageHelper, Workflow workflow, boolean addFileLogo) throws MessagingException, IOException {
+        return sendMail(mimeMessageHelper, workflow, addFileLogo, null);
+    }
+
+    private boolean sendMail(MimeMessageHelper mimeMessageHelper, Workflow workflow, boolean addFileLogo, InternetAddress senderAddress) throws MessagingException, IOException {
         mimeMessageHelper.addInline("logo", resizeImage(new ClassPathResource("/static/images/logo.png", MailService.class).getInputStream(), 30));
         mimeMessageHelper.addInline("logo-univ", resizeImage(new ClassPathResource("/static/images/logo-univ.png", MailService.class).getInputStream(), 30));
         if (addFileLogo) {
@@ -515,7 +559,7 @@ public class MailService {
         }
         if(workflow != null && BooleanUtils.isTrue(workflow.getDisableEmailAlerts())) {
             logger.debug("email alerts are disabled for this workflow " + workflow.getName());
-            return;
+            return false;
         }
         try {
             String systemAddress = "system@" + globalProperties.getDomain();
@@ -527,8 +571,13 @@ public class MailService {
                 if (workflow != null && org.springframework.util.StringUtils.hasText(workflow.getMailFrom())) {
                     replyToAddress = new InternetAddress(workflow.getMailFrom());
                 }
-                mimeMessageHelper.getMimeMessage().setFrom(replyToAddress);
-                mimeMessageHelper.getMimeMessage().setReplyTo(new Address[]{replyToAddress});
+                InternetAddress fromAddress = replyToAddress;
+                if (senderAddress != null) {
+                    fromAddress = senderAddress;
+                    mimeMessageHelper.getMimeMessage().setSender(replyToAddress);
+                }
+                mimeMessageHelper.getMimeMessage().setFrom(fromAddress);
+                mimeMessageHelper.getMimeMessage().setReplyTo(new Address[]{fromAddress});
                 if (org.springframework.util.StringUtils.hasText(globalProperties.getTestEmail())) {
                     tos = new ArrayList<>();
                     tos.add(new InternetAddress(globalProperties.getTestEmail()));
@@ -536,6 +585,7 @@ public class MailService {
                 if (!tos.isEmpty()) {
                     mimeMessageHelper.setTo(tos.toArray(new InternetAddress[0]));
                     mailSender.send(mimeMessageHelper.getMimeMessage());
+                    return true;
                 }
             }
         } catch(MessagingException e){
@@ -543,6 +593,7 @@ public class MailService {
                 throw new RuntimeException(e);
             }
         }
+        return false;
     }
 
     private void setTemplate(Context ctx, SignBook signBook) {

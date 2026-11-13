@@ -6,6 +6,9 @@ import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
 import eu.europa.esig.dss.validation.reports.Reports;
 import jakarta.servlet.http.HttpSession;
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
+import org.springframework.web.util.UriUtils;
 import org.apache.commons.io.FileUtils;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.dss.service.XSLTService;
@@ -22,6 +25,8 @@ import org.esupportail.esupsignature.service.security.PreAuthorizeService;
 import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.esupportail.esupsignature.service.utils.sign.SignService;
 import org.esupportail.esupsignature.service.utils.sign.ValidationService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.http.HttpHeaders;
@@ -46,6 +51,8 @@ import java.util.Optional;
 
 @RequestMapping("/public")
 public class PublicController {
+
+    private static final Logger logger = LoggerFactory.getLogger(PublicController.class);
 
     private final BuildProperties buildProperties;
     private final GlobalProperties globalProperties;
@@ -80,41 +87,28 @@ public class PublicController {
         return "public/control";
     }
 
+    @GetMapping("/control/{token}/login")
+    public String loginForControl(@PathVariable String token, HttpSession session) {
+        if (auditTrailService.getAuditTrailByToken(token) == null) {
+            return "error";
+        }
+        String resumeUrl = "/user/signrequests/control/" + UriUtils.encodePathSegment(token, StandardCharsets.UTF_8);
+        session.setAttribute("after_oauth_redirect", resumeUrl);
+        return "redirect:" + resumeUrl + "?redirect=" + resumeUrl;
+    }
+
     @GetMapping(value = "/control/{token}")
     public String controlToken(@PathVariable String token, Model model) throws EsupSignatureFsException, IOException {
         AuditTrail auditTrail = auditTrailService.getAuditTrailByToken(token);
-        if(auditTrail == null) {
+        if (auditTrail == null) {
             return "error";
         }
-        if(auditTrail.getDocumentSize() != null) {
-            model.addAttribute("size", FileUtils.byteCountToDisplaySize(auditTrail.getDocumentSize()));
-        }
-        model.addAttribute("auditTrail", auditTrail);
-        Optional<SignRequest> signRequest = signRequestService.getSignRequestByToken(token);
-        if(signRequest.isPresent()) {
-            if (auditTrail.getAuditSteps().stream().anyMatch(as -> as.getSignCertificat() != null && !as.getSignCertificat().isEmpty())) {
-                Reports reports = signService.validate(signRequest.get().getId());
-                if (reports != null) {
-                    model.addAttribute("simpleReport", xsltService.generateShortReport(reports.getXmlSimpleReport()));
-                }
-            }
-        } else {
-            model.addAttribute("auditTrailChecked", false);
-        }
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null && !auth.getName().equals("anonymousUser")) {
-            model.addAttribute("auditTrailChecked", true);
-            String eppn = userService.tryGetEppnFromLdap(auth);
-            if(eppn != null && userService.getByEppn(eppn) != null) {
-                setControlValues(model, signRequest, auditTrail, eppn);
-            }
-        }
+        model.addAttribute("auditTrailChecked", false);
+        model.addAttribute("token", token);
+        addReferenceInformation(model, token);
         if (buildProperties != null) {
             model.addAttribute("version", buildProperties.getVersion());
         }
-        model.addAttribute("token", token);
-        List<Log> logs = logService.getFullByToken(token);
-        model.addAttribute("logs", logs);
         return "public/control";
     }
 
@@ -122,15 +116,18 @@ public class PublicController {
     public String checkFile(@PathVariable String token, @RequestParam(value = "multipartFile") MultipartFile multipartFile,
                             Model model, HttpSession httpSession) throws IOException {
         model.addAttribute("token", token);
-        String checksum = fileService.getFileChecksum(multipartFile.getInputStream());
+        byte[] bytes = multipartFile.getBytes();
+        String checksum = fileService.getFileChecksum(new ByteArrayInputStream(bytes));
         AuditTrail auditTrail = auditTrailService.getAuditTrailFromCheksum(checksum);
-        if(auditTrail != null) {
+        boolean matchingAudit = auditTrail != null && (token == null || "null".equals(token) || token.equals(auditTrail.getToken()));
+        model.addAttribute("auditTrailChecked", matchingAudit);
+        model.addAttribute("error", !matchingAudit);
+        if (matchingAudit) {
             if(auditTrail.getDocumentSize() != null) {
                 model.addAttribute("size", FileUtils.byteCountToDisplaySize(auditTrail.getDocumentSize()));
             }
-            if("null".equals(token)) {
-                token = auditTrail.getToken();
-            }
+            token = auditTrail.getToken();
+            model.addAttribute("token", token);
             model.addAttribute("auditTrailChecked", true);
             List<Log> logs = logService.getFullByToken(token);
             model.addAttribute("logs", logs);
@@ -149,15 +146,51 @@ public class PublicController {
             model.addAttribute("auditTrail", auditTrail);
             setControlValues(model, signRequest, auditTrail, eppn);
         } else if (token == null || token.equals("null")) {
-            Reports reports = validationService.validate(multipartFile.getInputStream(), null);
+            Reports reports = validationService.validate(new ByteArrayInputStream(bytes), null);
             if(reports != null) {
                 model.addAttribute("simpleReport", xsltService.generateShortReport(reports.getXmlSimpleReport()));
             }
+            model.addAttribute("errorReason", "public.control.error.unknown-checksum");
             model.addAttribute("error", true);
+            logger.warn("control: unknown checksum {} (file={}, size={}), no audit trail matches", checksum, multipartFile.getOriginalFilename(), multipartFile.getSize());
         } else {
+            AuditTrail expectedAuditTrail = auditTrailService.getAuditTrailByToken(token);
+            if (expectedAuditTrail != null) {
+                model.addAttribute("errorReason", "public.control.error.checksum-mismatch");
+                logger.warn("control: checksum mismatch for token {} (file={}, providedChecksum={}, providedSize={}, expectedChecksum={}, expectedSize={}, expectedName={})", token, multipartFile.getOriginalFilename(), checksum, multipartFile.getSize(), expectedAuditTrail.getDocumentCheckSum(), expectedAuditTrail.getDocumentSize(), expectedAuditTrail.getDocumentName());
+            } else {
+                model.addAttribute("errorReason", "public.control.error.no-audit-trail");
+                logger.warn("control: no audit trail for token {} (file={}, providedChecksum={})", token, multipartFile.getOriginalFilename(), checksum);
+            }
             model.addAttribute("error", true);
         }
+        if (!matchingAudit) {
+            addReferenceInformation(model, token);
+            if (!hasUserRole()) {
+                model.asMap().remove("errorReason");
+            }
+        }
         return "public/control";
+    }
+
+    private void addReferenceInformation(Model model, String token) {
+        model.addAttribute("controlLoginRequired", !hasUserRole());
+        if (hasUserRole() && token != null && !"null".equals(token)) {
+            AuditTrail reference = auditTrailService.getAuditTrailByToken(token);
+            if (reference != null) {
+                model.addAttribute("referenceDocumentName", reference.getDocumentName());
+                model.addAttribute("referenceDocumentType", reference.getDocumentType());
+                model.addAttribute("referenceDocumentSize", reference.getDocumentSize());
+                model.addAttribute("referenceDocumentChecksum", reference.getDocumentCheckSum());
+                model.addAttribute("referenceSignatures", auditTrailService.getReferenceSignatures(token));
+                model.addAttribute("referenceAvailable", true);
+            }
+        }
+    }
+
+    private boolean hasUserRole() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        return auth != null && auth.isAuthenticated() && auth.getAuthorities().stream().anyMatch(a -> "ROLE_USER".equals(a.getAuthority()));
     }
 
     private void setControlValues(Model model, Optional<SignRequest> signRequest, AuditTrail auditTrail, String eppn) throws IOException {

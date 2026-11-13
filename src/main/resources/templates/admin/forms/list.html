@@ -67,7 +67,7 @@
                                 <th>Circuit associé</th>
                                 <th>Actif</th>
                                 <th>Tuile masquée</th>
-                                <th>Supprimé</th>
+                                <th th:text="#{admin.forms.trash.status}"></th>
                                 <th>Public</th>
                                 <th>Rôle</th>
                                 <th class="text-center">Action</th>
@@ -99,7 +99,7 @@
                                     <i th:unless="${form.hideButton}" class="fi fi-rr-minus text-secondary"></i>
                                 </td>
                                 <td class="clickable-td">
-                                    <i th:if="${form.deleted}" class="fi fi-rr-cross-small text-danger"></i>
+                                    <span th:if="${form.deleted}" class="badge text-bg-danger" th:text="#{admin.forms.trash.inTrash}"></span>
                                 </td>
                                 <td class="clickable-td">
                                     <i th:if="${form.publicUsage}" class="fi fi-rr-check text-success"></i>
@@ -144,36 +144,40 @@
                                                 </a>
                                             </li>
                                             <li>
-                                                <a class="btn btn-transparent text-danger text-left col-12" th:href="'#modal-warning-' + ${form.id}" role="button" title="Supprimer"
+                                                <a class="btn btn-transparent text-danger text-left col-12" th:href="'#modal-warning-' + ${form.id}" role="button"
                                                    data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${form.id}">
-                                                    <i class="fi fi-rr-trash"></i> Supprimer
+                                                    <i class="fi fi-rr-trash"></i>
+                                                    <span th:unless="${form.deleted}" th:text="#{admin.forms.trash.move}"></span>
+                                                    <span th:if="${form.deleted}" th:text="#{admin.forms.trash.delete}"></span>
                                                 </a>
                                             </li>
                                         </ul>
                                     </div>
 
                                     <div data-bs-focus="false" class="modal modal-warning fade in" th:id="'modal-warning-' + ${form.id}">
-                                        <div class="modal-dialog">
-                                            <div class="modal-content">
-                                                <form id="command" th:action="'/' + ${workflowRole} + '/forms/' + ${form.id}" th:method="delete">
-                                                    <div class="modal-header">
-                                                        <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal"
-                                                                aria-label="Close">
+                                        <div th:id="'es-form-delete-dialog-' + ${form.id}" class="modal-dialog">
+                                            <div th:id="'es-form-delete-content-' + ${form.id}" class="modal-content">
+                                                <form th:id="'es-form-delete-' + ${form.id}" th:action="'/' + ${workflowRole} + '/forms/' + ${form.id}" th:method="delete">
+                                                    <div th:id="'es-form-delete-header-' + ${form.id}" class="modal-header">
+                                                        <button type="button" class="btn-close" th:title="#{admin.forms.trash.close}" data-bs-dismiss="modal"
+                                                                th:aria-label="#{admin.forms.trash.close}">
 
                                                         </button>
                                                     </div>
-                                                    <div class="modal-body">
-                                                        <div class="alert alert-danger text-center">Confirmez-vous la
-                                                            suppression du formulaire ?
+                                                    <div th:id="'es-form-delete-body-' + ${form.id}" class="modal-body text-wrap text-break">
+                                                        <div th:id="'es-form-delete-warning-' + ${form.id}" class="alert alert-danger text-center">
+                                                            <span th:unless="${form.deleted}" th:text="#{admin.forms.trash.confirmMove(${form.title})}"></span>
+                                                            <span th:if="${form.deleted}" th:text="#{admin.forms.trash.confirmDelete(${form.title})}"></span>
                                                         </div>
                                                     </div>
-                                                    <div class="modal-footer">
+                                                    <div th:id="'es-form-delete-footer-' + ${form.id}" class="modal-footer">
                                                         <button type="button" class="btn btn-outline pull-left"
-                                                                data-bs-dismiss="modal">Non
+                                                                data-bs-dismiss="modal" th:text="#{admin.forms.trash.cancel}">
                                                         </button>
                                                         <button type="submit"
                                                                 class="btn btn-outline pull-left btn-danger">
-                                                            Oui
+                                                            <span th:unless="${form.deleted}" th:text="#{admin.forms.trash.move}"></span>
+                                                            <span th:if="${form.deleted}" th:text="#{admin.forms.trash.delete}"></span>
                                                         </button>
                                                     </div>
                                                 </form>
@@ -316,7 +320,7 @@
                 <h5 class="modal-title">Nouveau formulaire</h5>
                 <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form id="addModel" th:action="'/' + ${workflowRole} + '/forms/generate?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" method="post" enctype="multipart/form-data">
+            <form id="es-id-add-model" th:action="'/' + ${workflowRole} + '/forms/generate?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" method="post" enctype="multipart/form-data">
                 <div class="modal-body">
                     <div class="form-group mb-3">
                         <label for="title" class="form-label">Titre (affiché aux utilisateurs)</label>
@@ -329,7 +333,7 @@
                     <div class="form-group mb-3">
                         <label class="form-label">Modèle PDF Form</label>
                         <div class="custom-file">
-                            <input aria-describedby="inputGroupFileAddon01" class="form-control" data-buttonText="Choisir fichier" id="modelFile" name="multipartFile" type="file" required/>
+                            <input aria-describedby="inputGroupFileAddon01" class="form-control" data-buttonText="Choisir fichier" id="es-id-model-file" name="multipartFile" type="file"/>
                         </div>
                     </div>
                     <div class="form-group mb-3" th:unless="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}">

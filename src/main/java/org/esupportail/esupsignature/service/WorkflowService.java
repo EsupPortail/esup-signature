@@ -679,10 +679,15 @@ public class WorkflowService {
 
         List<Workflow> workflows = workflowRepository.findByTokenStartingWith(baseToken);
         workflows.removeIf(w -> w.getId().equals(workflow.getId()));
-        if (!workflows.isEmpty()) {
-            return baseToken + "_" + workflows.size();
+        Set<String> usedTokens = workflows.stream().map(Workflow::getToken).collect(Collectors.toSet());
+        if (!usedTokens.contains(token)) {
+            return token;
         }
-        return baseToken;
+        int suffix = 1;
+        while (usedTokens.contains(baseToken + "_" + suffix)) {
+            suffix++;
+        }
+        return baseToken + "_" + suffix;
     }
 
     @Transactional

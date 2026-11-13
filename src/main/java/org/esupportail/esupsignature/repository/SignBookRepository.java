@@ -691,8 +691,30 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
     @Query("select count(sb) from SignBook sb where sb.liveWorkflow.workflow = :workflow and (sb.hidedBy) is empty")
     int countByLiveWorkflowWorkflow(Workflow workflow);
 
-    @Query("select sb from SignBook sb join sb.viewers u where u = :user")
-    Page<SignBook> findByViewersContaining(User user, Pageable pageable);
+    @Query("""
+            select sb from SignBook sb
+            where :user member of sb.viewers
+              and (sb.createDate between :startDateFilter and :endDateFilter)
+              and (:workflowFilter is null or sb.workflowName = :workflowFilter)
+              and (:creatorFilter is null or sb.createBy = :creatorFilter)
+              and (:docTitleFilter is null or lower(sb.subject) like :docTitleFilter escape '\\')
+              and (
+                  :recipientUser is null
+                  or exists (
+                      select 1 from SignRequest sr
+                      join sr.recipientHasSigned rhs
+                      where sr.parentSignBook = sb
+                        and key(rhs).user = :recipientUser
+                  )
+                  or exists (
+                      select 1 from LiveWorkflowStep lws
+                      join lws.recipients r
+                      where lws = sb.liveWorkflow.currentStep
+                        and r.user = :recipientUser
+                  )
+              )
+            """)
+    Page<SignBook> findByViewersContaining(User user, User recipientUser, String workflowFilter, String docTitleFilter, User creatorFilter, Date startDateFilter, Date endDateFilter, Pageable pageable);
 
     @Query("select count(sb) from SignBook sb join sb.viewers u where u.eppn = :userEppn and sb.status = 'pending'")
     Long countByViewersContaining(String userEppn);

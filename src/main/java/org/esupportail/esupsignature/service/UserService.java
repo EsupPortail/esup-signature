@@ -797,9 +797,9 @@ public class UserService {
                 if(optionalUser.isPresent() && (optionalUser.get().getUserType().equals(UserType.external) || globalProperties.getForcedExternalsDomainList().stream().anyMatch(optionalUser.get().getEmail()::contains))) {
                     optionalUser.get().setUserType(UserType.external);
                     tempUsers.add(optionalUser.get());
-                } else {
-                    List<String> groupUsers = new ArrayList<>(userListService.getUsersEmailFromList(recipient.getEmail()));
-                    if (groupUsers.isEmpty() && (!recipient.getEmail().contains(globalProperties.getDomain()) || globalProperties.getForcedExternalsDomainList().stream().anyMatch(recipient.getEmail()::contains))) {
+                } else if (!recipient.getEmail().contains(globalProperties.getDomain()) || globalProperties.getForcedExternalsDomainList().stream().anyMatch(recipient.getEmail()::contains)) {
+                    List<String> groupUsers = userListService.getUsersEmailFromList(recipient.getEmail());
+                    if (groupUsers.isEmpty()) {
                         User recipientUser = getUserByEmail(recipient.getEmail());
                         if (recipientUser != null && (recipientUser.getUserType().equals(UserType.external) || globalProperties.getForcedExternalsDomainList().stream().anyMatch(recipient.getEmail()::contains))) {
                             recipientUser.setUserType(UserType.external);

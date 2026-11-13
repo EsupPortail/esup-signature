@@ -31,7 +31,7 @@ export class Nexu {
                 if(ids != null) {
                     self.loadScript();
                 }
-                // $("#certType > option[value='nexuCert']").removeAttr('disabled');
+                $("#certType > option[value='nexuCert']").removeAttr('unavailable').removeAttr('disabled').prop('disabled', false);
                 if(currentSignType === 'nexuSign') {
                     $("#certType").val("nexuCert").trigger("change");
                     $("#nexu_ready_alert").show();
@@ -39,14 +39,13 @@ export class Nexu {
                     $("#signLaunchButton").show();
                 }
                 self.updateSignModal();
-                $("#certType > option[value='nexuCert']").removeAttr('unavailable');
             }).catch(function(e){
                 console.info("Esup-DSS-Client non lancé !");
                 $("#nexu_ready_alert").hide();
                 Nexu.find("#alertNexu").show();
                 $("#nexu_missing_alert").show();
                 self.updateSignModal()
-                $("#certType > option[value='nexuCert']").attr('unavailable', 'unavailable');
+                $("#certType > option[value='nexuCert']").attr('unavailable', 'unavailable').prop('disabled', true);
             });
         });
     }

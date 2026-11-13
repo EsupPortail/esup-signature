@@ -756,17 +756,10 @@ dd {
     height: 0;
 }
 
-.es-signrequest-postits-layer {
-    position: absolute;
-    top: 200px;
-}
-
 .es-signrequest-postit-note {
     cursor: move;
     background-color: var(--color-fff740);
     position: fixed;
-    left: 310px;
-    top: 210px;
     z-index: 1000;
 }
 

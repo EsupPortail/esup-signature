@@ -441,7 +441,7 @@ public class SignBookService {
         } else if(statusFilter.equals("refusedByMe")) {
             signBooks = signBookRepository.findRefusedByRecipientNotDeleted(user, workflowFilter, docTitleLikeFilter, creatorFilterUser, pageable);
         } else if(statusFilter.equals("followByMe")) {
-            signBooks = signBookRepository.findByViewersContaining(user, pageable);
+            signBooks = signBookRepository.findByViewersContaining(user, userFilter, workflowFilter, docTitleLikeFilter, creatorFilterUser, startDateFilter, endDateFilter, pageable);
         } else if(statusFilter.equals("sharedSign")) {
             signBooks = signBookRepository.findOnShareByEppn(user.getEppn(), userFilter, workflowFilter, docTitleLikeFilter, creatorFilterUser, startDateFilter, endDateFilter, pageable);
         } else if(statusFilter.equals("hided")) {
@@ -1705,7 +1705,7 @@ public class SignBookService {
      * Crée un parapheur (SignBook) à partir des informations fournies, ajoute les documents à signer,
      **/
     @Transactional
-    public Map<SignBook, String> createAndSendSignBook(String title, MultipartFile[] multipartFiles, Boolean pending, List<WorkflowStepDto> steps, String createByEppn, boolean forceSendEmail, Boolean forceAllSign, String targetUrl, String signRequestParamsDetectionPattern, boolean keepSignFields) throws EsupSignatureException {
+    public Map<SignBook, String> createAndSendSignBook(String title, MultipartFile[] multipartFiles, Boolean pending, List<WorkflowStepDto> steps, String createByEppn, boolean forceSendEmail, Boolean forceAllSign, List<String> targetUrls, String signRequestParamsDetectionPattern, boolean keepSignFields) throws EsupSignatureException {
         User authUser = userService.createUserWithEppn(createByEppn);
         if(authUser == null) {
             throw new EsupSignatureException("user not found");
@@ -1726,8 +1726,10 @@ public class SignBookService {
         addDocumentsToSignBook(signBook.getId(), multipartFiles, createByEppn, signRequestParamsDetectionPattern, keepSignFields, true);
         signBook.setForceAllDocsSign(forceAllSign);
         addViewers(signBook.getId(), steps.stream().map(WorkflowStepDto::getRecipientsCCEmails).filter(Objects::nonNull).flatMap(List::stream).toList());
-        if(targetUrl != null && !targetUrl.isEmpty()) {
-            signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(targetUrl, true, false, false, false));
+        if(targetUrls != null) {
+            for (String targetUrl : targetUrls) {
+                signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(targetUrl, true, false, false, false));
+            }
         }
         Map<Integer, List<SignRequestParams>> integerListMap = new HashMap<>();
         if(!StringUtils.hasText(signRequestParamsDetectionPattern)) {
@@ -2169,8 +2171,14 @@ public class SignBookService {
                         sealAllDocs(signRequest.getParentSignBook().getId());
                     }
                     completeSignBook(signRequest.getParentSignBook(), authUserEppn, "Tous les documents sont signés");
-                    Document signedDocument = signRequest.getLastSignedDocument();
-                    auditTrailService.closeAuditTrail(signRequest.getToken(), signedDocument, signedDocument.getInputStream());
+                    for(SignRequest signBookSignRequest : signRequest.getParentSignBook().getSignRequests()) {
+                        Document signedDocument = signBookSignRequest.getLastSignedDocument();
+                        if(signedDocument != null && !SignRequestStatus.refused.equals(signBookSignRequest.getStatus())) {
+                            auditTrailService.closeAuditTrail(signBookSignRequest.getToken(), signedDocument, signedDocument.getInputStream());
+                        } else {
+                            logger.warn("audit trail not closed for sign request {} (token {}) : no final document or refused", signBookSignRequest.getId(), signBookSignRequest.getToken());
+                        }
+                    }
                 } catch(IOException e) {
                     throw new EsupSignatureRuntimeException(e.getMessage());
                 }
@@ -2227,7 +2235,6 @@ public class SignBookService {
         List<StepStatus> stepStatuses = new ArrayList<>();
         for (Long id : idsLong) {
             SignRequest selectedSignRequest = signRequestService.getById(id);
-            selectedSignRequest.getSignRequestParams().addAll(signRequestService.getCurrentStepSignRequestParams(selectedSignRequest, userEppn));
             StepStatus stepStatus = StepStatus.not_completed;
             for(SignRequest signRequest : selectedSignRequest.getParentSignBook().getSignRequests()) {
                 if (!signRequest.getStatus().equals(SignRequestStatus.pending)) {
@@ -2238,7 +2245,7 @@ public class SignBookService {
                 } else if (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().getValue() > SignWith.valueOf(signWith).getValue()) {
                     reportService.addSignRequestToReport(report.getId(), signRequest.getId(), ReportStatus.signTypeNotCompliant);
                     error = messageSource.getMessage("report.reportstatus." + ReportStatus.signTypeNotCompliant, null, Locale.FRENCH);
-                } else if (signRequest.getSignRequestParams().isEmpty() && SignWith.valueOf(signWith).equals(SignWith.imageStamp)) {
+                } else if (SignWith.valueOf(signWith).equals(SignWith.imageStamp) && signRequestService.getCurrentStepSignRequestParams(signRequest, userEppn).isEmpty()) {
                     reportService.addSignRequestToReport(report.getId(), signRequest.getId(), ReportStatus.noSignField);
                     error = messageSource.getMessage("report.reportstatus." + ReportStatus.noSignField, null, Locale.FRENCH);
                 } else if (signRequest.getStatus().equals(SignRequestStatus.pending)) {

@@ -745,8 +745,13 @@ export class GlobalUi {
     }
 
     hideMenus(event) {
-        $("#mega-result").modal('hide');
-        $("#second-tools").collapse('hide');
+        const megaResult = document.getElementById('mega-result');
+        if (megaResult) {
+            const modal = bootstrap.Modal.getInstance(megaResult);
+            if (modal) {
+                modal.hide();
+            }
+        }
         var clickover = $(event.target);
         $("div[id^='menu-']").each(function() {
             var _opened = $(this).hasClass("collapse show");
@@ -758,7 +763,7 @@ export class GlobalUi {
         var container = document.getElementsByClassName('user-infos')[0];
         var _opened = $("#user-infos").hasClass("collapse show");
         if (_opened === true && container !== event.target && !container.contains(event.target)) {
-            $("#user-infos").collapse('hide');
+            bootstrap.Collapse.getOrCreateInstance(container, {toggle: false}).hide();
         }
 
     }

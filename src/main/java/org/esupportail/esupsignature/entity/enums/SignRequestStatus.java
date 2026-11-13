@@ -21,7 +21,7 @@ import java.util.Arrays;
  *
  */
 public enum SignRequestStatus {
-    uploading, draft, pending, checked, signed, refused, @Deprecated deleted, completed, exported, @Deprecated archived, @Deprecated cleaned;
+    uploading, draft, pending, checked, signed, refused, @Deprecated deleted, completed, exported, expired, @Deprecated archived, @Deprecated cleaned;
 
     public static SignRequestStatus[] activeValues() {
         return Arrays.stream(values())

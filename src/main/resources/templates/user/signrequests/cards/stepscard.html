@@ -57,7 +57,7 @@
                                             </a>
                                         </li>
                                     </th:block>
-                                    <th:block th:unless="${!signRequestFull.hasDocumentsHistory}">
+                                    <th:block th:if="${signRequestFull.hasDocumentsHistory && showSignRequest.workflow.downloadAllowed}">
                                         <li>
                                             <a class="d-flex align-items-center btn btn-transparent text-dark w-100 text-left"
                                                th:href="@{'/ws-secure/global/get-documents-history/' + ${signRequestLight.id} + '/documents/' + ${iterator.index}}"
@@ -261,7 +261,7 @@
                                 </div>
                                 <th:block th:with="canResendLink=${isCurrent && signRequestFull.manager && isPending && !liveWorkflowStep.recipients.?[user.userType.name() == 'external'].isEmpty()},
                                                    canShowLayerActions=${!signRequestFull.hasDocumentsHistory && (isCompleted || isWorkflowFinished)},
-                                                   canDownloadHistory=${signRequestFull.hasDocumentsHistory},
+                                                   canDownloadHistory=${signRequestFull.hasDocumentsHistory && showSignRequest.workflow.downloadAllowed},
                                                    canAddStep=${signRequestFull.updateAllowed && !isNextCompleted && isEditableStatus},
                                                    canUpdateStep=${signRequestFull.updateAllowed && !isAutoSign && isEditableStatus && stepNumber >= signRequestFull.currentStepNumber},
                                                    canDeleteStep=${signRequestFull.updateAllowed && signRequestFull.manager && isEditableStatus && showSignRequest.steps.size() > 1 && showSignRequest.steps.size() > signRequestFull.currentStepNumber && stepNumber >= signRequestFull.currentStepNumber},
@@ -311,7 +311,7 @@
                                                     <i class="fi fi-rr-layers"></i> Afficher les modifications
                                                 </button>
                                             </li>
-                                            <li>
+                                            <li th:if="${showSignRequest.workflow.downloadAllowed}">
                                                 <a class="d-flex align-items-center btn btn-transparent text-dark w-100 text-left"
                                                    th:href="@{'/ws-secure/global/get-layered-file/' + ${signRequestLight.id} + '/' + ${stepNumber}}"
                                                    target="_blank"
