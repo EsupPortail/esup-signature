@@ -1,8 +1,9 @@
 package org.esupportail.esupsignature.web.controller.admin;
 
+import eu.europa.esig.dss.model.job.ParsingInfoRecord;
 import eu.europa.esig.dss.model.tsl.LOTLInfo;
-import eu.europa.esig.dss.model.tsl.ParsingInfoRecord;
 import eu.europa.esig.dss.model.tsl.TLInfo;
+import eu.europa.esig.dss.model.tsl.TLParsingInfoRecord;
 import eu.europa.esig.dss.model.tsl.TLValidationJobSummary;
 import eu.europa.esig.dss.spi.tsl.TrustedListsCertificateSource;
 import eu.europa.esig.dss.tsl.function.OfficialJournalSchemeInformationURI;
@@ -160,13 +161,13 @@ public class DSSController {
 		return "redirect:/admin/dss";
 	}
 
-	private String getActualOjUrl() {
-		TLValidationJobSummary summary = trustedCertificateSource.getSummary();
+	public String getActualOjUrl() {
+		TLValidationJobSummary summary = tlValidationJob.getSummary();
 		if (summary != null) {
 			List<LOTLInfo> lotlInfos = summary.getLOTLInfos();
 			for (LOTLInfo lotlInfo : lotlInfos) {
 				if (Utils.areStringsEqual(lotlSource.getUrl(), lotlInfo.getUrl())) {
-					ParsingInfoRecord parsingCacheInfo = lotlInfo.getParsingCacheInfo();
+					TLParsingInfoRecord parsingCacheInfo = lotlInfo.getParsingCacheInfo();
 					if (parsingCacheInfo != null) {
 						return parsingCacheInfo.getSigningCertificateAnnouncementUrl();
 					}
@@ -175,4 +176,5 @@ public class DSSController {
 		}
 		return null;
 	}
+
 }
