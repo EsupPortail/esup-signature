@@ -1,9 +1,10 @@
 package org.esupportail.esupsignature.dss.service;
 
 import eu.europa.esig.dss.model.identifier.Identifier;
+import eu.europa.esig.dss.model.job.ParsingInfoRecord;
 import eu.europa.esig.dss.model.tsl.LOTLInfo;
-import eu.europa.esig.dss.model.tsl.ParsingInfoRecord;
 import eu.europa.esig.dss.model.tsl.TLInfo;
+import eu.europa.esig.dss.model.tsl.TLParsingInfoRecord;
 import eu.europa.esig.dss.model.tsl.TLValidationJobSummary;
 import eu.europa.esig.dss.spi.x509.KeyStoreCertificateSource;
 import eu.europa.esig.dss.tsl.job.TLValidationJob;
@@ -87,7 +88,7 @@ public DSSService(DSSProperties dssProperties, TLValidationJob tlValidationJob, 
             List<LOTLInfo> lotlInfos = summary.getLOTLInfos();
             for (LOTLInfo lotlInfo : lotlInfos) {
                 if (Utils.areStringsEqual(dssProperties.getLotlUrl(), lotlInfo.getUrl())) {
-                    ParsingInfoRecord parsingCacheInfo = lotlInfo.getParsingCacheInfo();
+                    TLParsingInfoRecord parsingCacheInfo = lotlInfo.getParsingCacheInfo();
                     if (parsingCacheInfo != null) {
                         return parsingCacheInfo.getSigningCertificateAnnouncementUrl();
                     }
@@ -96,6 +97,7 @@ public DSSService(DSSProperties dssProperties, TLValidationJob tlValidationJob, 
         }
         return null;
     }
+
     public String getCurrentOjUrl() {
         return dssProperties.getOjUrl();
     }
