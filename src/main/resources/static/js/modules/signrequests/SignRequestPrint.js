@@ -10,10 +10,3 @@ document.getElementById("print-last-file-button")?.addEventListener("click", eve
         }, 500);
     });
 });
-
-document.addEventListener("click", event => {
-    if (!event.target.closest(".js-print-download-warning")) {
-        return;
-    }
-    alert("Le document ainsi téléchargé est destiné exclusivement à l`impression. Les signatures électroniques ne sont présentes que dans la version numérique");
-});

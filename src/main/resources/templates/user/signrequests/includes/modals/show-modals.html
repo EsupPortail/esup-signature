@@ -5,6 +5,45 @@
 <!--/*@thymesVar id="signRequestLight" type="org.esupportail.esupsignature.dto.page.user.signrequest.ShowSignRequestDto.SignRequestLightDto"*/-->
 <!--/*@thymesVar id="globalProperties" type="org.esupportail.esupsignature.config.GlobalProperties"*/-->
 <div th:fragment="all-modals">
+    <div id="es-transmit-email-modal" class="modal fade" tabindex="-1" aria-labelledby="es-transmit-email-title" aria-describedby="es-transmit-email-help" aria-hidden="true">
+        <div id="es-transmit-email-dialog" class="modal-dialog">
+            <form id="es-transmit-email-form" class="modal-content" method="post" th:action="'/user/signrequests/' + ${signRequestLight.id} + '/transmit-email'">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                <div id="es-transmit-email-header" class="modal-header">
+                    <h5 id="es-transmit-email-title" class="modal-title" th:text="#{signRequest.transmit.title}"></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" th:aria-label="#{common.action.close}"></button>
+                </div>
+                <div id="es-transmit-email-body" class="modal-body">
+                    <p id="es-transmit-email-help" th:text="#{signRequest.transmit.help}"></p>
+                    <label for="es-transmit-email-recipient" class="form-label" th:text="#{signRequest.transmit.recipient}"></label>
+                    <input id="es-transmit-email-recipient" name="recipient" type="email" class="form-control" required maxlength="254" autocomplete="email">
+                    <label for="es-transmit-email-comment" class="form-label mt-3" th:text="#{signRequest.transmit.comment}"></label>
+                    <textarea id="es-transmit-email-comment" name="comment" class="form-control" rows="4" aria-describedby="es-transmit-email-comment-help"></textarea>
+                    <p id="es-transmit-email-comment-help" class="form-text mb-0" th:text="#{signRequest.transmit.commentHelp}"></p>
+                </div>
+                <div id="es-transmit-email-footer" class="modal-footer">
+                    <button type="submit" class="btn btn-primary" th:text="#{signRequest.transmit.title}"></button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div id="es-print-copy-modal" class="modal fade" tabindex="-1" aria-labelledby="es-print-copy-title" aria-describedby="es-print-copy-explanation" aria-hidden="true">
+        <div id="es-print-copy-dialog" class="modal-dialog">
+            <div id="es-print-copy-content" class="modal-content">
+                <div id="es-print-copy-header" class="modal-header">
+                    <h5 id="es-print-copy-title" class="modal-title" th:text="#{signButtons.printCopy}"></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" th:aria-label="#{common.action.close}"></button>
+                </div>
+                <div id="es-print-copy-body" class="modal-body">
+                    <p id="es-print-copy-explanation" class="mb-0" th:text="#{printCopy.description}"></p>
+                </div>
+                <div id="es-print-copy-footer" class="modal-footer">
+                    <a id="es-print-copy-download" class="btn btn-primary" th:href="'/ws-secure/global/print-with-code/' + ${signRequestLight.id}" th:text="#{signButtons.printCopy}"></a>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="wait" data-bs-focus="false" class="modal fade" role="dialog" data-keyboard="false" data-backdrop="static">
         <div class="modal-dialog" role="document">
             <div class="modal-content">

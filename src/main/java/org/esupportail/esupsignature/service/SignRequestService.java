@@ -1,5 +1,8 @@
 package org.esupportail.esupsignature.service;
 
+import jakarta.mail.MessagingException;
+import org.springframework.security.access.AccessDeniedException;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.zxing.WriterException;
@@ -1816,6 +1819,24 @@ public class SignRequestService {
 		return stepNumber < signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber();
 	}
 
+	@Transactional(readOnly = true)
+    public boolean transmitSignedDocument(Long id, String recipient, String authUserEppn, String comment) throws MessagingException, IOException, EsupSignatureFsException {
+        SignRequest request = getById(id);
+        if (!Boolean.TRUE.equals(globalProperties.getEnableSendByEmail()) || request == null || !EnumSet.of(SignRequestStatus.completed, SignRequestStatus.exported,
+                SignRequestStatus.archived, SignRequestStatus.cleaned).contains(request.getStatus())
+                || !canDownloadDocument(request)) {
+            throw new AccessDeniedException(messageSource.getMessage("signRequest.transmit.unavailable", null, LocaleContextHolder.getLocale()));
+        }
+        User sender = userService.getByEppn(authUserEppn);
+        if (sender == null) {
+            throw new AccessDeniedException(messageSource.getMessage("signRequest.transmit.unavailable", null, LocaleContextHolder.getLocale()));
+        }
+        FsFile file = getLastSignedFsFile(request);
+        try (InputStream input = file.getInputStream()) {
+            return mailService.transmitSignedFile(request, file, recipient, sender, comment);
+        }
+    }
+
 	/**
 	 * Génère une réponse contenant un document prêt à être signé, ou un fichier signé avec un QR code,
 	 * et l'écrit dans la réponse HTTP fournie.
@@ -1838,11 +1859,17 @@ public class SignRequestService {
 				document = signRequest.getOriginalDocuments().get(0);
 			}
 			InputStream inputStream = pdfService.addQrCode(signRequest, document.getInputStream());
-			webUtilsService.copyFileStreamToHttpResponse(document.getFileName(), document.getContentType(), "attachment", inputStream, httpServletResponse);
+			try (inputStream) {
+				byte[] copy = pdfService.flattenForPrinting(inputStream.readAllBytes());
+				webUtilsService.copyFileStreamToHttpResponse("print-copy-" + document.getFileName(), document.getContentType(), "attachment", new ByteArrayInputStream(copy), httpServletResponse);
+			}
 		} else {
 			FsFile fsFile = getLastSignedFsFile(signRequest);
 			InputStream inputStream = pdfService.addQrCode(signRequest, fsFile.getInputStream());
-			webUtilsService.copyFileStreamToHttpResponse(fsFile.getName(), fsFile.getContentType(), "attachment", inputStream, httpServletResponse);
+			try (inputStream) {
+				byte[] copy = pdfService.flattenForPrinting(inputStream.readAllBytes());
+				webUtilsService.copyFileStreamToHttpResponse("print-copy-" + fsFile.getName(), fsFile.getContentType(), "attachment", new ByteArrayInputStream(copy), httpServletResponse);
+			}
 		}
 	}
 

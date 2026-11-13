@@ -15,6 +15,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.pdfbox.Loader;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.apache.pdfbox.cos.COSArray;
 import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSDictionary;
@@ -25,11 +26,14 @@ import org.apache.pdfbox.pdmodel.common.PDMetadata;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType0Font;
+import org.apache.pdfbox.pdmodel.font.PDType1Font;
+import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
 import org.apache.pdfbox.pdmodel.graphics.PDXObject;
 import org.apache.pdfbox.pdmodel.graphics.color.PDColor;
 import org.apache.pdfbox.pdmodel.graphics.color.PDDeviceRGB;
 import org.apache.pdfbox.pdmodel.graphics.form.PDFormXObject;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
+import org.apache.pdfbox.pdmodel.graphics.image.LosslessFactory;
 import org.apache.pdfbox.pdmodel.graphics.optionalcontent.PDOptionalContentGroup;
 import org.apache.pdfbox.pdmodel.graphics.optionalcontent.PDOptionalContentProperties;
 import org.apache.pdfbox.pdmodel.interactive.action.PDActionURI;
@@ -617,6 +621,44 @@ public class PdfService {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         MatrixToImageWriter.writeToStream(matrix, "png", outputStream);
         return outputStream;
+    }
+
+    /** Creates a visual printing copy without interactive objects or signature revisions. */
+    public byte[] flattenForPrinting(byte[] pdfBytes) throws IOException {
+        ResourceBundle messages = ResourceBundle.getBundle("i18n.messages", LocaleContextHolder.getLocale(),
+                ResourceBundle.Control.getNoFallbackControl(ResourceBundle.Control.FORMAT_DEFAULT));
+        try (PDDocument source = Loader.loadPDF(pdfBytes);
+             PDDocument copy = new PDDocument();
+             ByteArrayOutputStream output = new ByteArrayOutputStream()) {
+            PDFRenderer renderer = new PDFRenderer(source);
+            for (int index = 0; index < source.getNumberOfPages(); index++) {
+                BufferedImage image = renderer.renderImageWithDPI(index, 200, ImageType.RGB);
+                float width = source.getPage(index).getCropBox().getWidth();
+                float height = source.getPage(index).getCropBox().getHeight();
+                int rotation = Math.floorMod(source.getPage(index).getRotation(), 360);
+                if (rotation == 90 || rotation == 270) {
+                    float previousWidth = width;
+                    width = height;
+                    height = previousWidth;
+                }
+                // A separate footer keeps the copy marking clear of the document content.
+                PDPage page = new PDPage(new PDRectangle(width, height + 20));
+                copy.addPage(page);
+                PDImageXObject pageImage = LosslessFactory.createFromImage(copy, image);
+                try (PDPageContentStream content = new PDPageContentStream(copy, page)) {
+                    content.drawImage(pageImage, 0, 20, width, height);
+                    content.beginText();
+                    content.setFont(new PDType1Font(Standard14Fonts.FontName.HELVETICA), 8);
+                    content.newLineAtOffset(8, 7);
+                    content.showText(messages.getString("printCopy.marking"));
+                    content.endText();
+                }
+                image.flush();
+            }
+            copy.getDocumentInformation().setTitle(messages.getString("signButtons.printCopy"));
+            copy.save(output);
+            return output.toByteArray();
+        }
     }
 
     /**

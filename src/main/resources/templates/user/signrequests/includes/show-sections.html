@@ -176,11 +176,11 @@
             </a>
         </div>
         <div th:if="${showSignRequest.lastSignedDocumentContentType == 'application/pdf' && (signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned)}">
-            <a tabindex="1" class="d-flex justify-content-center btn btn-transparent text-dark me-1 d-none d-sm-flex js-print-download-warning"
-               th:href="'/ws-secure/global/print-with-code/' + ${signRequestLight.id}" target="_blank"
-               th:title="#{signButtons.printDatamatrix}" th:aria-label="#{signButtons.printDatamatrix}">
+            <a tabindex="1" id="es-id-print-download-warning" class="d-flex justify-content-center btn btn-transparent text-dark me-1 d-none d-sm-flex"
+               href="#es-print-copy-modal" data-bs-toggle="modal"
+               th:title="#{signButtons.printCopy}" th:aria-label="#{signButtons.printCopy}">
                 <i class="fi fi-rr-print " style="margin-top: 0;"></i>
-                <span class="es-sign-button-label" th:text="#{signButtons.printDatamatrix}"></span>
+                <span class="es-sign-button-label" th:text="#{signButtons.printCopy}"></span>
             </a>
         </div>
         <button tabindex="0" th:if="${showSignRequest.workflow.downloadAllowed && signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}"
