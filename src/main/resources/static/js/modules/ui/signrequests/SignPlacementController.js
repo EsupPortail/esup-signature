@@ -438,7 +438,7 @@ export class SignPlacementController extends EventFactory {
         }
         const isSpot = signImageNumber === SPECIAL_SIGN_IMAGE_NUMBERS.SPOT;
         const isParaph = signImageNumber === SPECIAL_SIGN_IMAGE_NUMBERS.PARAPHE;
-        const isVisaPlacement = this.signType === "visa" && !isParaph;
+        const isVisaPlacement = this.signType === "visa" && signImageNumber != null && signImageNumber >= 0 && !isParaph;
         if (!isSpot && !isParaph) {
             this.prepareVisualPlacement();
         }
