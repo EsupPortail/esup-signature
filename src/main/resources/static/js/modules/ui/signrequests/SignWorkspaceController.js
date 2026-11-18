@@ -958,17 +958,14 @@ export class SignWorkspaceController {
     }
 
     checkSignsPositions() {
-        let testSign = Array.from(this.signPlacementController.signRequestParamses.values());
-        if(testSign.filter(s => s.signImageNumber >= 0 && s.signImageNumber !== 999999 && s.isSign).length > 0) {
-            for (let i = 0; i < this.currentSignRequestParamses.length; i++) {
-                if ((this.currentSignRequestParamses[i].ready == null || !this.currentSignRequestParamses[i].ready)) {
-                    return i;
-                }
-            }
-            return null;
-        } else {
+        if (this.signPlacementController.getActiveSigns().length === 0) {
             return 0;
         }
+        const unfilledSlot = this.signPlacementController.findUnfilledSignatureSlot();
+        if (unfilledSlot >= 0) {
+            return unfilledSlot;
+        }
+        return null;
     }
 
     disableForm() {
