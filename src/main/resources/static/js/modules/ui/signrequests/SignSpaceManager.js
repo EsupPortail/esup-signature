@@ -318,6 +318,30 @@ export class SignSpaceManager {
 		if (cross == null || !cross.length) {
 			return false;
 		}
+		const pageNum = Number.parseInt(signSpaceDiv.attr("data-es-pos-page"), 10);
+		const targetX = Number.parseFloat(signSpaceDiv.attr("data-es-pos-x"));
+		const targetY = Number.parseFloat(signSpaceDiv.attr("data-es-pos-y"));
+		const slotWidth = Number.parseFloat(signSpaceDiv.attr("data-es-sign-width"));
+		const slotHeight = Number.parseFloat(signSpaceDiv.attr("data-es-sign-height"));
+		if (!Number.isFinite(pageNum) || !Number.isFinite(targetX) || !Number.isFinite(targetY)
+			|| !signRequestParams.fitToSignSpace(slotWidth, slotHeight, SignSpaceManager.SIGNATURE_PLACEMENT_MARGIN)) {
+			return false;
+		}
+
+		signRequestParams.signPageNumber = pageNum;
+		signRequestParams.xPos = targetX;
+		signRequestParams.yPos = targetY;
+		cross.attr("page", pageNum);
+		signRequestParams.firstLaunch = false;
+		signRequestParams.updateScale(pdfViewer.scale);
+
+		signRequestParams.inside = signRequestParams.isInsideCurrentPage();
+		if (!signRequestParams.inside) {
+			signRequestParams.refreshVisualState();
+			signPlacementController.refreshSteps();
+			return false;
+		}
+
 		signSpaceDiv.data("locked", cross.attr("id"));
 		signSpaceDiv.removeClass("sign-field");
 		signSpaceDiv.addClass("sign-field-dropped");
@@ -326,83 +350,14 @@ export class SignSpaceManager {
 			isSignableField: true,
 			ready: true
 		});
-
 		signRequestParams.signSpace = signSpaceDiv;
-		const pageNum = parseInt(signSpaceDiv.attr("data-es-pos-page"), 10);
-		const targetX = parseInt(signSpaceDiv.attr("data-es-pos-x"), 10);
-		const targetY = parseInt(signSpaceDiv.attr("data-es-pos-y"), 10);
-		signRequestParams.signPageNumber = pageNum;
-		signRequestParams.xPos = Number.isFinite(targetX) ? targetX : 0;
-		signRequestParams.yPos = Number.isFinite(targetY) ? targetY : 0;
-		cross.attr("page", pageNum);
-		signRequestParams.firstLaunch = false;
-		signRequestParams.applyCurrentSignRequestParams();
-
-		let resizedUi = { size: { width: 0, height: 0 }};
-		let width = parseInt(cross.css("width"), 10);
-		let height = parseInt(cross.css("height"), 10);
-		let maxWidth  = parseInt(signSpaceDiv.css("width"), 10);
-		let maxHeight = parseInt(signSpaceDiv.css("height"), 10);
-		if (!Number.isFinite(width) || width <= 0) {
-			width = Math.round(signRequestParams.signWidth * pdfViewer.scale);
-		}
-		if (!Number.isFinite(height) || height <= 0) {
-			height = Math.round(signRequestParams.signHeight * pdfViewer.scale);
-		}
-		if (!Number.isFinite(maxWidth) || maxWidth <= 0 || !Number.isFinite(maxHeight) || maxHeight <= 0) {
-			return false;
-		}
-		let ratio = width / height;
-		resizedUi.size.width  = maxWidth;
-		resizedUi.size.height = resizedUi.size.width / ratio;
-		if (resizedUi.size.height > maxHeight) {
-			resizedUi.size.height = maxHeight;
-			resizedUi.size.width  = resizedUi.size.height * ratio;
-		}
-		const placementMargin = SignSpaceManager.SIGNATURE_PLACEMENT_MARGIN;
-		const maxInnerWidth = maxWidth - placementMargin;
-		const maxInnerHeight = maxHeight - placementMargin;
-		if (maxInnerWidth <= 0 || maxInnerHeight <= 0) {
-			return false;
-		}
-		resizedUi.size.width = resizedUi.size.width - placementMargin;
-		resizedUi.size.height = resizedUi.size.height - placementMargin;
-		signRequestParams.resize(resizedUi);
-
-		for (let i = 0; i < 4; i++) {
-			const renderedWidth = signRequestParams.signWidth * pdfViewer.scale;
-			const renderedHeight = signRequestParams.signHeight * pdfViewer.scale;
-			if (renderedWidth <= maxInnerWidth && renderedHeight <= maxInnerHeight) {
-				break;
-			}
-			const resizeRatio = Math.min(maxInnerWidth / renderedWidth, maxInnerHeight / renderedHeight);
-			if (!Number.isFinite(resizeRatio) || resizeRatio <= 0) {
-				break;
-			}
-			signRequestParams.resize({
-				size: {
-					width: renderedWidth * resizeRatio,
-					height: renderedHeight * resizeRatio
-				}
-			});
-		}
-
-		const finalRenderedWidth = signRequestParams.signWidth * pdfViewer.scale;
-		const finalRenderedHeight = signRequestParams.signHeight * pdfViewer.scale;
-		const fitTolerance = 1;
-		const finalFits = finalRenderedWidth <= maxInnerWidth + fitTolerance
-			&& finalRenderedHeight <= maxInnerHeight + fitTolerance;
-		cross.css("width", finalRenderedWidth);
-		cross.css("background-size", finalRenderedWidth);
-		cross.css("height", finalRenderedHeight);
-		signRequestParams.inside = finalFits;
 		signRequestParams.dropped = true;
 
 		const slotIndex = parseInt(signSpaceDiv.attr("id")?.split("_")[1], 10);
 		if (Number.isFinite(slotIndex) && signPlacementController.currentSignRequestParamses?.[slotIndex] != null) {
-			signPlacementController.currentSignRequestParamses[slotIndex].ready = finalFits;
+			signPlacementController.currentSignRequestParamses[slotIndex].ready = true;
 		}
-		signRequestParams.ready = finalFits;
+		signRequestParams.ready = true;
 		if (typeof signRequestParams.refreshVisualState === "function") {
 			signRequestParams.refreshVisualState();
 		}
@@ -439,49 +394,6 @@ export class SignSpaceManager {
 				const signRequestParams = manager.findPlacedSignRequestParams(ui.draggable.attr("id"));
 				if (signRequestParams != null) {
 					manager.applySignRequestParamsToSignSpace($(this), signRequestParams);
-				}
-			},
-			out: function (event, ui) {
-				if ($(this).data("locked") != null && $(this).data("locked") !== ui.draggable.attr("id")) {
-					return;
-				}
-				$(this).removeData("locked");
-				$(this).removeClass("sign-space-disabled ui-state-disabled");
-				$(this).addClass("sign-field");
-				$(this).removeClass("sign-field-dropped");
-				const slotIndex = parseInt($(this).attr("id")?.split("_")[1], 10);
-				if (Number.isFinite(slotIndex) && signPlacementController.currentSignRequestParamses?.[slotIndex] != null) {
-					signPlacementController.currentSignRequestParamses[slotIndex].ready = false;
-				}
-				manager.renderSignSpaceContent($(this), {
-					isSignableField: true,
-					ready: false
-				});
-				$(this).css("pointer-events", "auto");
-				if ($(this).hasClass("ui-droppable")) {
-					try {
-						$(this).droppable("enable");
-					} catch (error) {
-						// Ignore partially initialized droppable widgets.
-					}
-				}
-				for (let i = 0; i < signPlacementController.signRequestParamses.size; i++) {
-					let signRequestParams = Array.from(signPlacementController.signRequestParamses.values())[i];
-					let cross = signRequestParams.cross;
-					if (cross.attr("id") === ui.draggable.attr("id")) {
-						if (cross.data("ui-resizable") || cross.data("resizable")) {
-							cross.resizable("enable");
-						}
-						signRequestParams.signSpace = null;
-						signRequestParams.ready = false;
-						signRequestParams.dropped = false;
-						if (typeof signRequestParams.refreshVisualState === "function") {
-							signRequestParams.refreshVisualState();
-						}
-						if (typeof signPlacementController.refreshSteps === "function") {
-							signPlacementController.refreshSteps();
-						}
-					}
 				}
 			}
 		});

@@ -679,7 +679,7 @@ export class SignRequestParams extends EventFactory {
             if(this.spotRecipientId === "") {
                 this.spotRecipientId = null;
             }
-            if (!this.inside || !this.#isInsideCurrentPage()) {
+            if (!this.inside || !this.isInsideCurrentPage()) {
                 this.#syncSpotSaveState();
                 return;
             }
@@ -727,7 +727,7 @@ export class SignRequestParams extends EventFactory {
         }
     }
 
-    #isInsideCurrentPage() {
+    isInsideCurrentPage() {
         const pageLayout = this.#getPageLayout(this.signPageNumber);
         const scaleFactor = this.currentScale * this.getBrowserZoom();
         const pageWidth = Math.round((pageLayout.width || 0) / scaleFactor);
@@ -752,7 +752,7 @@ export class SignRequestParams extends EventFactory {
         if (this.signImages !== SPECIAL_SIGN_IMAGE_NUMBERS.SPOT) {
             return;
         }
-        const canSave = this.inside && this.#isInsideCurrentPage();
+        const canSave = this.inside && this.isInsideCurrentPage();
         const title = canSave
             ? "Enregistrer"
             : "L'emplacement doit etre entierement dans une page";
@@ -1229,15 +1229,17 @@ export class SignRequestParams extends EventFactory {
 
     #dragStop(event, ui, { keepCrossFocus = false } = {}) {
         this.setSlotDeleteButtonsEnabled(true);
-        const dragRect = this.cross[0].getBoundingClientRect();
-        this.#refreshPageAttributeFromRect(dragRect);
-        this.#updatePlacementState(dragRect);
+        if (this.signSpace == null) {
+            const dragRect = this.cross[0].getBoundingClientRect();
+            this.#refreshPageAttributeFromRect(dragRect);
+            this.#updatePlacementState(dragRect);
+            this.#afterDropRefresh(ui);
+        }
         this.tools.removeClass("d-none");
         if($(event.originalEvent.target).attr("id") != null && $("#border_" + $(event.originalEvent.target).attr("id").split("_")[1]).hasClass("cross-warning") && this.firstCrossAlert) {
             this.firstCrossAlert = false;
             bootbox.alert("Attention votre signature superpose un autre élément du document cela pourrait nuire à sa lecture. Vous pourrez tout de même la valider même si elle est de couleur orange", null);
         }
-        this.#afterDropRefresh(ui);
         this.#refreshToolsPosition();
         this.#syncSpotSaveState();
         if(this.signImages !== SPECIAL_SIGN_IMAGE_NUMBERS.SPOT) {
@@ -2479,15 +2481,29 @@ export class SignRequestParams extends EventFactory {
         $("#add-sign-image").modal("show");
     }
 
-    resize(ui) {
-        let newScale = this.#getNewScale(ui);
-        let ratio = newScale / this.signScale;
-        this.extraWidth = this.extraWidth * ratio;
-        this.extraHeight = this.extraHeight * ratio;
+    fitToSignSpace(slotWidth, slotHeight, margin) {
+        const width = this.originalWidth * this.signScale + this.extraWidth;
+        const height = this.originalHeight * this.signScale + this.extraHeight;
+        // Leave room for rounding the image dimensions to whole PDF units.
+        const scaleRatio = Math.min((slotWidth - margin - 0.5) / width, (slotHeight - margin - 0.5) / height);
+        if (!Number.isFinite(scaleRatio) || scaleRatio <= 0 || width <= 0 || height <= 0) {
+            return false;
+        }
+        this.#setResizedDimensions(this.signScale * scaleRatio);
+        return true;
+    }
 
+    #setResizedDimensions(newScale) {
+        const ratio = newScale / this.signScale;
+        this.extraWidth *= ratio;
+        this.extraHeight *= ratio;
         this.signScale = newScale;
-        this.signWidth = Math.round(this.originalWidth * this.signScale) + this.extraWidth;
-        this.signHeight = Math.round(this.originalHeight * this.signScale) + this.extraHeight;
+        this.signWidth = Math.round(this.originalWidth * newScale) + this.extraWidth;
+        this.signHeight = Math.round(this.originalHeight * newScale) + this.extraHeight;
+    }
+
+    resize(ui) {
+        this.#setResizedDimensions(this.#getNewScale(ui));
 
         if (this.addExtra && this.divExtra != null) {
             if (!this.extraOnTop) {

@@ -564,6 +564,9 @@ export class SignPlacementController extends EventFactory {
     }
 
     getPlacedSignatureCount() {
+        if (this.hasCurrentStepSignSpots()) {
+            return this.currentSignRequestParamses.filter(signRequestParams => signRequestParams.ready === true).length;
+        }
         return this.getActiveSigns().length;
     }
 
@@ -632,15 +635,11 @@ export class SignPlacementController extends EventFactory {
             return false;
         }
 
-        const currentSignRequestParamses = Array.isArray(this.currentSignRequestParamses)
-            ? this.currentSignRequestParamses
-            : [];
+        return this.findUnfilledSignatureSlot() === -1;
+    }
 
-        if (currentSignRequestParamses.length > 0) {
-            return currentSignRequestParamses.every(signRequestParams => signRequestParams?.ready === true);
-        }
-
-        return true;
+    findUnfilledSignatureSlot() {
+        return this.currentSignRequestParamses.findIndex(signRequestParams => signRequestParams.ready !== true);
     }
 
     hasInvalidSignaturePlacement() {
