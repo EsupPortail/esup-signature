@@ -30,7 +30,7 @@ class MailServicePostitTest {
 
         GlobalProperties globalProperties = mock(GlobalProperties.class);
         when(globalProperties.getDomain()).thenReturn("example.org");
-        MailService mailService = new MailService(globalProperties, null, null, null, mock(UserService.class), null, null, null);
+        MailService mailService = new MailService(globalProperties, null, null, null, null, mock(UserService.class), null, null, null);
 
         Set<String> recipients = ReflectionTestUtils.invokeMethod(mailService, "getPostitRecipientEmails", signBook, sender, true);
 
@@ -45,7 +45,7 @@ class MailServicePostitTest {
         signBook.setCreateBy(externalCreator);
 
         GlobalProperties globalProperties = mock(GlobalProperties.class);
-        MailService mailService = new MailService(globalProperties, null, null, null, mock(UserService.class), null, null, null);
+        MailService mailService = new MailService(globalProperties, null, null, null, null, mock(UserService.class), null, null, null);
 
         Set<String> recipients = ReflectionTestUtils.invokeMethod(mailService, "getPostitRecipientEmails", signBook, sender, false);
 
