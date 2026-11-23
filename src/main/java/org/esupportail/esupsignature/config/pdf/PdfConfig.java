@@ -32,9 +32,14 @@ public class PdfConfig {
     }
 
     private Path pdfADefPath;
+    private Path iccProfilePath;
 
     public Path getPdfADefPath() {
         return pdfADefPath;
+    }
+
+    public Path getIccProfilePath() {
+        return iccProfilePath;
     }
 
     @PostConstruct
@@ -52,8 +57,11 @@ public class PdfConfig {
             logger.info("iccPath : " + iccFile.getAbsolutePath());
             logger.info("pdfADefPath : " + pdfAFile.getAbsolutePath());
             pdfADefPath = pdfAFile.toPath();
+            iccProfilePath = iccFile.toPath().toAbsolutePath();
             List<String> lines = Files.readAllLines(Path.of(pdfAFile.getAbsolutePath()), StandardCharsets.UTF_8);
-            lines.set(11, "/ICCProfile (" + iccFile.getAbsolutePath() + ") % Customise");
+            String postScriptProfilePath = iccProfilePath.toString()
+                    .replace("\\", "\\\\").replace("(", "\\(").replace(")", "\\)");
+            lines.set(11, "/ICCProfile (" + postScriptProfilePath + ") % Customise");
             Files.write(Path.of(pdfAFile.getAbsolutePath()), lines, StandardCharsets.UTF_8);
         } catch (IOException e) {
             logger.error("PDFA_def.ps read error", e);

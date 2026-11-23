@@ -753,14 +753,18 @@ public class PdfService {
     public byte[] convertToPDFA(byte[] originalBytes) throws EsupSignatureRuntimeException {
         if (!isPdfAComplient(originalBytes) && pdfConfig.getPdfProperties().isConvertToPdfA()) {
             String params = pdfConfig.getPdfProperties().getGsCommandParams();
-            String cmd = pdfConfig.getPdfProperties().getPathToGS() + " -dAutoRotatePages=/None -sstdout=%stderr -dPDFA=3 -dNOPAUSE -dNOSAFER -dBATCH -sFONTPATH=" + pdfConfig.getPdfProperties().getPathToFonts() + " " + params + " -sOutputFile=- '" + pdfConfig.getPdfADefPath() + "' - 2>/dev/null";
+            String cmd = pdfConfig.getPdfProperties().getPathToGS() + " -dAutoRotatePages=/None -sstdout=%stderr -dPDFA=3 -dNOPAUSE -dSAFER -dBATCH -sFONTPATH=" + pdfConfig.getPdfProperties().getPathToFonts() + " " + params + " -sOutputFile=-";
             logger.info("GhostScript PDF/A conversion : " + cmd);
             ProcessBuilder processBuilder = new ProcessBuilder();
             if(SystemUtils.IS_OS_WINDOWS) {
-                processBuilder.command("cmd", "/C", cmd);
+                processBuilder.command("cmd", "/C", cmd
+                        + " --permit-file-read=\"%ESUP_GS_ICC_PROFILE%\" \"%ESUP_GS_PDFA_DEF%\" - 2>NUL");
             } else {
-                processBuilder.command("bash", "-c", cmd);
+                processBuilder.command("bash", "-c", cmd
+                        + " --permit-file-read=\"$ESUP_GS_ICC_PROFILE\" \"$ESUP_GS_PDFA_DEF\" - 2>/dev/null");
             }
+            processBuilder.environment().put("ESUP_GS_ICC_PROFILE", pdfConfig.getIccProfilePath().toString());
+            processBuilder.environment().put("ESUP_GS_PDFA_DEF", pdfConfig.getPdfADefPath().toString());
             ByteArrayOutputStream convertedOutputStream = new ByteArrayOutputStream();
             byte[] result;
             Process process = null;
@@ -846,7 +850,7 @@ public class PdfService {
             if(!rotate) {
                 params += " -dAutoRotatePages=/None";
             }
-            String cmd = pdfConfig.getPdfProperties().getPathToGS() + " -dPDFSTOPONERROR -sstdout=%stderr -dBATCH -dNOPAUSE -dPassThroughJPEGImages=true -dNOSAFER -sDEVICE=pdfwrite" + params + " -d -sOutputFile=- - 2>/dev/null";
+            String cmd = pdfConfig.getPdfProperties().getPathToGS() + " -dPDFSTOPONERROR -sstdout=%stderr -dBATCH -dNOPAUSE -dPassThroughJPEGImages=true -dSAFER -sDEVICE=pdfwrite" + params + " -d -sOutputFile=- - 2>/dev/null";
             logger.info("GhostScript normalize : " + cmd);
             ProcessBuilder processBuilder = new ProcessBuilder();
             if (SystemUtils.IS_OS_WINDOWS) {
