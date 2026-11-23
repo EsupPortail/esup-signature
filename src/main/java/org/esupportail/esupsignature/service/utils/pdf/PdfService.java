@@ -955,7 +955,7 @@ public class PdfService {
     public byte[] convertToPDFA(byte[] originalBytes) throws EsupSignatureRuntimeException {
         if (!isPdfAComplient(originalBytes) && pdfConfig.getPdfProperties().isConvertToPdfA()) {
             String params = pdfConfig.getPdfProperties().getGsCommandParams();
-            String cmd = pdfConfig.getPdfProperties().getPathToGS() + " -dAutoRotatePages=/None -sstdout=%stderr -dPDFA=3 -dNOPAUSE -dNOSAFER -dBATCH -sFONTPATH=" + pdfConfig.getPdfProperties().getPathToFonts() + " " + params + " -sOutputFile=- '" + pdfConfig.getPdfADefPath() + "' - 2>/dev/null";
+            String cmd = pdfConfig.getPdfProperties().getPathToGS() + " -dAutoRotatePages=/None -sstdout=%stderr -dPDFA=3 -dNOPAUSE -dSAFER -dBATCH -sFONTPATH=" + pdfConfig.getPdfProperties().getPathToFonts() + " " + params + " -sOutputFile=- '" + pdfConfig.getPdfADefPath() + "' - 2>/dev/null";
             logger.info("GhostScript PDF/A conversion : " + cmd);
             ProcessBuilder processBuilder = new ProcessBuilder();
             if(SystemUtils.IS_OS_WINDOWS) {
@@ -1059,9 +1059,9 @@ public class PdfService {
             }
             String cmd;
             if (containsJpxDecodeImage) {
-                cmd = pdfConfig.getPdfProperties().getPathToGS() + " -dPDFSTOPONERROR -sstdout=%stderr -dBATCH -dNOPAUSE -dNOSAFER -sDEVICE=pdfwrite" + params + " -dPassThroughJPXImages=false -dAutoFilterColorImages=false -dAutoFilterGrayImages=false -dColorImageFilter=/FlateEncode -dGrayImageFilter=/FlateEncode -dDownsampleColorImages=false -dDownsampleGrayImages=false -dDownsampleMonoImages=false -sOutputFile=- - 2>/dev/null";
+                cmd = pdfConfig.getPdfProperties().getPathToGS() + " -dPDFSTOPONERROR -sstdout=%stderr -dBATCH -dNOPAUSE -dSAFER -sDEVICE=pdfwrite" + params + " -dPassThroughJPXImages=false -dAutoFilterColorImages=false -dAutoFilterGrayImages=false -dColorImageFilter=/FlateEncode -dGrayImageFilter=/FlateEncode -dDownsampleColorImages=false -dDownsampleGrayImages=false -dDownsampleMonoImages=false -sOutputFile=- - 2>/dev/null";
             } else {
-                cmd = pdfConfig.getPdfProperties().getPathToGS() + " -dPDFSTOPONERROR -sstdout=%stderr -dBATCH -dNOPAUSE -dPassThroughJPEGImages=true -dNOSAFER -sDEVICE=pdfwrite" + params + " -d -sOutputFile=- - 2>/dev/null";
+                cmd = pdfConfig.getPdfProperties().getPathToGS() + " -dPDFSTOPONERROR -sstdout=%stderr -dBATCH -dNOPAUSE -dPassThroughJPEGImages=true -dSAFER -sDEVICE=pdfwrite" + params + " -d -sOutputFile=- - 2>/dev/null";
             }
             logger.info("GhostScript normalize : " + cmd);
             ProcessBuilder processBuilder = new ProcessBuilder();
