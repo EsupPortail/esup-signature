@@ -12,6 +12,7 @@ import org.apache.commons.lang.StringUtils;
 import org.eclipse.angus.mail.smtp.SMTPAddressFailedException;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.mail.MailConfig;
+import org.esupportail.esupsignature.config.mail.MailProperties;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
 import org.esupportail.esupsignature.entity.enums.ShareType;
@@ -53,6 +54,7 @@ public class MailService {
 
     private final GlobalProperties globalProperties;
     private final MailConfig mailConfig;
+    private final MailProperties mailProperties;
     private final JavaMailSenderImpl mailSender;
     private final TemplateEngine templateEngine;
     private final UserService userService;
@@ -68,9 +70,10 @@ public class MailService {
 //    @Resource
 //    private CertificatService certificatService;
 
-    public MailService(GlobalProperties globalProperties, @Autowired(required = false) MailConfig mailConfig, @Autowired(required = false) JavaMailSenderImpl mailSender, TemplateEngine templateEngine, UserService userService, MessageSource messageSource, UserShareService userShareService, ReportService reportService) {
+    public MailService(GlobalProperties globalProperties, @Autowired(required = false) MailConfig mailConfig, MailProperties mailProperties, @Autowired(required = false) JavaMailSenderImpl mailSender, TemplateEngine templateEngine, UserService userService, MessageSource messageSource, UserShareService userShareService, ReportService reportService) {
         this.globalProperties = globalProperties;
         this.mailConfig = mailConfig;
+        this.mailProperties = mailProperties;
         this.mailSender = mailSender;
         this.templateEngine = templateEngine;
         this.userService = userService;
@@ -143,7 +146,9 @@ public class MailService {
             MimeMessageHelper mimeMessage = new MimeMessageHelper(getMailSender().createMimeMessage(), true, "UTF-8");
             String htmlContent = templateEngine.process("mail/email-alert-share.html", ctx);
             mimeMessage.setText(htmlContent, true);
-            mimeMessage.setSubject(recipientUser.getFirstname() + " " + recipientUser.getName() + " a une nouvelle demande de signature");
+            mimeMessage.setSubject(buildMailSubject(
+                    mailProperties.getSubject().getSharedRequest().replace("[recipient]", recipientUser.getFirstname() + " " + recipientUser.getName()),
+                    signBook));
             mimeMessage.setTo(recipientsEmails.toArray(String[]::new));
             logger.info("send email alert for " + recipientsEmails.get(0));
             sendMail(mimeMessage, signBook.getLiveWorkflow().getWorkflow());
@@ -170,7 +175,7 @@ public class MailService {
                 MimeMessageHelper mimeMessage = new MimeMessageHelper(getMailSender().createMimeMessage(), true, "UTF-8");
                 String htmlContent = templateEngine.process("mail/email-completed.html", ctx);
                 mimeMessage.setText(htmlContent, true);
-                mimeMessage.setSubject("Votre demande de signature est terminée");
+                mimeMessage.setSubject(buildMailSubject(mailProperties.getSubject().getCompleted(), signBook));
                 mimeMessage.setTo(toEmails.toArray(String[]::new));
                 logger.info("send email completed to : " + StringUtils.join(toEmails.toArray(String[]::new), ";"));
                 sendMail(mimeMessage, signBook.getLiveWorkflow().getWorkflow());
@@ -201,7 +206,7 @@ public class MailService {
             MimeMessageHelper mimeMessage = new MimeMessageHelper(getMailSender().createMimeMessage(), true, "UTF-8");
             String htmlContent = templateEngine.process("mail/email-postit.html", ctx);
             mimeMessage.setText(htmlContent, true);
-            mimeMessage.setSubject("Un postit a été déposé sur votre demande");
+            mimeMessage.setSubject(buildMailSubject(mailProperties.getSubject().getPostit(), signBook));
             mimeMessage.setTo(toEmails.toArray(String[]::new));
             logger.info("send postit to : " + StringUtils.join(toEmails.toArray(String[]::new), ";"));
             sendMail(mimeMessage, signBook.getLiveWorkflow().getWorkflow());
@@ -240,7 +245,7 @@ public class MailService {
             MimeMessageHelper mimeMessage = new MimeMessageHelper(getMailSender().createMimeMessage(), true, "UTF-8");
             String htmlContent = templateEngine.process("mail/email-completed-cc.html", ctx);
             mimeMessage.setText(htmlContent, true);
-            mimeMessage.setSubject("Une demande de signature que vous suivez est terminée");
+            mimeMessage.setSubject(buildMailSubject(mailProperties.getSubject().getCompletedCc(), signBook));
             if (!signBook.getTeam().isEmpty()) {
                 mimeMessage.setTo(signBook.getTeam().stream().filter(userTo -> !userTo.getUserType().equals(UserType.external) && (toMails == null || !toMails.contains(userTo.getEmail())) && !userTo.getUserType().equals(UserType.system) && !userTo.getEppn().equals(userEppn)).map(User::getEmail).toArray(String[]::new));
                 logger.debug("send email completes cc for " + user.getEppn());
@@ -280,7 +285,7 @@ public class MailService {
             MimeMessageHelper mimeMessage = new MimeMessageHelper(getMailSender().createMimeMessage(), true, "UTF-8");
             String htmlContent = templateEngine.process("mail/email-refused.html", ctx);
             mimeMessage.setText(htmlContent, true);
-            mimeMessage.setSubject("Votre demande de signature a été refusée");
+            mimeMessage.setSubject(buildMailSubject(mailProperties.getSubject().getRefused(), signBook));
             mimeMessage.setTo(toEmails.toArray(String[]::new));
             String[] viewersArray = new String[signBook.getViewers().size()];
             for (int i = 0 ;  i < signBook.getViewers().size() ; i++) {
@@ -307,7 +312,7 @@ public class MailService {
             MimeMessageHelper mimeMessage = new MimeMessageHelper(getMailSender().createMimeMessage(), true, "UTF-8");
             String htmlContent = templateEngine.process("mail/email-alert.html", ctx);
             mimeMessage.setText(htmlContent, true);
-            mimeMessage.setSubject("Vous avez une nouvelle demande de signature");
+            mimeMessage.setSubject(buildMailSubject(mailProperties.getSubject().getNewRequest(), signBook));
             mimeMessage.setTo(recipientsEmails.toArray(String[]::new));
             logger.info("send email alert for " + recipientsEmails.get(0));
             sendMail(mimeMessage, signBook.getLiveWorkflow().getWorkflow());
@@ -338,7 +343,7 @@ public class MailService {
             MimeMessageHelper mimeMessage = new MimeMessageHelper(getMailSender().createMimeMessage(), true, "UTF-8");
             String htmlContent = templateEngine.process("mail/email-replay-alert.html", ctx);
             mimeMessage.setText(htmlContent, true);
-            mimeMessage.setSubject("Relance pour la signature d'un document");
+            mimeMessage.setSubject(buildMailSubject(mailProperties.getSubject().getReplay(), signBook));
             mimeMessage.setTo(recipientsEmails.toArray(String[]::new));
             logger.info("send email replay alert for " + recipientsEmails.get(0));
             sendMail(mimeMessage, signBook.getLiveWorkflow().getWorkflow());
@@ -366,7 +371,9 @@ public class MailService {
             String htmlContent = templateEngine.process("mail/email-cc.html", ctx);
             mimeMessage.setText(htmlContent, true);
             User creator = signBook.getCreateBy();
-            mimeMessage.setSubject("Vous êtes en copie d'une demande de signature créée par " + creator.getFirstname() + " " + creator.getName());
+            mimeMessage.setSubject(buildMailSubject(
+                    mailProperties.getSubject().getCc().replace("[creator]", creator.getFirstname() + " " + creator.getName()),
+                    signBook));
             mimeMessage.setTo(recipientsCCEmails.toArray(String[]::new));
             logger.info("send email cc for " + String.join(";", recipientsCCEmails));
             sendMail(mimeMessage, signBook.getLiveWorkflow().getWorkflow());
@@ -426,10 +433,13 @@ public class MailService {
         try {
             MimeMessageHelper mimeMessage = new MimeMessageHelper(getMailSender().createMimeMessage(), true, "UTF-8");
             String htmlContent = templateEngine.process("mail/email-otp-download.html", ctx);
-            mimeMessage.setSubject("Un document émanant de " + messageSource.getMessage("application.footer", null, Locale.FRENCH) + " est disponible au téléchargement");
+            String organization = messageSource.getMessage("application.footer", null, Locale.FRENCH);
+            mimeMessage.setSubject(buildMailSubject(
+                    mailProperties.getSubject().getOtpDownload().replace("[organization]", organization), signBook));
             if(signature) {
                 htmlContent = templateEngine.process("mail/email-otp.html", ctx);
-                mimeMessage.setSubject("Vous avez un document à signer émanant de " + messageSource.getMessage("application.footer", null, Locale.FRENCH));
+                mimeMessage.setSubject(buildMailSubject(
+                        mailProperties.getSubject().getOtpSignature().replace("[organization]", organization), signBook));
                 logger.info("send signature email otp for " + otp.getUser().getEmail());
             } else {
                 logger.info("send download email otp for " + otp.getUser().getEmail());
@@ -454,7 +464,9 @@ public class MailService {
         try {
             MimeMessageHelper mimeMessage = new MimeMessageHelper(getMailSender().createMimeMessage(), true, "UTF-8");
             String htmlContent = templateEngine.process("mail/email-replay-otp.html", ctx);
-            mimeMessage.setSubject("Relance pour la signature d'un document émanant de " + messageSource.getMessage("application.footer", null, Locale.FRENCH));
+            String organization = messageSource.getMessage("application.footer", null, Locale.FRENCH);
+            mimeMessage.setSubject(buildMailSubject(
+                    mailProperties.getSubject().getOtpReplay().replace("[organization]", organization), signBook));
             logger.info("send signature email otp for " + otp.getUser().getEmail());
             mimeMessage.setText(htmlContent, true);
             mimeMessage.setTo(otp.getUser().getEmail());
@@ -630,6 +642,13 @@ public class MailService {
         ImageIO.write(resizedImage, "PNG", byteArrayOutputStream);
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         return new ByteArrayDataSource(byteArrayInputStream.readAllBytes(), "image/png");
+    }
+
+    private String buildMailSubject(String template, SignBook signBook) {
+        return template.replace("[subject]", StringUtils.defaultString(signBook.getSubject()))
+                .replace('\r', ' ')
+                .replace('\n', ' ')
+                .trim();
     }
 
     private boolean checkMailSender() {

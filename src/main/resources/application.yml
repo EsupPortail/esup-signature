@@ -219,6 +219,19 @@ ldap:
 mail:
     from: no-reply.esup-signature@univ-ville.fr
 
+    subject:
+        shared-request: "[recipient] a une nouvelle demande de signature : [subject]"
+        completed: "Votre demande de signature est terminée : [subject]"
+        postit: "Un postit a été déposé sur votre demande : [subject]"
+        completed-cc: "Une demande de signature que vous suivez est terminée : [subject]"
+        refused: "Votre demande de signature a été refusée : [subject]"
+        new-request: "Vous avez une nouvelle demande de signature : [subject]"
+        replay: "Relance pour la signature d'un document : [subject]"
+        cc: "Vous êtes en copie d'une demande de signature créée par [creator] : [subject]"
+        otp-signature: "Vous avez un document à signer émanant de [organization] : [subject]"
+        otp-download: "Un document émanant de [organization] est disponible au téléchargement : [subject]"
+        otp-replay: "Relance pour la signature d'un document émanant de [organization] : [subject]"
+
 sms:
     enable-sms : false
 #    service-name: SMSU
